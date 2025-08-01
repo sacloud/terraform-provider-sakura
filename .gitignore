@@ -1,0 +1,14 @@
+.env
+**/terraform-provider-sakuracloud*
+**/.usacloud
+
+dist/
+
+.terraform*
+terraform.tfstate*
+terraform.tfvars*
+
+website-current
+website-scaffold
+
+.vscode/

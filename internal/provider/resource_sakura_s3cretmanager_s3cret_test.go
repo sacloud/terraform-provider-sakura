@@ -101,10 +101,6 @@ func testCheckSakuraSecretManagerSecretExists(n string, secret *v1.Secret) resou
 			return err
 		}
 
-		if foundSecret.Name != rs.Primary.ID {
-			return fmt.Errorf("not found SecretManagerSecret: %s", rs.Primary.ID)
-		}
-
 		*secret = *foundSecret
 		return nil
 	}

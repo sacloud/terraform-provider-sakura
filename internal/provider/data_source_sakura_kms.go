@@ -31,7 +31,7 @@ type kmsDataSourceModel struct {
 	Name        types.String `tfsdk:"name"`
 	ResourceID  types.String `tfsdk:"resource_id"`
 	Description types.String `tfsdk:"description"`
-	Tags        types.List   `tfsdk:"tags"`
+	Tags        types.Set    `tfsdk:"tags"`
 	KeyOrigin   types.String `tfsdk:"key_origin"`
 }
 
@@ -69,10 +69,9 @@ func (d *kmsDataSource) Metadata(_ context.Context, req datasource.MetadataReque
 func (d *kmsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The ID of the KMS key.",
-			},
+			"id":          schemaDataSourceId("KMS key"),
+			"description": schemaDataSourceDescription("KMS key"),
+			"tags":        schemaDataSourceTags("KMS key"),
 			"name": schema.StringAttribute{
 				Optional:    true,
 				Description: "The name of the KMS key.",
@@ -80,15 +79,6 @@ func (d *kmsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, 
 			"resource_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "The resource ID of the KMS key.",
-			},
-			"description": schema.StringAttribute{
-				Computed:    true,
-				Description: "The description of the KMS key.",
-			},
-			"tags": schema.ListAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-				Description: "The tags of the KMS key.",
 			},
 			"key_origin": schema.StringAttribute{
 				Computed:    true,
@@ -137,7 +127,7 @@ func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	data.ID = types.StringValue(key.ID)
 	data.Name = types.StringValue(key.Name)
 	data.Description = types.StringValue(key.Description.Value)
-	data.Tags = TagsToTFList(ctx, key.Tags)
+	data.Tags = TagsToTFSet(ctx, key.Tags)
 	data.KeyOrigin = types.StringValue(string(key.KeyOrigin))
 
 	resp.State.Set(ctx, &data)

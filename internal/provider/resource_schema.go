@@ -43,14 +43,16 @@ func schemaResourceName(name string) schema.Attribute {
 func schemaResourceDescription(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Optional:    true,
+		Computed:    true,
 		Description: fmt.Sprintf("The description of the %s.", name),
 	}
 }
 
 func schemaResourceTags(name string) schema.Attribute {
-	return schema.ListAttribute{
+	return schema.SetAttribute{
 		ElementType: types.StringType,
 		Optional:    true,
+		Computed:    true, // FrameworkはSDK v2とは違ってComputedをつけないとnullに値をセットしようとしてエラーになる
 		Description: fmt.Sprintf("The tags of the %s.", name),
 	}
 }

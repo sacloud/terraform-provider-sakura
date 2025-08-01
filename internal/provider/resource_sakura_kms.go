@@ -22,9 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -40,7 +38,7 @@ type kmsResourceModel struct {
 	KeyOrigin   types.String `tfsdk:"key_origin"`
 	PlainKey    types.String `tfsdk:"plain_key"`
 	Description types.String `tfsdk:"description"`
-	Tags        types.List   `tfsdk:"tags"`
+	Tags        types.Set    `tfsdk:"tags"`
 }
 
 type kmsResource struct {
@@ -72,17 +70,10 @@ func (r *kmsResource) Metadata(_ context.Context, req resource.MetadataRequest, 
 func (r *kmsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The ID of the KMS key.",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.UseStateForUnknown(),
-				},
-			},
-			"name": schema.StringAttribute{
-				Required:    true,
-				Description: "The name of the KMS key.",
-			},
+			"id":          schemaDataSourceId("KMS key"),
+			"name":        schemaResourceName("KMS key"),
+			"description": schemaResourceDescription("KMS key"),
+			"tags":        schemaResourceTags("KMS key"),
 			"key_origin": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
@@ -96,15 +87,6 @@ func (r *kmsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				Optional:    true,
 				Sensitive:   true,
 				Description: "Plain key for imported KMS key. Required when `key_origin` is 'imported'.",
-			},
-			"description": schema.StringAttribute{
-				Optional:    true,
-				Description: "Description of the KMS key.",
-			},
-			"tags": schema.ListAttribute{
-				ElementType: types.StringType,
-				Optional:    true,
-				Description: "Tags of the KMS key.",
 			},
 		},
 		// TODO: timeouts
@@ -139,7 +121,7 @@ func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, re
 	data.Name = types.StringValue(createdKey.Name)
 	data.KeyOrigin = types.StringValue(string(createdKey.KeyOrigin))
 	data.Description = types.StringValue(createdKey.Description.Value)
-	data.Tags = TagsToTFList(ctx, createdKey.Tags)
+	data.Tags = TagsToTFSet(ctx, createdKey.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -166,7 +148,7 @@ func (r *kmsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	data.Name = types.StringValue(key.Name)
 	data.KeyOrigin = types.StringValue(string(key.KeyOrigin))
 	data.Description = types.StringValue(key.Description.Value)
-	data.Tags = TagsToTFList(ctx, key.Tags)
+	data.Tags = TagsToTFSet(ctx, key.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

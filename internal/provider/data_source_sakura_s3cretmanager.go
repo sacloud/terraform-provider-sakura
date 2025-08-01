@@ -31,7 +31,7 @@ type secretManagerDataSourceModel struct {
 	Name        types.String `tfsdk:"name"`
 	ResourceID  types.String `tfsdk:"resource_id"`
 	Description types.String `tfsdk:"description"`
-	Tags        types.List   `tfsdk:"tags"`
+	Tags        types.Set    `tfsdk:"tags"`
 	KmsKeyID    types.String `tfsdk:"kms_key_id"`
 }
 
@@ -65,7 +65,9 @@ func (d *secretManagerDataSource) Metadata(_ context.Context, req datasource.Met
 func (d *secretManagerDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": schemaDataSourceId("SecretManager vault"),
+			"id":          schemaDataSourceId("SecretManager vault"),
+			"description": schemaDataSourceDescription("SecretManager vault"),
+			"tags":        schemaDataSourceTags("SecretManager vault"),
 			"name": schema.StringAttribute{
 				Optional:    true,
 				Description: "The name of the SecretManager vault.",
@@ -74,8 +76,6 @@ func (d *secretManagerDataSource) Schema(_ context.Context, req datasource.Schem
 				Optional:    true,
 				Description: "The resource ID of the SecretManager vault.",
 			},
-			"description": schemaDataSourceDescription("SecretManager vault"),
-			"tags":        schemaDataSourceTags("SecretManager vault"),
 			"kms_key_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "KMS key id for the SecretManager vault.",
@@ -120,7 +120,7 @@ func (d *secretManagerDataSource) Read(ctx context.Context, req datasource.ReadR
 	data.ID = types.StringValue(vault.ID)
 	data.Name = types.StringValue(vault.Name)
 	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = TagsToTFList(ctx, vault.Tags)
+	data.Tags = TagsToTFSet(ctx, vault.Tags)
 	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
 
 	resp.State.Set(ctx, &data)

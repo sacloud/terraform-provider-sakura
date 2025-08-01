@@ -36,7 +36,7 @@ func schemaDataSourceDescription(name string) schema.Attribute {
 }
 
 func schemaDataSourceTags(name string) schema.Attribute {
-	return schema.ListAttribute{
+	return schema.SetAttribute{
 		ElementType: types.StringType,
 		Computed:    true,
 		Description: fmt.Sprintf("The tags of the %s.", name),

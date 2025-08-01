@@ -18,13 +18,14 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 )
 
 func TestAccSakuraDataSourceSecretManagerSecret_basic(t *testing.T) {
 	resourceName := "data.sakura_secretmanager_secret.foobar"
 	rand := randomName()
 
-	//var secret v1.Secret
+	var secret v1.Secret
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { testAccPreCheck(t) },
 		ProtoV6ProviderFactories: testAccProtoV6ProviderFactories,

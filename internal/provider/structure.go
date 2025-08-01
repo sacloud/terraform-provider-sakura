@@ -20,7 +20,7 @@ import (
 	tftypes "github.com/hashicorp/terraform-plugin-framework/types"
 )
 
-func TagsToStringList(d tftypes.List) []string {
+func TagsToStringList(d tftypes.Set) []string {
 	var tags []string
 	for _, v := range d.Elements() {
 		if vStr, ok := v.(tftypes.String); ok && !vStr.IsNull() && !vStr.IsUnknown() {
@@ -30,7 +30,7 @@ func TagsToStringList(d tftypes.List) []string {
 	return tags
 }
 
-func TagsToTFList(ctx context.Context, tags []string) tftypes.List {
-	listValue, _ := tftypes.ListValueFrom(ctx, tftypes.StringType, tags)
-	return listValue
+func TagsToTFSet(ctx context.Context, tags []string) tftypes.Set {
+	setValue, _ := tftypes.SetValueFrom(ctx, tftypes.StringType, tags)
+	return setValue
 }

@@ -63,13 +63,10 @@ func (r *secretManagerSecretResource) Metadata(_ context.Context, req resource.M
 func (r *secretManagerSecretResource) Schema(_ context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"name": schema.StringAttribute{
-				Required:    true,
-				Description: "The name of the secret.",
-			},
+			"name": schemaResourceName("Secret Manager's secret"),
 			"vault_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The secret manager's vault id.",
+				Description: "The Secret Manager's vault id.",
 			},
 			"version": schema.Int64Attribute{
 				Computed:    true,
