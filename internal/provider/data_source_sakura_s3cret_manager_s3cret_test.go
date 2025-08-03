@@ -22,7 +22,7 @@ import (
 )
 
 func TestAccSakuraDataSourceSecretManagerSecret_basic(t *testing.T) {
-	resourceName := "data.sakura_secretmanager_secret.foobar"
+	resourceName := "data.sakura_secret_manager_secret.foobar"
 	rand := randomName()
 
 	var secret v1.Secret
@@ -33,7 +33,7 @@ func TestAccSakuraDataSourceSecretManagerSecret_basic(t *testing.T) {
 			{
 				Config: buildConfigWithArgs(testAccSakuraDataSourceSecretManagerSecret_byName, rand),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraSecretManagerSecretExists("sakura_secretmanager_secret.foobar", &secret),
+					testCheckSakuraSecretManagerSecretExists("sakura_secret_manager_secret.foobar", &secret),
 					testCheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "value", "value1"),
@@ -51,7 +51,7 @@ resource "sakura_kms" "foobar" {
   description = "description"
 }
 
-resource "sakura_secretmanager" "foobar" {
+resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   kms_key_id  = sakura_kms.foobar.id
@@ -59,17 +59,17 @@ resource "sakura_secretmanager" "foobar" {
   depends_on = [sakura_kms.foobar]
 }
 
-resource "sakura_secretmanager_secret" "foobar" {
+resource "sakura_secret_manager_secret" "foobar" {
   name     = "{{ .arg0 }}"
   value    = "value1"
-  vault_id = sakura_secretmanager.foobar.id
+  vault_id = sakura_secret_manager.foobar.id
 
-  depends_on = [sakura_secretmanager.foobar]
+  depends_on = [sakura_secret_manager.foobar]
 }
 
-data "sakura_secretmanager_secret" "foobar" {
+data "sakura_secret_manager_secret" "foobar" {
   name     = "{{ .arg0 }}"
-  vault_id = sakura_secretmanager.foobar.id
+  vault_id = sakura_secret_manager.foobar.id
 
-  depends_on = [sakura_secretmanager_secret.foobar]
+  depends_on = [sakura_secret_manager_secret.foobar]
 }`

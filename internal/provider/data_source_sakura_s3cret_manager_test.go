@@ -23,7 +23,7 @@ import (
 )
 
 func TestAccSakuraDataSourceSecretManager_basic(t *testing.T) {
-	resourceName := "data.sakura_secretmanager.foobar"
+	resourceName := "data.sakura_secret_manager.foobar"
 	rand := randomName()
 
 	var vault v1.Vault
@@ -34,7 +34,7 @@ func TestAccSakuraDataSourceSecretManager_basic(t *testing.T) {
 			{
 				Config: buildConfigWithArgs(testAccSakuraDataSourceSecretManager_byName, rand),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraSecretManagerExists("sakura_secretmanager.foobar", &vault),
+					testCheckSakuraSecretManagerExists("sakura_secret_manager.foobar", &vault),
 					testCheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
@@ -48,7 +48,7 @@ func TestAccSakuraDataSourceSecretManager_basic(t *testing.T) {
 			{
 				Config: buildConfigWithArgs(testAccSakuraDataSourceSecretManager_byResourceId, rand),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraSecretManagerExists("sakura_secretmanager.foobar", &vault),
+					testCheckSakuraSecretManagerExists("sakura_secret_manager.foobar", &vault),
 					testCheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
@@ -70,7 +70,7 @@ resource "sakura_kms" "foobar" {
   tags        = ["tag1", "tag2"]
 }
 
-resource "sakura_secretmanager" "foobar" {
+resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
@@ -79,10 +79,10 @@ resource "sakura_secretmanager" "foobar" {
   depends_on = [sakura_kms.foobar]
 }
 
-data "sakura_secretmanager" "foobar" {
+data "sakura_secret_manager" "foobar" {
   name = "{{ .arg0 }}"
 
-  depends_on = [sakura_secretmanager.foobar]
+  depends_on = [sakura_secret_manager.foobar]
 }`
 
 //nolint:gosec
@@ -93,7 +93,7 @@ resource "sakura_kms" "foobar" {
   tags        = ["tag1", "tag2"]
 }
 
-resource "sakura_secretmanager" "foobar" {
+resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
@@ -102,10 +102,10 @@ resource "sakura_secretmanager" "foobar" {
   depends_on = [sakura_kms.foobar]
 }
 
-data "sakura_secretmanager" "foobar" {
-  resource_id = sakura_secretmanager.foobar.id
+data "sakura_secret_manager" "foobar" {
+  resource_id = sakura_secret_manager.foobar.id
 
-  depends_on = [sakura_secretmanager.foobar]
+  depends_on = [sakura_secret_manager.foobar]
 }`
 
 func TestFilterSecretManagerByName(t *testing.T) {

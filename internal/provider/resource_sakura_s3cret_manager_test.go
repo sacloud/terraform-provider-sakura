@@ -27,7 +27,7 @@ import (
 )
 
 func TestAccSakuraSecretManager_basic(t *testing.T) {
-	resourceName := "sakura_secretmanager.foobar"
+	resourceName := "sakura_secret_manager.foobar"
 	rand := randomName()
 
 	var vault v1.Vault
@@ -69,7 +69,7 @@ func testCheckSakuraSecretManagerDestroy(s *terraform.State) error {
 	vaultOp := sm.NewVaultOp(client.secretmanagerClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_secretmanager" {
+		if rs.Type != "sakura_secret_manager" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -121,7 +121,7 @@ resource "sakura_kms" "foobar" {
   tags        = ["tag1", "tag2"]
 }
 
-resource "sakura_secretmanager" "foobar" {
+resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
@@ -138,7 +138,7 @@ resource "sakura_kms" "foobar" {
   tags        = ["tag1", "tag2"]
 }
 
-resource "sakura_secretmanager" "foobar" {
+resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description-updated"
   tags        = ["tag1-upd"]

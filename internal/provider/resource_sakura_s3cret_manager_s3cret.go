@@ -57,7 +57,7 @@ var _ resource.Resource = &secretManagerSecretResource{}
 var _ resource.ResourceWithConfigure = &secretManagerSecretResource{}
 
 func (r *secretManagerSecretResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_secretmanager_secret"
+	resp.TypeName = req.ProviderTypeName + "_secret_manager_secret"
 }
 
 func (r *secretManagerSecretResource) Schema(_ context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

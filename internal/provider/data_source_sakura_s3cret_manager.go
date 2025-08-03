@@ -59,7 +59,7 @@ var _ datasource.DataSource = &secretManagerDataSource{}
 var _ datasource.DataSourceWithConfigure = &secretManagerDataSource{}
 
 func (d *secretManagerDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_secretmanager"
+	resp.TypeName = req.ProviderTypeName + "_secret_manager"
 }
 
 func (d *secretManagerDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {

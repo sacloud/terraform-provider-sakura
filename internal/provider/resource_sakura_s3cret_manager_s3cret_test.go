@@ -27,7 +27,7 @@ import (
 )
 
 func TestAccSakuraSecretManagerSecret_basic(t *testing.T) {
-	resourceName := "sakura_secretmanager_secret.foobar"
+	resourceName := "sakura_secret_manager_secret.foobar"
 	rand := randomName()
 
 	var secret v1.Secret
@@ -63,7 +63,7 @@ func testCheckSakuraSecretManagerSecretDestroy(s *terraform.State) error {
 	ctx := context.Background()
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_secretmanager_secret" {
+		if rs.Type != "sakura_secret_manager_secret" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -113,7 +113,7 @@ resource "sakura_kms" "foobar" {
   description = "description"
 }
 
-resource "sakura_secretmanager" "foobar" {
+resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   kms_key_id  = sakura_kms.foobar.id
@@ -121,12 +121,12 @@ resource "sakura_secretmanager" "foobar" {
   depends_on = [sakura_kms.foobar]
 }
 
-resource "sakura_secretmanager_secret" "foobar" {
+resource "sakura_secret_manager_secret" "foobar" {
   name     = "{{ .arg0 }}"
   value    = "value1"
-  vault_id = sakura_secretmanager.foobar.id
+  vault_id = sakura_secret_manager.foobar.id
 
-  depends_on = [sakura_secretmanager.foobar]
+  depends_on = [sakura_secret_manager.foobar]
 }`
 
 //nolint:gosec
@@ -136,7 +136,7 @@ resource "sakura_kms" "foobar" {
   description = "description"
 }
 
-resource "sakura_secretmanager" "foobar" {
+resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   kms_key_id  = sakura_kms.foobar.id
@@ -144,10 +144,10 @@ resource "sakura_secretmanager" "foobar" {
   depends_on = [sakura_kms.foobar]
 }
 
-resource "sakura_secretmanager_secret" "foobar" {
+resource "sakura_secret_manager_secret" "foobar" {
   name     = "{{ .arg0 }}"
   value    = "value2"
-  vault_id = sakura_secretmanager.foobar.id
+  vault_id = sakura_secret_manager.foobar.id
 
-  depends_on = [sakura_secretmanager.foobar]
+  depends_on = [sakura_secret_manager.foobar]
 }`
