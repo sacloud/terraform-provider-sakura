@@ -17,20 +17,35 @@ package sakura
 import (
 	"context"
 
-	tftypes "github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 )
 
-func TagsToStringList(d tftypes.Set) []string {
+func sakuraCloudID(id string) iaastypes.ID {
+	return iaastypes.StringID(id)
+}
+
+func tlistToStrings(d types.List) []string {
 	var tags []string
 	for _, v := range d.Elements() {
-		if vStr, ok := v.(tftypes.String); ok && !vStr.IsNull() && !vStr.IsUnknown() {
+		if vStr, ok := v.(types.String); ok && !vStr.IsNull() && !vStr.IsUnknown() {
 			tags = append(tags, vStr.ValueString())
 		}
 	}
 	return tags
 }
 
-func TagsToTFSet(ctx context.Context, tags []string) tftypes.Set {
-	setValue, _ := tftypes.SetValueFrom(ctx, tftypes.StringType, tags)
+func tsetToStrings(d types.Set) []string {
+	var tags []string
+	for _, v := range d.Elements() {
+		if vStr, ok := v.(types.String); ok && !vStr.IsNull() && !vStr.IsUnknown() {
+			tags = append(tags, vStr.ValueString())
+		}
+	}
+	return tags
+}
+
+func stringsToTset(ctx context.Context, tags []string) types.Set {
+	setValue, _ := types.SetValueFrom(ctx, types.StringType, tags)
 	return setValue
 }

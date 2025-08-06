@@ -70,10 +70,12 @@ func (d *secretManagerDataSource) Schema(_ context.Context, req datasource.Schem
 			"tags":        schemaDataSourceTags("SecretManager vault"),
 			"name": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The name of the SecretManager vault.",
 			},
 			"resource_id": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The resource ID of the SecretManager vault.",
 			},
 			"kms_key_id": schema.StringAttribute{
@@ -120,7 +122,7 @@ func (d *secretManagerDataSource) Read(ctx context.Context, req datasource.ReadR
 	data.ID = types.StringValue(vault.ID)
 	data.Name = types.StringValue(vault.Name)
 	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = TagsToTFSet(ctx, vault.Tags)
+	data.Tags = stringsToTset(ctx, vault.Tags)
 	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
 
 	resp.State.Set(ctx, &data)

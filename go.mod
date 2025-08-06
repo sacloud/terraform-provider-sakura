@@ -12,8 +12,10 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.13.2
 	github.com/sacloud/api-client-go v0.3.2
 	github.com/sacloud/iaas-api-go v1.16.1
+	github.com/sacloud/iaas-service-go v1.12.1
 	github.com/sacloud/kms-api-go v0.2.2
 	github.com/sacloud/secretmanager-api-go v0.2.1
+	github.com/stretchr/testify v1.10.0
 
 )
 
@@ -23,6 +25,7 @@ require (
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/cloudflare/circl v1.6.1 // indirect
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/fatih/color v1.18.0 // indirect
 	github.com/fatih/structs v1.1.0 // indirect
@@ -63,6 +66,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/ogen-go/ogen v1.14.0 // indirect
 	github.com/oklog/run v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sacloud/go-http v0.1.9 // indirect
 	github.com/sacloud/packages-go v0.0.11 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
@@ -86,4 +90,5 @@ require (
 	google.golang.org/grpc v1.72.1 // indirect
 	google.golang.org/protobuf v1.36.6 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

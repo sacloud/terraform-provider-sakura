@@ -15,18 +15,20 @@
 package sakura
 
 import (
-	"fmt"
-
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
 )
 
 func schemaResourceId(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Computed:    true,
-		Description: fmt.Sprintf("The ID of the %s.", name),
+		Description: desc.Sprintf("The ID of the %s.", name),
 		PlanModifiers: []planmodifier.String{
 			stringplanmodifier.UseStateForUnknown(),
 		},
@@ -36,15 +38,29 @@ func schemaResourceId(name string) schema.Attribute {
 func schemaResourceName(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Required:    true,
-		Description: fmt.Sprintf("The name of the %s.", name),
+		Description: desc.Sprintf("The name of the %s.", name),
 	}
 }
 
 func schemaResourceDescription(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Optional:    true,
+		Computed:    true, // FrameworkはSDK v2とは違ってComputedをつけないとnullに値をセットしようとしてエラーになる
+		Description: desc.Sprintf("The description of the %s. %s", name, desc.Length(1, 512)),
+		Validators: []validator.String{
+			stringvalidator.LengthBetween(1, 512),
+		},
+	}
+}
+
+func schemaResourceIconID(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Optional:    true,
 		Computed:    true,
-		Description: fmt.Sprintf("The description of the %s.", name),
+		Description: desc.Sprintf("The icon id to attach to the %s", name),
+		Validators: []validator.String{
+			sakuraIDValidator(),
+		},
 	}
 }
 
@@ -52,7 +68,7 @@ func schemaResourceTags(name string) schema.Attribute {
 	return schema.SetAttribute{
 		ElementType: types.StringType,
 		Optional:    true,
-		Computed:    true, // FrameworkはSDK v2とは違ってComputedをつけないとnullに値をセットしようとしてエラーになる
-		Description: fmt.Sprintf("The tags of the %s.", name),
+		Computed:    true,
+		Description: desc.Sprintf("The tags of the %s.", name),
 	}
 }

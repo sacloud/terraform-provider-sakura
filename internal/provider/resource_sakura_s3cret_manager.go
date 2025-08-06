@@ -99,7 +99,7 @@ func (r *secretManagerResource) Create(ctx context.Context, req resource.CreateR
 	data.Name = types.StringValue(vault.Name)
 	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
 	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = TagsToTFSet(ctx, vault.Tags)
+	data.Tags = stringsToTset(ctx, vault.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -126,7 +126,7 @@ func (r *secretManagerResource) Read(ctx context.Context, req resource.ReadReque
 	data.Name = types.StringValue(vault.Name)
 	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
 	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = TagsToTFSet(ctx, vault.Tags)
+	data.Tags = stringsToTset(ctx, vault.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -156,7 +156,7 @@ func (r *secretManagerResource) Update(ctx context.Context, req resource.UpdateR
 	data.Name = types.StringValue(updateReq.Name)
 	data.KmsKeyID = types.StringValue(updateReq.KmsKeyID)
 	data.Description = types.StringValue(updateReq.Description.Value)
-	data.Tags = TagsToTFSet(ctx, updateReq.Tags)
+	data.Tags = stringsToTset(ctx, updateReq.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -191,7 +191,7 @@ func expandSecretManagerCreateVault(d *secretManagerResourceModel) v1.CreateVaul
 		Name:        d.Name.ValueString(),
 		KmsKeyID:    d.KmsKeyID.ValueString(),
 		Description: v1.NewOptString(d.Description.ValueString()),
-		Tags:        TagsToStringList(d.Tags),
+		Tags:        tsetToStrings(d.Tags),
 	}
 }
 
@@ -204,7 +204,7 @@ func expandSecretManagerUpdateVault(d *secretManagerResourceModel, before *v1.Va
 	if d.Tags.IsNull() {
 		req.Tags = before.Tags
 	} else {
-		req.Tags = TagsToStringList(d.Tags)
+		req.Tags = tsetToStrings(d.Tags)
 	}
 	if d.Description.IsNull() {
 		req.Description = before.Description

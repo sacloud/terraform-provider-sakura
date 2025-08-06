@@ -121,7 +121,7 @@ func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, re
 	data.Name = types.StringValue(createdKey.Name)
 	data.KeyOrigin = types.StringValue(string(createdKey.KeyOrigin))
 	data.Description = types.StringValue(createdKey.Description.Value)
-	data.Tags = TagsToTFSet(ctx, createdKey.Tags)
+	data.Tags = stringsToTset(ctx, createdKey.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -148,7 +148,7 @@ func (r *kmsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	data.Name = types.StringValue(key.Name)
 	data.KeyOrigin = types.StringValue(string(key.KeyOrigin))
 	data.Description = types.StringValue(key.Description.Value)
-	data.Tags = TagsToTFSet(ctx, key.Tags)
+	data.Tags = stringsToTset(ctx, key.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -221,7 +221,7 @@ func expandKMSCreateKey(d *kmsResourceModel) (v1.CreateKey, error) {
 	}
 
 	if !d.Tags.IsNull() {
-		req.Tags = TagsToStringList(d.Tags)
+		req.Tags = tsetToStrings(d.Tags)
 	}
 	if !d.Description.IsNull() {
 		req.Description = v1.NewOptString(d.Description.ValueString())
@@ -237,7 +237,7 @@ func expandKMSUpdateKey(d *kmsResourceModel, before *v1.Key) v1.Key {
 	}
 
 	if !d.Tags.IsNull() {
-		req.Tags = TagsToStringList(d.Tags)
+		req.Tags = tsetToStrings(d.Tags)
 	}
 	if !d.Description.IsNull() {
 		req.Description = v1.NewOptString(d.Description.ValueString())

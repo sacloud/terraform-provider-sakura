@@ -15,23 +15,37 @@
 package sakura
 
 import (
-	"fmt"
-
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
 )
 
 func schemaDataSourceId(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Computed:    true,
-		Description: fmt.Sprintf("The ID of the %s.", name),
+		Description: desc.Sprintf("The ID of the %s.", name),
+	}
+}
+
+func schemaDataSourceName(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Optional:    true,
+		Computed:    true,
+		Description: desc.Sprintf("The name of the %s.", name),
 	}
 }
 
 func schemaDataSourceDescription(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Computed:    true,
-		Description: fmt.Sprintf("The description of the %s.", name),
+		Description: desc.Sprintf("The description of the %s.", name),
+	}
+}
+
+func schemaDataSourceIconID(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Computed:    true,
+		Description: desc.Sprintf("The icon id attached to the %s", name),
 	}
 }
 
@@ -39,6 +53,6 @@ func schemaDataSourceTags(name string) schema.Attribute {
 	return schema.SetAttribute{
 		ElementType: types.StringType,
 		Computed:    true,
-		Description: fmt.Sprintf("The tags of the %s.", name),
+		Description: desc.Sprintf("The tags of the %s.", name),
 	}
 }
