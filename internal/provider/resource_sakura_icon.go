@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -24,17 +25,23 @@ import (
 // iconResourceModel defines the Terraform state and plan model for the Icon resource
 // (必要に応じてタグや他属性も追加)
 type iconResourceModel struct {
-	ID            types.String `tfsdk:"id"`
-	Name          types.String `tfsdk:"name"`
-	Source        types.String `tfsdk:"source"`
-	Base64Content types.String `tfsdk:"base64content"`
-	Tags          types.Set    `tfsdk:"tags"`
-	URL           types.String `tfsdk:"url"`
+	ID            types.String   `tfsdk:"id"`
+	Name          types.String   `tfsdk:"name"`
+	Source        types.String   `tfsdk:"source"`
+	Base64Content types.String   `tfsdk:"base64content"`
+	Tags          types.Set      `tfsdk:"tags"`
+	URL           types.String   `tfsdk:"url"`
+	Timeouts      timeouts.Value `tfsdk:"timeouts"`
 }
 
 type iconResource struct {
 	client *APIClient
 }
+
+var (
+	_ resource.Resource              = &iconResource{}
+	_ resource.ResourceWithConfigure = &iconResource{}
+)
 
 func NewIconResource() resource.Resource {
 	return &iconResource{}
@@ -52,7 +59,7 @@ func (r *iconResource) Configure(ctx context.Context, req resource.ConfigureRequ
 	r.client = apiclient
 }
 
-func (r *iconResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *iconResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":   schemaResourceId("Icon"),
@@ -79,6 +86,11 @@ func (r *iconResource) Schema(_ context.Context, _ resource.SchemaRequest, resp 
 				Description: "The URL for getting the icon's raw data.",
 			},
 		},
+		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+				Create: true, Update: true, Delete: true,
+			}),
+		},
 	}
 }
 
@@ -88,6 +100,9 @@ func (r *iconResource) Create(ctx context.Context, req resource.CreateRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutCreate(ctx, plan.Timeouts, timeout5min)
+	defer cancel()
 
 	iconOp := iaas.NewIconOp(r.client)
 	createReq, err := expandIconCreateRequest(&plan)
@@ -128,6 +143,9 @@ func (r *iconResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
+	ctx, cancel := setupTimeoutUpdate(ctx, plan.Timeouts, timeout5min)
+	defer cancel()
+
 	iconOp := iaas.NewIconOp(r.client)
 	_, err := iconOp.Read(ctx, sakuraCloudID(plan.ID.ValueString()))
 	if err != nil {
@@ -156,6 +174,9 @@ func (r *iconResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutDelete(ctx, state.Timeouts, timeout5min)
+	defer cancel()
 
 	iconOp := iaas.NewIconOp(r.client)
 	icon := getIcon(ctx, r.client, sakuraCloudID(state.ID.ValueString()), &resp.State, &resp.Diagnostics)

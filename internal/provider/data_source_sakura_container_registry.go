@@ -22,21 +22,6 @@ import (
 	"github.com/sacloud/iaas-api-go"
 )
 
-/*
-	type containerRegistryDataSourceModel struct {
-		ID             types.String                  `tfsdk:"id"`
-		Name           types.String                  `tfsdk:"name"`
-		AccessLevel    types.String                  `tfsdk:"access_level"`
-		VirtualDomain  types.String                  `tfsdk:"virtual_domain"`
-		SubDomainLabel types.String                  `tfsdk:"subdomain_label"`
-		FQDN           types.String                  `tfsdk:"fqdn"`
-		User           []*containerRegistryUserModel `tfsdk:"user"`
-		IconID         types.String                  `tfsdk:"icon_id"`
-		Description    types.String                  `tfsdk:"description"`
-		Tags           types.Set                     `tfsdk:"tags"`
-		Filter         *filterBlockModel             `tfsdk:"filter"`
-	}
-*/
 type containerRegistryDataSourceModel struct {
 	containerRegistryResourceModel
 	Filter *filterBlockModel `tfsdk:"filter"`
@@ -45,6 +30,11 @@ type containerRegistryDataSourceModel struct {
 type containerRegistryDataSource struct {
 	client *APIClient
 }
+
+var (
+	_ datasource.DataSource              = &containerRegistryDataSource{}
+	_ datasource.DataSourceWithConfigure = &containerRegistryDataSource{}
+)
 
 func NewContainerRegistryDataSource() datasource.DataSource {
 	return &containerRegistryDataSource{}
@@ -55,16 +45,10 @@ func (d *containerRegistryDataSource) Metadata(_ context.Context, req datasource
 }
 
 func (d *containerRegistryDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
+	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
 		return
 	}
-
-	apiclient, ok := req.ProviderData.(*APIClient)
-	if !ok {
-		resp.Diagnostics.AddError("Unexpected ProviderData type", "Expected *APIClient.")
-		return
-	}
-
 	d.client = apiclient
 }
 

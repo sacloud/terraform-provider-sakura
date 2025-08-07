@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -45,6 +46,7 @@ type containerRegistryResourceModel struct {
 	Description    types.String                  `tfsdk:"description"`
 	Tags           types.Set                     `tfsdk:"tags"`
 	User           []*containerRegistryUserModel `tfsdk:"user"`
+	Timeouts       timeouts.Value                `tfsdk:"timeouts"`
 }
 
 type containerRegistryUserModel struct {
@@ -56,6 +58,11 @@ type containerRegistryUserModel struct {
 type containerRegistryResource struct {
 	client *APIClient
 }
+
+var (
+	_ resource.Resource              = &containerRegistryResource{}
+	_ resource.ResourceWithConfigure = &containerRegistryResource{}
+)
 
 func NewContainerRegistryResource() resource.Resource {
 	return &containerRegistryResource{}
@@ -79,7 +86,7 @@ func (r *containerRegistryResource) Configure(ctx context.Context, req resource.
 	r.client = apiclient
 }
 
-func (r *containerRegistryResource) Schema(_ context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *containerRegistryResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          schemaResourceId("Container Registry"),
@@ -147,6 +154,9 @@ func (r *containerRegistryResource) Schema(_ context.Context, req resource.Schem
 					},
 				},
 			},
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+				Create: true, Update: true, Delete: true,
+			}),
 		},
 	}
 }
@@ -157,6 +167,9 @@ func (r *containerRegistryResource) Create(ctx context.Context, req resource.Cre
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutCreate(ctx, plan.Timeouts, timeout5min)
+	defer cancel()
 
 	builder := expandContainerRegistryBuilder(&plan, r.client, "")
 	reg, err := builder.Build(ctx)
@@ -186,30 +199,6 @@ func (r *containerRegistryResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 	state.updateState(ctx, r.client, reg, true, &resp.Diagnostics)
-	/*
-		regOp := iaas.NewContainerRegistryOp(r.client)
-		reg, err := regOp.Read(ctx, sakuraCloudID(state.ID.ValueString()))
-		if err != nil {
-			if iaas.IsNotFoundError(err) {
-				resp.State.RemoveResource(ctx)
-				return
-			}
-			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud ContainerRegistry[%s]: %s", state.ID.ValueString(), err))
-			return
-		}
-
-
-			state.ID = types.StringValue(reg.ID.String())
-			state.Name = types.StringValue(reg.Name)
-			state.AccessLevel = types.StringValue(string(reg.AccessLevel))
-			state.VirtualDomain = types.StringValue(reg.VirtualDomain)
-			state.SubDomainLabel = types.StringValue(reg.SubDomainLabel)
-			state.FQDN = types.StringValue(reg.FQDN)
-			state.IconID = types.StringValue(reg.IconID.String())
-			state.Description = types.StringValue(reg.Description)
-			state.Tags = stringsToTset(ctx, reg.Tags)
-			state.User = flattenContainerRegistryUsers(state.User, getContainerRegistryUsers(ctx, r.client, reg), true)
-	*/
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
@@ -220,6 +209,9 @@ func (r *containerRegistryResource) Update(ctx context.Context, req resource.Upd
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutUpdate(ctx, plan.Timeouts, timeout5min)
+	defer cancel()
 
 	regOp := iaas.NewContainerRegistryOp(r.client)
 	reg, err := regOp.Read(ctx, sakuraCloudID(plan.ID.ValueString()))
@@ -249,6 +241,9 @@ func (r *containerRegistryResource) Delete(ctx context.Context, req resource.Del
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutDelete(ctx, state.Timeouts, timeout5min)
+	defer cancel()
 
 	regOp := iaas.NewContainerRegistryOp(r.client)
 	gotReg := getContainerRegistry(ctx, r.client, sakuraCloudID(state.ID.ValueString()), &resp.State, &resp.Diagnostics)

@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -31,35 +32,34 @@ import (
 	v1 "github.com/sacloud/kms-api-go/apis/v1"
 )
 
-// Resource Model
 type kmsResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	KeyOrigin   types.String `tfsdk:"key_origin"`
-	PlainKey    types.String `tfsdk:"plain_key"`
-	Description types.String `tfsdk:"description"`
-	Tags        types.Set    `tfsdk:"tags"`
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	KeyOrigin   types.String   `tfsdk:"key_origin"`
+	PlainKey    types.String   `tfsdk:"plain_key"`
+	Description types.String   `tfsdk:"description"`
+	Tags        types.Set      `tfsdk:"tags"`
+	Timeouts    timeouts.Value `tfsdk:"timeouts"`
 }
 
 type kmsResource struct {
 	client *v1.Client
 }
 
+var (
+	_ resource.Resource              = &kmsResource{}
+	_ resource.ResourceWithConfigure = &kmsResource{}
+)
+
 func NewKMSResource() resource.Resource {
 	return &kmsResource{}
 }
 
 func (r *kmsResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
+	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
 		return
 	}
-
-	apiclient, ok := req.ProviderData.(*APIClient)
-	if !ok {
-		resp.Diagnostics.AddError("Unexpected ProviderData type", "Expected *APIClient.")
-		return
-	}
-
 	r.client = apiclient.kmsClient
 }
 
@@ -67,7 +67,7 @@ func (r *kmsResource) Metadata(_ context.Context, req resource.MetadataRequest, 
 	resp.TypeName = req.ProviderTypeName + "_kms"
 }
 
-func (r *kmsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          schemaDataSourceId("KMS key"),
@@ -89,7 +89,11 @@ func (r *kmsResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *
 				Description: "Plain key for imported KMS key. Required when `key_origin` is 'imported'.",
 			},
 		},
-		// TODO: timeouts
+		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+				Create: true, Update: true, Delete: true,
+			}),
+		},
 	}
 }
 
@@ -98,13 +102,16 @@ func (r *kmsResource) ImportState(ctx context.Context, req resource.ImportStateR
 }
 
 func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data kmsResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var plan kmsResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	keyReq, err := expandKMSCreateKey(&data)
+	ctx, cancel := setupTimeoutCreate(ctx, plan.Timeouts, timeout5min)
+	defer cancel()
+
+	keyReq, err := expandKMSCreateKey(&plan)
 	if err != nil {
 		resp.Diagnostics.AddError("KMS Create Key Expansion Error", err.Error())
 		return
@@ -117,13 +124,13 @@ func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	data.ID = types.StringValue(createdKey.ID)
-	data.Name = types.StringValue(createdKey.Name)
-	data.KeyOrigin = types.StringValue(string(createdKey.KeyOrigin))
-	data.Description = types.StringValue(createdKey.Description.Value)
-	data.Tags = stringsToTset(ctx, createdKey.Tags)
+	plan.ID = types.StringValue(createdKey.ID)
+	plan.Name = types.StringValue(createdKey.Name)
+	plan.KeyOrigin = types.StringValue(string(createdKey.KeyOrigin))
+	plan.Description = types.StringValue(createdKey.Description.Value)
+	plan.Tags = stringsToTset(ctx, createdKey.Tags)
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *kmsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -160,6 +167,9 @@ func (r *kmsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
+	ctx, cancel := setupTimeoutUpdate(ctx, data.Timeouts, timeout5min)
+	defer cancel()
+
 	keyOp := kms.NewKeyOp(r.client)
 	key, err := keyOp.Read(ctx, data.ID.ValueString())
 	if err != nil {
@@ -182,6 +192,9 @@ func (r *kmsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutDelete(ctx, data.Timeouts, timeout5min)
+	defer cancel()
 
 	keyOp := kms.NewKeyOp(r.client)
 	key, err := keyOp.Read(ctx, data.ID.ValueString())

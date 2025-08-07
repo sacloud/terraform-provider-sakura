@@ -35,28 +35,26 @@ type secretManagerDataSourceModel struct {
 	KmsKeyID    types.String `tfsdk:"kms_key_id"`
 }
 
-func NewSecretManagerDataSource() datasource.DataSource {
-	return &secretManagerDataSource{}
-}
-
 type secretManagerDataSource struct {
 	client *v1.Client
 }
 
+var (
+	_ datasource.DataSource              = &secretManagerDataSource{}
+	_ datasource.DataSourceWithConfigure = &secretManagerDataSource{}
+)
+
+func NewSecretManagerDataSource() datasource.DataSource {
+	return &secretManagerDataSource{}
+}
+
 func (d *secretManagerDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	apiclient, ok := req.ProviderData.(*APIClient)
-	if !ok {
-		resp.Diagnostics.AddError("Unexpected ProviderData type", "Expected *APIClient.")
+	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
 		return
 	}
 	d.client = apiclient.secretmanagerClient
 }
-
-var _ datasource.DataSource = &secretManagerDataSource{}
-var _ datasource.DataSourceWithConfigure = &secretManagerDataSource{}
 
 func (d *secretManagerDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_secret_manager"

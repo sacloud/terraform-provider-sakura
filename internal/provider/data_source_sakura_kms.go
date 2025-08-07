@@ -43,24 +43,18 @@ type kmsDataSource struct {
 	client *v1.Client
 }
 
-func (d *kmsDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	apiclient, ok := req.ProviderData.(*APIClient)
-	if !ok {
-		resp.Diagnostics.AddError("Unexpected ProviderData type", "Expected *APIClient.")
-		return
-	}
-
-	d.client = apiclient.kmsClient
-}
-
 var (
 	_ datasource.DataSource              = &kmsDataSource{}
 	_ datasource.DataSourceWithConfigure = &kmsDataSource{}
 )
+
+func (d *kmsDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
+		return
+	}
+	d.client = apiclient.kmsClient
+}
 
 func (d *kmsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_kms"

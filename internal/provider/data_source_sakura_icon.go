@@ -39,6 +39,11 @@ type iconDataSource struct {
 	client *APIClient
 }
 
+var (
+	_ datasource.DataSource              = &iconDataSource{}
+	_ datasource.DataSourceWithConfigure = &iconDataSource{}
+)
+
 func (d *iconDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
@@ -46,11 +51,6 @@ func (d *iconDataSource) Configure(ctx context.Context, req datasource.Configure
 	}
 	d.client = apiclient
 }
-
-var (
-	_ datasource.DataSource              = &kmsDataSource{}
-	_ datasource.DataSourceWithConfigure = &kmsDataSource{}
-)
 
 func (d *iconDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_icon"

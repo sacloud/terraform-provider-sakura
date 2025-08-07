@@ -32,7 +32,10 @@ type bridgeDataSource struct {
 	client *APIClient
 }
 
-var _ datasource.DataSource = &bridgeDataSource{}
+var (
+	_ datasource.DataSource              = &bridgeDataSource{}
+	_ datasource.DataSourceWithConfigure = &bridgeDataSource{}
+)
 
 func NewBridgeDataSource() datasource.DataSource {
 	return &bridgeDataSource{}

@@ -30,28 +30,26 @@ type secretManagerSecretDataSourceModel struct {
 	Value   types.String `tfsdk:"value"`
 }
 
-func NewSecretManagerSecretDataSource() datasource.DataSource {
-	return &secretManagerSecretDataSource{}
-}
-
 type secretManagerSecretDataSource struct {
 	client *v1.Client
 }
 
+var (
+	_ datasource.DataSource              = &secretManagerSecretDataSource{}
+	_ datasource.DataSourceWithConfigure = &secretManagerSecretDataSource{}
+)
+
+func NewSecretManagerSecretDataSource() datasource.DataSource {
+	return &secretManagerSecretDataSource{}
+}
+
 func (d *secretManagerSecretDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	apiclient, ok := req.ProviderData.(*APIClient)
-	if !ok {
-		resp.Diagnostics.AddError("Unexpected ProviderData type", "Expected *APIClient.")
+	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
 		return
 	}
 	d.client = apiclient.secretmanagerClient
 }
-
-var _ datasource.DataSource = &secretManagerSecretDataSource{}
-var _ datasource.DataSourceWithConfigure = &secretManagerSecretDataSource{}
 
 func (d *secretManagerSecretDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_secret_manager_secret"

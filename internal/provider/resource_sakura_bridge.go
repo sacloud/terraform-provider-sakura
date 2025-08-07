@@ -18,6 +18,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -27,18 +28,21 @@ import (
 )
 
 type bridgeResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Zone        types.String `tfsdk:"zone"`
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	Description types.String   `tfsdk:"description"`
+	Zone        types.String   `tfsdk:"zone"`
+	Timeouts    timeouts.Value `tfsdk:"timeouts"`
 }
 
 type bridgeResource struct {
 	client *APIClient
 }
 
-var _ resource.Resource = &bridgeResource{}
-var _ resource.ResourceWithImportState = &bridgeResource{}
+var (
+	_ resource.Resource                = &bridgeResource{}
+	_ resource.ResourceWithImportState = &bridgeResource{}
+)
 
 func NewBridgeResource() resource.Resource {
 	return &bridgeResource{}
@@ -56,13 +60,18 @@ func (r *bridgeResource) Configure(ctx context.Context, req resource.ConfigureRe
 	r.client = apiclient
 }
 
-func (r *bridgeResource) Schema(_ context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *bridgeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          schemaResourceId("Bridge"),
 			"name":        schemaResourceName("Bridge"),
 			"description": schemaResourceDescription("Bridge"),
 			"zone":        schemaResourceZone("Bridge"),
+		},
+		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+				Create: true, Update: true, Delete: true,
+			}),
 		},
 	}
 }
@@ -77,6 +86,9 @@ func (r *bridgeResource) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutCreate(ctx, plan.Timeouts, timeout20min)
+	defer cancel()
 
 	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -131,6 +143,9 @@ func (r *bridgeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
+	ctx, cancel := setupTimeoutUpdate(ctx, plan.Timeouts, timeout20min)
+	defer cancel()
+
 	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -156,6 +171,9 @@ func (r *bridgeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutDelete(ctx, state.Timeouts, timeout20min)
+	defer cancel()
 
 	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {

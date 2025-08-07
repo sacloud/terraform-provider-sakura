@@ -17,6 +17,7 @@ package sakura
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -27,28 +28,30 @@ import (
 )
 
 type secretManagerResourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	KmsKeyID    types.String `tfsdk:"kms_key_id"`
-	Description types.String `tfsdk:"description"`
-	Tags        types.Set    `tfsdk:"tags"`
-}
-
-func NewSecretManagerResource() resource.Resource {
-	return &secretManagerResource{}
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	KmsKeyID    types.String   `tfsdk:"kms_key_id"`
+	Description types.String   `tfsdk:"description"`
+	Tags        types.Set      `tfsdk:"tags"`
+	Timeouts    timeouts.Value `tfsdk:"timeouts"`
 }
 
 type secretManagerResource struct {
 	client *v1.Client
 }
 
+var (
+	_ resource.Resource              = &secretManagerResource{}
+	_ resource.ResourceWithConfigure = &secretManagerResource{}
+)
+
+func NewSecretManagerResource() resource.Resource {
+	return &secretManagerResource{}
+}
+
 func (r *secretManagerResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-	apiclient, ok := req.ProviderData.(*APIClient)
-	if !ok {
-		resp.Diagnostics.AddError("Unexpected ProviderData type", "Expected *APIClient.")
+	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
 		return
 	}
 	r.client = apiclient.secretmanagerClient
@@ -61,7 +64,7 @@ func (r *secretManagerResource) Metadata(_ context.Context, req resource.Metadat
 	resp.TypeName = req.ProviderTypeName + "_secret_manager"
 }
 
-func (r *secretManagerResource) Schema(_ context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          schemaResourceId("SecretManager vault"),
@@ -72,6 +75,11 @@ func (r *secretManagerResource) Schema(_ context.Context, req resource.SchemaReq
 				Required:    true,
 				Description: "KMS key ID for the SecretManager vault.",
 			},
+		},
+		Blocks: map[string]schema.Block{
+			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+				Create: true, Update: true, Delete: true,
+			}),
 		},
 	}
 }
@@ -86,6 +94,9 @@ func (r *secretManagerResource) Create(ctx context.Context, req resource.CreateR
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutCreate(ctx, data.Timeouts, timeout5min)
+	defer cancel()
 
 	createReq := expandSecretManagerCreateVault(&data)
 	vaultOp := sm.NewVaultOp(r.client)
@@ -138,6 +149,9 @@ func (r *secretManagerResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
+	ctx, cancel := setupTimeoutUpdate(ctx, data.Timeouts, timeout5min)
+	defer cancel()
+
 	vaultOp := sm.NewVaultOp(r.client)
 	vault, err := vaultOp.Read(ctx, data.ID.ValueString())
 	if err != nil {
@@ -167,6 +181,9 @@ func (r *secretManagerResource) Delete(ctx context.Context, req resource.DeleteR
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutDelete(ctx, data.Timeouts, timeout5min)
+	defer cancel()
 
 	vaultOp := sm.NewVaultOp(r.client)
 	vault, err := vaultOp.Read(ctx, data.ID.ValueString())
