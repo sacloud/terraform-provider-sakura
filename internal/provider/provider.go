@@ -199,6 +199,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		NewSecretManagerSecretDataSource,
 		NewContainerRegistryDataSource,
 		NewIconDataSource,
+		NewBridgeDataSource,
 		// ...他のデータソースも同様に追加...
 	}
 }
@@ -210,6 +211,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		NewSecretManagerSecretResource,
 		NewContainerRegistryResource,
 		NewIconResource,
+		NewBridgeResource,
 		// ...他のリソースも同様に追加...
 	}
 }

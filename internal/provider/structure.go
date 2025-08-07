@@ -16,14 +16,31 @@ package sakura
 
 import (
 	"context"
+	"fmt"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 )
 
 func sakuraCloudID(id string) iaastypes.ID {
 	return iaastypes.StringID(id)
+}
+
+func getZone(zone basetypes.StringValue, client *APIClient, diags *diag.Diagnostics) string {
+	if zone.IsNull() || zone.IsUnknown() {
+		return client.defaultZone
+	}
+
+	z := zone.ValueString()
+	if slices.Contains(client.zones, z) {
+		return z
+	}
+
+	diags.AddError("Unexpected zone value", fmt.Sprintf("Invalid zone: %s", z))
+	return ""
 }
 
 func getApiClientFromProvider(providerData any, diags *diag.Diagnostics) *APIClient {

@@ -72,3 +72,14 @@ func schemaResourceTags(name string) schema.Attribute {
 		Description: desc.Sprintf("The tags of the %s.", name),
 	}
 }
+
+func schemaResourceZone(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Optional:    true,
+		Computed:    true,
+		Description: desc.Sprintf("The name of zone that the %s will be created (e.g. `is1a`, `tk1a`)", name),
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.RequiresReplaceIfConfigured(),
+		},
+	}
+}

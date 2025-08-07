@@ -56,3 +56,11 @@ func schemaDataSourceTags(name string) schema.Attribute {
 		Description: desc.Sprintf("The tags of the %s.", name),
 	}
 }
+
+func schemaDataSourceZone(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Optional:    true,
+		Computed:    true,
+		Description: desc.Sprintf("The name of zone that the %s is in (e.g. `is1a`, `tk1a`)", name),
+	}
+}
