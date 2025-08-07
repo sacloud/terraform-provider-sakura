@@ -17,12 +17,27 @@ package sakura
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 )
 
 func sakuraCloudID(id string) iaastypes.ID {
 	return iaastypes.StringID(id)
+}
+
+func getApiClientFromProvider(providerData any, diags *diag.Diagnostics) *APIClient {
+	if providerData == nil {
+		return nil
+	}
+
+	apiclient, ok := providerData.(*APIClient)
+	if !ok {
+		diags.AddError("Unexpected ProviderData type", "Expected *APIClient.")
+		return nil
+	}
+
+	return apiclient
 }
 
 func tlistToStrings(d types.List) []string {
