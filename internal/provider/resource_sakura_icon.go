@@ -193,7 +193,7 @@ func (d *iconResourceModel) updateState(ctx context.Context, icon *iaas.Icon) {
 	d.ID = types.StringValue(icon.ID.String())
 	d.Name = types.StringValue(icon.Name)
 	d.URL = types.StringValue(icon.URL)
-	d.Tags = stringsToTset(ctx, icon.Tags)
+	d.Tags = stringsToTset(icon.Tags)
 }
 
 func getIcon(ctx context.Context, client *APIClient, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Icon {

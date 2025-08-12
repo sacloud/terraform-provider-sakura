@@ -121,7 +121,7 @@ func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	data.ID = types.StringValue(key.ID)
 	data.Name = types.StringValue(key.Name)
 	data.Description = types.StringValue(key.Description.Value)
-	data.Tags = stringsToTset(ctx, key.Tags)
+	data.Tags = stringsToTset(key.Tags)
 	data.KeyOrigin = types.StringValue(string(key.KeyOrigin))
 
 	resp.State.Set(ctx, &data)

@@ -110,7 +110,7 @@ func (r *secretManagerResource) Create(ctx context.Context, req resource.CreateR
 	data.Name = types.StringValue(vault.Name)
 	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
 	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = stringsToTset(ctx, vault.Tags)
+	data.Tags = stringsToTset(vault.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -137,7 +137,7 @@ func (r *secretManagerResource) Read(ctx context.Context, req resource.ReadReque
 	data.Name = types.StringValue(vault.Name)
 	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
 	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = stringsToTset(ctx, vault.Tags)
+	data.Tags = stringsToTset(vault.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -170,7 +170,7 @@ func (r *secretManagerResource) Update(ctx context.Context, req resource.UpdateR
 	data.Name = types.StringValue(updateReq.Name)
 	data.KmsKeyID = types.StringValue(updateReq.KmsKeyID)
 	data.Description = types.StringValue(updateReq.Description.Value)
-	data.Tags = stringsToTset(ctx, updateReq.Tags)
+	data.Tags = stringsToTset(updateReq.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

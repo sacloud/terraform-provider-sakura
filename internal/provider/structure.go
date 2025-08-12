@@ -29,6 +29,19 @@ func sakuraCloudID(id string) iaastypes.ID {
 	return iaastypes.StringID(id)
 }
 
+func expandSakuraCloudID(d basetypes.StringValue) iaastypes.ID {
+	if d.IsNull() || d.IsUnknown() {
+		return iaastypes.ID(0)
+	}
+
+	id := d.ValueString()
+	if id == "" {
+		return iaastypes.ID(0)
+	}
+
+	return sakuraCloudID(id)
+}
+
 func getZone(zone basetypes.StringValue, client *APIClient, diags *diag.Diagnostics) string {
 	if zone.IsNull() || zone.IsUnknown() {
 		return client.defaultZone
@@ -58,6 +71,10 @@ func getApiClientFromProvider(providerData any, diags *diag.Diagnostics) *APICli
 }
 
 func tlistToStrings(d types.List) []string {
+	if d.IsNull() || d.IsUnknown() {
+		return nil
+	}
+
 	var tags []string
 	for _, v := range d.Elements() {
 		if vStr, ok := v.(types.String); ok && !vStr.IsNull() && !vStr.IsUnknown() {
@@ -68,6 +85,10 @@ func tlistToStrings(d types.List) []string {
 }
 
 func tsetToStrings(d types.Set) []string {
+	if d.IsNull() || d.IsUnknown() {
+		return nil
+	}
+
 	var tags []string
 	for _, v := range d.Elements() {
 		if vStr, ok := v.(types.String); ok && !vStr.IsNull() && !vStr.IsUnknown() {
@@ -77,7 +98,8 @@ func tsetToStrings(d types.Set) []string {
 	return tags
 }
 
-func stringsToTset(ctx context.Context, tags []string) types.Set {
-	setValue, _ := types.SetValueFrom(ctx, types.StringType, tags)
+func stringsToTset(tags []string) types.Set {
+	// types.SetValueでは内部でcontext.Background()を呼び出しているため、同じアプローチを採用
+	setValue, _ := types.SetValueFrom(context.Background(), types.StringType, tags)
 	return setValue
 }

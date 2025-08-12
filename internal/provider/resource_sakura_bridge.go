@@ -187,12 +187,12 @@ func (r *bridgeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("Could not read Bridge: %s", err))
+		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("Could not read Bridge[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 
 	if err := cleanup.DeleteBridge(ctx, r.client, zone, r.client.zones, bridge.ID, r.client.checkReferencedOption()); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("Could not delete Bridge: %s", err))
+		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("Could not delete Bridge[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 

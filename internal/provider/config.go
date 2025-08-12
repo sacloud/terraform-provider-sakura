@@ -32,6 +32,8 @@ import (
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/api"
 	"github.com/sacloud/iaas-api-go/helper/query"
+	"github.com/sacloud/simplemq-api-go"
+	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 
 	kms "github.com/sacloud/kms-api-go"
 	kmsapi "github.com/sacloud/kms-api-go/apis/v1"
@@ -92,6 +94,7 @@ type APIClient struct {
 	CallerOptions                    *client.Options
 	kmsClient                        *kmsapi.Client
 	secretmanagerClient              *smapi.Client
+	simplemqClient                   *queue.Client
 }
 
 func (c *APIClient) checkReferencedOption() query.CheckReferencedOption {
@@ -231,6 +234,10 @@ func (c *Config) NewClient() (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	simplemqClient, err := simplemq.NewQueueClient(client.WithOptions(callerOptions))
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -243,6 +250,7 @@ func (c *Config) NewClient() (*APIClient, error) {
 		CallerOptions:                    callerOptions,
 		kmsClient:                        kmsClient,
 		secretmanagerClient:              smClient,
+		simplemqClient:                   simplemqClient,
 	}, nil
 }
 

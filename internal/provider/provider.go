@@ -27,6 +27,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	apiprof "github.com/sacloud/api-client-go/profile"
+	"github.com/sacloud/packages-go/envvar"
+	"github.com/sacloud/packages-go/mutexkv"
 )
 
 type sakuraProviderModel struct {
@@ -51,12 +53,15 @@ func New(version string) func() provider.Provider {
 	}
 }
 
+var sakuraMutexKV = mutexkv.NewMutexKV()
+
 type sakuraProvider struct {
 	version string
 	client  *APIClient
 }
 
 func (p *sakuraProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
+	//resp.TypeName = "sakuracloud"
 	resp.TypeName = "sakura"
 	resp.Version = p.version
 }
@@ -98,7 +103,6 @@ func getIntValueFromEnv(resp *provider.ConfigureResponse, envVar string, default
 }
 
 func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-
 	profile, ok := os.LookupEnv("SAKURACLOUD_PROFILE")
 	if !ok {
 		profile = apiprof.DefaultProfileName
@@ -163,6 +167,9 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 			zones = append(zones, v.(types.String).ValueString())
 		}
 	}
+	if len(zones) == 0 {
+		zones = envvar.StringSliceFromEnv("SAKURACLOUD_ZONES", nil)
+	}
 
 	cfg := Config{
 		Profile:             profile,
@@ -200,6 +207,8 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		NewContainerRegistryDataSource,
 		NewIconDataSource,
 		NewBridgeDataSource,
+		NewSimpleMQDataSource,
+		NewSwitchDataSource,
 		// ...他のデータソースも同様に追加...
 	}
 }
@@ -212,6 +221,8 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		NewContainerRegistryResource,
 		NewIconResource,
 		NewBridgeResource,
+		NewSimpleMQResource,
+		NewSwitchResource,
 		// ...他のリソースも同様に追加...
 	}
 }

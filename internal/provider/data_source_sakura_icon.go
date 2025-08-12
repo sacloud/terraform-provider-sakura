@@ -100,7 +100,7 @@ func (d *iconDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	icon := res.Icons[0]
 	state.ID = types.StringValue(icon.ID.String())
 	state.Name = types.StringValue(icon.Name)
-	state.Tags = stringsToTset(ctx, icon.Tags)
+	state.Tags = stringsToTset(icon.Tags)
 	state.URL = types.StringValue(icon.URL)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)

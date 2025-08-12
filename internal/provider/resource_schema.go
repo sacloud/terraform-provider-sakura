@@ -39,6 +39,9 @@ func schemaResourceName(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Required:    true,
 		Description: desc.Sprintf("The name of the %s.", name),
+		Validators: []validator.String{
+			stringvalidator.LengthBetween(1, 64),
+		},
 	}
 }
 

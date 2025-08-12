@@ -128,7 +128,7 @@ func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, re
 	plan.Name = types.StringValue(createdKey.Name)
 	plan.KeyOrigin = types.StringValue(string(createdKey.KeyOrigin))
 	plan.Description = types.StringValue(createdKey.Description.Value)
-	plan.Tags = stringsToTset(ctx, createdKey.Tags)
+	plan.Tags = stringsToTset(createdKey.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -155,7 +155,7 @@ func (r *kmsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	data.Name = types.StringValue(key.Name)
 	data.KeyOrigin = types.StringValue(string(key.KeyOrigin))
 	data.Description = types.StringValue(key.Description.Value)
-	data.Tags = stringsToTset(ctx, key.Tags)
+	data.Tags = stringsToTset(key.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

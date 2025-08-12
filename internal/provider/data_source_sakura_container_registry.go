@@ -127,25 +127,6 @@ func (d *containerRegistryDataSource) Read(ctx context.Context, req datasource.R
 
 	target := res.ContainerRegistries[0]
 	state.updateState(ctx, d.client, target, true, &resp.Diagnostics)
-	/*
-		users := getContainerRegistryUsers(ctx, d.client, target)
-		if users == nil {
-			resp.Diagnostics.AddError("Read Error", "could not get users of SakuraCloud ContainerRegistry")
-			return
-		}
-
-
-		state.ID = types.StringValue(target.ID.String())
-		state.Name = types.StringValue(target.Name)
-		state.AccessLevel = types.StringValue(string(target.AccessLevel))
-		state.VirtualDomain = types.StringValue(target.VirtualDomain)
-		state.SubDomainLabel = types.StringValue(target.SubDomainLabel)
-		state.FQDN = types.StringValue(target.FQDN)
-		state.IconID = types.StringValue(target.IconID.String())
-		state.Description = types.StringValue(target.Description)
-		state.Tags = stringsToTset(ctx, target.Tags)
-		state.User = flattenContainerRegistryUsers(state.User, users, false)
-	*/
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

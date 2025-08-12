@@ -22,9 +22,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-var _ validator.String = stringSakuraIDTypeValidator{}
-
 type stringSakuraIDTypeValidator struct{}
+
+var _ validator.String = stringSakuraIDTypeValidator{}
 
 func (v stringSakuraIDTypeValidator) Description(_ context.Context) string {
 	return fmt.Sprintf("string must be a valid Sakura Cloud ID (number only)")
@@ -49,4 +49,64 @@ func (v stringSakuraIDTypeValidator) ValidateString(ctx context.Context, req val
 
 func sakuraIDValidator() stringSakuraIDTypeValidator {
 	return stringSakuraIDTypeValidator{}
+}
+
+type stringCustomFuncValidator struct {
+	fun func(value string) error
+}
+
+var _ validator.String = stringCustomFuncValidator{}
+
+func (v stringCustomFuncValidator) Description(_ context.Context) string {
+	return "Validates a string attribute using a custom function"
+}
+
+func (v stringCustomFuncValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v stringCustomFuncValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() {
+		return
+	}
+
+	value := req.ConfigValue.ValueString()
+	if err := v.fun(value); err != nil {
+		resp.Diagnostics.AddAttributeError(req.Path, fmt.Sprintf("invalid value: %s", value), err.Error())
+		return
+	}
+}
+
+func stringFuncValidator(fun func(value string) error) stringCustomFuncValidator {
+	return stringCustomFuncValidator{fun: fun}
+}
+
+type int64CustomFuncValidator struct {
+	fun func(value int64) error
+}
+
+var _ validator.Int64 = int64CustomFuncValidator{}
+
+func (v int64CustomFuncValidator) Description(_ context.Context) string {
+	return "Validates an int64 attribute using a custom function"
+}
+
+func (v int64CustomFuncValidator) MarkdownDescription(ctx context.Context) string {
+	return v.Description(ctx)
+}
+
+func (v int64CustomFuncValidator) ValidateInt64(ctx context.Context, req validator.Int64Request, resp *validator.Int64Response) {
+	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() {
+		return
+	}
+
+	value := req.ConfigValue.ValueInt64()
+	if err := v.fun(value); err != nil {
+		resp.Diagnostics.AddAttributeError(req.Path, fmt.Sprintf("invalid value: %d", value), err.Error())
+		return
+	}
+}
+
+func int64FuncValidator(fun func(value int64) error) int64CustomFuncValidator {
+	return int64CustomFuncValidator{fun: fun}
 }

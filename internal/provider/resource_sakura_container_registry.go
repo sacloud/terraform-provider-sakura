@@ -137,8 +137,8 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 							Description: "The user name used to authenticate remote access",
 						},
 						"password": schema.StringAttribute{
-							Required: true,
-							//Sensitive:   true,
+							Required:    true,
+							Sensitive:   true,
 							Description: "The password used to authenticate remote access",
 						},
 						"permission": schema.StringAttribute{
@@ -353,6 +353,6 @@ func (model *containerRegistryResourceModel) updateState(ctx context.Context, c 
 	model.FQDN = types.StringValue(reg.FQDN)
 	model.IconID = types.StringValue(reg.IconID.String())
 	model.Description = types.StringValue(reg.Description)
-	model.Tags = stringsToTset(ctx, reg.Tags)
+	model.Tags = stringsToTset(reg.Tags)
 	model.User = flattenContainerRegistryUsers(model.User, users, includePassword)
 }

@@ -120,7 +120,7 @@ func (d *secretManagerDataSource) Read(ctx context.Context, req datasource.ReadR
 	data.ID = types.StringValue(vault.ID)
 	data.Name = types.StringValue(vault.Name)
 	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = stringsToTset(ctx, vault.Tags)
+	data.Tags = stringsToTset(vault.Tags)
 	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
 
 	resp.State.Set(ctx, &data)
