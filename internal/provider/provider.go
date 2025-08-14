@@ -201,6 +201,7 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		NewArchiveDataSource,
 		NewKmsDataSource,
 		NewSecretManagerDataSource,
 		NewSecretManagerSecretDataSource,
@@ -215,6 +216,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 
 func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		NewArchiveResource,
 		NewKMSResource,
 		NewSecretManagerResource,
 		NewSecretManagerSecretResource,

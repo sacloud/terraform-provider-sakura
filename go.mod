@@ -10,14 +10,16 @@ require (
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.5.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.18.0
 	github.com/hashicorp/terraform-plugin-go v0.28.0
-	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0
+	github.com/hashicorp/terraform-plugin-log v0.9.0
 	github.com/hashicorp/terraform-plugin-testing v1.13.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sacloud/api-client-go v0.3.2
 	github.com/sacloud/iaas-api-go v1.16.1
 	github.com/sacloud/iaas-service-go v1.12.1
 	github.com/sacloud/kms-api-go v0.2.2
+	github.com/sacloud/packages-go v0.0.11
 	github.com/sacloud/secretmanager-api-go v0.2.1
+	github.com/sacloud/simplemq-api-go v0.2.0
 	github.com/stretchr/testify v1.10.0
 
 )
@@ -54,7 +56,7 @@ require (
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.23.0 // indirect
 	github.com/hashicorp/terraform-json v0.25.0 // indirect
-	github.com/hashicorp/terraform-plugin-log v0.9.0 // indirect
+	github.com/hashicorp/terraform-plugin-sdk/v2 v2.37.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.2.5 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/yamux v0.1.1 // indirect
@@ -68,9 +70,8 @@ require (
 	github.com/ogen-go/ogen v1.14.0 // indirect
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/sacloud/ftps v1.2.0 // indirect
 	github.com/sacloud/go-http v0.1.9 // indirect
-	github.com/sacloud/packages-go v0.0.11 // indirect
-	github.com/sacloud/simplemq-api-go v0.2.0 // indirect
 	github.com/segmentio/asm v1.2.0 // indirect
 	github.com/vmihailenco/msgpack v4.0.4+incompatible // indirect
 	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect

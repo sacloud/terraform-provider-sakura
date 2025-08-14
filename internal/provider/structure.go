@@ -15,13 +15,21 @@
 package sakura
 
 import (
+	"bytes"
 	"context"
+	"crypto/md5"
+	"encoding/base64"
+	"encoding/hex"
 	"fmt"
-	"slices"
+	"io"
+	"os"
+	"path/filepath"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/mitchellh/go-homedir"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 )
 
@@ -48,12 +56,12 @@ func getZone(zone basetypes.StringValue, client *APIClient, diags *diag.Diagnost
 	}
 
 	z := zone.ValueString()
-	if slices.Contains(client.zones, z) {
-		return z
+	if err := StringInSlice(client.zones, "zone", z, false); err != nil {
+		diags.AddError("Get zone error", err.Error())
+		return ""
 	}
 
-	diags.AddError("Unexpected zone value", fmt.Sprintf("Invalid zone: %s", z))
-	return ""
+	return z
 }
 
 func getApiClientFromProvider(providerData any, diags *diag.Diagnostics) *APIClient {
@@ -102,4 +110,73 @@ func stringsToTset(tags []string) types.Set {
 	// types.SetValueでは内部でcontext.Background()を呼び出しているため、同じアプローチを採用
 	setValue, _ := types.SetValueFrom(context.Background(), types.StringType, tags)
 	return setValue
+}
+
+func intToInt32(i int) int32 {
+	return int32(i)
+}
+
+func intToInt64(i int) int64 {
+	return int64(i)
+}
+
+func mapTo[S any, T any](s []S, cast func(S) T) []T {
+	if len(s) == 0 {
+		return nil
+	}
+
+	t := make([]T, 0, len(s))
+	for _, v := range s {
+		t = append(t, cast(v))
+	}
+	return t
+}
+
+func StringInSlice(validList []string, k string, v string, ignoreCase bool) error {
+	for _, valid := range validList {
+		if v == valid {
+			return nil
+		}
+		if ignoreCase && strings.EqualFold(v, valid) {
+			return nil
+		}
+	}
+
+	return fmt.Errorf("invalid %s value: %s. valid values are %s", k, v, validList)
+}
+
+func expandHomeDir(path string) (string, error) {
+	expanded, err := homedir.Expand(path)
+	if err != nil {
+		return "", fmt.Errorf("expanding homedir in path[%s] is failed: %s", expanded, err)
+	}
+	// file exists?
+	if _, err := os.Stat(expanded); err != nil {
+		return "", fmt.Errorf("opening file[%s] is failed: %s", expanded, err)
+	}
+
+	return expanded, nil
+}
+
+func md5CheckSumFromFile(path string) (string, error) {
+	f, err := os.Open(filepath.Clean(path))
+	if err != nil {
+		return "", fmt.Errorf("opening file[%s] is failed: %s", path, err)
+	}
+	defer f.Close() //nolint
+
+	b := base64.NewEncoder(base64.StdEncoding, f)
+	defer b.Close() //nolint
+
+	var buf bytes.Buffer
+	if _, err := io.Copy(&buf, f); err != nil {
+		return "", fmt.Errorf("encoding to base64 from file[%s] is failed: %s", path, err)
+	}
+
+	h := md5.New() //nolint:gosec
+	if _, err := io.Copy(h, &buf); err != nil {
+		return "", fmt.Errorf("calculating md5 from file[%s] is failed: %s", path, err)
+	}
+
+	return hex.EncodeToString(h.Sum(nil)), nil
 }
