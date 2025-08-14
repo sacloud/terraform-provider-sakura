@@ -96,3 +96,19 @@ func (model *sakuraSimpleMQBaseModel) updateState(data *queue.CommonServiceItem)
 	}
 	model.Tags = stringsToTset(data.Tags)
 }
+
+type sakuraSSHKeyBaseModel struct {
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	PublicKey   types.String `tfsdk:"public_key"`
+	Fingerprint types.String `tfsdk:"fingerprint"`
+}
+
+func (model *sakuraSSHKeyBaseModel) updateState(key *iaas.SSHKey) {
+	model.ID = types.StringValue(key.ID.String())
+	model.Name = types.StringValue(key.Name)
+	model.Description = types.StringValue(key.Description)
+	model.PublicKey = types.StringValue(key.PublicKey)
+	model.Fingerprint = types.StringValue(key.Fingerprint)
+}

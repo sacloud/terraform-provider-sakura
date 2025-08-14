@@ -23,16 +23,6 @@ import (
 	"github.com/sacloud/iaas-api-go"
 )
 
-/*
-	type switchDataSourceModel struct {
-		sakuraBaseModel
-		IconID    types.String      `tfsdk:"icon_id"`
-		BridgeID  types.String      `tfsdk:"bridge_id"`
-		ServerIDs types.Set         `tfsdk:"server_ids"`
-		Zone      types.String      `tfsdk:"zone"`
-		Filter    *filterBlockModel `tfsdk:"filter"`
-	}
-*/
 type switchDataSourceModel struct {
 	sakuraSwitchBaseModel
 	Filter *filterBlockModel `tfsdk:"filter"`

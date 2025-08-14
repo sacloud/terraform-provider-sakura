@@ -209,6 +209,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		NewIconDataSource,
 		NewBridgeDataSource,
 		NewSimpleMQDataSource,
+		NewSSHKeyDataSource,
 		NewSwitchDataSource,
 		// ...他のデータソースも同様に追加...
 	}
@@ -224,6 +225,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		NewIconResource,
 		NewBridgeResource,
 		NewSimpleMQResource,
+		NewSSHKeyResource,
 		NewSwitchResource,
 		// ...他のリソースも同様に追加...
 	}
