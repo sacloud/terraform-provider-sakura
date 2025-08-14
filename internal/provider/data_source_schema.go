@@ -64,3 +64,10 @@ func schemaDataSourceZone(name string) schema.Attribute {
 		Description: desc.Sprintf("The name of zone that the %s is in (e.g. `is1a`, `tk1a`)", name),
 	}
 }
+
+func schemaDataSourceClass(name string, classes []string) schema.Attribute {
+	return &schema.StringAttribute{
+		Computed:    true,
+		Description: desc.Sprintf("The class of the %s. This will be one of [%s]", name, classes),
+	}
+}

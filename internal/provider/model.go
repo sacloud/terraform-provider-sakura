@@ -39,6 +39,20 @@ func (m *sakuraBaseModel) updateBaseState(id string, name string, desc string, t
 	m.Tags = stringsToTset(tags)
 }
 
+type sakuraNoteBaseModel struct {
+	sakuraBaseModel
+	IconID  types.String `tfsdk:"icon_id"`
+	Class   types.String `tfsdk:"class"`
+	Content types.String `tfsdk:"content"`
+}
+
+func (model *sakuraNoteBaseModel) updateState(note *iaas.Note) {
+	model.updateBaseState(note.ID.String(), note.Name, note.Description, note.Tags)
+	model.IconID = types.StringValue(note.IconID.String())
+	model.Class = types.StringValue(note.Class)
+	model.Content = types.StringValue(note.Content)
+}
+
 type sakuraSwitchBaseModel struct {
 	sakuraBaseModel
 	IconID    types.String `tfsdk:"icon_id"`

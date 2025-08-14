@@ -42,12 +42,7 @@ func expandSakuraCloudID(d basetypes.StringValue) iaastypes.ID {
 		return iaastypes.ID(0)
 	}
 
-	id := d.ValueString()
-	if id == "" {
-		return iaastypes.ID(0)
-	}
-
-	return sakuraCloudID(id)
+	return sakuraCloudID(d.ValueString())
 }
 
 func getZone(zone basetypes.StringValue, client *APIClient, diags *diag.Diagnostics) string {
