@@ -26,6 +26,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -43,6 +44,11 @@ func expandSakuraCloudID(d basetypes.StringValue) iaastypes.ID {
 	}
 
 	return sakuraCloudID(d.ValueString())
+}
+
+// SDK v2のHasChangeの代替
+func hasChange(x, y any) bool {
+	return !cmp.Equal(x, y)
 }
 
 func getZone(zone basetypes.StringValue, client *APIClient, diags *diag.Diagnostics) string {
