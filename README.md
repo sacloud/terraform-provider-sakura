@@ -62,7 +62,9 @@ package sakura
 import(...)
 
 // リソース向け構造体
-type xxxResource {}　
+type xxxResource {
+    client *APIClient // iaas向け。他の独自クライアントを使うサービスの場合は変更する
+}
 
 var (
 	_ resource.Resource                = &xxxResource{}
@@ -83,8 +85,8 @@ func (r *xxxResource) Configure(ctx context.Context, req resource.ConfigureReque
 }
 
 type xxxResourceModel struct {
-	sakuraXXXBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`  // タイムアウトをサポートするには自分で定義に入れる必要がある
+	sakuraXXXBaseModel  // model.goで実装
+	Timeouts timeouts.Value `tfsdk:"timeouts"` // タイムアウトをサポートするには自分で定義に入れる必要がある
 }
 
 func (r *xxxResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -93,7 +95,7 @@ func (r *xxxResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 			"id": schemaResourceId("XXX"),  // SDK v2と違って自分でidを定義する必要がある
             // 他のパラメータ
 		},
-		Blocks: map[string]schema.Block{
+		Blocks: map[string]schema.Block{  // タイムアウト向けのパラメータも自分で定義に入れる必要がある
 			"timeouts": timeouts.Block(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -127,7 +129,7 @@ func (r *xxxResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 
 	// Read用の実装
 
-	state.updateState(key)
+	state.updateState(xxx)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -155,7 +157,7 @@ func (r *xxxResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	resp.State.RemoveResource(ctx)　　// SDK v2ではd.SetId("")に相当
 }
 
-// ヘルパー関数が必要ならここ以降に書く
+// ヘルパーが必要ならここ以降に書く
 ```
 
 そのほか主要なファイルの説明は以下
@@ -163,4 +165,4 @@ func (r *xxxResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 - provider.go: プロバイダーのそのものの実装。DataSources/Resourcesに各リソースを登録する。
 - strcuture.go: data / resourceでよく使われるデータ変換向けヘルパー群
 - data_source_schema.go/resource_schema.go: 各リソースで共通でよく使われるスキーマの定義群
-- validators: パラメータのバリデーションで使う独自バリデータ群
+- validators.go: パラメータのバリデーションで使う独自バリデータ群
