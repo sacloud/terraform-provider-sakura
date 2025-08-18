@@ -228,6 +228,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		NewBridgeResource,
 		NewNoteResource,
 		NewPacketFilterResource,
+		NewPacketFilterRulesResource,
 		NewSimpleMQResource,
 		NewSSHKeyResource,
 		NewSwitchResource,
