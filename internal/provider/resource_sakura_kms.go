@@ -32,27 +32,22 @@ import (
 	v1 "github.com/sacloud/kms-api-go/apis/v1"
 )
 
-type kmsResourceModel struct {
-	ID          types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	KeyOrigin   types.String   `tfsdk:"key_origin"`
-	PlainKey    types.String   `tfsdk:"plain_key"`
-	Description types.String   `tfsdk:"description"`
-	Tags        types.Set      `tfsdk:"tags"`
-	Timeouts    timeouts.Value `tfsdk:"timeouts"`
-}
-
 type kmsResource struct {
 	client *v1.Client
 }
 
 var (
-	_ resource.Resource              = &kmsResource{}
-	_ resource.ResourceWithConfigure = &kmsResource{}
+	_ resource.Resource                = &kmsResource{}
+	_ resource.ResourceWithConfigure   = &kmsResource{}
+	_ resource.ResourceWithImportState = &kmsResource{}
 )
 
 func NewKMSResource() resource.Resource {
 	return &kmsResource{}
+}
+
+func (r *kmsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_kms"
 }
 
 func (r *kmsResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -63,8 +58,15 @@ func (r *kmsResource) Configure(ctx context.Context, req resource.ConfigureReque
 	r.client = apiclient.kmsClient
 }
 
-func (r *kmsResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms"
+// TODO: model.goに切り出してdata sourceと共通化する
+type kmsResourceModel struct {
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	KeyOrigin   types.String   `tfsdk:"key_origin"`
+	PlainKey    types.String   `tfsdk:"plain_key"`
+	Description types.String   `tfsdk:"description"`
+	Tags        types.Set      `tfsdk:"tags"`
+	Timeouts    timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

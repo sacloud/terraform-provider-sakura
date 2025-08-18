@@ -23,11 +23,6 @@ import (
 	"github.com/sacloud/iaas-api-go"
 )
 
-type bridgeDataSourceModel struct {
-	bridgeResourceModel
-	Filter *filterBlockModel `tfsdk:"filter"`
-}
-
 type bridgeDataSource struct {
 	client *APIClient
 }
@@ -51,6 +46,11 @@ func (d *bridgeDataSource) Configure(ctx context.Context, req datasource.Configu
 		return
 	}
 	d.client = apiclient
+}
+
+type bridgeDataSourceModel struct {
+	bridgeResourceModel
+	Filter *filterBlockModel `tfsdk:"filter"`
 }
 
 func (d *bridgeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {

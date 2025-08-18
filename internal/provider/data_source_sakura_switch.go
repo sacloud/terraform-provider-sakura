@@ -23,15 +23,6 @@ import (
 	"github.com/sacloud/iaas-api-go"
 )
 
-type switchDataSourceModel struct {
-	sakuraSwitchBaseModel
-	Filter *filterBlockModel `tfsdk:"filter"`
-}
-
-func NewSwitchDataSource() datasource.DataSource {
-	return &switchDataSource{}
-}
-
 type switchDataSource struct {
 	client *APIClient
 }
@@ -40,6 +31,10 @@ var (
 	_ datasource.DataSource              = &switchDataSource{}
 	_ datasource.DataSourceWithConfigure = &switchDataSource{}
 )
+
+func NewSwitchDataSource() datasource.DataSource {
+	return &switchDataSource{}
+}
 
 func (d *switchDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_switch"
@@ -51,6 +46,11 @@ func (d *switchDataSource) Configure(ctx context.Context, req datasource.Configu
 		return
 	}
 	d.client = apiclient
+}
+
+type switchDataSourceModel struct {
+	sakuraSwitchBaseModel
+	Filter *filterBlockModel `tfsdk:"filter"`
 }
 
 func (d *switchDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {

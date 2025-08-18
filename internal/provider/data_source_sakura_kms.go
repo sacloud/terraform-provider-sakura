@@ -26,27 +26,22 @@ import (
 	v1 "github.com/sacloud/kms-api-go/apis/v1"
 )
 
-type kmsDataSourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	ResourceID  types.String `tfsdk:"resource_id"`
-	Description types.String `tfsdk:"description"`
-	Tags        types.Set    `tfsdk:"tags"`
-	KeyOrigin   types.String `tfsdk:"key_origin"`
+type kmsDataSource struct {
+	client *v1.Client
 }
 
 func NewKmsDataSource() datasource.DataSource {
 	return &kmsDataSource{}
 }
 
-type kmsDataSource struct {
-	client *v1.Client
-}
-
 var (
 	_ datasource.DataSource              = &kmsDataSource{}
 	_ datasource.DataSourceWithConfigure = &kmsDataSource{}
 )
+
+func (d *kmsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_kms"
+}
 
 func (d *kmsDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
@@ -56,8 +51,13 @@ func (d *kmsDataSource) Configure(ctx context.Context, req datasource.ConfigureR
 	d.client = apiclient.kmsClient
 }
 
-func (d *kmsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_kms"
+type kmsDataSourceModel struct {
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	ResourceID  types.String `tfsdk:"resource_id"`
+	Description types.String `tfsdk:"description"`
+	Tags        types.Set    `tfsdk:"tags"`
+	KeyOrigin   types.String `tfsdk:"key_origin"`
 }
 
 func (d *kmsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {

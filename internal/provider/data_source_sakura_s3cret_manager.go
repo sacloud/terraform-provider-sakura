@@ -26,15 +26,6 @@ import (
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 )
 
-type secretManagerDataSourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	ResourceID  types.String `tfsdk:"resource_id"`
-	Description types.String `tfsdk:"description"`
-	Tags        types.Set    `tfsdk:"tags"`
-	KmsKeyID    types.String `tfsdk:"kms_key_id"`
-}
-
 type secretManagerDataSource struct {
 	client *v1.Client
 }
@@ -48,6 +39,10 @@ func NewSecretManagerDataSource() datasource.DataSource {
 	return &secretManagerDataSource{}
 }
 
+func (d *secretManagerDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_secret_manager"
+}
+
 func (d *secretManagerDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
@@ -56,8 +51,13 @@ func (d *secretManagerDataSource) Configure(ctx context.Context, req datasource.
 	d.client = apiclient.secretmanagerClient
 }
 
-func (d *secretManagerDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_secret_manager"
+type secretManagerDataSourceModel struct {
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	ResourceID  types.String `tfsdk:"resource_id"`
+	Description types.String `tfsdk:"description"`
+	Tags        types.Set    `tfsdk:"tags"`
+	KmsKeyID    types.String `tfsdk:"kms_key_id"`
 }
 
 func (d *secretManagerDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {

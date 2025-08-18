@@ -51,23 +51,8 @@ var (
 	_ resource.ResourceWithImportState = &archiveResource{}
 )
 
-// ProviderのResource登録例
 func NewArchiveResource() resource.Resource {
 	return &archiveResource{}
-}
-
-type archiveResourceModel struct {
-	sakuraBaseModel
-	Zone              types.String   `tfsdk:"zone"`
-	Size              types.Int32    `tfsdk:"size"`
-	Hash              types.String   `tfsdk:"hash"`
-	IconID            types.String   `tfsdk:"icon_id"`
-	ArchiveFile       types.String   `tfsdk:"archive_file"`
-	SourceDiskID      types.String   `tfsdk:"source_disk_id"`
-	SourceSharedKey   types.String   `tfsdk:"source_shared_key"`
-	SourceArchiveID   types.String   `tfsdk:"source_archive_id"`
-	SourceArchiveZone types.String   `tfsdk:"source_archive_zone"`
-	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *archiveResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -80,6 +65,21 @@ func (r *archiveResource) Configure(ctx context.Context, req resource.ConfigureR
 		return
 	}
 	r.client = apiclient
+}
+
+// TODO: model.goに切り出してdata sourceと共通化する
+type archiveResourceModel struct {
+	sakuraBaseModel
+	Zone              types.String   `tfsdk:"zone"`
+	Size              types.Int32    `tfsdk:"size"`
+	Hash              types.String   `tfsdk:"hash"`
+	IconID            types.String   `tfsdk:"icon_id"`
+	ArchiveFile       types.String   `tfsdk:"archive_file"`
+	SourceDiskID      types.String   `tfsdk:"source_disk_id"`
+	SourceSharedKey   types.String   `tfsdk:"source_shared_key"`
+	SourceArchiveID   types.String   `tfsdk:"source_archive_id"`
+	SourceArchiveZone types.String   `tfsdk:"source_archive_zone"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

@@ -21,6 +21,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -34,7 +35,33 @@ import (
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
 )
 
-// Terraform Plugin Framework Resource Model
+type containerRegistryResource struct {
+	client *APIClient
+}
+
+var (
+	_ resource.Resource                = &containerRegistryResource{}
+	_ resource.ResourceWithConfigure   = &containerRegistryResource{}
+	_ resource.ResourceWithImportState = &containerRegistryResource{}
+)
+
+func NewContainerRegistryResource() resource.Resource {
+	return &containerRegistryResource{}
+}
+
+func (r *containerRegistryResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_container_registry"
+}
+
+func (r *containerRegistryResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
+		return
+	}
+	r.client = apiclient
+}
+
+// TODO: model.goに切り出してdata sourceと共通化する
 type containerRegistryResourceModel struct {
 	ID             types.String                  `tfsdk:"id"`
 	Name           types.String                  `tfsdk:"name"`
@@ -53,37 +80,6 @@ type containerRegistryUserModel struct {
 	Name       types.String `tfsdk:"name"`
 	Password   types.String `tfsdk:"password"`
 	Permission types.String `tfsdk:"permission"`
-}
-
-type containerRegistryResource struct {
-	client *APIClient
-}
-
-var (
-	_ resource.Resource              = &containerRegistryResource{}
-	_ resource.ResourceWithConfigure = &containerRegistryResource{}
-)
-
-func NewContainerRegistryResource() resource.Resource {
-	return &containerRegistryResource{}
-}
-
-func (r *containerRegistryResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_container_registry"
-}
-
-func (r *containerRegistryResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	apiclient, ok := req.ProviderData.(*APIClient)
-	if !ok {
-		resp.Diagnostics.AddError("Unexpected ProviderData type", "Expected *APIClient.")
-		return
-	}
-
-	r.client = apiclient
 }
 
 func (r *containerRegistryResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -159,6 +155,10 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 			}),
 		},
 	}
+}
+
+func (r *containerRegistryResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *containerRegistryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

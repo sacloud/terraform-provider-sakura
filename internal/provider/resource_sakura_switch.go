@@ -42,11 +42,6 @@ func NewSwitchResource() resource.Resource {
 	return &switchResource{}
 }
 
-type switchResourceModel struct {
-	sakuraSwitchBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
-}
-
 func (r *switchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_switch"
 }
@@ -57,6 +52,11 @@ func (r *switchResource) Configure(ctx context.Context, req resource.ConfigureRe
 		return
 	}
 	r.client = apiclient
+}
+
+type switchResourceModel struct {
+	sakuraSwitchBaseModel
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *switchResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

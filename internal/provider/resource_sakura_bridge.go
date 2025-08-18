@@ -27,20 +27,13 @@ import (
 	"github.com/sacloud/iaas-api-go/helper/cleanup"
 )
 
-type bridgeResourceModel struct {
-	ID          types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	Description types.String   `tfsdk:"description"`
-	Zone        types.String   `tfsdk:"zone"`
-	Timeouts    timeouts.Value `tfsdk:"timeouts"`
-}
-
 type bridgeResource struct {
 	client *APIClient
 }
 
 var (
 	_ resource.Resource                = &bridgeResource{}
+	_ resource.ResourceWithConfigure   = &bridgeResource{}
 	_ resource.ResourceWithImportState = &bridgeResource{}
 )
 
@@ -58,6 +51,15 @@ func (r *bridgeResource) Configure(ctx context.Context, req resource.ConfigureRe
 		return
 	}
 	r.client = apiclient
+}
+
+// TODO: model.goに切り出してdata sourceと共通化する
+type bridgeResourceModel struct {
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	Description types.String   `tfsdk:"description"`
+	Zone        types.String   `tfsdk:"zone"`
+	Timeouts    timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *bridgeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

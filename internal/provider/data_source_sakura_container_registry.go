@@ -22,11 +22,6 @@ import (
 	"github.com/sacloud/iaas-api-go"
 )
 
-type containerRegistryDataSourceModel struct {
-	containerRegistryResourceModel
-	Filter *filterBlockModel `tfsdk:"filter"`
-}
-
 type containerRegistryDataSource struct {
 	client *APIClient
 }
@@ -50,6 +45,11 @@ func (d *containerRegistryDataSource) Configure(ctx context.Context, req datasou
 		return
 	}
 	d.client = apiclient
+}
+
+type containerRegistryDataSourceModel struct {
+	containerRegistryResourceModel
+	Filter *filterBlockModel `tfsdk:"filter"`
 }
 
 func (d *containerRegistryDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {

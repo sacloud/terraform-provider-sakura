@@ -27,26 +27,22 @@ import (
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 )
 
-type secretManagerResourceModel struct {
-	ID          types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	KmsKeyID    types.String   `tfsdk:"kms_key_id"`
-	Description types.String   `tfsdk:"description"`
-	Tags        types.Set      `tfsdk:"tags"`
-	Timeouts    timeouts.Value `tfsdk:"timeouts"`
-}
-
 type secretManagerResource struct {
 	client *v1.Client
 }
 
 var (
-	_ resource.Resource              = &secretManagerResource{}
-	_ resource.ResourceWithConfigure = &secretManagerResource{}
+	_ resource.Resource                = &secretManagerResource{}
+	_ resource.ResourceWithConfigure   = &secretManagerResource{}
+	_ resource.ResourceWithImportState = &secretManagerResource{}
 )
 
 func NewSecretManagerResource() resource.Resource {
 	return &secretManagerResource{}
+}
+
+func (r *secretManagerResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_secret_manager"
 }
 
 func (r *secretManagerResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -57,11 +53,14 @@ func (r *secretManagerResource) Configure(ctx context.Context, req resource.Conf
 	r.client = apiclient.secretmanagerClient
 }
 
-var _ resource.Resource = &secretManagerResource{}
-var _ resource.ResourceWithConfigure = &secretManagerResource{}
-
-func (r *secretManagerResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_secret_manager"
+// TODO: model.goに切り出してdata sourceと共通化する
+type secretManagerResourceModel struct {
+	ID          types.String   `tfsdk:"id"`
+	Name        types.String   `tfsdk:"name"`
+	KmsKeyID    types.String   `tfsdk:"kms_key_id"`
+	Description types.String   `tfsdk:"description"`
+	Tags        types.Set      `tfsdk:"tags"`
+	Timeouts    timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {

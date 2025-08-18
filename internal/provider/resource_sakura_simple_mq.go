@@ -31,11 +31,6 @@ import (
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 )
 
-type simpleMQResourceModel struct {
-	sakuraSimpleMQBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
-}
-
 type simpleMQResource struct {
 	client *queue.Client
 }
@@ -60,6 +55,11 @@ func (r *simpleMQResource) Configure(ctx context.Context, req resource.Configure
 		return
 	}
 	r.client = apiclient.simplemqClient
+}
+
+type simpleMQResourceModel struct {
+	sakuraSimpleMQBaseModel
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *simpleMQResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

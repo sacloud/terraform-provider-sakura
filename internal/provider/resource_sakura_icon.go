@@ -22,25 +22,14 @@ import (
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 )
 
-// iconResourceModel defines the Terraform state and plan model for the Icon resource
-// (必要に応じてタグや他属性も追加)
-type iconResourceModel struct {
-	ID            types.String   `tfsdk:"id"`
-	Name          types.String   `tfsdk:"name"`
-	Source        types.String   `tfsdk:"source"`
-	Base64Content types.String   `tfsdk:"base64content"`
-	Tags          types.Set      `tfsdk:"tags"`
-	URL           types.String   `tfsdk:"url"`
-	Timeouts      timeouts.Value `tfsdk:"timeouts"`
-}
-
 type iconResource struct {
 	client *APIClient
 }
 
 var (
-	_ resource.Resource              = &iconResource{}
-	_ resource.ResourceWithConfigure = &iconResource{}
+	_ resource.Resource                = &iconResource{}
+	_ resource.ResourceWithConfigure   = &iconResource{}
+	_ resource.ResourceWithImportState = &iconResource{}
 )
 
 func NewIconResource() resource.Resource {
@@ -57,6 +46,17 @@ func (r *iconResource) Configure(ctx context.Context, req resource.ConfigureRequ
 		return
 	}
 	r.client = apiclient
+}
+
+// TODO: model.goに切り出してdata sourceと共通化する
+type iconResourceModel struct {
+	ID            types.String   `tfsdk:"id"`
+	Name          types.String   `tfsdk:"name"`
+	Source        types.String   `tfsdk:"source"`
+	Base64Content types.String   `tfsdk:"base64content"`
+	Tags          types.Set      `tfsdk:"tags"`
+	URL           types.String   `tfsdk:"url"`
+	Timeouts      timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *iconResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -92,6 +92,10 @@ func (r *iconResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 			}),
 		},
 	}
+}
+
+func (r *iconResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 func (r *iconResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

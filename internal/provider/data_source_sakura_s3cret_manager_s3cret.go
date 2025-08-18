@@ -23,13 +23,6 @@ import (
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 )
 
-type secretManagerSecretDataSourceModel struct {
-	Name    types.String `tfsdk:"name"`
-	VaultID types.String `tfsdk:"vault_id"`
-	Version types.Int64  `tfsdk:"version"`
-	Value   types.String `tfsdk:"value"`
-}
-
 type secretManagerSecretDataSource struct {
 	client *v1.Client
 }
@@ -43,6 +36,10 @@ func NewSecretManagerSecretDataSource() datasource.DataSource {
 	return &secretManagerSecretDataSource{}
 }
 
+func (d *secretManagerSecretDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_secret_manager_secret"
+}
+
 func (d *secretManagerSecretDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
@@ -51,8 +48,11 @@ func (d *secretManagerSecretDataSource) Configure(ctx context.Context, req datas
 	d.client = apiclient.secretmanagerClient
 }
 
-func (d *secretManagerSecretDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_secret_manager_secret"
+type secretManagerSecretDataSourceModel struct {
+	Name    types.String `tfsdk:"name"`
+	VaultID types.String `tfsdk:"vault_id"`
+	Version types.Int64  `tfsdk:"version"`
+	Value   types.String `tfsdk:"value"`
 }
 
 func (d *secretManagerSecretDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {

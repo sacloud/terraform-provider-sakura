@@ -23,26 +23,22 @@ import (
 	"github.com/sacloud/iaas-api-go"
 )
 
-type iconDataSourceModel struct {
-	ID     types.String      `tfsdk:"id"`
-	Name   types.String      `tfsdk:"name"`
-	Tags   types.Set         `tfsdk:"tags"`
-	URL    types.String      `tfsdk:"url"`
-	Filter *filterBlockModel `tfsdk:"filter"`
+type iconDataSource struct {
+	client *APIClient
 }
 
 func NewIconDataSource() datasource.DataSource {
 	return &iconDataSource{}
 }
 
-type iconDataSource struct {
-	client *APIClient
-}
-
 var (
 	_ datasource.DataSource              = &iconDataSource{}
 	_ datasource.DataSourceWithConfigure = &iconDataSource{}
 )
+
+func (d *iconDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_icon"
+}
 
 func (d *iconDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
@@ -52,8 +48,12 @@ func (d *iconDataSource) Configure(ctx context.Context, req datasource.Configure
 	d.client = apiclient
 }
 
-func (d *iconDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_icon"
+type iconDataSourceModel struct {
+	ID     types.String      `tfsdk:"id"`
+	Name   types.String      `tfsdk:"name"`
+	Tags   types.Set         `tfsdk:"tags"`
+	URL    types.String      `tfsdk:"url"`
+	Filter *filterBlockModel `tfsdk:"filter"`
 }
 
 func (d *iconDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {

@@ -41,14 +41,6 @@ func NewArchiveDataSource() datasource.DataSource {
 	return &archiveDataSource{}
 }
 
-type archiveDataSourceModel struct {
-	sakuraBaseModel
-	Zone   types.String `tfsdk:"zone"`
-	Size   types.Int64  `tfsdk:"size"`
-	OSType types.String `tfsdk:"os_type"`
-	IconID types.String `tfsdk:"icon_id"`
-}
-
 func (d *archiveDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_archive"
 }
@@ -59,6 +51,14 @@ func (d *archiveDataSource) Configure(ctx context.Context, req datasource.Config
 		return
 	}
 	d.client = apiclient
+}
+
+type archiveDataSourceModel struct {
+	sakuraBaseModel
+	Zone   types.String `tfsdk:"zone"`
+	Size   types.Int64  `tfsdk:"size"`
+	OSType types.String `tfsdk:"os_type"`
+	IconID types.String `tfsdk:"icon_id"`
 }
 
 func (d *archiveDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {

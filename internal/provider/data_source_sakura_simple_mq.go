@@ -26,15 +26,14 @@ import (
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
 )
 
-type simpleMQDataSourceModel struct {
-	sakuraSimpleMQBaseModel
-}
-
 type simpleMQDataSource struct {
 	client *queue.Client
 }
 
-var _ datasource.DataSource = &simpleMQDataSource{}
+var (
+	_ datasource.DataSource              = &simpleMQDataSource{}
+	_ datasource.DataSourceWithConfigure = &simpleMQDataSource{}
+)
 
 func NewSimpleMQDataSource() datasource.DataSource {
 	return &simpleMQDataSource{}
@@ -50,6 +49,10 @@ func (d *simpleMQDataSource) Configure(ctx context.Context, req datasource.Confi
 		return
 	}
 	d.client = apiclient.simplemqClient
+}
+
+type simpleMQDataSourceModel struct {
+	sakuraSimpleMQBaseModel
 }
 
 func (d *simpleMQDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
