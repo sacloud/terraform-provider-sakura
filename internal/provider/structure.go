@@ -46,6 +46,23 @@ func expandSakuraCloudID(d basetypes.StringValue) iaastypes.ID {
 	return sakuraCloudID(d.ValueString())
 }
 
+func expandSakuraCloudIDs(d basetypes.SetValue) []iaastypes.ID {
+	strIDs := tsetToStrings(d)
+	if len(strIDs) == 0 {
+		return nil
+	}
+
+	var ids []iaastypes.ID
+	for _, strID := range strIDs {
+		if strID == "" {
+			continue
+		}
+		ids = append(ids, sakuraCloudID(strID))
+	}
+
+	return ids
+}
+
 // SDK v2のHasChangeの代替
 func hasChange(x, y any) bool {
 	return !cmp.Equal(x, y)

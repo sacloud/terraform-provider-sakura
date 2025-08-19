@@ -74,6 +74,17 @@ func schemaResourceIconID(name string) schema.Attribute {
 	}
 }
 
+func schemaResourceServerID(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Optional:    true,
+		Computed:    true,
+		Description: desc.Sprintf("The id of the server connected to the %s", name),
+		Validators: []validator.String{
+			sakuraIDValidator(),
+		},
+	}
+}
+
 func schemaResourceSwitchID(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Required:    true,

@@ -41,6 +41,32 @@ func (m *sakuraBaseModel) updateBaseState(id string, name string, desc string, t
 	m.Tags = stringsToTset(tags)
 }
 
+type sakuraDiskBaseModel struct {
+	sakuraBaseModel
+	IconID              types.String `tfsdk:"icon_id"`
+	Zone                types.String `tfsdk:"zone"`
+	Plan                types.String `tfsdk:"plan"`
+	Size                types.Int64  `tfsdk:"size"`
+	Connector           types.String `tfsdk:"connector"`
+	EncryptionAlgorithm types.String `tfsdk:"encryption_algorithm"`
+	SourceArchiveID     types.String `tfsdk:"source_archive_id"`
+	SourceDiskID        types.String `tfsdk:"source_disk_id"`
+	ServerID            types.String `tfsdk:"server_id"`
+}
+
+func (m *sakuraDiskBaseModel) updateState(disk *iaas.Disk, zone string) {
+	m.updateBaseState(disk.ID.String(), disk.Name, disk.Description, disk.Tags)
+	m.IconID = types.StringValue(disk.IconID.String())
+	m.Zone = types.StringValue(zone)
+	m.Plan = types.StringValue(iaastypes.DiskPlanNameMap[disk.DiskPlanID])
+	m.Size = types.Int64Value(int64(disk.GetSizeGB()))
+	m.Connector = types.StringValue(disk.Connection.String())
+	m.EncryptionAlgorithm = types.StringValue(string(disk.EncryptionAlgorithm.String()))
+	m.SourceArchiveID = types.StringValue(disk.SourceArchiveID.String())
+	m.SourceDiskID = types.StringValue(disk.SourceDiskID.String())
+	m.ServerID = types.StringValue(disk.ServerID.String())
+}
+
 type sakuraNFSNetworkInterfaceModel struct {
 	SwitchID  types.String `tfsdk:"switch_id"`
 	IPAddress types.String `tfsdk:"ip_address"`

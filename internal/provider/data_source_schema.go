@@ -81,6 +81,13 @@ func schemaDataSourcePlan(name string, plans []string) schema.Attribute {
 	}
 }
 
+func schemaDataSourceServerID(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Computed:    true,
+		Description: desc.Sprintf("The id of the server connected to the %s", name),
+	}
+}
+
 func schemaDataSourceSwitchID(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Computed:    true,
