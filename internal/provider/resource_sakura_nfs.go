@@ -257,7 +257,7 @@ func (r *nfsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	ctx, cancel := setupTimeoutDelete(ctx, state.Timeouts, timeout5min)
+	ctx, cancel := setupTimeoutDelete(ctx, state.Timeouts, timeout20min)
 	defer cancel()
 
 	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
