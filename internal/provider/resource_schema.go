@@ -15,10 +15,13 @@
 package sakura
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -71,6 +74,19 @@ func schemaResourceIconID(name string) schema.Attribute {
 	}
 }
 
+func schemaResourceSwitchID(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Required:    true,
+		Description: desc.Sprintf("The id of the switch to which the %s connects", name),
+		Validators: []validator.String{
+			sakuraIDValidator(),
+		},
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.RequiresReplace(),
+		},
+	}
+}
+
 func schemaResourceTags(name string) schema.Attribute {
 	return schema.SetAttribute{
 		ElementType: types.StringType,
@@ -89,6 +105,47 @@ func schemaResourceZone(name string) schema.Attribute {
 			stringplanmodifier.RequiresReplaceIfConfigured(),
 		},
 	}
+}
+
+func schemaResourceSize(name string, defaultValue int64, validSizes ...int64) schema.Attribute {
+	s := schema.Int64Attribute{
+		Optional:    true,
+		Computed:    true,
+		Description: desc.Sprintf("The size of %s in GiB", name),
+		PlanModifiers: []planmodifier.Int64{
+			int64planmodifier.RequiresReplaceIfConfigured(),
+		},
+	}
+	if defaultValue > 0 {
+		s.Default = int64default.StaticInt64(int64(defaultValue))
+	}
+	if len(validSizes) > 0 {
+		s.Validators = []validator.Int64{
+			int64validator.OneOf(validSizes...),
+		}
+		s.Description = desc.Sprintf("%s. This must be one of [%s]", s.Description, validSizes)
+	}
+
+	return s
+}
+
+func schemaResourcePlan(name string, defaultValue string, plans []string) schema.Attribute {
+	s := schema.StringAttribute{
+		Optional:    true,
+		Computed:    true,
+		Description: desc.ResourcePlan(name, plans),
+		Validators: []validator.String{
+			stringvalidator.OneOf(plans...),
+		},
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.RequiresReplaceIfConfigured(),
+		},
+	}
+	if defaultValue != "" {
+		s.Default = stringdefault.StaticString(defaultValue)
+	}
+
+	return s
 }
 
 func schemaPacketFilterExpression() schema.Block {

@@ -22,6 +22,7 @@ import (
 
 func schemaDataSourceId(name string) schema.Attribute {
 	return schema.StringAttribute{
+		Optional:    true,
 		Computed:    true,
 		Description: desc.Sprintf("The ID of the %s.", name),
 	}
@@ -52,6 +53,7 @@ func schemaDataSourceIconID(name string) schema.Attribute {
 func schemaDataSourceTags(name string) schema.Attribute {
 	return schema.SetAttribute{
 		ElementType: types.StringType,
+		Optional:    true,
 		Computed:    true,
 		Description: desc.Sprintf("The tags of the %s.", name),
 	}
@@ -62,6 +64,48 @@ func schemaDataSourceZone(name string) schema.Attribute {
 		Optional:    true,
 		Computed:    true,
 		Description: desc.Sprintf("The name of zone that the %s is in (e.g. `is1a`, `tk1a`)", name),
+	}
+}
+
+func schemaDataSourceSize(name string) schema.Attribute {
+	return schema.Int64Attribute{
+		Computed:    true,
+		Description: desc.Sprintf("The size of %s in GiB", name),
+	}
+}
+
+func schemaDataSourcePlan(name string, plans []string) schema.Attribute {
+	return schema.StringAttribute{
+		Computed:    true,
+		Description: desc.DataSourcePlan(name, plans),
+	}
+}
+
+func schemaDataSourceSwitchID(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Computed:    true,
+		Description: desc.Sprintf("The id of the switch connected from the %s", name),
+	}
+}
+
+func schemaDataSourceIPAddress(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Computed:    true,
+		Description: desc.Sprintf("The IP address assigned to the %s", name),
+	}
+}
+
+func schemaDataSourceNetMask(name string) schema.Attribute {
+	return schema.Int32Attribute{
+		Computed:    true,
+		Description: desc.Sprintf("The bit length of the subnet assigned to the %s", name),
+	}
+}
+
+func schemaDataSourceGateway(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Computed:    true,
+		Description: desc.Sprintf("The IP address of the gateway used by %s", name),
 	}
 }
 

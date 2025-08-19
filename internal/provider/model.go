@@ -21,6 +21,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
+	"github.com/sacloud/iaas-api-go/helper/query"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
@@ -38,6 +39,68 @@ func (m *sakuraBaseModel) updateBaseState(id string, name string, desc string, t
 	m.Name = types.StringValue(name)
 	m.Description = types.StringValue(desc)
 	m.Tags = stringsToTset(tags)
+}
+
+type sakuraNFSNetworkInterfaceModel struct {
+	SwitchID  types.String `tfsdk:"switch_id"`
+	IPAddress types.String `tfsdk:"ip_address"`
+	Netmask   types.Int32  `tfsdk:"netmask"`
+	Gateway   types.String `tfsdk:"gateway"`
+}
+
+type sakuraNFSBaseModel struct {
+	sakuraBaseModel
+	Zone             types.String                      `tfsdk:"zone"`
+	IconID           types.String                      `tfsdk:"icon_id"`
+	Plan             types.String                      `tfsdk:"plan"`
+	Size             types.Int64                       `tfsdk:"size"`
+	NetworkInterface []*sakuraNFSNetworkInterfaceModel `tfsdk:"network_interface"`
+}
+
+func (model *sakuraNFSBaseModel) updateState(ctx context.Context, client *APIClient, nfs *iaas.NFS, zone string) (bool, error) {
+	if nfs.Availability.IsFailed() {
+		return true, fmt.Errorf("got unexpected state: NFS[%d].Availability is failed", nfs.ID)
+	}
+
+	model.updateBaseState(nfs.ID.String(), nfs.Name, nfs.Description, nfs.Tags)
+	model.Zone = types.StringValue(zone)
+	model.IconID = types.StringValue(nfs.IconID.String())
+
+	plan, size, err := flattenNFSDiskPlan(ctx, client, nfs.PlanID)
+	if err != nil {
+		return false, err
+	}
+	model.Plan = types.StringValue(plan)
+	model.Size = types.Int64Value(int64(size))
+
+	var nis []*sakuraNFSNetworkInterfaceModel
+	nis = append(nis, &sakuraNFSNetworkInterfaceModel{
+		SwitchID:  types.StringValue(nfs.SwitchID.String()),
+		IPAddress: types.StringValue(nfs.IPAddresses[0]),
+		Netmask:   types.Int32Value(int32(nfs.NetworkMaskLen)),
+		Gateway:   types.StringValue(nfs.DefaultRoute),
+	})
+	model.NetworkInterface = nis
+
+	return false, nil
+}
+
+func flattenNFSDiskPlan(ctx context.Context, client *APIClient, planID iaastypes.ID) (string, int, error) {
+	planInfo, err := query.GetNFSPlanInfo(ctx, iaas.NewNoteOp(client), planID)
+	if err != nil {
+		return "", 0, err
+	}
+	var planName string
+	size := int(planInfo.Size)
+
+	switch planInfo.DiskPlanID {
+	case iaastypes.NFSPlans.HDD:
+		planName = "hdd"
+	case iaastypes.NFSPlans.SSD:
+		planName = "ssd"
+	}
+
+	return planName, size, nil
 }
 
 type sakuraNoteBaseModel struct {

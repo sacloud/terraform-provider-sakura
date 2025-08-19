@@ -22,12 +22,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
 
 	"github.com/sacloud/iaas-api-go/search"
@@ -161,24 +163,37 @@ func filterNoResultErr(diag *diag.Diagnostics) {
 	diag.AddError("Filter No Result", errFilterNoResult.Error())
 }
 
+func createFindCondition(id types.String, name types.String, tags types.Set) *iaas.FindCondition {
+	condition := &iaas.FindCondition{}
+
+	var names types.List
+	if !name.IsNull() && !name.IsUnknown() && name.ValueString() != "" {
+		elements := []attr.Value{name}
+		names, _ = types.ListValue(types.StringType, elements)
+	}
+	condition.Filter = expandSearchFilter(&filterBlockModel{ID: id, Names: names, Tags: tags})
+
+	return condition
+}
+
 func expandSearchFilter(filters *filterBlockModel) search.Filter {
 	ret := search.Filter{}
 	// ID
-	if !filters.ID.IsNull() {
+	if !filters.ID.IsNull() && !filters.ID.IsUnknown() {
 		id := filters.ID.ValueString()
 		if id != "" {
 			ret[search.Key(keys.ID)] = search.AndEqual(id)
 		}
 	}
 	// Names
-	if !filters.Names.IsNull() {
+	if !filters.Names.IsNull() && !filters.Names.IsUnknown() {
 		names := tlistToStrings(filters.Names)
 		if len(names) > 0 {
 			ret[search.Key(keys.Name)] = search.AndEqual(names...)
 		}
 	}
 	// Tags
-	if !filters.Tags.IsNull() {
+	if !filters.Tags.IsNull() && !filters.Tags.IsUnknown() {
 		tags := tsetToStrings(filters.Tags)
 		if len(tags) > 0 {
 			ret[search.Key(keys.Tags)] = search.TagsAndEqual(tags...)
