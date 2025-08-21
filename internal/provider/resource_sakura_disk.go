@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -136,6 +137,9 @@ func (r *diskResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				ElementType: types.StringType,
 				Optional:    true,
 				Description: "A list of disk id. The disk will be located to different storage from these disks",
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(sakuraIDValidator()),
+				},
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplaceIfConfigured(),
 				},

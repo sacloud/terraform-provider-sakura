@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -80,6 +81,9 @@ func (r *switchResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "A list of server ids connected to the switch",
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(sakuraIDValidator()),
+				},
 			},
 		},
 		Blocks: map[string]schema.Block{
