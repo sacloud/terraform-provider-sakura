@@ -49,7 +49,7 @@ func (r *packetFilterResource) Configure(ctx context.Context, req resource.Confi
 	if apiclient == nil {
 		return
 	}
-	r.client = req.ProviderData.(*APIClient)
+	r.client = apiclient
 }
 
 type packetFilterResourceModel struct {

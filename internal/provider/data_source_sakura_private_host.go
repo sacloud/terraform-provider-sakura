@@ -1,0 +1,113 @@
+// Copyright 2016-2025 terraform-provider-sakuracloud authors
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//      http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package sakura
+
+import (
+	"context"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/sacloud/iaas-api-go"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
+)
+
+// PrivateHostDataSource implements datasource.DataSource
+type privateHostDataSource struct {
+	client *APIClient
+}
+
+// Ensure privateHostDataSource implements the required interfaces
+var (
+	_ datasource.DataSource              = &privateHostDataSource{}
+	_ datasource.DataSourceWithConfigure = &privateHostDataSource{}
+)
+
+// NewPrivateHostDataSource returns a new instance
+func NewPrivateHostDataSource() datasource.DataSource {
+	return &privateHostDataSource{}
+}
+
+func (d *privateHostDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_private_host"
+}
+
+func (d *privateHostDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	apiclient := getApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
+		return
+	}
+	d.client = apiclient
+}
+
+type privateHostDataSourceModel struct {
+	sakuraPrivateHostBaseModel
+}
+
+func (d *privateHostDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id":          schemaDataSourceId("PrivateHost"),
+			"name":        schemaDataSourceName("PrivateHost"),
+			"description": schemaDataSourceDescription("PrivateHost"),
+			"tags":        schemaDataSourceTags("PrivateHost"),
+			"zone":        schemaDataSourceZone("PrivateHost"),
+			"icon_id":     schemaDataSourceIconID("PrivateHost"),
+			"class":       schemaDataSourceClass("PrivateHost", []string{iaastypes.PrivateHostClassDynamic, iaastypes.PrivateHostClassWindows}),
+			"hostname": schema.StringAttribute{
+				Computed:    true,
+				Description: "The hostname of the private host.",
+			},
+			"assigned_core": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The total number of CPUs assigned to servers on the private host",
+			},
+			"assigned_memory": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The total size of memory assigned to servers on the private host",
+			},
+		},
+	}
+}
+
+func (d *privateHostDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data privateHostDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	zone := getZone(data.Zone, d.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	searcher := iaas.NewPrivateHostOp(d.client)
+	findCondition := createFindCondition(data.ID, data.Name, data.Tags)
+
+	res, err := searcher.Find(ctx, zone, findCondition)
+	if err != nil {
+		resp.Diagnostics.AddError("Read Error", err.Error())
+		return
+	}
+	if res == nil || res.Count == 0 || len(res.PrivateHosts) == 0 {
+		filterNoResultErr(&resp.Diagnostics)
+		return
+	}
+
+	data.updateState(res.PrivateHosts[0], zone)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+// sakuraCloudClientFramework, expandSearchFilterFrameworkはSDK/Framework用に実装してください

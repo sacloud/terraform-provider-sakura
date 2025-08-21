@@ -52,7 +52,7 @@ func (r *packetFilterRulesResource) Configure(ctx context.Context, req resource.
 	if apiclient == nil {
 		return
 	}
-	r.client = req.ProviderData.(*APIClient)
+	r.client = apiclient
 }
 
 type packetFilterRulesResourceModel struct {

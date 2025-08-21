@@ -54,7 +54,7 @@ func (r *noteResource) Configure(ctx context.Context, req resource.ConfigureRequ
 	if apiclient == nil {
 		return
 	}
-	r.client = req.ProviderData.(*APIClient)
+	r.client = apiclient
 }
 
 type noteResourceModel struct {

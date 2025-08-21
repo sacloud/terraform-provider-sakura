@@ -196,6 +196,26 @@ func flattenPacketFilterExpression(exp *iaas.PacketFilterExpression) *sakuraPack
 	return expression
 }
 
+type sakuraPrivateHostBaseModel struct {
+	sakuraBaseModel
+	Zone           types.String `tfsdk:"zone"`
+	IconID         types.String `tfsdk:"icon_id"`
+	Class          types.String `tfsdk:"class"`
+	Hostname       types.String `tfsdk:"hostname"`
+	AssignedCore   types.Int32  `tfsdk:"assigned_core"`
+	AssignedMemory types.Int32  `tfsdk:"assigned_memory"`
+}
+
+func (model *sakuraPrivateHostBaseModel) updateState(ph *iaas.PrivateHost, zone string) {
+	model.updateBaseState(ph.ID.String(), ph.Name, ph.Description, ph.Tags)
+	model.Zone = types.StringValue(zone)
+	model.IconID = types.StringValue(ph.IconID.String())
+	model.Class = types.StringValue(ph.PlanClass)
+	model.Hostname = types.StringValue(ph.GetHostName())
+	model.AssignedCore = types.Int32Value(int32(ph.GetAssignedCPU()))
+	model.AssignedMemory = types.Int32Value(int32(ph.GetAssignedMemoryGB()))
+}
+
 type sakuraSwitchBaseModel struct {
 	sakuraBaseModel
 	IconID    types.String `tfsdk:"icon_id"`
