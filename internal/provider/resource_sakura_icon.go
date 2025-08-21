@@ -66,16 +66,14 @@ func (r *iconResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 			"name": schemaResourceName("Icon"),
 			"tags": schemaResourceTags("Icon"),
 			"source": schema.StringAttribute{
-				Optional: true,
-				//ConflictsWith: []string{"base64content"},
+				Optional:    true,
 				Description: "The file path to upload as the Icon.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("base64content")),
 				},
 			},
 			"base64content": schema.StringAttribute{
-				Optional: true,
-				//ConflictsWith: []string{"source"},
+				Optional:    true,
 				Description: "The base64 encoded content to upload as the Icon.",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("source")),

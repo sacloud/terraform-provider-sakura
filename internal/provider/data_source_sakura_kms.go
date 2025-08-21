@@ -30,14 +30,14 @@ type kmsDataSource struct {
 	client *v1.Client
 }
 
-func NewKmsDataSource() datasource.DataSource {
-	return &kmsDataSource{}
-}
-
 var (
 	_ datasource.DataSource              = &kmsDataSource{}
 	_ datasource.DataSourceWithConfigure = &kmsDataSource{}
 )
+
+func NewKmsDataSource() datasource.DataSource {
+	return &kmsDataSource{}
+}
 
 func (d *kmsDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_kms"
@@ -84,8 +84,7 @@ func (d *kmsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, 
 
 func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var data kmsDataSourceModel
-	diags := req.Config.Get(ctx, &data)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}

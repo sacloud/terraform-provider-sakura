@@ -17,11 +17,17 @@ package sakura
 import (
 	"context"
 
+	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 )
+
+// SDK v2のHasChangeの代替
+func hasChange(x, y any) bool {
+	return !cmp.Equal(x, y)
+}
 
 func updateResourceByRead(ctx context.Context, r resource.Resource, state *tfsdk.State, diags *diag.Diagnostics, id string) {
 	updateResourceByReadWithZone(ctx, r, state, diags, id, "")

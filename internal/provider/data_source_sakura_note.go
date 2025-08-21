@@ -29,14 +29,14 @@ type noteDataSource struct {
 	client *APIClient
 }
 
-func NewNoteDataSource() datasource.DataSource {
-	return &noteDataSource{}
-}
-
 var (
 	_ datasource.DataSource              = &noteDataSource{}
 	_ datasource.DataSourceWithConfigure = &noteDataSource{}
 )
+
+func NewNoteDataSource() datasource.DataSource {
+	return &noteDataSource{}
+}
 
 func (d *noteDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_note"

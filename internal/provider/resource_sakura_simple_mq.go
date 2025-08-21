@@ -186,25 +186,6 @@ func (r *simpleMQResource) Update(ctx context.Context, req resource.UpdateReques
 	updateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, plan.ID.ValueString())
 }
 
-func (r *simpleMQResource) callUpdateRequest(ctx context.Context, id string, plan *simpleMQResourceModel, mq *queue.CommonServiceItem) error {
-	var err error
-	queueOp := simplemq.NewQueueOp(r.client)
-
-	if mq == nil {
-		mq, err = queueOp.Read(ctx, id)
-		if err != nil {
-			return fmt.Errorf("could not read SimpleMQ[%s] queue: %w", id, err)
-		}
-	}
-
-	_, err = queueOp.Config(ctx, simplemq.GetQueueID(mq), expandSimpleMQUpdateRequest(plan, mq))
-	if err != nil {
-		return fmt.Errorf("update SimpleMQ[%s] queue config failed: %w", id, err)
-	}
-
-	return nil
-}
-
 func (r *simpleMQResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state simpleMQResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
@@ -232,6 +213,25 @@ func (r *simpleMQResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func (r *simpleMQResource) callUpdateRequest(ctx context.Context, id string, plan *simpleMQResourceModel, mq *queue.CommonServiceItem) error {
+	var err error
+	queueOp := simplemq.NewQueueOp(r.client)
+
+	if mq == nil {
+		mq, err = queueOp.Read(ctx, id)
+		if err != nil {
+			return fmt.Errorf("could not read SimpleMQ[%s] queue: %w", id, err)
+		}
+	}
+
+	_, err = queueOp.Config(ctx, simplemq.GetQueueID(mq), expandSimpleMQUpdateRequest(plan, mq))
+	if err != nil {
+		return fmt.Errorf("update SimpleMQ[%s] queue config failed: %w", id, err)
+	}
+
+	return nil
 }
 
 func expandSimpleMQCreateRequest(d *simpleMQResourceModel) queue.CreateQueueRequest {

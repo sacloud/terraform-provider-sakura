@@ -106,6 +106,9 @@ func (r *noteResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	ctx, cancel := setupTimeoutCreate(ctx, plan.Timeouts, timeout5min)
+	defer cancel()
+
 	noteOp := iaas.NewNoteOp(r.client)
 	note, err := noteOp.Create(ctx, &iaas.NoteCreateRequest{
 		Name:    plan.Name.ValueString(),
@@ -151,6 +154,9 @@ func (r *noteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
+	ctx, cancel := setupTimeoutUpdate(ctx, plan.Timeouts, timeout5min)
+	defer cancel()
+
 	noteOp := iaas.NewNoteOp(r.client)
 	note, err := noteOp.Update(ctx, expandSakuraCloudID(plan.ID), &iaas.NoteUpdateRequest{
 		Name:    plan.Name.ValueString(),
@@ -173,6 +179,9 @@ func (r *noteResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := setupTimeoutDelete(ctx, state.Timeouts, timeout5min)
+	defer cancel()
 
 	noteOp := iaas.NewNoteOp(r.client)
 	note, err := noteOp.Read(ctx, expandSakuraCloudID(state.ID))
