@@ -24,8 +24,10 @@ import (
 )
 
 const (
-	timeout20min = 20 * time.Minute
-	timeout5min  = 5 * time.Minute
+	timeout5min   = 5 * time.Minute
+	timeout20min  = 20 * time.Minute
+	timeout60min  = 60 * time.Minute
+	timeout24hour = 24 * time.Hour
 )
 
 func setupTimeoutCreate(ctx context.Context, tov timeouts.Value, defaultTimeout time.Duration) (context.Context, context.CancelFunc) {
