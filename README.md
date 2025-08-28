@@ -20,6 +20,86 @@ muxなども使っておらず、完全移行となります。
 
 ### 変更されたリソース
 
+Frameworkでは既存のBlock構文は非推奨になっており、Attribute構文を推奨しています。v3からは過去Block構文を利用していたフィールド群は書き換える必要があります。
+
+```
+# Attribute構文。リストやブロックでもこちらで書くのを推奨されている
+user = [
+  {
+    //...
+  },
+  {
+	//...
+  }
+]
+
+# Block構文。こちらは古い書き方で、現状Block機能を使うことで互換性のために実装できるが非推奨
+user {
+    // ...
+}
+user {
+	// ...
+}
+```
+
+また、Frameworkはより厳密に型や値をチェックするようになったため、SDK v2でチェックされない挙動に依存してたリソースも一部挙動が変更されています。
+
+#### タイムアウト設定
+
+BlockからAttributeに変更されたため、以下のように書き換える必要があります
+
+- v2
+
+```
+timeouts {
+  create = "20m"
+}
+```
+
+- v3
+
+```
+timeouts = {
+  create = "20m"
+}
+```
+
+#### container_registry
+
+`user`フィールドがBlockからSet型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+user {
+  name       = "user1"
+  password   = "user1_pass"
+  permission = "readonly"
+}
+user {
+  name       = "user2"
+  password   = "user2_pass"
+  permission = "all"
+}
+```
+
+- v3
+
+```
+user = [
+  {
+    name       = "user1"
+    password   = "user1_pass"
+    permission = "readonly"
+  },
+  {
+    name       = "user2"
+    password   = "user2_pass"
+    permission = "all"
+  }
+]
+```
+
 #### internet
 
 `assigned_tags`というフィールドが増えています。これは`band_width`の変更によって`id`が変更された場合に自動で付与される`@previous-id`というタグが格納されるフィールドです。v2では`tags`に格納されていましたが、厳格にチェックされるFrameworkによるv3では実現が不可能なため、分離されました。
@@ -44,20 +124,62 @@ assigned_tags = [
 ]
 ```
 
-### 未決定のもの
+#### nfs
 
-- terraformが記述を属性に統一しようとしているが、ブロックの記述をいつまでサポートするべきか。`timeout`等は属性ベースにすると設定の更新が必要。
+`network_interface`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
 
-```hcl
-# 属性ベースの書き方。こちらが推奨されている
-map = {
-    //...
+- v2
+
+```
+network_interface {
+  switch_id  = sakura_switch.foobar.id
+  ip_address = "192.168.11.101"
+  netmask    = 24
+  gateway    = "192.168.11.1"
 }
+```
 
-# ブロックでの書き方。こちらは古い書き方で、現状Blockを使うことで実装できる
-map {
-    // ...
+- v3
+
+```
+network_interface = {
+  switch_id  = sakura_switch.foobar.id
+  ip_address = "192.168.11.101"
+  netmask    = 24
+  gateway    = "192.168.11.1"
 }
+```
+
+#### packet_filter / packet_filter_rules
+
+`expression`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+expression {
+  protocol         = "tcp"
+  destination_port = "22"
+}
+expression {
+  protocol    = "udp"
+  source_port = "123"
+}
+```
+
+- v3
+
+```
+expression = [
+  {
+    protocol         = "tcp"
+    destination_port = "22"
+  },
+  {
+    protocol    = "udp"
+    source_port = "123"
+  }
+]
 ```
 
 ## 実装詳細 (開発者向け)

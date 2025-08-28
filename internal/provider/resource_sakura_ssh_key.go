@@ -75,9 +75,7 @@ func (r *sshKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Computed:    true,
 				Description: "The fingerprint of the public key.",
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

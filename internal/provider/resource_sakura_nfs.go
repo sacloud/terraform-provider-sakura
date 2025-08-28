@@ -21,7 +21,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -81,46 +80,39 @@ func (r *nfsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 			"description": schemaResourceDescription("NFS"),
 			"tags":        schemaResourceTags("NFS"),
 			"zone":        schemaResourceZone("NFS"),
-		},
-		Blocks: map[string]schema.Block{
-			"network_interface": schema.ListNestedBlock{ // データの互換性のためにListにしているが、SingleNestedBlockが望ましい
+			"network_interface": schema.SingleNestedAttribute{
+				Required:    true,
 				Description: "The network interface of the NFS.",
-				Validators: []validator.List{
-					listvalidator.SizeAtLeast(1),
-					listvalidator.SizeAtMost(1),
-				},
-				NestedObject: schema.NestedBlockObject{
-					Attributes: map[string]schema.Attribute{
-						"switch_id": schemaResourceSwitchID("NFS"),
-						"ip_address": schema.StringAttribute{
-							Required:    true,
-							Description: "The IP address to assign to the NFS",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplace(),
-							},
+				Attributes: map[string]schema.Attribute{
+					"switch_id": schemaResourceSwitchID("NFS"),
+					"ip_address": schema.StringAttribute{
+						Required:    true,
+						Description: "The IP address to assign to the NFS",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplace(),
 						},
-						"netmask": schema.Int32Attribute{
-							Required:    true,
-							Description: desc.Sprintf("The bit length of the subnet to assign to the NFS. %s", desc.Range(8, 29)),
-							Validators: []validator.Int32{
-								int32validator.Between(8, 29),
-							},
-							PlanModifiers: []planmodifier.Int32{
-								int32planmodifier.RequiresReplace(),
-							},
+					},
+					"netmask": schema.Int32Attribute{
+						Required:    true,
+						Description: desc.Sprintf("The bit length of the subnet to assign to the NFS. %s", desc.Range(8, 29)),
+						Validators: []validator.Int32{
+							int32validator.Between(8, 29),
 						},
-						"gateway": schema.StringAttribute{
-							Optional:    true,
-							Computed:    true,
-							Description: "The IP address of the gateway used by NFS",
-							PlanModifiers: []planmodifier.String{
-								stringplanmodifier.RequiresReplaceIfConfigured(),
-							},
+						PlanModifiers: []planmodifier.Int32{
+							int32planmodifier.RequiresReplace(),
+						},
+					},
+					"gateway": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "The IP address of the gateway used by NFS",
+						PlanModifiers: []planmodifier.String{
+							stringplanmodifier.RequiresReplaceIfConfigured(),
 						},
 					},
 				},
 			},
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

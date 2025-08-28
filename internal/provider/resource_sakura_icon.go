@@ -83,9 +83,7 @@ func (r *iconResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Computed:    true,
 				Description: "The URL for getting the icon's raw data.",
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

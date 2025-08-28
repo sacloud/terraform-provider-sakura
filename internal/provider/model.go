@@ -20,10 +20,12 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/query"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
+	registryBuilder "github.com/sacloud/iaas-service-go/containerregistry/builder"
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 )
@@ -40,6 +42,87 @@ func (m *sakuraBaseModel) updateBaseState(id string, name string, desc string, t
 	m.Name = types.StringValue(name)
 	m.Description = types.StringValue(desc)
 	m.Tags = stringsToTset(tags)
+}
+
+type sakuraContainerRegistryBaseModel struct {
+	sakuraBaseModel
+	AccessLevel    types.String                        `tfsdk:"access_level"`
+	VirtualDomain  types.String                        `tfsdk:"virtual_domain"`
+	SubDomainLabel types.String                        `tfsdk:"subdomain_label"`
+	FQDN           types.String                        `tfsdk:"fqdn"`
+	IconID         types.String                        `tfsdk:"icon_id"`
+	User           []*sakuraContainerRegistryUserModel `tfsdk:"user"`
+}
+
+type sakuraContainerRegistryUserModel struct {
+	Name       types.String `tfsdk:"name"`
+	Password   types.String `tfsdk:"password"`
+	Permission types.String `tfsdk:"permission"`
+}
+
+func (model *sakuraContainerRegistryBaseModel) updateState(ctx context.Context, c *APIClient, reg *iaas.ContainerRegistry, includePassword bool, diags *diag.Diagnostics) {
+	users := getContainerRegistryUsers(ctx, c, reg)
+	if users == nil {
+		diags.AddError("Get Users Error", "could not get users for SakuraCloud ContainerRegistry")
+		return
+	}
+
+	model.updateBaseState(reg.ID.String(), reg.Name, reg.Description, reg.Tags)
+	model.AccessLevel = types.StringValue(string(reg.AccessLevel))
+	model.VirtualDomain = types.StringValue(reg.VirtualDomain)
+	model.SubDomainLabel = types.StringValue(reg.SubDomainLabel)
+	model.FQDN = types.StringValue(reg.FQDN)
+	model.IconID = types.StringValue(reg.IconID.String())
+	model.User = flattenContainerRegistryUsers(model.User, users, includePassword)
+}
+
+func getContainerRegistryUsers(ctx context.Context, client *APIClient, user *iaas.ContainerRegistry) []*iaas.ContainerRegistryUser {
+	regOp := iaas.NewContainerRegistryOp(client)
+	users, err := regOp.ListUsers(ctx, user.ID)
+	if err != nil {
+		return nil
+	}
+	return users.Users
+}
+
+func expandContainerRegistryUsers(users []*sakuraContainerRegistryUserModel) []*registryBuilder.User {
+	if len(users) == 0 {
+		return nil
+	}
+
+	var results []*registryBuilder.User
+	for _, u := range users {
+		results = append(results, &registryBuilder.User{
+			UserName:   u.Name.ValueString(),
+			Password:   u.Password.ValueString(),
+			Permission: iaastypes.EContainerRegistryPermission(u.Permission.ValueString()),
+		})
+	}
+	return results
+}
+
+func flattenContainerRegistryUsers(conf []*sakuraContainerRegistryUserModel, users []*iaas.ContainerRegistryUser, includePassword bool) []*sakuraContainerRegistryUserModel {
+	inputs := expandContainerRegistryUsers(conf)
+
+	var results []*sakuraContainerRegistryUserModel
+	for _, user := range users {
+		v := &sakuraContainerRegistryUserModel{
+			Name:       types.StringValue(user.UserName),
+			Permission: types.StringValue(string(user.Permission)),
+		}
+		if includePassword {
+			password := ""
+			for _, i := range inputs {
+				if i.UserName == user.UserName {
+					password = i.Password
+					break
+				}
+			}
+			v.Password = types.StringValue(password)
+		}
+		results = append(results, v)
+	}
+	return results
 }
 
 type sakuraDiskBaseModel struct {

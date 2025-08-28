@@ -79,9 +79,7 @@ func (r *secretManagerSecretResource) Schema(ctx context.Context, req resource.S
 				Sensitive:   true,
 				Description: "Secret value.",
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

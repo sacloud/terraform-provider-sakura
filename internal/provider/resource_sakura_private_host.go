@@ -97,9 +97,7 @@ func (r *privateHostResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:    true,
 				Description: "The total size of memory assigned to servers on the private host",
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

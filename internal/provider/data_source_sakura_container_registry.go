@@ -48,7 +48,7 @@ func (d *containerRegistryDataSource) Configure(ctx context.Context, req datasou
 }
 
 type containerRegistryDataSourceModel struct {
-	containerRegistryResourceModel
+	sakuraContainerRegistryBaseModel
 	Filter *filterBlockModel `tfsdk:"filter"`
 }
 
@@ -86,7 +86,7 @@ func (d *containerRegistryDataSource) Schema(_ context.Context, _ datasource.Sch
 						},
 						"password": schema.StringAttribute{
 							Computed: true,
-							//Sensitive:   true,
+							//Sensitive:   true, // password is not sensitive because this attribute is always empty in data source
 							Description: "The password used to authenticate remote access",
 						},
 						"permission": schema.StringAttribute{

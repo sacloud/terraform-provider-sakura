@@ -177,9 +177,7 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

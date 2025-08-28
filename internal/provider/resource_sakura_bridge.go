@@ -69,9 +69,7 @@ func (r *bridgeResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"name":        schemaResourceName("Bridge"),
 			"description": schemaResourceDescription("Bridge"),
 			"zone":        schemaResourceZone("Bridge"),
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

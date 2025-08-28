@@ -86,9 +86,7 @@ func (r *noteResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 					stringvalidator.OneOf(iaastypes.NoteClassStrings...),
 				},
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

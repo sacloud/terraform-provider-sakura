@@ -28,7 +28,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	registryBuilder "github.com/sacloud/iaas-service-go/containerregistry/builder"
@@ -61,25 +60,9 @@ func (r *containerRegistryResource) Configure(ctx context.Context, req resource.
 	r.client = apiclient
 }
 
-// TODO: model.goに切り出してdata sourceと共通化する
 type containerRegistryResourceModel struct {
-	ID             types.String                  `tfsdk:"id"`
-	Name           types.String                  `tfsdk:"name"`
-	AccessLevel    types.String                  `tfsdk:"access_level"`
-	VirtualDomain  types.String                  `tfsdk:"virtual_domain"`
-	SubDomainLabel types.String                  `tfsdk:"subdomain_label"`
-	FQDN           types.String                  `tfsdk:"fqdn"`
-	IconID         types.String                  `tfsdk:"icon_id"`
-	Description    types.String                  `tfsdk:"description"`
-	Tags           types.Set                     `tfsdk:"tags"`
-	User           []*containerRegistryUserModel `tfsdk:"user"`
-	Timeouts       timeouts.Value                `tfsdk:"timeouts"`
-}
-
-type containerRegistryUserModel struct {
-	Name       types.String `tfsdk:"name"`
-	Password   types.String `tfsdk:"password"`
-	Permission types.String `tfsdk:"permission"`
+	sakuraContainerRegistryBaseModel
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *containerRegistryResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -89,6 +72,7 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 			"name":        schemaResourceName("Container Registry"),
 			"description": schemaResourceDescription("Container Registry"),
 			"tags":        schemaResourceTags("Container Registry"),
+			"icon_id":     schemaResourceIconID("Container Registry"),
 			"access_level": schema.StringAttribute{
 				Required: true,
 				Description: desc.Sprintf(
@@ -121,12 +105,10 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 				Computed:    true,
 				Description: "The FQDN for accessing the Container Registry. FQDN is built from `subdomain_label` + `.sakuracr.jp`",
 			},
-			"icon_id": schemaResourceIconID("Container Registry"),
-		},
-		Blocks: map[string]schema.Block{
-			"user": schema.SetNestedBlock{
+			"user": schema.SetNestedAttribute{
+				Optional:    true,
 				Description: "User accounts for accessing the container registry",
-				NestedObject: schema.NestedBlockObject{
+				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
 							Required:    true,
@@ -150,7 +132,7 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 					},
 				},
 			},
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},
@@ -274,22 +256,6 @@ func expandContainerRegistryBuilder(d *containerRegistryResourceModel, c *APICli
 	}
 }
 
-func expandContainerRegistryUsers(users []*containerRegistryUserModel) []*registryBuilder.User {
-	if len(users) == 0 {
-		return nil
-	}
-
-	var results []*registryBuilder.User
-	for _, u := range users {
-		results = append(results, &registryBuilder.User{
-			UserName:   u.Name.ValueString(),
-			Password:   u.Password.ValueString(),
-			Permission: iaastypes.EContainerRegistryPermission(u.Permission.ValueString()),
-		})
-	}
-	return results
-}
-
 func getContainerRegistry(ctx context.Context, client *APIClient, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.ContainerRegistry {
 	regOp := iaas.NewContainerRegistryOp(client)
 	reg, err := regOp.Read(ctx, id)
@@ -302,57 +268,4 @@ func getContainerRegistry(ctx context.Context, client *APIClient, id iaastypes.I
 		return nil
 	}
 	return reg
-}
-
-func getContainerRegistryUsers(ctx context.Context, client *APIClient, user *iaas.ContainerRegistry) []*iaas.ContainerRegistryUser {
-	regOp := iaas.NewContainerRegistryOp(client)
-	users, err := regOp.ListUsers(ctx, user.ID)
-	if err != nil {
-		return nil
-	}
-
-	return users.Users
-}
-
-func flattenContainerRegistryUsers(conf []*containerRegistryUserModel, users []*iaas.ContainerRegistryUser, includePassword bool) []*containerRegistryUserModel {
-	inputs := expandContainerRegistryUsers(conf)
-
-	var results []*containerRegistryUserModel
-	for _, user := range users {
-		v := &containerRegistryUserModel{
-			Name:       types.StringValue(user.UserName),
-			Permission: types.StringValue(string(user.Permission)),
-		}
-		if includePassword {
-			password := ""
-			for _, i := range inputs {
-				if i.UserName == user.UserName {
-					password = i.Password
-					break
-				}
-			}
-			v.Password = types.StringValue(password)
-		}
-		results = append(results, v)
-	}
-	return results
-}
-
-func (model *containerRegistryResourceModel) updateState(ctx context.Context, c *APIClient, reg *iaas.ContainerRegistry, includePassword bool, diags *diag.Diagnostics) {
-	users := getContainerRegistryUsers(ctx, c, reg)
-	if users == nil {
-		diags.AddError("Get Users Error", "could not get users for SakuraCloud ContainerRegistry")
-		return
-	}
-
-	model.ID = types.StringValue(reg.ID.String())
-	model.Name = types.StringValue(reg.Name)
-	model.AccessLevel = types.StringValue(string(reg.AccessLevel))
-	model.VirtualDomain = types.StringValue(reg.VirtualDomain)
-	model.SubDomainLabel = types.StringValue(reg.SubDomainLabel)
-	model.FQDN = types.StringValue(reg.FQDN)
-	model.IconID = types.StringValue(reg.IconID.String())
-	model.Description = types.StringValue(reg.Description)
-	model.Tags = stringsToTset(reg.Tags)
-	model.User = flattenContainerRegistryUsers(model.User, users, includePassword)
 }

@@ -159,13 +159,14 @@ func schemaResourcePlan(name string, defaultValue string, plans []string) schema
 	return s
 }
 
-func schemaPacketFilterExpression() schema.Block {
-	return schema.ListNestedBlock{
+func schemaPacketFilterExpression() schema.Attribute {
+	return schema.ListNestedAttribute{
+		Optional:    true,
 		Description: "List of packet filter expressions",
 		Validators: []validator.List{
 			listvalidator.SizeAtMost(30),
 		},
-		NestedObject: schema.NestedBlockObject{
+		NestedObject: schema.NestedAttributeObject{
 			Attributes: map[string]schema.Attribute{
 				"protocol": schema.StringAttribute{
 					Required:    true,

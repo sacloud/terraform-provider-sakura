@@ -64,10 +64,8 @@ func (r *packetFilterResource) Schema(ctx context.Context, _ resource.SchemaRequ
 			"name":        schemaResourceName("Packet Filter"),
 			"description": schemaResourceDescription("Packet Filter"),
 			"zone":        schemaResourceZone("Packet Filter"),
-		},
-		Blocks: map[string]schema.Block{
-			"expression": schemaPacketFilterExpression(),
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"expression":  schemaPacketFilterExpression(),
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

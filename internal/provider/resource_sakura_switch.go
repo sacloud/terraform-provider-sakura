@@ -85,9 +85,7 @@ func (r *switchResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 					setvalidator.ValueStringsAre(sakuraIDValidator()),
 				},
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

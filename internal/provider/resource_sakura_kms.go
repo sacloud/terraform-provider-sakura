@@ -90,9 +90,7 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Sensitive:   true,
 				Description: "Plain key for imported KMS key. Required when `key_origin` is 'imported'.",
 			},
-		},
-		Blocks: map[string]schema.Block{
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},

@@ -75,10 +75,8 @@ func (r *packetFilterRulesResource) Schema(ctx context.Context, _ resource.Schem
 					sakuraIDValidator(),
 				},
 			},
-		},
-		Blocks: map[string]schema.Block{
 			"expression": schemaPacketFilterExpression(),
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},
