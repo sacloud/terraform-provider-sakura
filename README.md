@@ -217,6 +217,7 @@ type xxxResource {
 var (
 	_ resource.Resource                = &xxxResource{}
 	_ resource.ResourceWithConfigure   = &xxxResource{}
+	_ resource.ResourceWithImportState = &xxxResource{}
 )
 
 // Resourcesで登録するためのヘルパー
@@ -241,10 +242,8 @@ func (r *xxxResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schemaResourceId("XXX"),  // SDK v2と違って自分でidを定義する必要がある
-            // 他のパラメータ
-		},
-		Blocks: map[string]schema.Block{  // タイムアウト向けのパラメータも自分で定義に入れる必要がある
-			"timeouts": timeouts.Block(ctx, timeouts.Opts{
+            // 他のパラメータ群
+			"timeouts": timeouts.Attriutes(ctx, timeouts.Opts{  // タイムアウト向けのパラメータも自分で定義に入れる必要がある
 				Create: true, Update: true, Delete: true,
 			}),
 		},
@@ -290,7 +289,7 @@ func (r *xxxResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	// Update用の実装
 
-	updateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, key.ID.String())
+	updateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, xxx.ID.String())
 }
 
 func (r *xxxResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
