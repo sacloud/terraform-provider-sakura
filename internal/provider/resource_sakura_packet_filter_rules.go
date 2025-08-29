@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
 )
 
 type packetFilterRulesResource struct {
@@ -72,7 +73,7 @@ func (r *packetFilterRulesResource) Schema(ctx context.Context, _ resource.Schem
 				Required:    true,
 				Description: "The id of the packet filter that set expressions to",
 				Validators: []validator.String{
-					sakuraIDValidator(),
+					validators.SakuraIDValidator(),
 				},
 			},
 			"expression": schemaPacketFilterExpression(),

@@ -30,6 +30,7 @@ import (
 
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
 )
 
 func schemaResourceId(name string) schema.Attribute {
@@ -69,7 +70,7 @@ func schemaResourceIconID(name string) schema.Attribute {
 		Computed:    true,
 		Description: desc.Sprintf("The icon id to attach to the %s", name),
 		Validators: []validator.String{
-			sakuraIDValidator(),
+			validators.SakuraIDValidator(),
 		},
 	}
 }
@@ -80,7 +81,7 @@ func schemaResourceServerID(name string) schema.Attribute {
 		Computed:    true,
 		Description: desc.Sprintf("The id of the server connected to the %s", name),
 		Validators: []validator.String{
-			sakuraIDValidator(),
+			validators.SakuraIDValidator(),
 		},
 	}
 }
@@ -90,7 +91,7 @@ func schemaResourceSwitchID(name string) schema.Attribute {
 		Required:    true,
 		Description: desc.Sprintf("The id of the switch to which the %s connects", name),
 		Validators: []validator.String{
-			sakuraIDValidator(),
+			validators.SakuraIDValidator(),
 		},
 		PlanModifiers: []planmodifier.String{
 			stringplanmodifier.RequiresReplace(),

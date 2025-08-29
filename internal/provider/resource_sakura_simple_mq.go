@@ -29,6 +29,7 @@ import (
 	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
 )
 
 type simpleMQResource struct {
@@ -73,7 +74,7 @@ func (r *simpleMQResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Required:    true,
 				Description: "The name of the SimpleMQ.",
 				Validators: []validator.String{
-					stringFuncValidator(func(v string) error {
+					validators.StringFuncValidator(func(v string) error {
 						return queue.QueueName(v).Validate()
 					}),
 				},
@@ -87,7 +88,7 @@ func (r *simpleMQResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Default:     int64default.StaticInt64(30),
 				Description: "The duration in seconds that a message is invisible to others after being read from a queue. Default is 30 seconds.",
 				Validators: []validator.Int64{
-					int64FuncValidator(func(v int64) error {
+					validators.Int64FuncValidator(func(v int64) error {
 						return queue.VisibilityTimeoutSeconds(v).Validate()
 					}),
 				},
@@ -98,7 +99,7 @@ func (r *simpleMQResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Default:     int64default.StaticInt64(345600),
 				Description: "The duration in seconds that a message is stored in a queue. Default is 345600 seconds (4 days).",
 				Validators: []validator.Int64{
-					int64FuncValidator(func(v int64) error {
+					validators.Int64FuncValidator(func(v int64) error {
 						return queue.ExpireSeconds(v).Validate()
 					}),
 				},

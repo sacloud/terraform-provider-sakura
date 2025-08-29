@@ -39,6 +39,7 @@ import (
 	"github.com/sacloud/iaas-service-go/setup"
 	"github.com/sacloud/packages-go/size"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
 )
 
 type diskResource struct {
@@ -102,7 +103,7 @@ func (r *diskResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Computed:    true,
 				Description: desc.Sprintf("The id of the source archive. %s", desc.Conflicts("source_disk_id")),
 				Validators: []validator.String{
-					sakuraIDValidator(),
+					validators.SakuraIDValidator(),
 					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("source_disk_id")),
 				},
 				PlanModifiers: []planmodifier.String{
@@ -114,7 +115,7 @@ func (r *diskResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Computed:    true,
 				Description: desc.Sprintf("The id of the source disk. %s", desc.Conflicts("source_archive_id")),
 				Validators: []validator.String{
-					sakuraIDValidator(),
+					validators.SakuraIDValidator(),
 					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("source_archive_id")),
 				},
 				PlanModifiers: []planmodifier.String{
@@ -138,7 +139,7 @@ func (r *diskResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Optional:    true,
 				Description: "A list of disk id. The disk will be located to different storage from these disks",
 				Validators: []validator.Set{
-					setvalidator.ValueStringsAre(sakuraIDValidator()),
+					setvalidator.ValueStringsAre(validators.SakuraIDValidator()),
 				},
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplaceIfConfigured(),

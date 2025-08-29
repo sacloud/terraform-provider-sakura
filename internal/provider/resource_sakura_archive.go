@@ -39,6 +39,7 @@ import (
 	archiveUtil "github.com/sacloud/iaas-service-go/archive/builder"
 
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
 )
 
 type archiveResource struct {
@@ -129,7 +130,7 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Computed:    true,
 				Description: desc.Sprintf("The id of the source archive. %s", desc.Conflicts("source_disk_id")),
 				Validators: []validator.String{
-					sakuraIDValidator(),
+					validators.SakuraIDValidator(),
 					stringvalidator.ConflictsWith(sizePath, sourceDiskIdPath, sourceSharedKeyPath),
 				},
 				PlanModifiers: []planmodifier.String{
@@ -151,7 +152,7 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Computed:    true,
 				Description: desc.Sprintf("The id of the source disk. %s", desc.Conflicts("source_archive_id")),
 				Validators: []validator.String{
-					sakuraIDValidator(),
+					validators.SakuraIDValidator(),
 					stringvalidator.ConflictsWith(sizePath, sourceArchiveIdPath, sourceArchiveZonePath, sourceSharedKeyPath),
 				},
 				PlanModifiers: []planmodifier.String{
@@ -164,7 +165,7 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Sensitive:   true,
 				Description: "The share key of source shared archive",
 				Validators: []validator.String{
-					stringFuncValidator(func(v string) error {
+					validators.StringFuncValidator(func(v string) error {
 						key := iaastypes.ArchiveShareKey(v)
 						if !key.ValidFormat() {
 							return fmt.Errorf("%q must be formatted in '<ZONE>:<ID>:<TOKEN>'", key)
