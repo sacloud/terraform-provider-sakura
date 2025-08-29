@@ -28,7 +28,22 @@ import (
 
 	apiprof "github.com/sacloud/api-client-go/profile"
 	"github.com/sacloud/packages-go/envvar"
-	"github.com/sacloud/packages-go/mutexkv"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/archive"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/bridge"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/container_registry"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/disk"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/icon"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/internet"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/kms"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/nfs"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/note"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/packet_filter"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/private_host"
+	secret_manager "github.com/sacloud/terraform-provider-sakuracloud/internal/service/s3cret_manager"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/simple_mq"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/ssh_key"
+	sw1tch "github.com/sacloud/terraform-provider-sakuracloud/internal/service/switch"
 )
 
 type sakuraProviderModel struct {
@@ -53,11 +68,9 @@ func New(version string) func() provider.Provider {
 	}
 }
 
-var sakuraMutexKV = mutexkv.NewMutexKV()
-
 type sakuraProvider struct {
 	version string
-	client  *APIClient
+	client  *common.APIClient
 }
 
 func (p *sakuraProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
@@ -111,15 +124,15 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	secret := os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
 	zone, ok := os.LookupEnv("SAKURACLOUD_ZONE")
 	if !ok {
-		zone = Zone
+		zone = common.Zone
 	}
 	defaultZone, _ := os.LookupEnv("SAKURACLOUD_DEFAULT_ZONE")
 	apiRootUrl := os.Getenv("SAKURACLOUD_API_ROOT_URL")
-	retryMax := getIntValueFromEnv(resp, "SAKURACLOUD_RETRY_MAX", RetryMax)
+	retryMax := getIntValueFromEnv(resp, "SAKURACLOUD_RETRY_MAX", common.RetryMax)
 	retryWaitMax := getIntValueFromEnv(resp, "SAKURACLOUD_RETRY_WAIT_MAX", 0)
 	retryWaitMin := getIntValueFromEnv(resp, "SAKURACLOUD_RETRY_WAIT_MIN", 0)
-	apiRequestTimeout := getIntValueFromEnv(resp, "SAKURACLOUD_API_REQUEST_TIMEOUT", APIRequestTimeout)
-	apiRequestRateLimit := getIntValueFromEnv(resp, "SAKURACLOUD_RATE_LIMIT", APIRequestRateLimit)
+	apiRequestTimeout := getIntValueFromEnv(resp, "SAKURACLOUD_API_REQUEST_TIMEOUT", common.APIRequestTimeout)
+	apiRequestRateLimit := getIntValueFromEnv(resp, "SAKURACLOUD_RATE_LIMIT", common.APIRequestRateLimit)
 
 	var config sakuraProviderModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -171,7 +184,7 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		zones = envvar.StringSliceFromEnv("SAKURACLOUD_ZONES", nil)
 	}
 
-	cfg := Config{
+	cfg := common.Config{
 		Profile:             profile,
 		AccessToken:         token,
 		AccessTokenSecret:   secret,
@@ -201,45 +214,45 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
-		NewArchiveDataSource,
-		NewDiskDataSource,
-		NewKmsDataSource,
-		NewSecretManagerDataSource,
-		NewSecretManagerSecretDataSource,
-		NewContainerRegistryDataSource,
-		NewIconDataSource,
-		NewInternetDataSource,
-		NewBridgeDataSource,
-		NewNFSDataSource,
-		NewNoteDataSource,
-		NewPacketFilterDataSource,
-		NewPrivateHostDataSource,
-		NewSimpleMQDataSource,
-		NewSSHKeyDataSource,
-		NewSwitchDataSource,
+		archive.NewArchiveDataSource,
+		bridge.NewBridgeDataSource,
+		container_registry.NewContainerRegistryDataSource,
+		disk.NewDiskDataSource,
+		icon.NewIconDataSource,
+		internet.NewInternetDataSource,
+		kms.NewKmsDataSource,
+		nfs.NewNFSDataSource,
+		note.NewNoteDataSource,
+		packet_filter.NewPacketFilterDataSource,
+		private_host.NewPrivateHostDataSource,
+		secret_manager.NewSecretManagerDataSource,
+		secret_manager.NewSecretManagerSecretDataSource,
+		simple_mq.NewSimpleMQDataSource,
+		ssh_key.NewSSHKeyDataSource,
+		sw1tch.NewSwitchDataSource,
 		// ...他のデータソースも同様に追加...
 	}
 }
 
 func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
-		NewArchiveResource,
-		NewDiskResource,
-		NewKMSResource,
-		NewSecretManagerResource,
-		NewSecretManagerSecretResource,
-		NewContainerRegistryResource,
-		NewIconResource,
-		NewInternetResource,
-		NewBridgeResource,
-		NewNFSResource,
-		NewNoteResource,
-		NewPacketFilterResource,
-		NewPacketFilterRulesResource,
-		NewPrivateHostResource,
-		NewSimpleMQResource,
-		NewSSHKeyResource,
-		NewSwitchResource,
+		archive.NewArchiveResource,
+		bridge.NewBridgeResource,
+		container_registry.NewContainerRegistryResource,
+		disk.NewDiskResource,
+		icon.NewIconResource,
+		internet.NewInternetResource,
+		kms.NewKMSResource,
+		nfs.NewNFSResource,
+		note.NewNoteResource,
+		packet_filter.NewPacketFilterResource,
+		packet_filter.NewPacketFilterRulesResource,
+		private_host.NewPrivateHostResource,
+		secret_manager.NewSecretManagerResource,
+		secret_manager.NewSecretManagerSecretResource,
+		simple_mq.NewSimpleMQResource,
+		ssh_key.NewSSHKeyResource,
+		sw1tch.NewSwitchResource,
 		// ...他のリソースも同様に追加...
 	}
 }
