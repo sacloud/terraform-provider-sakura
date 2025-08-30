@@ -28,14 +28,14 @@ type iconDataSource struct {
 	client *common.APIClient
 }
 
-func NewIconDataSource() datasource.DataSource {
-	return &iconDataSource{}
-}
-
 var (
 	_ datasource.DataSource              = &iconDataSource{}
 	_ datasource.DataSourceWithConfigure = &iconDataSource{}
 )
+
+func NewIconDataSource() datasource.DataSource {
+	return &iconDataSource{}
+}
 
 func (d *iconDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_icon"

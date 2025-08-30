@@ -130,8 +130,8 @@ func (r *iconResource) Create(ctx context.Context, req resource.CreateRequest, r
 		resp.Diagnostics.AddError("Icon Create API Error", err.Error())
 		return
 	}
-	plan.updateState(ctx, icon)
 
+	plan.updateState(icon)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -146,8 +146,8 @@ func (r *iconResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	if icon == nil {
 		return
 	}
-	state.updateState(ctx, icon)
 
+	state.updateState(icon)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -178,8 +178,8 @@ func (r *iconResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	if gotIcon == nil {
 		return
 	}
-	plan.updateState(ctx, gotIcon)
 
+	plan.updateState(gotIcon)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -204,7 +204,7 @@ func (r *iconResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
-func (d *iconResourceModel) updateState(ctx context.Context, icon *iaas.Icon) {
+func (d *iconResourceModel) updateState(icon *iaas.Icon) {
 	d.ID = types.StringValue(icon.ID.String())
 	d.Name = types.StringValue(icon.Name)
 	d.URL = types.StringValue(icon.URL)
