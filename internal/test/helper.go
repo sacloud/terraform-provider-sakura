@@ -21,8 +21,6 @@ import (
 	"text/template"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 )
 
 func BuildConfigWithArgs(config string, args ...string) string {
@@ -47,18 +45,4 @@ func RandomName() string {
 
 func RandomPassword() string {
 	return acctest.RandString(20)
-}
-
-func CheckSakuraDataSourceExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-		if !ok {
-			return fmt.Errorf("resource is not exists: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return fmt.Errorf("id is not set: %s", n)
-		}
-		return nil
-	}
 }
