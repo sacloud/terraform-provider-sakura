@@ -19,12 +19,14 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/cleanup"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
 
@@ -54,13 +56,9 @@ func (r *bridgeResource) Configure(ctx context.Context, req resource.ConfigureRe
 	r.client = apiclient
 }
 
-// TODO: model.goに切り出してdata sourceと共通化する
 type bridgeResourceModel struct {
-	ID          types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	Description types.String   `tfsdk:"description"`
-	Zone        types.String   `tfsdk:"zone"`
-	Timeouts    timeouts.Value `tfsdk:"timeouts"`
+	bridgeBaseModel
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *bridgeResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -105,8 +103,8 @@ func (r *bridgeResource) Create(ctx context.Context, req resource.CreateRequest,
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("Could not create Bridge: %s", err))
 		return
 	}
-	plan.updateState(ctx, bridge, zone)
 
+	plan.updateState(bridge, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -122,18 +120,12 @@ func (r *bridgeResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	bridgeOp := iaas.NewBridgeOp(r.client)
-	bridge, err := bridgeOp.Read(ctx, zone, common.SakuraCloudID(state.ID.ValueString()))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("Could not read Bridge: %s", err))
+	bridge := getBridge(ctx, r.client, zone, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if bridge == nil || resp.Diagnostics.HasError() {
 		return
 	}
-	state.updateState(ctx, bridge, zone)
 
+	state.updateState(bridge, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -161,8 +153,8 @@ func (r *bridgeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("Could not update Bridge: %s", err))
 		return
 	}
-	plan.updateState(ctx, bridge, zone)
 
+	plan.updateState(bridge, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -181,14 +173,8 @@ func (r *bridgeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
-	bridgeOp := iaas.NewBridgeOp(r.client)
-	bridge, err := bridgeOp.Read(ctx, zone, common.SakuraCloudID(state.ID.ValueString()))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("Could not read Bridge[%s]: %s", state.ID.ValueString(), err))
+	bridge := getBridge(ctx, r.client, zone, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if bridge == nil || resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -200,9 +186,16 @@ func (r *bridgeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	resp.State.RemoveResource(ctx)
 }
 
-func (model *bridgeResourceModel) updateState(ctx context.Context, bridge *iaas.Bridge, zone string) {
-	model.ID = types.StringValue(bridge.ID.String())
-	model.Name = types.StringValue(bridge.Name)
-	model.Description = types.StringValue(bridge.Description)
-	model.Zone = types.StringValue(zone)
+func getBridge(ctx context.Context, client *common.APIClient, zone string, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Bridge {
+	bridgeOp := iaas.NewBridgeOp(client)
+	bridge, err := bridgeOp.Read(ctx, zone, id)
+	if err != nil {
+		if iaas.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("API Read Error", fmt.Sprintf("Could not read SakuraCloud Bridge[%s]: %s", id.String(), err))
+		return nil
+	}
+	return bridge
 }

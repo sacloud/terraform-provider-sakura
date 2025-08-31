@@ -50,7 +50,7 @@ func (d *bridgeDataSource) Configure(ctx context.Context, req datasource.Configu
 }
 
 type bridgeDataSourceModel struct {
-	bridgeResourceModel
+	bridgeBaseModel
 	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
@@ -93,8 +93,6 @@ func (d *bridgeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	bridge := res.Bridges[0]
-	data.updateState(ctx, bridge, zone)
-
+	data.updateState(res.Bridges[0], zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
