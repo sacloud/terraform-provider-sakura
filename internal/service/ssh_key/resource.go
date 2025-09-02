@@ -186,8 +186,6 @@ func (r *sshKeyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SSHKey[%s] is failed: %s", state.ID.ValueString(), err.Error()))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func getSSHKey(ctx context.Context, client *common.APIClient, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.SSHKey {

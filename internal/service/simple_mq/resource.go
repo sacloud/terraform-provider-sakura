@@ -213,8 +213,6 @@ func (r *simpleMQResource) Delete(ctx context.Context, req resource.DeleteReques
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("delete SimpleMQ[%s] queue failed: %s", state.ID.ValueString(), err))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func (r *simpleMQResource) callUpdateRequest(ctx context.Context, id string, plan *simpleMQResourceModel, mq *queue.CommonServiceItem) error {

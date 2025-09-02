@@ -193,8 +193,6 @@ func (r *packetFilterResource) Delete(ctx context.Context, req resource.DeleteRe
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud PacketFilter[%s] is failed: %s", state.ID.ValueString(), err))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func getPacketFilter(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diag *diag.Diagnostics) *iaas.PacketFilter {

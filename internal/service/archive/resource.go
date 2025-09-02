@@ -301,8 +301,6 @@ func (r *archiveResource) Delete(ctx context.Context, req resource.DeleteRequest
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud Archive[%s] is failed: %s", state.ID.ValueString(), err))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func (model *archiveResourceModel) updateState(archive *iaas.Archive, zone string) {

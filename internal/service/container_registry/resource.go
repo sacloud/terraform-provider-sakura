@@ -238,8 +238,6 @@ func (r *containerRegistryResource) Delete(ctx context.Context, req resource.Del
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud ContainerRegistry[%s] failed: %s", state.ID.ValueString(), err))
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func expandContainerRegistryBuilder(d *containerRegistryResourceModel, c *common.APIClient, settingsHash string) *registryBuilder.Builder {

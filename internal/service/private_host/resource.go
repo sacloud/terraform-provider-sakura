@@ -219,8 +219,6 @@ func (r *privateHostResource) Delete(ctx context.Context, req resource.DeleteReq
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud PrivateHost[%s] is failed: %s", state.ID.ValueString(), err))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func getPrivateHost(ctx context.Context, client *common.APIClient, zone string, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.PrivateHost {

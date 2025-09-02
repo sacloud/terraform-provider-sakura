@@ -182,8 +182,6 @@ func (r *bridgeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("Could not delete Bridge[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func getBridge(ctx context.Context, client *common.APIClient, zone string, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Bridge {

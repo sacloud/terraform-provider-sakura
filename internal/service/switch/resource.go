@@ -264,8 +264,6 @@ func (r *switchResource) Delete(ctx context.Context, req resource.DeleteRequest,
 			fmt.Sprintf("deleting SakuraCloud Switch[%s] is failed: %s", state.ID.ValueString(), err))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func getSwitch(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Switch {

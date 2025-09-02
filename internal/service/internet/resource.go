@@ -306,8 +306,6 @@ func (r *internetResource) Delete(ctx context.Context, req resource.DeleteReques
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud Internet[%s] is failed: %s", internet.ID, err))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func getInternet(ctx context.Context, client *common.APIClient, zone string, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Internet {
