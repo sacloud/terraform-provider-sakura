@@ -21,11 +21,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/cleanup"
@@ -137,7 +139,8 @@ func (r *privateHostResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, ph.ID.String(), zone)
+	plan.updateState(ph, zone)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *privateHostResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -152,14 +155,8 @@ func (r *privateHostResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	phOp := iaas.NewPrivateHostOp(r.client)
-	ph, err := phOp.Read(ctx, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not read SakuraCloud PrivateHost[%s]: %s", state.ID.ValueString(), err))
+	ph := getPrivateHost(ctx, r.client, zone, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if ph == nil {
 		return
 	}
 
@@ -195,7 +192,13 @@ func (r *privateHostResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, ph.ID.String(), zone)
+	ph = getPrivateHost(ctx, r.client, zone, common.ExpandSakuraCloudID(plan.ID), &resp.State, &resp.Diagnostics)
+	if ph == nil {
+		return
+	}
+
+	plan.updateState(ph, zone)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *privateHostResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -213,14 +216,8 @@ func (r *privateHostResource) Delete(ctx context.Context, req resource.DeleteReq
 		return
 	}
 
-	phOp := iaas.NewPrivateHostOp(r.client)
-	ph, err := phOp.Read(ctx, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SakuraCloud PrivateHost[%s]: %s", state.ID.ValueString(), err))
+	ph := getPrivateHost(ctx, r.client, zone, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if ph == nil {
 		return
 	}
 
@@ -230,6 +227,21 @@ func (r *privateHostResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func getPrivateHost(ctx context.Context, client *common.APIClient, zone string, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.PrivateHost {
+	phOp := iaas.NewPrivateHostOp(client)
+	ph, err := phOp.Read(ctx, zone, id)
+	if err != nil {
+		if iaas.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("Get PrivateHost Error", fmt.Sprintf("could not read SakuraCloud PrivateHost[%s]: %s", id.String(), err))
+		return nil
+	}
+
+	return ph
 }
 
 func expandPrivateHostPlanID(ctx context.Context, d *privateHostResourceModel, client *common.APIClient, zone string) (iaastypes.ID, error) {

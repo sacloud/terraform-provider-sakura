@@ -25,23 +25,23 @@ import (
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
 
-type sakuraContainerRegistryBaseModel struct {
+type containerRegistryBaseModel struct {
 	common.SakuraBaseModel
-	AccessLevel    types.String                        `tfsdk:"access_level"`
-	VirtualDomain  types.String                        `tfsdk:"virtual_domain"`
-	SubDomainLabel types.String                        `tfsdk:"subdomain_label"`
-	FQDN           types.String                        `tfsdk:"fqdn"`
-	IconID         types.String                        `tfsdk:"icon_id"`
-	User           []*sakuraContainerRegistryUserModel `tfsdk:"user"`
+	AccessLevel    types.String                  `tfsdk:"access_level"`
+	VirtualDomain  types.String                  `tfsdk:"virtual_domain"`
+	SubDomainLabel types.String                  `tfsdk:"subdomain_label"`
+	FQDN           types.String                  `tfsdk:"fqdn"`
+	IconID         types.String                  `tfsdk:"icon_id"`
+	User           []*containerRegistryUserModel `tfsdk:"user"`
 }
 
-type sakuraContainerRegistryUserModel struct {
+type containerRegistryUserModel struct {
 	Name       types.String `tfsdk:"name"`
 	Password   types.String `tfsdk:"password"`
 	Permission types.String `tfsdk:"permission"`
 }
 
-func (model *sakuraContainerRegistryBaseModel) updateState(ctx context.Context, c *common.APIClient, reg *iaas.ContainerRegistry, includePassword bool, diags *diag.Diagnostics) {
+func (model *containerRegistryBaseModel) updateState(ctx context.Context, c *common.APIClient, reg *iaas.ContainerRegistry, includePassword bool, diags *diag.Diagnostics) {
 	users := getContainerRegistryUsers(ctx, c, reg)
 	if users == nil {
 		diags.AddError("Get Users Error", "could not get users for SakuraCloud ContainerRegistry")
@@ -53,7 +53,6 @@ func (model *sakuraContainerRegistryBaseModel) updateState(ctx context.Context, 
 	model.VirtualDomain = types.StringValue(reg.VirtualDomain)
 	model.SubDomainLabel = types.StringValue(reg.SubDomainLabel)
 	model.FQDN = types.StringValue(reg.FQDN)
-	model.IconID = types.StringValue(reg.IconID.String())
 	model.User = flattenContainerRegistryUsers(model.User, users, includePassword)
 }
 
@@ -66,7 +65,7 @@ func getContainerRegistryUsers(ctx context.Context, client *common.APIClient, us
 	return users.Users
 }
 
-func expandContainerRegistryUsers(users []*sakuraContainerRegistryUserModel) []*registryBuilder.User {
+func expandContainerRegistryUsers(users []*containerRegistryUserModel) []*registryBuilder.User {
 	if len(users) == 0 {
 		return nil
 	}
@@ -82,12 +81,12 @@ func expandContainerRegistryUsers(users []*sakuraContainerRegistryUserModel) []*
 	return results
 }
 
-func flattenContainerRegistryUsers(conf []*sakuraContainerRegistryUserModel, users []*iaas.ContainerRegistryUser, includePassword bool) []*sakuraContainerRegistryUserModel {
+func flattenContainerRegistryUsers(conf []*containerRegistryUserModel, users []*iaas.ContainerRegistryUser, includePassword bool) []*containerRegistryUserModel {
 	inputs := expandContainerRegistryUsers(conf)
 
-	var results []*sakuraContainerRegistryUserModel
+	var results []*containerRegistryUserModel
 	for _, user := range users {
-		v := &sakuraContainerRegistryUserModel{
+		v := &containerRegistryUserModel{
 			Name:       types.StringValue(user.UserName),
 			Permission: types.StringValue(string(user.Permission)),
 		}

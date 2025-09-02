@@ -142,6 +142,9 @@ func (d *internetDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	data.updateState(ctx, d.client, zone, res.Internet[0])
+	internet := res.Internet[0]
+	data.updateState(ctx, d.client, zone, internet)
+	data.IconID = types.StringValue(internet.IconID.String())
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

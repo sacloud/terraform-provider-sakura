@@ -62,7 +62,7 @@ func (r *containerRegistryResource) Configure(ctx context.Context, req resource.
 }
 
 type containerRegistryResourceModel struct {
-	sakuraContainerRegistryBaseModel
+	containerRegistryBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -165,8 +165,8 @@ func (r *containerRegistryResource) Create(ctx context.Context, req resource.Cre
 	if gotReg == nil {
 		return
 	}
-	plan.updateState(ctx, r.client, gotReg, true, &resp.Diagnostics)
 
+	plan.updateState(ctx, r.client, gotReg, true, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
@@ -213,8 +213,8 @@ func (r *containerRegistryResource) Update(ctx context.Context, req resource.Upd
 	if gotReg == nil {
 		return
 	}
-	plan.updateState(ctx, r.client, gotReg, true, &resp.Diagnostics)
 
+	plan.updateState(ctx, r.client, gotReg, true, &resp.Diagnostics)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
@@ -228,12 +228,12 @@ func (r *containerRegistryResource) Delete(ctx context.Context, req resource.Del
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	regOp := iaas.NewContainerRegistryOp(r.client)
 	gotReg := getContainerRegistry(ctx, r.client, common.SakuraCloudID(state.ID.ValueString()), &resp.State, &resp.Diagnostics)
 	if gotReg == nil {
 		return
 	}
 
+	regOp := iaas.NewContainerRegistryOp(r.client)
 	err := regOp.Delete(ctx, gotReg.ID)
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud ContainerRegistry[%s] failed: %s", state.ID.ValueString(), err))
@@ -268,5 +268,6 @@ func getContainerRegistry(ctx context.Context, client *common.APIClient, id iaas
 		diags.AddError("Get Container Registry Error", fmt.Sprintf("could not read SakuraCloud ContainerRegistry[%s]: %s", id, err))
 		return nil
 	}
+
 	return reg
 }

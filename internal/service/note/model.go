@@ -29,7 +29,6 @@ type noteBaseModel struct {
 
 func (model *noteBaseModel) updateState(note *iaas.Note) {
 	model.UpdateBaseState(note.ID.String(), note.Name, note.Description, note.Tags)
-	model.IconID = types.StringValue(note.IconID.String())
 	model.Class = types.StringValue(note.Class)
 	model.Content = types.StringValue(note.Content)
 }

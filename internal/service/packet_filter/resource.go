@@ -19,11 +19,14 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/cleanup"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
 
@@ -103,7 +106,8 @@ func (r *packetFilterResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, pf.ID.String(), zone)
+	plan.updateState(pf, zone)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *packetFilterResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -118,14 +122,8 @@ func (r *packetFilterResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	pfOp := iaas.NewPacketFilterOp(r.client)
-	pf, err := pfOp.Read(ctx, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not read SakuraCloud PacketFilter[%s]: %s", state.ID.ValueString(), err))
+	pf := getPacketFilter(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
+	if pf == nil {
 		return
 	}
 
@@ -162,7 +160,13 @@ func (r *packetFilterResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, pf.ID.String(), zone)
+	pf = getPacketFilter(ctx, r.client, common.ExpandSakuraCloudID(plan.ID), zone, &resp.State, &resp.Diagnostics)
+	if pf == nil {
+		return
+	}
+
+	plan.updateState(pf, zone)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *packetFilterResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -180,14 +184,8 @@ func (r *packetFilterResource) Delete(ctx context.Context, req resource.DeleteRe
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout20min)
 	defer cancel()
 
-	pfOp := iaas.NewPacketFilterOp(r.client)
-	pf, err := pfOp.Read(ctx, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SakuraCloud PacketFilter[%s]: %s", state.ID.ValueString(), err))
+	pf := getPacketFilter(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
+	if pf == nil {
 		return
 	}
 
@@ -197,6 +195,21 @@ func (r *packetFilterResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func getPacketFilter(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diag *diag.Diagnostics) *iaas.PacketFilter {
+	pfOp := iaas.NewPacketFilterOp(client)
+	pf, err := pfOp.Read(ctx, zone, id)
+	if err != nil {
+		if iaas.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diag.AddError("Get PacketFilter Error", fmt.Sprintf("could not read SakuraCloud PacketFilter[%s]: %s", id, err))
+		return nil
+	}
+
+	return pf
 }
 
 func expandPacketFilterUpdateRequest(plan *packetFilterResourceModel, state *packetFilterResourceModel, pf *iaas.PacketFilter) *iaas.PacketFilterUpdateRequest {

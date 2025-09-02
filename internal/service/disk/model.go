@@ -36,7 +36,6 @@ type diskBaseModel struct {
 
 func (model *diskBaseModel) updateState(disk *iaas.Disk, zone string) {
 	model.UpdateBaseState(disk.ID.String(), disk.Name, disk.Description, disk.Tags)
-	model.IconID = types.StringValue(disk.IconID.String())
 	model.Zone = types.StringValue(zone)
 	model.Plan = types.StringValue(iaastypes.DiskPlanNameMap[disk.DiskPlanID])
 	model.Size = types.Int64Value(int64(disk.GetSizeGB()))

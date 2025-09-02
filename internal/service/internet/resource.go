@@ -20,6 +20,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -27,6 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/sacloud/iaas-api-go"
@@ -203,7 +205,8 @@ func (r *internetResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, internet.ID.String(), zone)
+	plan.updateState(ctx, r.client, zone, internet)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *internetResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -218,13 +221,8 @@ func (r *internetResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	internet, err := query.ReadRouter(ctx, r.client, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNoResultsError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read error", fmt.Sprintf("could not read SakuraCloud Internet[%s]: %s", state.ID, err))
+	internet := getInternet(ctx, r.client, zone, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if internet == nil {
 		return
 	}
 
@@ -266,8 +264,14 @@ func (r *internetResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
+	internet = getInternet(ctx, r.client, zone, internet.ID, &resp.State, &resp.Diagnostics)
+	if internet == nil {
+		return
+	}
+
 	// NOTE: 帯域変更後はIDが変更になる
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, internet.ID.String(), zone)
+	state.updateState(ctx, r.client, zone, internet)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *internetResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -311,6 +315,21 @@ func (r *internetResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func getInternet(ctx context.Context, client *common.APIClient, zone string, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Internet {
+	// @previous-idも考慮するため、internetOp.Readではなくquery.ReadRouterを利用する
+	internet, err := query.ReadRouter(ctx, client, zone, id)
+	if err != nil {
+		if iaas.IsNoResultsError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("Get Internet Error", fmt.Sprintf("could not read SakuraCloud Internet[%s]: %s", id, err))
+		return nil
+	}
+
+	return internet
 }
 
 func expandInternetBuilder(model *internetResourceModel, client *common.APIClient) *internetBuilder.Builder {

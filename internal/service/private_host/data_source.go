@@ -19,6 +19,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
@@ -107,7 +108,10 @@ func (d *privateHostDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	data.updateState(res.PrivateHosts[0], zone)
+	ph := res.PrivateHosts[0]
+	data.updateState(ph, zone)
+	data.IconID = types.StringValue(ph.IconID.String())
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

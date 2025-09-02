@@ -19,6 +19,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
@@ -49,7 +50,7 @@ func (d *containerRegistryDataSource) Configure(ctx context.Context, req datasou
 }
 
 type containerRegistryDataSourceModel struct {
-	sakuraContainerRegistryBaseModel
+	containerRegistryBaseModel
 	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
@@ -126,8 +127,9 @@ func (d *containerRegistryDataSource) Read(ctx context.Context, req datasource.R
 		return
 	}
 
-	target := res.ContainerRegistries[0]
-	state.updateState(ctx, d.client, target, true, &resp.Diagnostics)
+	cr := res.ContainerRegistries[0]
+	state.updateState(ctx, d.client, cr, true, &resp.Diagnostics)
+	state.IconID = types.StringValue(cr.IconID.String())
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

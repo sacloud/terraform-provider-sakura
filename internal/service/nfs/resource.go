@@ -20,6 +20,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -27,6 +28,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/accessor"
@@ -138,13 +140,13 @@ func (r *nfsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	nfsOp := iaas.NewNFSOp(r.client)
 	planID, err := expandNFSDiskPlanID(ctx, r.client, &plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
 		return
 	}
 
+	nfsOp := iaas.NewNFSOp(r.client)
 	builder := &setup.RetryableSetup{
 		Create: func(ctx context.Context, zone string) (accessor.ID, error) {
 			return nfsOp.Create(ctx, zone, expandNFSCreateRequest(&plan, planID))
@@ -174,7 +176,14 @@ func (r *nfsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, nfs.ID.String(), zone)
+	if rmResource, err := plan.updateState(ctx, r.client, nfs, zone); err != nil {
+		if rmResource {
+			resp.State.RemoveResource(ctx)
+		}
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("could not update state for SakuraCloud NFS resource: %s", err))
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *nfsResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -189,14 +198,8 @@ func (r *nfsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	nfsOp := iaas.NewNFSOp(r.client)
-	nfs, err := nfsOp.Read(ctx, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", err.Error())
+	nfs := getNFS(ctx, r.client, zone, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if nfs == nil {
 		return
 	}
 
@@ -207,8 +210,7 @@ func (r *nfsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not update state for SakuraCloud NFS resource: %s", err))
 		return
 	}
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *nfsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -239,7 +241,19 @@ func (r *nfsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, nfs.ID.String(), zone)
+	nfs = getNFS(ctx, r.client, zone, common.ExpandSakuraCloudID(plan.ID), &resp.State, &resp.Diagnostics)
+	if nfs == nil {
+		return
+	}
+
+	if rmResource, err := plan.updateState(ctx, r.client, nfs, zone); err != nil {
+		if rmResource {
+			resp.State.RemoveResource(ctx)
+		}
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not update state for SakuraCloud NFS resource: %s", err))
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *nfsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -257,17 +271,12 @@ func (r *nfsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	nfsOp := iaas.NewNFSOp(r.client)
-	nfs, err := nfsOp.Read(ctx, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SakuraCloud NFS[%s]: %s", state.ID.ValueString(), err))
+	nfs := getNFS(ctx, r.client, zone, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if nfs == nil {
 		return
 	}
 
+	nfsOp := iaas.NewNFSOp(r.client)
 	if err := power.ShutdownNFS(ctx, nfsOp, zone, nfs.ID, true); err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
 		return
@@ -279,6 +288,21 @@ func (r *nfsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func getNFS(ctx context.Context, client *common.APIClient, zone string, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.NFS {
+	nfsOp := iaas.NewNFSOp(client)
+	nfs, err := nfsOp.Read(ctx, zone, id)
+	if err != nil {
+		if iaas.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("Get NFS Error", fmt.Sprintf("could not read SakuraCloud NFS[%s]: %s", id, err))
+		return nil
+	}
+
+	return nfs
 }
 
 func expandNFSDiskPlanID(ctx context.Context, client *common.APIClient, d *nfsResourceModel) (iaastypes.ID, error) {

@@ -17,11 +17,11 @@ package disk
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -30,6 +30,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/accessor"
@@ -164,7 +165,7 @@ func (r *diskResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, 24*time.Hour)
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout24hour)
 	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
@@ -201,13 +202,13 @@ func (r *diskResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, disk.ID.String(), zone)
+	plan.updateState(disk, zone)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *diskResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state diskResourceModel
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -217,14 +218,8 @@ func (r *diskResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	diskOp := iaas.NewDiskOp(r.client)
-	disk, err := diskOp.Read(ctx, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not read SakuraCloud Disk[%s]: %s", state.ID.ValueString(), err))
+	disk := getDisk(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
+	if disk == nil {
 		return
 	}
 
@@ -239,7 +234,7 @@ func (r *diskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, 24*time.Hour)
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout24hour)
 	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
@@ -248,19 +243,19 @@ func (r *diskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	diskOp := iaas.NewDiskOp(r.client)
-	disk, err := diskOp.Read(ctx, zone, common.ExpandSakuraCloudID(plan.ID))
+	_, err := diskOp.Update(ctx, zone, common.ExpandSakuraCloudID(plan.ID), expandDiskUpdateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read SakuraCloud Disk[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Disk[%s] is failed: %s", plan.ID.ValueString(), err))
 		return
 	}
 
-	_, err = diskOp.Update(ctx, zone, disk.ID, expandDiskUpdateRequest(&plan))
-	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Disk[%s] is failed: %s", disk.ID.String(), err))
+	disk := getDisk(ctx, r.client, common.ExpandSakuraCloudID(plan.ID), zone, &resp.State, &resp.Diagnostics)
+	if disk == nil {
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, disk.ID.String(), zone)
+	plan.updateState(disk, zone)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *diskResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -279,13 +274,8 @@ func (r *diskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	diskOp := iaas.NewDiskOp(r.client)
-	disk, err := diskOp.Read(ctx, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SakuraCloud Disk[%s]: %s", state.ID.ValueString(), err))
+	disk := getDisk(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
+	if disk == nil {
 		return
 	}
 
@@ -319,6 +309,21 @@ func (r *diskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 			fmt.Sprintf("deleting SakuraCloud Disk[%s] is failed: %s", disk.ID.String(), err))
 		return
 	}
+}
+
+func getDisk(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Disk {
+	diskOp := iaas.NewDiskOp(client)
+	disk, err := diskOp.Read(ctx, zone, id)
+	if err != nil {
+		if iaas.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("Get Disk Error", fmt.Sprintf("could not read SakuraCloud Disk[%s]: %s", id.String(), err))
+		return nil
+	}
+
+	return disk
 }
 
 func expandDiskCreateRequest(d *diskResourceModel) *iaas.DiskCreateRequest {

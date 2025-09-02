@@ -25,6 +25,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -32,6 +33,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/sacloud/iaas-api-go"
@@ -69,7 +71,6 @@ func (r *archiveResource) Configure(ctx context.Context, req resource.ConfigureR
 	r.client = apiclient
 }
 
-// TODO: model.goに切り出してdata sourceと共通化する
 type archiveResourceModel struct {
 	common.SakuraBaseModel
 	Zone              types.String   `tfsdk:"zone"`
@@ -207,7 +208,7 @@ func (r *archiveResource) Create(ctx context.Context, req resource.CreateRequest
 
 	builder, cleanup, err := expandArchiveBuilder(&plan, zone, r.client)
 	if err != nil {
-		resp.Diagnostics.AddError("Archive builder error", err.Error())
+		resp.Diagnostics.AddError("Expand Archive Builder Error", err.Error())
 		return
 	}
 	if cleanup != nil {
@@ -216,14 +217,12 @@ func (r *archiveResource) Create(ctx context.Context, req resource.CreateRequest
 
 	archive, err := builder.Build(ctx, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Archive Create Error", fmt.Sprintf("creating SakuraCloud Archive is failed: %s", err))
+		resp.Diagnostics.AddError("Create Archive Error", fmt.Sprintf("creating SakuraCloud Archive is failed: %s", err))
 		return
 	}
-	// Read(API)で取得できないoptionalな値をStateに設定するのは出来ないため、ここでresp.State.Setを呼び出しておく
-	plan.updateState(r.client, archive, zone)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, archive.ID.String(), zone)
+	plan.updateState(archive, zone)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *archiveResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -238,19 +237,12 @@ func (r *archiveResource) Read(ctx context.Context, req resource.ReadRequest, re
 		return
 	}
 
-	archiveOp := iaas.NewArchiveOp(r.client)
-	archive, err := archiveOp.Read(ctx, zone, common.SakuraCloudID(state.ID.ValueString()))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not read SakuraCloud Archive[%s]: %s", state.ID.ValueString(), err))
+	archive := getArchive(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
+	if archive == nil || resp.Diagnostics.HasError() {
 		return
 	}
 
-	state.updateState(r.client, archive, zone)
-
+	state.updateState(archive, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -270,18 +262,18 @@ func (r *archiveResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	archiveOp := iaas.NewArchiveOp(r.client)
-	archive, err := archiveOp.Read(ctx, zone, common.SakuraCloudID(plan.ID.ValueString()))
-	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("reading SakuraCloud Archive[%s] is failed: %s", plan.ID.ValueString(), err))
-		return
-	}
-
-	if _, err = archiveOp.Update(ctx, zone, archive.ID, expandArchiveUpdateRequest(&plan)); err != nil {
+	if _, err := archiveOp.Update(ctx, zone, common.ExpandSakuraCloudID(plan.ID), expandArchiveUpdateRequest(&plan)); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Archive[%s] is failed: %s", plan.ID.ValueString(), err))
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, plan.ID.ValueString(), zone)
+	archive := getArchive(ctx, r.client, common.ExpandSakuraCloudID(plan.ID), zone, &resp.State, &resp.Diagnostics)
+	if archive == nil || resp.Diagnostics.HasError() {
+		return
+	}
+
+	plan.updateState(archive, zone)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *archiveResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -299,17 +291,12 @@ func (r *archiveResource) Delete(ctx context.Context, req resource.DeleteRequest
 		return
 	}
 
-	archiveOp := iaas.NewArchiveOp(r.client)
-	archive, err := archiveOp.Read(ctx, zone, common.SakuraCloudID(state.ID.ValueString()))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SakuraCloud Archive[%s]: %s", state.ID.ValueString(), err))
+	archive := getArchive(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
+	if archive == nil || resp.Diagnostics.HasError() {
 		return
 	}
 
+	archiveOp := iaas.NewArchiveOp(r.client)
 	if err := archiveOp.Delete(ctx, zone, archive.ID); err != nil {
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud Archive[%s] is failed: %s", state.ID.ValueString(), err))
 		return
@@ -318,15 +305,29 @@ func (r *archiveResource) Delete(ctx context.Context, req resource.DeleteRequest
 	resp.State.RemoveResource(ctx)
 }
 
-func (model *archiveResourceModel) updateState(client *common.APIClient, archive *iaas.Archive, zone string) {
+func (model *archiveResourceModel) updateState(archive *iaas.Archive, zone string) {
 	model.UpdateBaseState(archive.ID.String(), archive.Name, archive.Description, archive.Tags)
-	model.IconID = types.StringValue(archive.IconID.String())
 	model.Size = types.Int32Value(int32(archive.GetSizeGB()))
 	model.Zone = types.StringValue(zone)
 	model.Hash = types.StringValue(expandArchiveHash(model))
 	model.SourceArchiveID = types.StringValue(model.SourceArchiveID.ValueString())
 	model.SourceDiskID = types.StringValue(model.SourceDiskID.ValueString())
 	model.SourceSharedKey = types.StringValue(model.SourceSharedKey.ValueString())
+}
+
+func getArchive(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Archive {
+	archiveOp := iaas.NewArchiveOp(client)
+	archive, err := archiveOp.Read(ctx, zone, id)
+	if err != nil {
+		if iaas.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("API Read Error", fmt.Sprintf("could not read SakuraCloud Archive[%s]: %s", id, err))
+		return nil
+	}
+
+	return archive
 }
 
 func expandArchiveBuilder(d *archiveResourceModel, zone string, client *common.APIClient) (archiveUtil.Builder, func(), error) {

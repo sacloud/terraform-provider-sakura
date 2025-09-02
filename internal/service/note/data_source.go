@@ -20,6 +20,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	iaas "github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
@@ -97,6 +98,9 @@ func (d *noteDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	data.updateState(result.Notes[0])
+	note := result.Notes[0]
+	data.updateState(note)
+	data.IconID = types.StringValue(note.IconID.String())
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

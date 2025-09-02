@@ -34,7 +34,6 @@ type switchBaseModel struct {
 func (model *switchBaseModel) updateState(ctx context.Context, client *common.APIClient, sw *iaas.Switch, zone string) error {
 	model.UpdateBaseState(sw.ID.String(), sw.Name, sw.Description, sw.Tags)
 
-	model.IconID = types.StringValue(sw.IconID.String())
 	model.BridgeID = types.StringValue(sw.BridgeID.String())
 	model.Zone = types.StringValue(zone)
 

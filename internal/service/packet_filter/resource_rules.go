@@ -114,14 +114,8 @@ func (r *packetFilterRulesResource) Read(ctx context.Context, req resource.ReadR
 		return
 	}
 
-	pfOp := iaas.NewPacketFilterOp(r.client)
-	pf, err := pfOp.Read(ctx, zone, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not read SakuraCloud PacketFilter[%s]: %s", state.ID.ValueString(), err))
+	pf := getPacketFilter(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
+	if pf == nil {
 		return
 	}
 
@@ -162,17 +156,12 @@ func (r *packetFilterRulesResource) Delete(ctx context.Context, req resource.Del
 	defer common.SakuraMutexKV.Unlock(pfID)
 
 	pfOp := iaas.NewPacketFilterOp(r.client)
-	pf, err := pfOp.Read(ctx, zone, common.SakuraCloudID(pfID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SakuraCloud PacketFilter[%s]: %s", pfID, err))
+	pf := getPacketFilter(ctx, r.client, common.SakuraCloudID(pfID), zone, &resp.State, &resp.Diagnostics)
+	if pf == nil {
 		return
 	}
 
-	_, err = pfOp.Update(ctx, zone, pf.ID, &iaas.PacketFilterUpdateRequest{
+	_, err := pfOp.Update(ctx, zone, pf.ID, &iaas.PacketFilterUpdateRequest{
 		Name:        pf.Name,
 		Description: pf.Description,
 		Expression:  []*iaas.PacketFilterExpression{}, // Set empty expressions to delete all rules
@@ -217,5 +206,11 @@ func callPacketFilterRulesUpdate(ctx context.Context, r *packetFilterRulesResour
 		return
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, state, diags, pfID, zone)
+	pf = getPacketFilter(ctx, r.client, common.SakuraCloudID(pfID), zone, state, diags)
+	if pf == nil {
+		return
+	}
+
+	plan.updateState(pf, zone)
+	diags.Append(state.Set(ctx, &plan)...)
 }

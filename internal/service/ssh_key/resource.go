@@ -19,12 +19,15 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/sacloud/iaas-api-go"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
 
@@ -63,7 +66,7 @@ func (r *sshKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaResourceId("SSHKey"),
-			"name":        common.SchemaDataSourceName("SSHKey"),
+			"name":        common.SchemaResourceName("SSHKey"),
 			"description": common.SchemaResourceDescription("SSHKey"),
 			"public_key": schema.StringAttribute{
 				Required:    true,
@@ -108,7 +111,8 @@ func (r *sshKeyResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	common.UpdateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, key.ID.String())
+	plan.updateState(key)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *sshKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -118,14 +122,8 @@ func (r *sshKeyResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	sshKeyOp := iaas.NewSSHKeyOp(r.client)
-	key, err := sshKeyOp.Read(ctx, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not read SSHKey[%s]: %s", state.ID.ValueString(), err.Error()))
+	key := getSSHKey(ctx, r.client, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if key == nil {
 		return
 	}
 
@@ -159,7 +157,13 @@ func (r *sshKeyResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	common.UpdateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, key.ID.String())
+	key = getSSHKey(ctx, r.client, common.ExpandSakuraCloudID(plan.ID), &resp.State, &resp.Diagnostics)
+	if key == nil {
+		return
+	}
+
+	plan.updateState(key)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *sshKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -173,13 +177,8 @@ func (r *sshKeyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	defer cancel()
 
 	sshKeyOp := iaas.NewSSHKeyOp(r.client)
-	key, err := sshKeyOp.Read(ctx, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SSHKey[%s]: %s", state.ID.ValueString(), err.Error()))
+	key := getSSHKey(ctx, r.client, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if key == nil {
 		return
 	}
 
@@ -189,4 +188,19 @@ func (r *sshKeyResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func getSSHKey(ctx context.Context, client *common.APIClient, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.SSHKey {
+	sshKeyOp := iaas.NewSSHKeyOp(client)
+	sshKey, err := sshKeyOp.Read(ctx, id)
+	if err != nil {
+		if iaas.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("Read Error", fmt.Sprintf("could not read SSHKey[%d]: %s", id, err))
+		return nil
+	}
+
+	return sshKey
 }

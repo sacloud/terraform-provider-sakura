@@ -20,6 +20,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
@@ -109,6 +110,9 @@ func (d *diskDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	data.updateState(res.Disks[0], zone)
+	disk := res.Disks[0]
+	data.updateState(disk, zone)
+	data.IconID = types.StringValue(disk.IconID.String())
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

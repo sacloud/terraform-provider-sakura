@@ -19,6 +19,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -26,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
@@ -132,7 +134,6 @@ func (r *simpleMQResource) Create(ctx context.Context, req resource.CreateReques
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create SimpleMQ queue failed: %s", err))
 		return
 	}
-
 	qid := simplemq.GetQueueID(mq)
 
 	// SDK v2ではUpdateを呼び出して更新していたが、Frameworkではアクション間での状態の共有が難しいためメソッドに括り出して処理を共通化
@@ -142,7 +143,13 @@ func (r *simpleMQResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	common.UpdateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, qid)
+	q := getMessageQueue(ctx, r.client, qid, &resp.State, &resp.Diagnostics)
+	if q == nil {
+		return
+	}
+
+	plan.updateState(q)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *simpleMQResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -152,14 +159,8 @@ func (r *simpleMQResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	queueOp := simplemq.NewQueueOp(r.client)
-	mq, err := queueOp.Read(ctx, state.ID.ValueString())
-	if err != nil {
-		if api.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not read SimpleMQ[%s] queue: %s", state.ID.ValueString(), err))
+	mq := getMessageQueue(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if mq == nil {
 		return
 	}
 
@@ -183,7 +184,13 @@ func (r *simpleMQResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	common.UpdateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, plan.ID.ValueString())
+	q := getMessageQueue(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if q == nil {
+		return
+	}
+
+	plan.updateState(q)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *simpleMQResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -197,13 +204,8 @@ func (r *simpleMQResource) Delete(ctx context.Context, req resource.DeleteReques
 	defer cancel()
 
 	queueOp := simplemq.NewQueueOp(r.client)
-	mq, err := queueOp.Read(ctx, state.ID.ValueString())
-	if err != nil {
-		if api.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SimpleMQ[%s] queue: %s", state.ID.ValueString(), err))
+	mq := getMessageQueue(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if mq == nil {
 		return
 	}
 
@@ -232,6 +234,21 @@ func (r *simpleMQResource) callUpdateRequest(ctx context.Context, id string, pla
 	}
 
 	return nil
+}
+
+func getMessageQueue(ctx context.Context, client *queue.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *queue.CommonServiceItem {
+	queueOp := simplemq.NewQueueOp(client)
+	mq, err := queueOp.Read(ctx, id)
+	if err != nil {
+		if api.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("Get Queue Error", fmt.Sprintf("could not read SimpleMQ[%s] queue: %s", id, err))
+		return nil
+	}
+
+	return mq
 }
 
 func expandSimpleMQCreateRequest(d *simpleMQResourceModel) queue.CreateQueueRequest {

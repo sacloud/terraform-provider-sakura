@@ -33,7 +33,6 @@ type privateHostBaseModel struct {
 func (model *privateHostBaseModel) updateState(ph *iaas.PrivateHost, zone string) {
 	model.UpdateBaseState(ph.ID.String(), ph.Name, ph.Description, ph.Tags)
 	model.Zone = types.StringValue(zone)
-	model.IconID = types.StringValue(ph.IconID.String())
 	model.Class = types.StringValue(ph.PlanClass)
 	model.Hostname = types.StringValue(ph.GetHostName())
 	model.AssignedCore = types.Int32Value(int32(ph.GetAssignedCPU()))

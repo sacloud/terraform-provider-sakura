@@ -20,11 +20,13 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 
 	iaas "github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
@@ -67,7 +69,7 @@ func (r *noteResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":      common.SchemaResourceId("Note"),
-			"name":    common.SchemaDataSourceName("Note"),
+			"name":    common.SchemaResourceName("Note"),
 			"tags":    common.SchemaResourceTags("Note"),
 			"icon_id": common.SchemaResourceIconID("Note"),
 			"description": schema.StringAttribute{
@@ -121,7 +123,8 @@ func (r *noteResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	common.UpdateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, note.ID.String())
+	plan.updateState(note)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *noteResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -131,14 +134,8 @@ func (r *noteResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 		return
 	}
 
-	noteOp := iaas.NewNoteOp(r.client)
-	note, err := noteOp.Read(ctx, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not read SakuraCloud Note[%s]: %s", state.ID.ValueString(), err))
+	note := getNote(ctx, r.client, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if note == nil || resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -169,7 +166,8 @@ func (r *noteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	common.UpdateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, note.ID.String())
+	plan.updateState(note)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *noteResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -183,13 +181,8 @@ func (r *noteResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	defer cancel()
 
 	noteOp := iaas.NewNoteOp(r.client)
-	note, err := noteOp.Read(ctx, common.ExpandSakuraCloudID(state.ID))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SakuraCloud Note[%s]: %s", state.ID.ValueString(), err))
+	note := getNote(ctx, r.client, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if note == nil {
 		return
 	}
 
@@ -199,4 +192,19 @@ func (r *noteResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func getNote(ctx context.Context, client *common.APIClient, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Note {
+	noteOp := iaas.NewNoteOp(client)
+	note, err := noteOp.Read(ctx, id)
+	if err != nil {
+		if iaas.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("API Read Error", fmt.Sprintf("could not read SakuraCloud Note[%s]: %s", id.String(), err))
+		return nil
+	}
+
+	return note
 }

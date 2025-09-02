@@ -74,7 +74,6 @@ func (model *internetBaseModel) updateState(ctx context.Context, client *common.
 	assigned, unassigned := partitionInternetTags(data.Tags)
 
 	model.UpdateBaseState(data.ID.String(), data.Name, data.Description, unassigned)
-	model.IconID = types.StringValue(data.IconID.String())
 	model.Netmask = types.Int32Value(int32(data.NetworkMaskLen))
 	model.BandWidth = types.Int32Value(int32(data.BandWidthMbps))
 	model.SwitchID = types.StringValue(sw.ID.String())

@@ -20,13 +20,16 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/cleanup"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
 )
@@ -66,7 +69,7 @@ func (r *switchResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaResourceId("Switch"),
-			"name":        common.SchemaDataSourceName("Switch"),
+			"name":        common.SchemaResourceName("Switch"),
 			"icon_id":     common.SchemaResourceIconID("Switch"),
 			"description": common.SchemaResourceDescription("Switch"),
 			"tags":        common.SchemaResourceTags("Switch"),
@@ -104,7 +107,6 @@ func (r *switchResource) Create(ctx context.Context, req resource.CreateRequest,
 	if resp.Diagnostics.HasError() {
 		return
 	}
-
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -134,7 +136,12 @@ func (r *switchResource) Create(ctx context.Context, req resource.CreateRequest,
 		}
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, sw.ID.String(), zone)
+	failed := updateModelByRead(ctx, &plan, r.client, sw.ID, zone, &resp.State, &resp.Diagnostics)
+	if failed {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *switchResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -148,15 +155,8 @@ func (r *switchResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	swOp := iaas.NewSwitchOp(r.client)
-	sw, err := swOp.Read(ctx, zone, common.SakuraCloudID(state.ID.ValueString()))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Read Error",
-			fmt.Sprintf("could not read SakuraCloud Switch[%s] : %s", state.ID.ValueString(), err))
+	sw := getSwitch(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
+	if sw == nil || resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -202,12 +202,12 @@ func (r *switchResource) Update(ctx context.Context, req resource.UpdateRequest,
 		IconID:      common.ExpandSakuraCloudID(plan.IconID),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error",
-			fmt.Sprintf("updating SakuraCloud Switch[%s] is failed : %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Switch[%s] is failed : %s", sw.ID, err))
 		return
 	}
 
-	if plan.BridgeID.ValueString() != state.BridgeID.ValueString() { // HasChange in SDK v2
+	// common.HasChangeでは値以外の状態も比較に入って誤判定が起きるため、単純な値で比較
+	if plan.BridgeID.ValueString() != state.BridgeID.ValueString() {
 		if !plan.BridgeID.IsNull() {
 			brId := plan.BridgeID.ValueString()
 			if brId == "" && !sw.BridgeID.IsEmpty() {
@@ -218,15 +218,19 @@ func (r *switchResource) Update(ctx context.Context, req resource.UpdateRequest,
 				}
 			} else {
 				if err := swOp.ConnectToBridge(ctx, zone, sw.ID, common.SakuraCloudID(brId)); err != nil {
-					resp.Diagnostics.AddError("Update Error",
-						fmt.Sprintf("connecting to Bridge[%s] is failed: %s", brId, err))
+					resp.Diagnostics.AddError("Update Error", fmt.Sprintf("connecting to Bridge[%s] is failed: %s", brId, err))
 					return
 				}
 			}
 		}
 	}
 
-	common.UpdateResourceByReadWithZone(ctx, r, &resp.State, &resp.Diagnostics, sw.ID.String(), zone)
+	failed := updateModelByRead(ctx, &plan, r.client, sw.ID, zone, &resp.State, &resp.Diagnostics)
+	if failed {
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *switchResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -248,14 +252,8 @@ func (r *switchResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	defer common.SakuraMutexKV.Unlock(sid)
 
 	swOp := iaas.NewSwitchOp(r.client)
-	sw, err := swOp.Read(ctx, zone, common.SakuraCloudID(sid))
-	if err != nil {
-		if iaas.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("Delete Error",
-			fmt.Sprintf("could not read SakuraCloud Switch[%s]: %s", state.ID.ValueString(), err))
+	sw := getSwitch(ctx, r.client, common.SakuraCloudID(sid), zone, &resp.State, &resp.Diagnostics)
+	if sw == nil || resp.Diagnostics.HasError() {
 		return
 	}
 
@@ -274,4 +272,32 @@ func (r *switchResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	resp.State.RemoveResource(ctx)
+}
+
+func getSwitch(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Switch {
+	swOp := iaas.NewSwitchOp(client)
+	sw, err := swOp.Read(ctx, zone, id)
+	if err != nil {
+		if iaas.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("API Read Error", fmt.Sprintf("could not read SakuraCloud Switch[%s] : %s", id, err))
+		return nil
+	}
+	return sw
+}
+
+func updateModelByRead(ctx context.Context, model *switchResourceModel, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) bool {
+	sw := getSwitch(ctx, client, id, zone, state, diags)
+	if sw == nil {
+		return true
+	}
+
+	if err := model.updateState(ctx, client, sw, zone); err != nil {
+		diags.AddError("Update State Error", err.Error())
+		return true
+	}
+
+	return false
 }
