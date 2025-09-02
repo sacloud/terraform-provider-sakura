@@ -162,24 +162,18 @@ func (r *iconResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	defer cancel()
 
 	iconOp := iaas.NewIconOp(r.client)
-	_, err := iconOp.Read(ctx, common.SakuraCloudID(plan.ID.ValueString()))
-	if err != nil {
-		resp.Diagnostics.AddError("Icon Read API Error", err.Error())
-		return
-	}
-
-	_, err = iconOp.Update(ctx, common.SakuraCloudID(plan.ID.ValueString()), expandIconUpdateRequest(&plan))
+	_, err := iconOp.Update(ctx, common.ExpandSakuraCloudID(plan.ID), expandIconUpdateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Icon Update API Error", err.Error())
 		return
 	}
 
-	gotIcon := getIcon(ctx, r.client, common.SakuraCloudID(plan.ID.ValueString()), &resp.State, &resp.Diagnostics)
-	if gotIcon == nil {
+	icon := getIcon(ctx, r.client, common.ExpandSakuraCloudID(plan.ID), &resp.State, &resp.Diagnostics)
+	if icon == nil {
 		return
 	}
 
-	plan.updateState(gotIcon)
+	plan.updateState(icon)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

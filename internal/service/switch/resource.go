@@ -189,13 +189,7 @@ func (r *switchResource) Update(ctx context.Context, req resource.UpdateRequest,
 	defer common.SakuraMutexKV.Unlock(sid)
 
 	swOp := iaas.NewSwitchOp(r.client)
-	sw, err := swOp.Read(ctx, zone, common.SakuraCloudID(sid))
-	if err != nil {
-		resp.Diagnostics.AddError("Update Error", err.Error())
-		return
-	}
-
-	sw, err = swOp.Update(ctx, zone, sw.ID, &iaas.SwitchUpdateRequest{
+	sw, err := swOp.Update(ctx, zone, common.SakuraCloudID(sid), &iaas.SwitchUpdateRequest{
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
 		Tags:        common.TsetToStrings(plan.Tags),

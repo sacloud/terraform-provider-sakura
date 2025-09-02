@@ -250,21 +250,14 @@ func (r *internetResource) Update(ctx context.Context, req resource.UpdateReques
 	common.SakuraMutexKV.Lock(internetId)
 	defer common.SakuraMutexKV.Unlock(internetId)
 
-	internetOp := iaas.NewInternetOp(r.client)
-	internet, err := internetOp.Read(ctx, zone, common.SakuraCloudID(internetId))
-	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read SakuraCloud Internet[%s]: %s", internetId, err))
-		return
-	}
-
 	builder := expandInternetBuilder(&plan, r.client)
-	internet, err = builder.Update(ctx, zone, internet.ID)
+	_, err := builder.Update(ctx, zone, common.SakuraCloudID(internetId))
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Internet[%s] is failed: %s", internetId, err))
 		return
 	}
 
-	internet = getInternet(ctx, r.client, zone, internet.ID, &resp.State, &resp.Diagnostics)
+	internet := getInternet(ctx, r.client, zone, common.SakuraCloudID(internetId), &resp.State, &resp.Diagnostics)
 	if internet == nil {
 		return
 	}

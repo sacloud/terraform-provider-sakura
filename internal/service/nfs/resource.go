@@ -229,19 +229,13 @@ func (r *nfsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 
 	nfsOp := iaas.NewNFSOp(r.client)
-	nfs, err := nfsOp.Read(ctx, zone, common.ExpandSakuraCloudID(plan.ID))
-	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read SakuraCloud NFS[%s]: %s", plan.ID.ValueString(), err))
-		return
-	}
-
-	_, err = nfsOp.Update(ctx, zone, nfs.ID, expandNFSUpdateRequest(&plan))
+	_, err := nfsOp.Update(ctx, zone, common.ExpandSakuraCloudID(plan.ID), expandNFSUpdateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud NFS[%s] is failed: %s", plan.ID.ValueString(), err))
 		return
 	}
 
-	nfs = getNFS(ctx, r.client, zone, common.ExpandSakuraCloudID(plan.ID), &resp.State, &resp.Diagnostics)
+	nfs := getNFS(ctx, r.client, zone, common.ExpandSakuraCloudID(plan.ID), &resp.State, &resp.Diagnostics)
 	if nfs == nil {
 		return
 	}

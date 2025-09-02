@@ -180,19 +180,13 @@ func (r *privateHostResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	phOp := iaas.NewPrivateHostOp(r.client)
-	ph, err := phOp.Read(ctx, zone, common.ExpandSakuraCloudID(plan.ID))
-	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read SakuraCloud PrivateHost[%s]: %s", plan.ID.ValueString(), err))
-		return
-	}
-
-	_, err = phOp.Update(ctx, zone, ph.ID, expandPrivateHostUpdateRequest(&plan))
+	_, err := phOp.Update(ctx, zone, common.ExpandSakuraCloudID(plan.ID), expandPrivateHostUpdateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud PrivateHost[%s] is failed: %s", plan.ID.ValueString(), err))
 		return
 	}
 
-	ph = getPrivateHost(ctx, r.client, zone, common.ExpandSakuraCloudID(plan.ID), &resp.State, &resp.Diagnostics)
+	ph := getPrivateHost(ctx, r.client, zone, common.ExpandSakuraCloudID(plan.ID), &resp.State, &resp.Diagnostics)
 	if ph == nil {
 		return
 	}
