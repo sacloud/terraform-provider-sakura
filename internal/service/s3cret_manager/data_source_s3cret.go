@@ -50,10 +50,7 @@ func (d *secretManagerSecretDataSource) Configure(ctx context.Context, req datas
 }
 
 type secretManagerSecretDataSourceModel struct {
-	Name    types.String `tfsdk:"name"`
-	VaultID types.String `tfsdk:"vault_id"`
-	Version types.Int64  `tfsdk:"version"`
-	Value   types.String `tfsdk:"value"`
+	secretManagerSecretBaseModel
 }
 
 func (d *secretManagerSecretDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -87,12 +84,12 @@ func (d *secretManagerSecretDataSource) Read(ctx context.Context, req datasource
 		return
 	}
 
-	secretOp := sm.NewSecretOp(d.client, data.VaultID.ValueString())
-
 	unveilReq := v1.Unveil{Name: data.Name.ValueString()}
 	if !data.Version.IsNull() {
 		unveilReq.Version = v1.NewOptNilInt(int(data.Version.ValueInt64()))
 	}
+
+	secretOp := sm.NewSecretOp(d.client, data.VaultID.ValueString())
 	unveil, err := secretOp.Unveil(ctx, unveilReq)
 	if err != nil {
 		resp.Diagnostics.AddError("SecretManagerSecret Unveil Error", err.Error())
@@ -105,5 +102,5 @@ func (d *secretManagerSecretDataSource) Read(ctx context.Context, req datasource
 		data.Version = types.Int64Value(int64(unveil.Version.Value))
 	}
 
-	resp.State.Set(ctx, &data)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

@@ -53,12 +53,8 @@ func (d *secretManagerDataSource) Configure(ctx context.Context, req datasource.
 }
 
 type secretManagerDataSourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	ResourceID  types.String `tfsdk:"resource_id"`
-	Description types.String `tfsdk:"description"`
-	Tags        types.Set    `tfsdk:"tags"`
-	KmsKeyID    types.String `tfsdk:"kms_key_id"`
+	secretManagerBaseModel
+	ResourceID types.String `tfsdk:"resource_id"`
 }
 
 func (d *secretManagerDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -118,13 +114,8 @@ func (d *secretManagerDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	data.ID = types.StringValue(vault.ID)
-	data.Name = types.StringValue(vault.Name)
-	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = common.StringsToTset(vault.Tags)
-	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
-
-	resp.State.Set(ctx, &data)
+	data.updateState(vault)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func FilterSecretManagerVaultByName(vaults []v1.Vault, name string) (*v1.Vault, error) {

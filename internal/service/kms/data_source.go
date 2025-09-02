@@ -53,12 +53,9 @@ func (d *kmsDataSource) Configure(ctx context.Context, req datasource.ConfigureR
 }
 
 type kmsDataSourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	ResourceID  types.String `tfsdk:"resource_id"`
-	Description types.String `tfsdk:"description"`
-	Tags        types.Set    `tfsdk:"tags"`
-	KeyOrigin   types.String `tfsdk:"key_origin"`
+	common.SakuraBaseModel
+	ResourceID types.String `tfsdk:"resource_id"`
+	KeyOrigin  types.String `tfsdk:"key_origin"`
 }
 
 func (d *kmsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -118,13 +115,10 @@ func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		}
 	}
 
-	data.ID = types.StringValue(key.ID)
-	data.Name = types.StringValue(key.Name)
-	data.Description = types.StringValue(key.Description.Value)
-	data.Tags = common.StringsToTset(key.Tags)
+	data.UpdateBaseState(key.ID, key.Name, key.Description.Value, key.Tags)
 	data.KeyOrigin = types.StringValue(string(key.KeyOrigin))
 
-	resp.State.Set(ctx, &data)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func FilterKMSByName(keys v1.Keys, name string) (*v1.Key, error) {

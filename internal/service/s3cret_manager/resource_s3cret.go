@@ -19,9 +19,11 @@ import (
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sm "github.com/sacloud/secretmanager-api-go"
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
@@ -54,12 +56,8 @@ func (r *secretManagerSecretResource) Configure(ctx context.Context, req resourc
 	r.client = apiclient.SecretManagerClient
 }
 
-// TODO: model.goに切り出してdata sourceと共通化する
 type secretManagerSecretResourceModel struct {
-	Name     types.String   `tfsdk:"name"`
-	VaultID  types.String   `tfsdk:"vault_id"`
-	Version  types.Int64    `tfsdk:"version"`
-	Value    types.String   `tfsdk:"value"`
+	secretManagerSecretBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -92,104 +90,109 @@ func (r *secretManagerSecretResource) ImportState(ctx context.Context, req resou
 }
 
 func (r *secretManagerSecretResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data secretManagerSecretResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var plan secretManagerSecretResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutCreate(ctx, data.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	secretOp := sm.NewSecretOp(r.client, data.VaultID.ValueString())
+	secretOp := sm.NewSecretOp(r.client, plan.VaultID.ValueString())
 	createdSec, err := secretOp.Create(ctx, v1.CreateSecret{
-		Name:  data.Name.ValueString(),
-		Value: data.Value.ValueString(),
+		Name:  plan.Name.ValueString(),
+		Value: plan.Value.ValueString(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("SecretManagerSecret Create Error", err.Error())
 		return
 	}
 
-	data.Name = types.StringValue(createdSec.Name)
-	data.Version = types.Int64Value(int64(createdSec.LatestVersion))
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	plan.Name = types.StringValue(createdSec.Name)
+	plan.Version = types.Int64Value(int64(createdSec.LatestVersion))
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *secretManagerSecretResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data secretManagerSecretResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	var state secretManagerSecretResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
-	secretOp := sm.NewSecretOp(r.client, data.VaultID.ValueString())
-	secret, err := FilterSecretManagerSecretByName(ctx, secretOp, data.Name.ValueString())
-	if err != nil {
-		if err == common.ErrFilterNoResult {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("SecretManagerSecret Read Error", err.Error())
+
+	secret := getSecretManagerSecret(ctx, r.client, &state, &resp.State, &resp.Diagnostics)
+	if secret == nil {
 		return
 	}
 
-	data.Name = types.StringValue(secret.Name)
-	data.Version = types.Int64Value(int64(secret.LatestVersion))
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	state.Name = types.StringValue(secret.Name)
+	state.Version = types.Int64Value(int64(secret.LatestVersion))
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *secretManagerSecretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	// TODO: This is same as Create, consider refactoring
-	var data secretManagerSecretResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var plan secretManagerSecretResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutUpdate(ctx, data.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	secretOp := sm.NewSecretOp(r.client, data.VaultID.ValueString())
+	secretOp := sm.NewSecretOp(r.client, plan.VaultID.ValueString())
 	createdSec, err := secretOp.Create(ctx, v1.CreateSecret{
-		Name:  data.Name.ValueString(),
-		Value: data.Value.ValueString(),
+		Name:  plan.Name.ValueString(),
+		Value: plan.Value.ValueString(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("SecretManagerSecret Create Error", err.Error())
 		return
 	}
 
-	data.Name = types.StringValue(createdSec.Name)
-	data.Version = types.Int64Value(int64(createdSec.LatestVersion))
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	plan.Name = types.StringValue(createdSec.Name)
+	plan.Version = types.Int64Value(int64(createdSec.LatestVersion))
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *secretManagerSecretResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data secretManagerSecretResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	var state secretManagerSecretResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutDelete(ctx, data.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	secretOp := sm.NewSecretOp(r.client, data.VaultID.ValueString())
-
-	_, err := FilterSecretManagerSecretByName(ctx, secretOp, data.Name.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("SecretManagerSecret Delete's Read Error", err.Error())
+	sec := getSecretManagerSecret(ctx, r.client, &state, &resp.State, &resp.Diagnostics)
+	if sec == nil {
 		return
 	}
 
-	err = secretOp.Delete(ctx, v1.DeleteSecret{Name: data.Name.ValueString()})
+	secretOp := sm.NewSecretOp(r.client, state.VaultID.ValueString())
+	err := secretOp.Delete(ctx, v1.DeleteSecret{Name: state.Name.ValueString()})
 	if err != nil {
 		resp.Diagnostics.AddError("SecretManagerSecret Delete Error", err.Error())
 		return
 	}
+}
+
+func getSecretManagerSecret(ctx context.Context, client *v1.Client, model *secretManagerSecretResourceModel, state *tfsdk.State, diags *diag.Diagnostics) *v1.Secret {
+	secretOp := sm.NewSecretOp(client, model.VaultID.ValueString())
+	secret, err := FilterSecretManagerSecretByName(ctx, secretOp, model.Name.ValueString())
+	if err != nil {
+		if err == common.ErrFilterNoResult {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("SecretManagerSecret Read Error", err.Error())
+		return nil
+	}
+
+	return secret
 }
 
 func FilterSecretManagerSecretByName(ctx context.Context, secretOp sm.SecretAPI, name string) (*v1.Secret, error) {

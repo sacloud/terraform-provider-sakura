@@ -19,7 +19,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
@@ -50,10 +49,7 @@ func (d *iconDataSource) Configure(ctx context.Context, req datasource.Configure
 }
 
 type iconDataSourceModel struct {
-	ID     types.String             `tfsdk:"id"`
-	Name   types.String             `tfsdk:"name"`
-	Tags   types.Set                `tfsdk:"tags"`
-	URL    types.String             `tfsdk:"url"`
+	iconBaseModel
 	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
@@ -76,16 +72,16 @@ func (d *iconDataSource) Schema(_ context.Context, req datasource.SchemaRequest,
 }
 
 func (d *iconDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state iconDataSourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &state)...)
+	var data iconDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	searcher := iaas.NewIconOp(d.client)
 	findCondition := &iaas.FindCondition{}
-	if state.Filter != nil {
-		findCondition.Filter = common.ExpandSearchFilter(state.Filter)
+	if data.Filter != nil {
+		findCondition.Filter = common.ExpandSearchFilter(data.Filter)
 	}
 
 	res, err := searcher.Find(ctx, findCondition)
@@ -98,11 +94,6 @@ func (d *iconDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	icon := res.Icons[0]
-	state.ID = types.StringValue(icon.ID.String())
-	state.Name = types.StringValue(icon.Name)
-	state.Tags = common.StringsToTset(icon.Tags)
-	state.URL = types.StringValue(icon.URL)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	data.updateState(res.Icons[0])
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

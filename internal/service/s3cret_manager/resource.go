@@ -18,10 +18,11 @@ import (
 	"context"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	api "github.com/sacloud/api-client-go"
 	sm "github.com/sacloud/secretmanager-api-go"
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
@@ -54,14 +55,9 @@ func (r *secretManagerResource) Configure(ctx context.Context, req resource.Conf
 	r.client = apiclient.SecretManagerClient
 }
 
-// TODO: model.goに切り出してdata sourceと共通化する
 type secretManagerResourceModel struct {
-	ID          types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	KmsKeyID    types.String   `tfsdk:"kms_key_id"`
-	Description types.String   `tfsdk:"description"`
-	Tags        types.Set      `tfsdk:"tags"`
-	Timeouts    timeouts.Value `tfsdk:"timeouts"`
+	secretManagerBaseModel
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -87,144 +83,141 @@ func (r *secretManagerResource) ImportState(ctx context.Context, req resource.Im
 }
 
 func (r *secretManagerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var data secretManagerResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var plan secretManagerResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutCreate(ctx, data.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	createReq := expandSecretManagerCreateVault(&data)
 	vaultOp := sm.NewVaultOp(r.client)
-	vault, err := vaultOp.Create(ctx, createReq)
+	createdVault, err := vaultOp.Create(ctx, expandSecretManagerCreateVault(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("SecretManager Create Error", err.Error())
 		return
 	}
 
-	data.ID = types.StringValue(vault.ID)
-	data.Name = types.StringValue(vault.Name)
-	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
-	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = common.StringsToTset(vault.Tags)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	plan.updateState(&v1.Vault{
+		ID:          createdVault.ID,
+		Name:        createdVault.Name,
+		Description: v1.NewOptString(createdVault.Description.Value),
+		Tags:        createdVault.Tags,
+		KmsKeyID:    createdVault.KmsKeyID,
+	})
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *secretManagerResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var data secretManagerResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	var state secretManagerResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	vaultOp := sm.NewVaultOp(r.client)
-	vault, err := vaultOp.Read(ctx, data.ID.ValueString())
-	if err != nil {
-		if api.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("SecretManager Read Error", err.Error())
+	vault := getSecretManagerVault(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if vault == nil {
 		return
 	}
 
-	data.ID = types.StringValue(vault.ID)
-	data.Name = types.StringValue(vault.Name)
-	data.KmsKeyID = types.StringValue(vault.KmsKeyID)
-	data.Description = types.StringValue(vault.Description.Value)
-	data.Tags = common.StringsToTset(vault.Tags)
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	state.updateState(vault)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *secretManagerResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data secretManagerResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var plan secretManagerResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutUpdate(ctx, data.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	vaultOp := sm.NewVaultOp(r.client)
-	vault, err := vaultOp.Read(ctx, data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("SecretManager Update's Read Error", err.Error())
+	vault := getSecretManagerVault(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if vault == nil {
 		return
 	}
 
-	updateReq := expandSecretManagerUpdateVault(&data, vault)
-	_, err = vaultOp.Update(ctx, vault.ID, updateReq)
+	vaultOp := sm.NewVaultOp(r.client)
+	_, err := vaultOp.Update(ctx, vault.ID, expandSecretManagerUpdateVault(&plan, vault))
 	if err != nil {
 		resp.Diagnostics.AddError("SecretManager Update Error", err.Error())
 		return
 	}
 
-	data.ID = types.StringValue(vault.ID)
-	data.Name = types.StringValue(updateReq.Name)
-	data.KmsKeyID = types.StringValue(updateReq.KmsKeyID)
-	data.Description = types.StringValue(updateReq.Description.Value)
-	data.Tags = common.StringsToTset(updateReq.Tags)
+	vault = getSecretManagerVault(ctx, r.client, vault.ID, &resp.State, &resp.Diagnostics)
+	if vault == nil {
+		return
+	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	plan.updateState(vault)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *secretManagerResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data secretManagerResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	var state secretManagerResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutDelete(ctx, data.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	vaultOp := sm.NewVaultOp(r.client)
-	vault, err := vaultOp.Read(ctx, data.ID.ValueString())
-	if err != nil {
-		if api.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("SecretManager Delete's Read Error", err.Error())
+	vault := getSecretManagerVault(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if vault == nil {
 		return
 	}
 
-	err = vaultOp.Delete(ctx, vault.ID)
+	vaultOp := sm.NewVaultOp(r.client)
+	err := vaultOp.Delete(ctx, vault.ID)
 	if err != nil {
 		resp.Diagnostics.AddError("SecretManager Delete Error", err.Error())
 		return
 	}
 }
 
-func expandSecretManagerCreateVault(d *secretManagerResourceModel) v1.CreateVault {
+func getSecretManagerVault(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diag *diag.Diagnostics) *v1.Vault {
+	vaultOp := sm.NewVaultOp(client)
+	vault, err := vaultOp.Read(ctx, id)
+	if err != nil {
+		if api.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diag.AddError("Get SecretManager Vault Error", err.Error())
+		return nil
+	}
+
+	return vault
+}
+
+func expandSecretManagerCreateVault(model *secretManagerResourceModel) v1.CreateVault {
 	return v1.CreateVault{
-		Name:        d.Name.ValueString(),
-		KmsKeyID:    d.KmsKeyID.ValueString(),
-		Description: v1.NewOptString(d.Description.ValueString()),
-		Tags:        common.TsetToStrings(d.Tags),
+		Name:        model.Name.ValueString(),
+		KmsKeyID:    model.KmsKeyID.ValueString(),
+		Description: v1.NewOptString(model.Description.ValueString()),
+		Tags:        common.TsetToStrings(model.Tags),
 	}
 }
 
-func expandSecretManagerUpdateVault(d *secretManagerResourceModel, before *v1.Vault) v1.Vault {
+func expandSecretManagerUpdateVault(model *secretManagerResourceModel, before *v1.Vault) v1.Vault {
 	req := v1.Vault{
-		Name:     d.Name.ValueString(),
+		Name:     model.Name.ValueString(),
 		KmsKeyID: before.KmsKeyID,
 	}
 
-	if d.Tags.IsNull() {
+	if model.Tags.IsNull() {
 		req.Tags = before.Tags
 	} else {
-		req.Tags = common.TsetToStrings(d.Tags)
+		req.Tags = common.TsetToStrings(model.Tags)
 	}
-	if d.Description.IsNull() {
+	if model.Description.IsNull() {
 		req.Description = before.Description
 	} else {
-		req.Description = v1.NewOptString(d.Description.ValueString())
+		req.Description = v1.NewOptString(model.Description.ValueString())
 	}
 
 	return req

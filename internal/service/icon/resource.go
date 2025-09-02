@@ -63,14 +63,10 @@ func (r *iconResource) Configure(ctx context.Context, req resource.ConfigureRequ
 	r.client = apiclient
 }
 
-// TODO: model.goに切り出してdata sourceと共通化する
 type iconResourceModel struct {
-	ID            types.String   `tfsdk:"id"`
-	Name          types.String   `tfsdk:"name"`
+	iconBaseModel
 	Source        types.String   `tfsdk:"source"`
 	Base64Content types.String   `tfsdk:"base64content"`
-	Tags          types.Set      `tfsdk:"tags"`
-	URL           types.String   `tfsdk:"url"`
 	Timeouts      timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -196,13 +192,6 @@ func (r *iconResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		resp.Diagnostics.AddError("Icon Delete API Error", err.Error())
 		return
 	}
-}
-
-func (d *iconResourceModel) updateState(icon *iaas.Icon) {
-	d.ID = types.StringValue(icon.ID.String())
-	d.Name = types.StringValue(icon.Name)
-	d.URL = types.StringValue(icon.URL)
-	d.Tags = common.StringsToTset(icon.Tags)
 }
 
 func getIcon(ctx context.Context, client *common.APIClient, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Icon {

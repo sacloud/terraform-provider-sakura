@@ -17,14 +17,17 @@ package kms
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	api "github.com/sacloud/api-client-go"
@@ -59,15 +62,11 @@ func (r *kmsResource) Configure(ctx context.Context, req resource.ConfigureReque
 	r.client = apiclient.KmsClient
 }
 
-// TODO: model.goに切り出してdata sourceと共通化する
 type kmsResourceModel struct {
-	ID          types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	KeyOrigin   types.String   `tfsdk:"key_origin"`
-	PlainKey    types.String   `tfsdk:"plain_key"`
-	Description types.String   `tfsdk:"description"`
-	Tags        types.Set      `tfsdk:"tags"`
-	Timeouts    timeouts.Value `tfsdk:"timeouts"`
+	common.SakuraBaseModel
+	KeyOrigin types.String   `tfsdk:"key_origin"`
+	PlainKey  types.String   `tfsdk:"plain_key"`
+	Timeouts  timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -125,11 +124,8 @@ func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	plan.ID = types.StringValue(createdKey.ID)
-	plan.Name = types.StringValue(createdKey.Name)
+	plan.UpdateBaseState(createdKey.ID, createdKey.Name, createdKey.Description.Value, createdKey.Tags)
 	plan.KeyOrigin = types.StringValue(string(createdKey.KeyOrigin))
-	plan.Description = types.StringValue(createdKey.Description.Value)
-	plan.Tags = common.StringsToTset(createdKey.Tags)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -141,70 +137,61 @@ func (r *kmsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	keyOp := kms.NewKeyOp(r.client)
-	key, err := keyOp.Read(ctx, data.ID.ValueString())
-	if err != nil {
-		if api.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("KMS Read Error", err.Error())
+	key := getKMS(ctx, r.client, data.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if key == nil {
 		return
 	}
 
-	data.ID = types.StringValue(key.ID)
-	data.Name = types.StringValue(key.Name)
+	data.UpdateBaseState(key.ID, key.Name, key.Description.Value, key.Tags)
 	data.KeyOrigin = types.StringValue(string(key.KeyOrigin))
-	data.Description = types.StringValue(key.Description.Value)
-	data.Tags = common.StringsToTset(key.Tags)
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *kmsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var data kmsResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+	var plan kmsResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutUpdate(ctx, data.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
 	keyOp := kms.NewKeyOp(r.client)
-	key, err := keyOp.Read(ctx, data.ID.ValueString())
-	if err != nil {
-		resp.Diagnostics.AddError("KMS Update's Read Error", err.Error())
+	key := getKMS(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if key == nil {
 		return
 	}
 
-	_, err = keyOp.Update(ctx, key.ID, expandKMSUpdateKey(&data, key))
+	_, err := keyOp.Update(ctx, key.ID, expandKMSUpdateKey(&plan, key))
 	if err != nil {
 		resp.Diagnostics.AddError("KMS Update Error", err.Error())
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+	key = getKMS(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if key == nil {
+		return
+	}
+
+	plan.UpdateBaseState(key.ID, key.Name, key.Description.Value, key.Tags)
+	plan.KeyOrigin = types.StringValue(string(key.KeyOrigin))
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *kmsResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var data kmsResourceModel
-	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+	var state kmsResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutDelete(ctx, data.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
 	keyOp := kms.NewKeyOp(r.client)
-	key, err := keyOp.Read(ctx, data.ID.ValueString())
-	if err != nil {
-		if api.IsNotFoundError(err) {
-			resp.State.RemoveResource(ctx)
-			return
-		}
-		resp.Diagnostics.AddError("KMS Delete's Read Error", err.Error())
+	key := getKMS(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if key == nil {
 		return
 	}
 
@@ -214,47 +201,62 @@ func (r *kmsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 }
 
-func expandKMSCreateKey(d *kmsResourceModel) (v1.CreateKey, error) {
-	keyOrig := d.KeyOrigin.ValueString()
+func getKMS(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.Key {
+	keyOp := kms.NewKeyOp(client)
+	key, err := keyOp.Read(ctx, id)
+	if err != nil {
+		if api.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("Get KMS Key Error", fmt.Sprintf("could not read SakuraCloud KMS key[%s]: %s", id, err))
+		return nil
+	}
+
+	return key
+}
+
+func expandKMSCreateKey(model *kmsResourceModel) (v1.CreateKey, error) {
+	keyOrig := model.KeyOrigin.ValueString()
 	var req v1.CreateKey
 	if keyOrig == "generated" {
 		req = v1.CreateKey{
-			Name:      d.Name.ValueString(),
+			Name:      model.Name.ValueString(),
 			KeyOrigin: v1.KeyOriginEnumGenerated,
 		}
 	} else {
-		plainKey := d.PlainKey.ValueString()
+		plainKey := model.PlainKey.ValueString()
 		if plainKey == "" {
 			return v1.CreateKey{}, errors.New("plain_key is required when key_origin is 'imported'")
 		}
 		req = v1.CreateKey{
-			Name:      d.Name.ValueString(),
+			Name:      model.Name.ValueString(),
 			KeyOrigin: v1.KeyOriginEnumImported,
 			PlainKey:  v1.NewOptString(plainKey),
 		}
 	}
 
-	if !d.Tags.IsNull() {
-		req.Tags = common.TsetToStrings(d.Tags)
+	if !model.Tags.IsNull() {
+		req.Tags = common.TsetToStrings(model.Tags)
 	}
-	if !d.Description.IsNull() {
-		req.Description = v1.NewOptString(d.Description.ValueString())
+	if !model.Description.IsNull() {
+		req.Description = v1.NewOptString(model.Description.ValueString())
 	}
 
 	return req, nil
 }
 
-func expandKMSUpdateKey(d *kmsResourceModel, before *v1.Key) v1.Key {
+func expandKMSUpdateKey(model *kmsResourceModel, before *v1.Key) v1.Key {
 	req := v1.Key{
-		Name:      d.Name.ValueString(),
+		Name:      model.Name.ValueString(),
 		KeyOrigin: before.KeyOrigin,
 	}
 
-	if !d.Tags.IsNull() {
-		req.Tags = common.TsetToStrings(d.Tags)
+	if !model.Tags.IsNull() {
+		req.Tags = common.TsetToStrings(model.Tags)
 	}
-	if !d.Description.IsNull() {
-		req.Description = v1.NewOptString(d.Description.ValueString())
+	if !model.Description.IsNull() {
+		req.Description = v1.NewOptString(model.Description.ValueString())
 	}
 
 	return req
