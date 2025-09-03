@@ -186,9 +186,15 @@ expression = [
 
 v2からはいくつか実装に関して変更されているところがあります。
 
-### internal/providerディレクトリ
+### internalディレクトリ
 
-v2では`sakuracloud`ディレクトリにプロバイダーの実装が置かれていたが、`internal/provider`に移動しています。
+v2では`sakuracloud`ディレクトリにプロバイダーやリソースの実装がフラットに置かれていたが、v3では`internal`以下に移動しています。
+
+- internal/provider: プロバイダ実装
+- internal/service: 各ディレクトリにそれぞれのサービスのdata source / resource / model等の実装が置かれている
+- internal/common: 各サービスから利用される共通の処理が実装されている。schema / timeout / model等
+- internal/validators: 各サービスから利用されるさくら独自のバリデータ群
+- internal/test: アクセプタンステストで利用されるヘルパー群
 
 ### structure_xxx.goの削減
 
@@ -198,14 +204,13 @@ v2では各リソース毎に`structure_xxx.go`を用意していたが、v3で�
 ### モデルの実装をmodel.goで共有
 
 v2では`schema.Schema`が全ての共通のインターフェイスになっており実装を共有できたが、Frameworkはそれぞれリソース毎にモデルを用意する設計になっているため、処理を共通化しにくい。コピペの実装を防ぐため、data / resourceで共有できる部分は`model.go`に構造体・メソッドを実装し、埋め込みを使って処理を共通化する(主にモデルの更新で使われる)。
-モデルの数が増えてきたら`model.go`をディレクトリ以下に移して分割することも考慮する。
 
 ### 実装の定義順
 
 実装は以下の順で実装するようになっている
 
 ```go
-package sakura
+package xxx
 
 import(...)
 
@@ -234,7 +239,7 @@ func (r *xxxResource) Configure(ctx context.Context, req resource.ConfigureReque
 }
 
 type xxxResourceModel struct {
-	sakuraXXXBaseModel  // model.goで実装
+	xxxBaseModel  // model.goで実装
 	Timeouts timeouts.Value `tfsdk:"timeouts"` // タイムアウトをサポートするには自分で定義に入れる必要がある
 }
 
@@ -261,10 +266,13 @@ func (r *xxxResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
+	defer cancel()
+
     // Create用の実装
 
-    // Readを呼び出して状態を更新する用のヘルパー
-	updateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, xxx.ID.String())
+	plan.updateState(xxx)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *xxxResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -283,13 +291,18 @@ func (r *xxxResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 func (r *xxxResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan xxxxResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	//resp.Diagnostics.Append(req.State.Get(ctx, &state)...) // 比較したい場合はstateも使う
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
+	defer cancel()
+
 	// Update用の実装
 
-	updateResourceByRead(ctx, r, &resp.State, &resp.Diagnostics, xxx.ID.String())
+	plan.updateState(xxx)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *xxxResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -299,9 +312,10 @@ func (r *xxxResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	// Delete用の実装
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
+	defer cancel()
 
-	resp.State.RemoveResource(ctx)　　// SDK v2ではd.SetId("")に相当
+	// Delete用の実装
 }
 
 // ヘルパーが必要ならここ以降に書く
