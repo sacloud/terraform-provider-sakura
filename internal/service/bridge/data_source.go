@@ -20,6 +20,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
@@ -51,7 +52,6 @@ func (d *bridgeDataSource) Configure(ctx context.Context, req datasource.Configu
 
 type bridgeDataSourceModel struct {
 	bridgeBaseModel
-	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
 func (d *bridgeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -62,7 +62,6 @@ func (d *bridgeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 			"description": common.SchemaDataSourceDescription("Bridge"),
 			"zone":        common.SchemaDataSourceZone("Bridge"),
 		},
-		Blocks: common.FilterSchema(&common.FilterSchemaOption{}),
 	}
 }
 
@@ -79,11 +78,7 @@ func (d *bridgeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	bridgeOp := iaas.NewBridgeOp(d.client)
-	findCondition := &iaas.FindCondition{}
-	if data.Filter != nil {
-		findCondition.Filter = common.ExpandSearchFilter(data.Filter)
-	}
-	res, err := bridgeOp.Find(ctx, zone, findCondition)
+	res, err := bridgeOp.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, types.SetNull(types.StringType)))
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Bridge : %s", err))
 		return

@@ -54,8 +54,7 @@ func (d *kmsDataSource) Configure(ctx context.Context, req datasource.ConfigureR
 
 type kmsDataSourceModel struct {
 	common.SakuraBaseModel
-	ResourceID types.String `tfsdk:"resource_id"`
-	KeyOrigin  types.String `tfsdk:"key_origin"`
+	KeyOrigin types.String `tfsdk:"key_origin"`
 }
 
 func (d *kmsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -67,10 +66,6 @@ func (d *kmsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, 
 			"name": schema.StringAttribute{
 				Optional:    true,
 				Description: "The name of the KMS key.",
-			},
-			"resource_id": schema.StringAttribute{
-				Optional:    true,
-				Description: "The resource ID of the KMS key.",
 			},
 			"key_origin": schema.StringAttribute{
 				Computed:    true,
@@ -87,8 +82,8 @@ func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		return
 	}
 
-	if data.Name.IsNull() && data.ResourceID.IsNull() {
-		resp.Diagnostics.AddError("Missing Attribute", "Either 'name' or 'resource_id' must be specified.")
+	if data.Name.IsNull() && data.ID.IsNull() {
+		resp.Diagnostics.AddError("Missing Attribute", "Either 'id' or 'name' must be specified.")
 		return
 	}
 
@@ -108,7 +103,7 @@ func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 			return
 		}
 	} else {
-		key, err = keyOp.Read(ctx, data.ResourceID.ValueString())
+		key, err = keyOp.Read(ctx, data.ID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("KMS Read Error", "No result found")
 			return

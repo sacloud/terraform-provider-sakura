@@ -113,6 +113,5 @@ func (d *diskDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	disk := res.Disks[0]
 	data.updateState(disk, zone)
 	data.IconID = types.StringValue(disk.IconID.String())
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

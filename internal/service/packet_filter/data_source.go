@@ -20,6 +20,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
@@ -54,7 +55,6 @@ func (d *packetFilterDataSource) Configure(ctx context.Context, req datasource.C
 
 type packetFilterDataSourceModel struct {
 	packetFilterBaseModel
-	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
 func (d *packetFilterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -93,7 +93,6 @@ func (d *packetFilterDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 				},
 			},
 		},
-		Blocks: common.FilterSchema(&common.FilterSchemaOption{}),
 	}
 }
 
@@ -110,12 +109,7 @@ func (d *packetFilterDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	searcher := iaas.NewPacketFilterOp(d.client)
-	findCondition := &iaas.FindCondition{}
-	if data.Filter != nil {
-		findCondition.Filter = common.ExpandSearchFilter(data.Filter)
-	}
-
-	res, err := searcher.Find(ctx, zone, findCondition)
+	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, types.SetNull(types.StringType)))
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud PacketFilter resource: %s", err))
 		return

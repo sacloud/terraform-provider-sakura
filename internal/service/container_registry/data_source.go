@@ -51,7 +51,6 @@ func (d *containerRegistryDataSource) Configure(ctx context.Context, req datasou
 
 type containerRegistryDataSourceModel struct {
 	containerRegistryBaseModel
-	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
 func (d *containerRegistryDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -99,25 +98,18 @@ func (d *containerRegistryDataSource) Schema(_ context.Context, _ datasource.Sch
 				},
 			},
 		},
-		Blocks: common.FilterSchema(&common.FilterSchemaOption{}),
 	}
 }
 
 func (d *containerRegistryDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state containerRegistryDataSourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &state)...)
+	var data containerRegistryDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	searcher := iaas.NewContainerRegistryOp(d.client)
-
-	findCondition := &iaas.FindCondition{}
-	if state.Filter != nil {
-		findCondition.Filter = common.ExpandSearchFilter(state.Filter)
-	}
-
-	res, err := searcher.Find(ctx, findCondition)
+	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", "could not find SakuraCloud ContainerRegistry")
 		return
@@ -128,8 +120,7 @@ func (d *containerRegistryDataSource) Read(ctx context.Context, req datasource.R
 	}
 
 	cr := res.ContainerRegistries[0]
-	state.updateState(ctx, d.client, cr, true, &resp.Diagnostics)
-	state.IconID = types.StringValue(cr.IconID.String())
-
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+	data.updateState(ctx, d.client, cr, true, &resp.Diagnostics)
+	data.IconID = types.StringValue(cr.IconID.String())
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

@@ -54,7 +54,6 @@ func (d *noteDataSource) Configure(ctx context.Context, req datasource.Configure
 
 type noteDataSourceModel struct {
 	noteBaseModel
-	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
 func (d *noteDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -71,7 +70,6 @@ func (d *noteDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 				Description: "The content of the Note",
 			},
 		},
-		Blocks: common.FilterSchema(&common.FilterSchemaOption{}),
 	}
 }
 
@@ -83,12 +81,7 @@ func (d *noteDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	}
 
 	searcher := iaas.NewNoteOp(d.client)
-	findCondition := &iaas.FindCondition{}
-	if data.Filter != nil {
-		findCondition.Filter = common.ExpandSearchFilter(data.Filter)
-	}
-
-	result, err := searcher.Find(ctx, findCondition)
+	result, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Note resource: %s", err))
 		return

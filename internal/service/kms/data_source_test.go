@@ -83,7 +83,7 @@ resource "sakura_kms" "foobar" {
 }
 
 data "sakura_kms" "foobar" {
-  resource_id = sakura_kms.foobar.id
+  id = sakura_kms.foobar.id
 
   depends_on = [sakura_kms.foobar]
 }`

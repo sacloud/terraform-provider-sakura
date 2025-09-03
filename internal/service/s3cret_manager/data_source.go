@@ -21,7 +21,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	sm "github.com/sacloud/secretmanager-api-go"
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
@@ -54,7 +53,6 @@ func (d *secretManagerDataSource) Configure(ctx context.Context, req datasource.
 
 type secretManagerDataSourceModel struct {
 	secretManagerBaseModel
-	ResourceID types.String `tfsdk:"resource_id"`
 }
 
 func (d *secretManagerDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -67,11 +65,6 @@ func (d *secretManagerDataSource) Schema(_ context.Context, req datasource.Schem
 				Optional:    true,
 				Computed:    true,
 				Description: "The name of the SecretManager vault.",
-			},
-			"resource_id": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "The resource ID of the SecretManager vault.",
 			},
 			"kms_key_id": schema.StringAttribute{
 				Computed:    true,
@@ -103,14 +96,14 @@ func (d *secretManagerDataSource) Read(ctx context.Context, req datasource.ReadR
 			resp.Diagnostics.AddError("SecretManager Filter Error", err.Error())
 			return
 		}
-	} else if !data.ResourceID.IsNull() {
-		vault, err = vaultOp.Read(ctx, data.ResourceID.ValueString())
+	} else if !data.ID.IsNull() {
+		vault, err = vaultOp.Read(ctx, data.ID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("SecretManager Read Error", err.Error())
 			return
 		}
 	} else {
-		resp.Diagnostics.AddError("Missing Attribute", "Either 'name' or 'resource_id' must be specified.")
+		resp.Diagnostics.AddError("Missing Attribute", "Either 'id' or 'name' must be specified.")
 		return
 	}
 

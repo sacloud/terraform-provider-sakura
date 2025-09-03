@@ -96,9 +96,7 @@ func (d *privateHostDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	searcher := iaas.NewPrivateHostOp(d.client)
-	findCondition := common.CreateFindCondition(data.ID, data.Name, data.Tags)
-
-	res, err := searcher.Find(ctx, zone, findCondition)
+	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", err.Error())
 		return
@@ -111,8 +109,5 @@ func (d *privateHostDataSource) Read(ctx context.Context, req datasource.ReadReq
 	ph := res.PrivateHosts[0]
 	data.updateState(ph, zone)
 	data.IconID = types.StringValue(ph.IconID.String())
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
-
-// sakuraCloudClientFramework, expandSearchFilterFrameworkはSDK/Framework用に実装してください

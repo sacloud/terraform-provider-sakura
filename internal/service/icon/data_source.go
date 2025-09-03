@@ -50,24 +50,19 @@ func (d *iconDataSource) Configure(ctx context.Context, req datasource.Configure
 
 type iconDataSourceModel struct {
 	iconBaseModel
-	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
 func (d *iconDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":   common.SchemaDataSourceId("Icon"),
+			"name": common.SchemaDataSourceName("Icon"),
 			"tags": common.SchemaDataSourceTags("Icon"),
-			"name": schema.StringAttribute{
-				Optional:    true,
-				Description: "The name of the Icon.",
-			},
 			"url": schema.StringAttribute{
 				Computed:    true,
 				Description: "The URL for getting the icon's raw data",
 			},
 		},
-		Blocks: common.FilterSchema(&common.FilterSchemaOption{}),
 	}
 }
 
@@ -79,12 +74,7 @@ func (d *iconDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	}
 
 	searcher := iaas.NewIconOp(d.client)
-	findCondition := &iaas.FindCondition{}
-	if data.Filter != nil {
-		findCondition.Filter = common.ExpandSearchFilter(data.Filter)
-	}
-
-	res, err := searcher.Find(ctx, findCondition)
+	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", "could not find SakuraCloud Icon")
 		return

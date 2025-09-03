@@ -20,6 +20,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
@@ -51,7 +52,6 @@ func (d *sshKeyDataSource) Configure(ctx context.Context, req datasource.Configu
 
 type sshKeyDataSourceModel struct {
 	sshKeyBaseModel
-	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
 func (d *sshKeyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -69,7 +69,6 @@ func (d *sshKeyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Description: "The fingerprint of public key",
 			},
 		},
-		Blocks: common.FilterSchema(&common.FilterSchemaOption{}),
 	}
 }
 
@@ -81,12 +80,7 @@ func (d *sshKeyDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	searcher := iaas.NewSSHKeyOp(d.client)
-	findCondition := &iaas.FindCondition{}
-	if data.Filter != nil {
-		findCondition.Filter = common.ExpandSearchFilter(data.Filter)
-	}
-
-	res, err := searcher.Find(ctx, findCondition)
+	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, types.SetNull(types.StringType)))
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud SSHKey resource: %s", err.Error()))
 		return

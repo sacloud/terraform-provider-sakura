@@ -51,15 +51,14 @@ func (d *switchDataSource) Configure(ctx context.Context, req datasource.Configu
 
 type switchDataSourceModel struct {
 	switchBaseModel
-	Filter *common.FilterBlockModel `tfsdk:"filter"`
 }
 
 func (d *switchDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
+			"id":          common.SchemaDataSourceId("Switch"),
 			"name":        common.SchemaDataSourceName("Switch"),
 			"description": common.SchemaDataSourceDescription("Switch"),
-			"id":          common.SchemaDataSourceId("Switch"),
 			"tags":        common.SchemaDataSourceTags("Switch"),
 			"icon_id":     common.SchemaDataSourceIconID("Switch"),
 			"zone":        common.SchemaDataSourceZone("Switch"),
@@ -73,7 +72,6 @@ func (d *switchDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Description: "A set of server id connected to the Switch",
 			},
 		},
-		Blocks: common.FilterSchema(&common.FilterSchemaOption{}),
 	}
 }
 
@@ -90,12 +88,7 @@ func (d *switchDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	searcher := iaas.NewSwitchOp(d.client)
-	findCondition := &iaas.FindCondition{}
-	if data.Filter != nil {
-		findCondition.Filter = common.ExpandSearchFilter(data.Filter)
-	}
-
-	res, err := searcher.Find(ctx, zone, findCondition)
+	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", err.Error())
 		return
@@ -111,6 +104,5 @@ func (d *switchDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 	data.IconID = types.StringValue(sw.IconID.String())
-
-	resp.State.Set(ctx, &data)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

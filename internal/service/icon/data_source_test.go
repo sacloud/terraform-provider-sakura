@@ -52,7 +52,5 @@ resource "sakura_icon" "foobar" {
 }
 
 data "sakura_icon" "foobar" {
-  filter {
-	names = [sakura_icon.foobar.name]
-  }
+  name = sakura_icon.foobar.name
 }`
