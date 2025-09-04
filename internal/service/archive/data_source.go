@@ -16,10 +16,12 @@ package archive
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
@@ -76,13 +78,14 @@ func (d *archiveDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				Description: "The size of the archive in GB.",
 			},
 			"os_type": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: desc.Sprintf("The criteria used to filter SakuraCloud archives. This must be one of following: \n%s", ostype.OSTypeShortNames),
 				Validators: []validator.String{
 					stringvalidator.OneOf(ostype.OSTypeShortNames...),
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("id"),
+						path.MatchRelative().AtParent().AtName("name"), path.MatchRelative().AtParent().AtName("tags")),
 				},
 			},
-			// filter機能はv3から削除
 		},
 	}
 }
@@ -99,11 +102,26 @@ func (d *archiveDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 
 	searcher := iaas.NewArchiveOp(d.client)
-	strOSType := data.OSType.ValueString()
-	archive, err := query.FindArchiveByOSType(ctx, searcher, zone, ostype.StrToOSType(strOSType))
-	if err != nil {
-		resp.Diagnostics.AddError("Archive Search Error", err.Error())
-		return
+	var archive *iaas.Archive
+	if !data.OSType.IsNull() && !data.OSType.IsUnknown() {
+		strOSType := data.OSType.ValueString()
+		res, err := query.FindArchiveByOSType(ctx, searcher, zone, ostype.StrToOSType(strOSType))
+		if err != nil {
+			resp.Diagnostics.AddError("Archive Search Error", err.Error())
+			return
+		}
+		archive = res
+	} else {
+		res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
+		if err != nil {
+			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Archive: %s", err))
+			return
+		}
+		if res == nil || len(res.Archives) == 0 {
+			common.FilterNoResultErr(&resp.Diagnostics)
+			return
+		}
+		archive = res.Archives[0]
 	}
 
 	data.UpdateBaseState(archive.ID.String(), archive.Name, archive.Description, archive.Tags)
