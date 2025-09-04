@@ -310,7 +310,7 @@ func expandNFSDiskPlanID(ctx context.Context, client *common.APIClient, d *nfsRe
 }
 
 func expandNFSCreateRequest(d *nfsResourceModel, planID iaastypes.ID) *iaas.NFSCreateRequest {
-	nic := d.NetworkInterface[0]
+	nic := d.NetworkInterface
 	return &iaas.NFSCreateRequest{
 		SwitchID:       common.ExpandSakuraCloudID(nic.SwitchID),
 		PlanID:         planID,

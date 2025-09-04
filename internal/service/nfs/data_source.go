@@ -66,15 +66,13 @@ func (d *nfsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 			"icon_id":     common.SchemaDataSourceIconID("NFS"),
 			"plan":        common.SchemaDataSourcePlan("NFS", iaastypes.NFSPlanStrings),
 			"size":        common.SchemaDataSourceSize("NFS"),
-			"network_interface": schema.ListNestedAttribute{
+			"network_interface": schema.SingleNestedAttribute{
 				Computed: true,
-				NestedObject: schema.NestedAttributeObject{
-					Attributes: map[string]schema.Attribute{
-						"switch_id":  common.SchemaDataSourceSwitchID("NFS"),
-						"ip_address": common.SchemaDataSourceIPAddress("NFS"),
-						"netmask":    common.SchemaDataSourceNetMask("NFS"),
-						"gateway":    common.SchemaDataSourceGateway("NFS"),
-					},
+				Attributes: map[string]schema.Attribute{
+					"switch_id":  common.SchemaDataSourceSwitchID("NFS"),
+					"ip_address": common.SchemaDataSourceIPAddress("NFS"),
+					"netmask":    common.SchemaDataSourceNetMask("NFS"),
+					"gateway":    common.SchemaDataSourceGateway("NFS"),
 				},
 			},
 		},

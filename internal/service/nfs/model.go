@@ -34,11 +34,11 @@ type nfsNetworkInterfaceModel struct {
 
 type nfsBaseModel struct {
 	common.SakuraBaseModel
-	Zone             types.String                `tfsdk:"zone"`
-	IconID           types.String                `tfsdk:"icon_id"`
-	Plan             types.String                `tfsdk:"plan"`
-	Size             types.Int64                 `tfsdk:"size"`
-	NetworkInterface []*nfsNetworkInterfaceModel `tfsdk:"network_interface"`
+	Zone             types.String              `tfsdk:"zone"`
+	IconID           types.String              `tfsdk:"icon_id"`
+	Plan             types.String              `tfsdk:"plan"`
+	Size             types.Int64               `tfsdk:"size"`
+	NetworkInterface *nfsNetworkInterfaceModel `tfsdk:"network_interface"`
 }
 
 func (model *nfsBaseModel) updateState(ctx context.Context, client *common.APIClient, nfs *iaas.NFS, zone string) (bool, error) {
@@ -48,7 +48,6 @@ func (model *nfsBaseModel) updateState(ctx context.Context, client *common.APICl
 
 	model.UpdateBaseState(nfs.ID.String(), nfs.Name, nfs.Description, nfs.Tags)
 	model.Zone = types.StringValue(zone)
-	model.IconID = types.StringValue(nfs.IconID.String())
 
 	plan, size, err := flattenNFSDiskPlan(ctx, client, nfs.PlanID)
 	if err != nil {
@@ -56,15 +55,12 @@ func (model *nfsBaseModel) updateState(ctx context.Context, client *common.APICl
 	}
 	model.Plan = types.StringValue(plan)
 	model.Size = types.Int64Value(int64(size))
-
-	var nis []*nfsNetworkInterfaceModel
-	nis = append(nis, &nfsNetworkInterfaceModel{
+	model.NetworkInterface = &nfsNetworkInterfaceModel{
 		SwitchID:  types.StringValue(nfs.SwitchID.String()),
 		IPAddress: types.StringValue(nfs.IPAddresses[0]),
 		Netmask:   types.Int32Value(int32(nfs.NetworkMaskLen)),
 		Gateway:   types.StringValue(nfs.DefaultRoute),
-	})
-	model.NetworkInterface = nis
+	}
 
 	return false, nil
 }
