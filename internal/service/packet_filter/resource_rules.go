@@ -23,12 +23,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
 )
 
 type packetFilterRulesResource struct {
@@ -74,7 +74,7 @@ func (r *packetFilterRulesResource) Schema(ctx context.Context, _ resource.Schem
 				Required:    true,
 				Description: "The id of the packet filter that set expressions to",
 				Validators: []validator.String{
-					validators.SakuraIDValidator(),
+					sacloudvalidator.SakuraIDValidator(),
 				},
 			},
 			"expression": schemaPacketFilterExpression(),

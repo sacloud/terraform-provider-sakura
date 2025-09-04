@@ -29,7 +29,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
@@ -41,7 +41,7 @@ import (
 	"github.com/sacloud/packages-go/size"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
 )
 
 type diskResource struct {
@@ -105,7 +105,7 @@ func (r *diskResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Computed:    true,
 				Description: desc.Sprintf("The id of the source archive. %s", desc.Conflicts("source_disk_id")),
 				Validators: []validator.String{
-					validators.SakuraIDValidator(),
+					sacloudvalidator.SakuraIDValidator(),
 					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("source_disk_id")),
 				},
 				PlanModifiers: []planmodifier.String{
@@ -117,7 +117,7 @@ func (r *diskResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Computed:    true,
 				Description: desc.Sprintf("The id of the source disk. %s", desc.Conflicts("source_archive_id")),
 				Validators: []validator.String{
-					validators.SakuraIDValidator(),
+					sacloudvalidator.SakuraIDValidator(),
 					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("source_archive_id")),
 				},
 				PlanModifiers: []planmodifier.String{
@@ -141,7 +141,7 @@ func (r *diskResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Optional:    true,
 				Description: "A list of disk id. The disk will be located to different storage from these disks",
 				Validators: []validator.Set{
-					setvalidator.ValueStringsAre(validators.SakuraIDValidator()),
+					setvalidator.ValueStringsAre(sacloudvalidator.SakuraIDValidator()),
 				},
 				PlanModifiers: []planmodifier.Set{
 					setplanmodifier.RequiresReplaceIfConfigured(),

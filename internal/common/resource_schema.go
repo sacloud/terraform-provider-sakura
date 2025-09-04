@@ -25,12 +25,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
 )
 
 func SchemaResourceId(name string) schema.Attribute {
@@ -69,7 +69,7 @@ func SchemaResourceIconID(name string) schema.Attribute {
 		Optional:    true,
 		Description: desc.Sprintf("The icon id to attach to the %s", name),
 		Validators: []validator.String{
-			validators.SakuraIDValidator(),
+			sacloudvalidator.SakuraIDValidator(),
 		},
 	}
 }
@@ -80,7 +80,7 @@ func SchemaResourceServerID(name string) schema.Attribute {
 		Computed:    true,
 		Description: desc.Sprintf("The id of the server connected to the %s", name),
 		Validators: []validator.String{
-			validators.SakuraIDValidator(),
+			sacloudvalidator.SakuraIDValidator(),
 		},
 	}
 }
@@ -90,7 +90,7 @@ func SchemaResourceSwitchID(name string) schema.Attribute {
 		Required:    true,
 		Description: desc.Sprintf("The id of the switch to which the %s connects", name),
 		Validators: []validator.String{
-			validators.SakuraIDValidator(),
+			sacloudvalidator.SakuraIDValidator(),
 		},
 		PlanModifiers: []planmodifier.String{
 			stringplanmodifier.RequiresReplace(),

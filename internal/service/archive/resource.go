@@ -32,7 +32,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
@@ -42,7 +42,7 @@ import (
 
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
 )
 
 type archiveResource struct {
@@ -132,7 +132,7 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Computed:    true,
 				Description: desc.Sprintf("The id of the source archive. %s", desc.Conflicts("source_disk_id")),
 				Validators: []validator.String{
-					validators.SakuraIDValidator(),
+					sacloudvalidator.SakuraIDValidator(),
 					stringvalidator.ConflictsWith(sizePath, sourceDiskIdPath, sourceSharedKeyPath),
 				},
 				PlanModifiers: []planmodifier.String{
@@ -154,7 +154,7 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Computed:    true,
 				Description: desc.Sprintf("The id of the source disk. %s", desc.Conflicts("source_archive_id")),
 				Validators: []validator.String{
-					validators.SakuraIDValidator(),
+					sacloudvalidator.SakuraIDValidator(),
 					stringvalidator.ConflictsWith(sizePath, sourceArchiveIdPath, sourceArchiveZonePath, sourceSharedKeyPath),
 				},
 				PlanModifiers: []planmodifier.String{
@@ -167,7 +167,7 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Sensitive:   true,
 				Description: "The share key of source shared archive",
 				Validators: []validator.String{
-					validators.StringFuncValidator(func(v string) error {
+					sacloudvalidator.StringFuncValidator(func(v string) error {
 						key := iaastypes.ArchiveShareKey(v)
 						if !key.ValidFormat() {
 							return fmt.Errorf("%q must be formatted in '<ZONE>:<ID>:<TOKEN>'", key)

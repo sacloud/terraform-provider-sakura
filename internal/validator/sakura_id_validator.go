@@ -12,41 +12,40 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package validators
+package validator
 
 import (
 	"context"
-	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
-type stringCustomFuncValidator struct {
-	fun func(value string) error
+type stringSakuraIDTypeValidator struct{}
+
+var _ validator.String = stringSakuraIDTypeValidator{}
+
+func (v stringSakuraIDTypeValidator) Description(_ context.Context) string {
+	return "string must be a valid Sakura Cloud ID (number only)"
 }
 
-var _ validator.String = stringCustomFuncValidator{}
-
-func (v stringCustomFuncValidator) Description(_ context.Context) string {
-	return "Validates a string attribute using a custom function"
-}
-
-func (v stringCustomFuncValidator) MarkdownDescription(ctx context.Context) string {
+func (v stringSakuraIDTypeValidator) MarkdownDescription(ctx context.Context) string {
 	return v.Description(ctx)
 }
 
-func (v stringCustomFuncValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
+func (v stringSakuraIDTypeValidator) ValidateString(ctx context.Context, req validator.StringRequest, resp *validator.StringResponse) {
 	if req.ConfigValue.IsUnknown() || req.ConfigValue.IsNull() {
 		return
 	}
 
 	value := req.ConfigValue.ValueString()
-	if err := v.fun(value); err != nil {
-		resp.Diagnostics.AddAttributeError(req.Path, fmt.Sprintf("invalid value: %s", value), err.Error())
+	_, err := strconv.ParseInt(value, 10, 64)
+	if err != nil {
+		resp.Diagnostics.AddAttributeError(req.Path, v.Description(ctx), value)
 		return
 	}
 }
 
-func StringFuncValidator(fun func(value string) error) stringCustomFuncValidator {
-	return stringCustomFuncValidator{fun: fun}
+func SakuraIDValidator() stringSakuraIDTypeValidator {
+	return stringSakuraIDTypeValidator{}
 }

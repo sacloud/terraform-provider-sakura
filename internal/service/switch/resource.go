@@ -24,14 +24,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/cleanup"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/validators"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
 )
 
 type switchResource struct {
@@ -79,7 +79,7 @@ func (r *switchResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Computed:    true,
 				Description: "The bridge id attached to the switch",
 				Validators: []validator.String{
-					validators.SakuraIDValidator(),
+					sacloudvalidator.SakuraIDValidator(),
 				},
 			},
 			"server_ids": schema.SetAttribute{
@@ -87,7 +87,7 @@ func (r *switchResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Computed:    true,
 				Description: "A list of server ids connected to the switch",
 				Validators: []validator.Set{
-					setvalidator.ValueStringsAre(validators.SakuraIDValidator()),
+					setvalidator.ValueStringsAre(sacloudvalidator.SakuraIDValidator()),
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
