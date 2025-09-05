@@ -41,6 +41,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/packet_filter"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/private_host"
 	secret_manager "github.com/sacloud/terraform-provider-sakuracloud/internal/service/s3cret_manager"
+	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/server"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/simple_mq"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/ssh_key"
 	sw1tch "github.com/sacloud/terraform-provider-sakuracloud/internal/service/switch"
@@ -227,6 +228,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		private_host.NewPrivateHostDataSource,
 		secret_manager.NewSecretManagerDataSource,
 		secret_manager.NewSecretManagerSecretDataSource,
+		server.NewServerDataSource,
 		simple_mq.NewSimpleMQDataSource,
 		ssh_key.NewSSHKeyDataSource,
 		sw1tch.NewSwitchDataSource,
@@ -250,6 +252,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		private_host.NewPrivateHostResource,
 		secret_manager.NewSecretManagerResource,
 		secret_manager.NewSecretManagerSecretResource,
+		server.NewServerResource,
 		simple_mq.NewSimpleMQResource,
 		ssh_key.NewSSHKeyResource,
 		sw1tch.NewSwitchResource,

@@ -118,6 +118,14 @@ func TsetToStrings(d types.Set) []string {
 	return tags
 }
 
+func TsetToStringsOrDefault(d types.Set) []string {
+	set := TsetToStrings(d)
+	if set == nil {
+		return []string{}
+	}
+	return set
+}
+
 func StringsToTset(tags []string) types.Set {
 	// types.SetValueでは内部でcontext.Background()を呼び出しているため、同じアプローチを採用
 	setValue, _ := types.SetValueFrom(context.Background(), types.StringType, tags)

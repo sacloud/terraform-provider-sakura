@@ -27,7 +27,7 @@ import (
 
 var SakuraMutexKV = mutexkv.NewMutexKV()
 
-// SDK v2のHasChangeの代替
+// SDK v2のHasChangeの代替。複雑なGoの値の比較に使う。Terraformの値の比較にはEqualを使う
 func HasChange(x, y any) bool {
 	return !cmp.Equal(x, y)
 }
