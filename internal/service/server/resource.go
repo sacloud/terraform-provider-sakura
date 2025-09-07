@@ -191,6 +191,9 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 							Optional:    true,
 							Computed:    true,
 							Description: "The IP address for only display. This value doesn't affect actual NIC settings",
+							Validators: []validator.String{
+								sacloudvalidator.IPAddressValidator(sacloudvalidator.IPv4),
+							},
 						},
 						"packet_filter_id": schema.StringAttribute{
 							Optional:    true,
@@ -303,10 +306,17 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 						//CustomType: iptypes.IPv4AddressType{},
 						Optional:    true,
 						Description: "The IP address to assign to the Server",
+						Validators: []validator.String{
+							sacloudvalidator.IPAddressValidator(sacloudvalidator.IPv4),
+						},
 					},
 					"gateway": schema.StringAttribute{
+						//CustomType: iptypes.IPv4AddressType{},
 						Optional:    true,
 						Description: "The gateway address used by the Server",
+						Validators: []validator.String{
+							sacloudvalidator.IPAddressValidator(sacloudvalidator.IPv4),
+						},
 					},
 					"netmask": schema.Int32Attribute{
 						Optional:    true,
@@ -318,16 +328,25 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				//CustomType:  iptypes.IPAddressType{},
 				Computed:    true,
 				Description: "The IP address assigned to the Server",
+				Validators: []validator.String{
+					sacloudvalidator.IPAddressValidator(sacloudvalidator.Both),
+				},
 			},
 			"gateway": schema.StringAttribute{
 				//CustomType:  iptypes.IPAddressType{},
 				Computed:    true,
 				Description: "The IP address of the gateway used by Server",
+				Validators: []validator.String{
+					sacloudvalidator.IPAddressValidator(sacloudvalidator.Both),
+				},
 			},
 			"network_address": schema.StringAttribute{
 				//CustomType:  iptypes.IPAddressType{},
 				Computed:    true,
 				Description: "The network address which the `ip_address` belongs",
+				Validators: []validator.String{
+					sacloudvalidator.IPAddressValidator(sacloudvalidator.Both),
+				},
 			},
 			"netmask": schema.Int32Attribute{
 				Computed:    true,
@@ -388,8 +407,7 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	server := getServer(ctx, r.client, zone, result.ServerID, &resp.State, &resp.Diagnostics)
-	if err != nil {
-		resp.Diagnostics.AddError("Get Server Error", err.Error())
+	if server == nil {
 		return
 	}
 
