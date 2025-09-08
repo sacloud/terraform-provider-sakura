@@ -16,6 +16,7 @@ package validator
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -41,7 +42,7 @@ func (v stringSakuraIDTypeValidator) ValidateString(ctx context.Context, req val
 	value := req.ConfigValue.ValueString()
 	_, err := strconv.ParseInt(value, 10, 64)
 	if err != nil {
-		resp.Diagnostics.AddAttributeError(req.Path, v.Description(ctx), value)
+		resp.Diagnostics.AddAttributeError(req.Path, v.Description(ctx), fmt.Sprintf("%q is not a valid SakuraCloud ID", value))
 		return
 	}
 }

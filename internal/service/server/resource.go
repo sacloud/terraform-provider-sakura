@@ -24,6 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -148,6 +149,9 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				ElementType: types.StringType,
 				Optional:    true,
 				Description: "A set of disk id connected to the server",
+				Validators: []validator.Set{
+					setvalidator.ValueStringsAre(sacloudvalidator.SakuraIDValidator()),
+				},
 			},
 			"interface_driver": schema.StringAttribute{
 				Optional:    true,
@@ -244,6 +248,9 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 					"hostname": schema.StringAttribute{
 						Optional:    true,
 						Description: desc.Sprintf("The hostname of the Server. %s", desc.Length(1, 64)),
+						Validators: []validator.String{
+							sacloudvalidator.HostnameValidator(),
+						},
 					},
 					"password": schema.StringAttribute{
 						Optional:    true,
@@ -257,6 +264,9 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 						ElementType: types.StringType,
 						Optional:    true,
 						Description: "A set of the SSHKey id",
+						Validators: []validator.Set{
+							setvalidator.ValueStringsAre(sacloudvalidator.SakuraIDValidator()),
+						},
 					},
 					"ssh_keys": schema.SetAttribute{
 						ElementType: types.StringType,
