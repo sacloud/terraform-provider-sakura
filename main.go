@@ -7,8 +7,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
 
-	sakura "github.com/sacloud/terraform-provider-sakuracloud/internal/provider"
-	ver "github.com/sacloud/terraform-provider-sakuracloud/version"
+	sakura "github.com/sacloud/terraform-provider-sakura/internal/provider"
+	ver "github.com/sacloud/terraform-provider-sakura/version"
 )
 
 func main() {

@@ -1,4 +1,4 @@
-// Copyright 2016-2025 terraform-provider-sakuracloud authors
+// Copyright 2016-2025 terraform-provider-sakura authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -25,8 +25,8 @@ import (
 	sm "github.com/sacloud/secretmanager-api-go"
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 
-	secret_manager "github.com/sacloud/terraform-provider-sakuracloud/internal/service/s3cret_manager"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/test"
+	secret_manager "github.com/sacloud/terraform-provider-sakura/internal/service/s3cret_manager"
+	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
 func TestAccSakuraSecretManagerSecret_basic(t *testing.T) {

@@ -1,5 +1,6 @@
 .env
 **/terraform-provider-sakuracloud*
+**/terraform-provider-sakura*
 **/.usacloud
 
 dist/

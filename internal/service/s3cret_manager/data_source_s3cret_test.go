@@ -1,4 +1,4 @@
-// Copyright 2016-2025 terraform-provider-sakuracloud authors
+// Copyright 2016-2025 terraform-provider-sakura authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -19,7 +19,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/test"
+	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
 func TestAccSakuraDataSourceSecretManagerSecret_basic(t *testing.T) {

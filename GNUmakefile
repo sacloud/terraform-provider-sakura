@@ -1,4 +1,4 @@
-# Copyright 2016-2025 terraform-provider-sakuracloud authors
+# Copyright 2016-2025 terraform-provider-sakura authors
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -12,11 +12,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #====================
-AUTHOR          ?= The sacloud/terraform-provider-sakuracloud Authors
+AUTHOR          ?= The sacloud/terraform-provider-sakura Authors
 COPYRIGHT_YEAR  ?= 2016-2025
 
-BIN            ?= terraform-provider-sakuracloud
-BUILD_LDFLAGS   ?= "-s -w -X github.com/sacloud/terraform-provider-sakuracloud/sakuracloud.Revision=`git rev-parse --short HEAD`"
+BIN            ?= terraform-provider-sakura
+BUILD_LDFLAGS   ?= "-s -w -X github.com/sacloud/terraform-provider-sakura/sakura.Revision=`git rev-parse --short HEAD`"
 
 include includes/go/common.mk
 include includes/go/single.mk
@@ -25,7 +25,7 @@ export GOPROXY=https://proxy.golang.org
 
 default: fmt set-license go-licenses-check goimports lint docscheck
 
-PKG_NAME     ?= sakuracloud
+PKG_NAME     ?= sakura
 WEBSITE_REPO  = github.com/hashicorp/terraform-website
 
 UNIT_TEST_UA ?= (Unit Test)

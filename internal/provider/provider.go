@@ -1,4 +1,4 @@
-// Copyright 2016-2025 terraform-provider-sakuracloud authors
+// Copyright 2016-2025 terraform-provider-sakura authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -28,23 +28,23 @@ import (
 
 	apiprof "github.com/sacloud/api-client-go/profile"
 	"github.com/sacloud/packages-go/envvar"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/archive"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/bridge"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/container_registry"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/disk"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/icon"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/internet"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/kms"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/nfs"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/note"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/packet_filter"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/private_host"
-	secret_manager "github.com/sacloud/terraform-provider-sakuracloud/internal/service/s3cret_manager"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/server"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/simple_mq"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/service/ssh_key"
-	sw1tch "github.com/sacloud/terraform-provider-sakuracloud/internal/service/switch"
+	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/bridge"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/disk"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/icon"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/internet"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/kms"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/nfs"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/note"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/packet_filter"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/private_host"
+	secret_manager "github.com/sacloud/terraform-provider-sakura/internal/service/s3cret_manager"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/server"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_mq"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/ssh_key"
+	sw1tch "github.com/sacloud/terraform-provider-sakura/internal/service/switch"
 )
 
 type sakuraProviderModel struct {

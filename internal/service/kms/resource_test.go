@@ -24,7 +24,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/sacloud/kms-api-go"
 	v1 "github.com/sacloud/kms-api-go/apis/v1"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/test"
+	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
 func TestAccSakuraResourceKMS_basic(t *testing.T) {

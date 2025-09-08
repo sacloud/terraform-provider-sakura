@@ -1,4 +1,4 @@
-// Copyright 2016-2025 terraform-provider-sakuracloud authors
+// Copyright 2016-2025 terraform-provider-sakura authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,9 +39,9 @@ import (
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/iaas-service-go/setup"
 	"github.com/sacloud/packages-go/size"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
-	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
+	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
 type diskResource struct {

@@ -1,4 +1,4 @@
-// Copyright 2016-2025 terraform-provider-sakuracloud authors
+// Copyright 2016-2025 terraform-provider-sakura authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,7 +33,7 @@ import (
 	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/kms-api-go"
 	v1 "github.com/sacloud/kms-api-go/apis/v1"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
 type kmsResource struct {

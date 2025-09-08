@@ -1,4 +1,4 @@
-// Copyright 2016-2025 terraform-provider-sakuracloud authors
+// Copyright 2016-2025 terraform-provider-sakura authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ import (
 	kmsapi "github.com/sacloud/kms-api-go/apis/v1"
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
-	ver "github.com/sacloud/terraform-provider-sakuracloud/version"
+	ver "github.com/sacloud/terraform-provider-sakura/version"
 )
 
 const (
@@ -185,7 +185,7 @@ func (c *Config) NewClient() (*APIClient, error) {
 	}
 
 	tfUserAgent := terraformUserAgent(c.TerraformVersion)
-	providerUserAgent := fmt.Sprintf("%s/v%s", "terraform-provider-sakuracloud", ver.Version)
+	providerUserAgent := fmt.Sprintf("%s/v%s", "terraform-provider-sakura", ver.Version)
 	ua := fmt.Sprintf("%s %s", tfUserAgent, providerUserAgent)
 	if add := os.Getenv(uaEnvVar); add != "" {
 		ua += " " + add

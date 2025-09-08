@@ -1,4 +1,4 @@
-// Copyright 2016-2025 terraform-provider-sakuracloud authors
+// Copyright 2016-2025 terraform-provider-sakura authors
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package icon
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
 type iconBaseModel struct {
