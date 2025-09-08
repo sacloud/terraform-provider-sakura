@@ -153,7 +153,7 @@ func FilterSchema(opt *FilterSchemaOption) map[string]schema.Block {
 	}
 }
 
-var ErrFilterNoResult = errors.New("Your query returned no results. Please change your filter or selectors and try again")
+var ErrFilterNoResult = errors.New("Your query returned no results. Please change your filter or selectors and try again") //nolint
 
 func FilterNoResultErr(diag *diag.Diagnostics) {
 	if os.Getenv(resource.EnvTfAcc) != "" {

@@ -46,8 +46,8 @@ func init() {
 		"sakura": providerserver.NewProtocol6WithError(AccProvider),
 	}
 	AccClientGetter = func() *common.APIClient {
-		var v reflect.Value = reflect.ValueOf(AccProvider).Elem()
-		var c reflect.Value = v.FieldByName("client").Elem()
+		var v = reflect.ValueOf(AccProvider).Elem()
+		var c = v.FieldByName("client").Elem()
 		return (*common.APIClient)(unsafe.Pointer(c.UnsafeAddr()))
 	}
 }

@@ -143,7 +143,10 @@ func (d *internetDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	internet := res.Internet[0]
-	data.updateState(ctx, d.client, zone, internet)
+	if err := data.updateState(ctx, d.client, zone, internet); err != nil {
+		resp.Diagnostics.AddError("Read Error", err.Error())
+		return
+	}
 	data.IconID = types.StringValue(internet.IconID.String())
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

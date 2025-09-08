@@ -205,7 +205,10 @@ func (r *internetResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	plan.updateState(ctx, r.client, zone, internet)
+	if err := plan.updateState(ctx, r.client, zone, internet); err != nil {
+		resp.Diagnostics.AddError("Create Error", err.Error())
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -226,7 +229,10 @@ func (r *internetResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	state.updateState(ctx, r.client, zone, internet)
+	if err := state.updateState(ctx, r.client, zone, internet); err != nil {
+		resp.Diagnostics.AddError("Read Error", err.Error())
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -263,7 +269,10 @@ func (r *internetResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	// NOTE: 帯域変更後はIDが変更になる
-	state.updateState(ctx, r.client, zone, internet)
+	if err := state.updateState(ctx, r.client, zone, internet); err != nil {
+		resp.Diagnostics.AddError("Update Error", err.Error())
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
