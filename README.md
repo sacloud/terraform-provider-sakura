@@ -16,7 +16,34 @@ muxなども使っておらず、完全移行となります。
 
 ### 使われてない機能の削除
 
-- dataの`filter`等、サービスによってはあまりに使われてないものは削除される予定です。
+#### データソースのfilter
+
+データソースの`filter`によって実装されていた検索機能は、通常のフィールドでの検索で置き換えられました。例えば以下のようになります。
+
+- v2
+
+```
+data "sakuracloud_xxx" "foobar" {
+  filter {
+	id = "xxxxxxxxxxxx"
+	names = ["foobar"]
+	tags = ["foo", "bar"]
+  }
+}
+```
+
+- v3
+
+```
+data "sakura_xxx" "foobar" {
+  id = "xxxxxxxxxxxx"
+  name = "foobar" // namesからnameに変わっている
+  tags = ["foo", "bar"]
+}
+```
+
+
+
 
 ### 変更されたリソース
 
@@ -132,7 +159,7 @@ assigned_tags = [
 
 ```
 network_interface {
-  switch_id  = sakura_switch.foobar.id
+  switch_id  = sakuracloud_switch.foobar.id
   ip_address = "192.168.11.101"
   netmask    = 24
   gateway    = "192.168.11.1"
@@ -182,6 +209,62 @@ expression = [
 ]
 ```
 
+#### server
+
+`disk_edit_parameter`内の`note_ids`フィールドが削除されました。代わりに`disk_edit_parameter`内のList型の`note`フィールドを利用してください。
+
+`network_interface`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+network_interface {
+　　upstream         = "shared"
+　　packet_filter_id = data.sakuracloud_packet_filter.foobar.id
+}
+network_interface {
+　　// その他の設定
+}
+```
+
+- v3
+
+```
+network_interface = [
+  {
+    upstream         = "shared"
+    packet_filter_id = data.sakura_packet_filter.foobar.id
+  },
+  {
+	// その他の設定
+  }
+]
+```
+
+`disk_edit_parameter`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+disk_edit_parameter {
+  hostname = "foobar"
+  password = "foobar-password"
+  ssh_key_ids = ["xxxxxxxxxxxx"]
+  // ...
+}
+```
+
+- v3
+
+```
+disk_edit_parameter = {
+  hostname = "foobar"
+  password = "foobar-password"
+  ssh_key_ids = ["xxxxxxxxxxxx"]
+  // ...
+}
+```
+
 ## 実装詳細 (開発者向け)
 
 v2からはいくつか実装に関して変更されているところがあります。
@@ -193,7 +276,7 @@ v2では`sakuracloud`ディレクトリにプロバイダーやリソースの�
 - internal/provider: プロバイダ実装
 - internal/service: 各ディレクトリにそれぞれのサービスのdata source / resource / model等の実装が置かれている
 - internal/common: 各サービスから利用される共通の処理が実装されている。schema / timeout / model等
-- internal/validators: 各サービスから利用されるさくら独自のバリデータ群
+- internal/validator: 各サービスから利用されるさくら独自のバリデータ群
 - internal/test: アクセプタンステストで利用されるヘルパー群
 
 ### structure_xxx.goの削減
@@ -203,7 +286,7 @@ v2では各リソース毎に`structure_xxx.go`を用意していたが、v3で�
 
 ### モデルの実装をmodel.goで共有
 
-v2では`schema.Schema`が全ての共通のインターフェイスになっており実装を共有できたが、Frameworkはそれぞれリソース毎にモデルを用意する設計になっているため、処理を共通化しにくい。コピペの実装を防ぐため、data / resourceで共有できる部分は`model.go`に構造体・メソッドを実装し、埋め込みを使って処理を共通化する(主にモデルの更新で使われる)。
+v2では`schema.Schema`が全ての共通のインターフェイスになっており実装を共有できたが、Frameworkはそれぞれデータソース・リソース毎にモデルを用意する設計になっているため、処理を共通化しにくい。コピペの実装を防ぐため、data / resourceで共有できる部分は`model.go`に構造体・メソッドを実装し、埋め込みを使って処理を共通化する(主にモデルの更新で使われる)。
 
 ### 実装の定義順
 
@@ -246,7 +329,7 @@ type xxxResourceModel struct {
 func (r *xxxResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": schemaResourceId("XXX"),  // SDK v2と違って自分でidを定義する必要がある
+			"id": common.SchemaResourceId("XXX"),  // SDK v2と違って自分でidを定義する必要がある
             // 他のパラメータ群
 			"timeouts": timeouts.Attriutes(ctx, timeouts.Opts{  // タイムアウト向けのパラメータも自分で定義に入れる必要がある
 				Create: true, Update: true, Delete: true,
@@ -320,10 +403,3 @@ func (r *xxxResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 // ヘルパーが必要ならここ以降に書く
 ```
-
-そのほか主要なファイルの説明は以下
-
-- provider.go: プロバイダーのそのものの実装。DataSources/Resourcesに各リソースを登録する。
-- strcuture.go: data / resourceでよく使われるデータ変換向けヘルパー群
-- data_source_schema.go/resource_schema.go: 各リソースで共通でよく使われるスキーマの定義群
-- validators.go: パラメータのバリデーションで使う独自バリデータ群
