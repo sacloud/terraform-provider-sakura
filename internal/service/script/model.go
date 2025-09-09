@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package note
+package script
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -20,15 +20,16 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-type noteBaseModel struct {
+// APIのパスはnoteになっているが、マニュアルやコントロールパネルではスクリプトと呼ばれているため、scriptを使用する
+type scriptBaseModel struct {
 	common.SakuraBaseModel
 	IconID  types.String `tfsdk:"icon_id"`
 	Class   types.String `tfsdk:"class"`
 	Content types.String `tfsdk:"content"`
 }
 
-func (model *noteBaseModel) updateState(note *iaas.Note) {
-	model.UpdateBaseState(note.ID.String(), note.Name, note.Description, note.Tags)
-	model.Class = types.StringValue(note.Class)
-	model.Content = types.StringValue(note.Content)
+func (model *scriptBaseModel) updateState(script *iaas.Note) {
+	model.UpdateBaseState(script.ID.String(), script.Name, script.Description, script.Tags)
+	model.Class = types.StringValue(script.Class)
+	model.Content = types.StringValue(script.Content)
 }

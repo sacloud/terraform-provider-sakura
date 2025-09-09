@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package note
+package script
 
 import (
 	"context"
@@ -27,24 +27,24 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-type noteDataSource struct {
+type scriptDataSource struct {
 	client *common.APIClient
 }
 
 var (
-	_ datasource.DataSource              = &noteDataSource{}
-	_ datasource.DataSourceWithConfigure = &noteDataSource{}
+	_ datasource.DataSource              = &scriptDataSource{}
+	_ datasource.DataSourceWithConfigure = &scriptDataSource{}
 )
 
-func NewNoteDataSource() datasource.DataSource {
-	return &noteDataSource{}
+func NewScriptDataSource() datasource.DataSource {
+	return &scriptDataSource{}
 }
 
-func (d *noteDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_note"
+func (d *scriptDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_script"
 }
 
-func (d *noteDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *scriptDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -52,29 +52,29 @@ func (d *noteDataSource) Configure(ctx context.Context, req datasource.Configure
 	d.client = apiclient
 }
 
-type noteDataSourceModel struct {
-	noteBaseModel
+type scriptDataSourceModel struct {
+	scriptBaseModel
 }
 
-func (d *noteDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *scriptDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("Note"),
-			"name":        common.SchemaDataSourceName("Note"),
-			"description": common.SchemaDataSourceDescription("Note"),
-			"icon_id":     common.SchemaDataSourceIconID("Note"),
-			"tags":        common.SchemaDataSourceTags("Note"),
-			"class":       common.SchemaDataSourceClass("Note", iaastypes.NoteClassStrings),
+			"id":          common.SchemaDataSourceId("Script"),
+			"name":        common.SchemaDataSourceName("Script"),
+			"description": common.SchemaDataSourceDescription("Script"),
+			"icon_id":     common.SchemaDataSourceIconID("Script"),
+			"tags":        common.SchemaDataSourceTags("Script"),
+			"class":       common.SchemaDataSourceClass("Script", iaastypes.NoteClassStrings),
 			"content": schema.StringAttribute{
 				Computed:    true,
-				Description: "The content of the Note",
+				Description: "The content of the Script",
 			},
 		},
 	}
 }
 
-func (d *noteDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data noteDataSourceModel
+func (d *scriptDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data scriptDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -83,7 +83,7 @@ func (d *noteDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	searcher := iaas.NewNoteOp(d.client)
 	result, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Note resource: %s", err))
+		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Script resource: %s", err))
 		return
 	}
 	if result == nil || result.Count == 0 || len(result.Notes) == 0 {
@@ -91,9 +91,9 @@ func (d *noteDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	note := result.Notes[0]
-	data.updateState(note)
-	data.IconID = types.StringValue(note.IconID.String())
+	script := result.Notes[0]
+	data.updateState(script)
+	data.IconID = types.StringValue(script.IconID.String())
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

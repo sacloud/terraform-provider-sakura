@@ -86,12 +86,15 @@ func flattenServerNICs(server *iaas.Server) []serverNetworkInterfaceModel {
 		default:
 			upstream = nic.SwitchID.String()
 		}
-		results = append(results, serverNetworkInterfaceModel{
-			Upstream:       types.StringValue(upstream),
-			PacketFilterID: types.StringValue(nic.PacketFilterID.String()),
-			MACAddress:     types.StringValue(strings.ToLower(nic.MACAddress)),
-			UserIPAddress:  types.StringValue(nic.UserIPAddress), // iptypes.NewIPv4AddressValue(nic.UserIPAddress),
-		})
+		r := serverNetworkInterfaceModel{
+			Upstream:      types.StringValue(upstream),
+			MACAddress:    types.StringValue(strings.ToLower(nic.MACAddress)),
+			UserIPAddress: types.StringValue(nic.UserIPAddress), // iptypes.NewIPv4AddressValue(nic.UserIPAddress),
+		}
+		if nic.PacketFilterID.String() != "" {
+			r.PacketFilterID = types.StringValue(nic.PacketFilterID.String())
+		}
+		results = append(results, r)
 	}
 	return results
 }

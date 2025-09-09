@@ -1,6 +1,8 @@
-# Terraform Provider for SakuraCloud v3
+# Terraform Provider for さくらのクラウド v3
 
-さくら向けTerraform Providerの次期メジャーバージョンとなるv3の開発リポジトリです
+さくら向けTerraform Providerの次期メジャーバージョンとなるv3のリポジトリです。
+
+v2: https://github.com/sacloud/terraform-provider-sakuracloud
 
 ## v3での変更点
 
@@ -12,22 +14,26 @@ muxなども使っておらず、完全移行となります。
 ### 命名の変更
 
 - `sakuracloud_`プレフィックスは`sakura_`となります。環境変数などを設定することで過去のプレフィックスもサポートする予定です。
-- 必要なものはリソース名も適切なものに変更される可能性があります。
+- 必要なものはリソース名が適切なものに変更される可能性があります。以下は予定のものになり、他にも増える可能性があります
+  - `vpc_router` -> `vpn_router`
+  - `proxylb` -> `enhanced_load_balancer`
+  - `note` -> `script`
+  - `internet` -> `???` (より良い名前を模索中)
 
 ### 使われてない機能の削除
 
 #### データソースのfilter
 
-データソースの`filter`によって実装されていた検索機能は、通常のフィールドでの検索で置き換えられました。例えば以下のようになります。
+データソースの`filter`ブロックによって実装されていた検索機能は、通常のフィールドでの検索で置き換えられました。例えば以下のようになります。
 
 - v2
 
 ```
 data "sakuracloud_xxx" "foobar" {
   filter {
-	id = "xxxxxxxxxxxx"
-	names = ["foobar"]
-	tags = ["foo", "bar"]
+    id = "xxxxxxxxxxxx"
+    names = ["foobar"]
+    tags = ["foo", "bar"]
   }
 }
 ```
@@ -42,9 +48,6 @@ data "sakura_xxx" "foobar" {
 }
 ```
 
-
-
-
 ### 変更されたリソース
 
 Frameworkでは既存のBlock構文は非推奨になっており、Attribute構文を推奨しています。v3からは過去Block構文を利用していたフィールド群は書き換える必要があります。
@@ -56,16 +59,16 @@ user = [
     //...
   },
   {
-	//...
+    //...
   }
 ]
 
 # Block構文。こちらは古い書き方で、現状Block機能を使うことで互換性のために実装できるが非推奨
 user {
-    // ...
+  // ...
 }
 user {
-	// ...
+  // ...
 }
 ```
 
@@ -211,7 +214,7 @@ expression = [
 
 #### server
 
-`disk_edit_parameter`内の`note_ids`フィールドが削除されました。代わりに`disk_edit_parameter`内のList型の`note`フィールドを利用してください。
+`disk_edit_parameter`内の`note_ids`フィールドが削除されました。代わりに`disk_edit_parameter`内のList型の`script`フィールドを利用してください。
 
 `network_interface`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
 
@@ -219,11 +222,11 @@ expression = [
 
 ```
 network_interface {
-　　upstream         = "shared"
-　　packet_filter_id = data.sakuracloud_packet_filter.foobar.id
+  upstream         = "shared"
+  packet_filter_id = data.sakuracloud_packet_filter.foobar.id
 }
 network_interface {
-　　// その他の設定
+  // その他の設定
 }
 ```
 
@@ -236,7 +239,7 @@ network_interface = [
     packet_filter_id = data.sakura_packet_filter.foobar.id
   },
   {
-	// その他の設定
+    // その他の設定
   }
 ]
 ```
@@ -282,7 +285,7 @@ v2では`sakuracloud`ディレクトリにプロバイダーやリソースの�
 ### structure_xxx.goの削減
 
 v2では各リソース毎に`structure_xxx.go`を用意していたが、v3では他と共有される予定のない関数群は各リソースのファイル内に移動しています。
-主に `expandXXX` や `flattenXXX` のような関数群が対象となっています。
+`expandXXX` はresource.go、 `flattenXXX` はmodel.goのように関連の深いファイルに置かれています。
 
 ### モデルの実装をmodel.goで共有
 

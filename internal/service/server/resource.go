@@ -20,7 +20,6 @@ import (
 	"log"
 	"strconv"
 
-	"github.com/hashicorp/terraform-plugin-framework-nettypes/iptypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
@@ -83,20 +82,20 @@ type serverResourceModel struct {
 }
 
 type serverDiskEditModel struct {
-	Hostname            types.String               `tfsdk:"hostname"`
-	Password            types.String               `tfsdk:"password"`
-	SSHKeyIDs           types.Set                  `tfsdk:"ssh_key_ids"`
-	SSHKeys             types.Set                  `tfsdk:"ssh_keys"`
-	DisablePwAuth       types.Bool                 `tfsdk:"disable_pw_auth"`
-	EnableDHCP          types.Bool                 `tfsdk:"enable_dhcp"`
-	ChangePartitionUUID types.Bool                 `tfsdk:"change_partition_uuid"`
-	IPAddress           iptypes.IPv4Address        `tfsdk:"ip_address"`
-	Gateway             types.String               `tfsdk:"gateway"`
-	Netmask             types.Int32                `tfsdk:"netmask"`
-	Note                []*serverDiskEditNoteModel `tfsdk:"note"`
+	Hostname            types.String                 `tfsdk:"hostname"`
+	Password            types.String                 `tfsdk:"password"`
+	SSHKeyIDs           types.Set                    `tfsdk:"ssh_key_ids"`
+	SSHKeys             types.Set                    `tfsdk:"ssh_keys"`
+	DisablePwAuth       types.Bool                   `tfsdk:"disable_pw_auth"`
+	EnableDHCP          types.Bool                   `tfsdk:"enable_dhcp"`
+	ChangePartitionUUID types.Bool                   `tfsdk:"change_partition_uuid"`
+	IPAddress           types.String                 `tfsdk:"ip_address"` //iptypes.IPv4Address `tfsdk:"ip_address"`
+	Gateway             types.String                 `tfsdk:"gateway"`
+	Netmask             types.Int32                  `tfsdk:"netmask"`
+	Script              []*serverDiskEditScriptModel `tfsdk:"script"`
 }
 
-type serverDiskEditNoteModel struct {
+type serverDiskEditScriptModel struct {
 	ID        types.String `tfsdk:"id"`
 	APIKeyID  types.String `tfsdk:"api_key_id"`
 	Variables types.Map    `tfsdk:"variables"`
@@ -285,21 +284,21 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 						Optional:    true,
 						Description: "The flag to change partition uuid",
 					},
-					"note": schema.ListNestedAttribute{
+					"script": schema.ListNestedAttribute{
 						Optional:    true,
-						Description: "A list of the Note/StartupScript",
+						Description: "A list of the StartupScript",
 						NestedObject: schema.NestedAttributeObject{
 							Attributes: map[string]schema.Attribute{
 								"id": schema.StringAttribute{
 									Required:    true,
-									Description: "The id of the note",
+									Description: "The id of the script",
 									Validators: []validator.String{
 										sacloudvalidator.SakuraIDValidator(),
 									},
 								},
 								"api_key_id": schema.StringAttribute{
 									Optional:    true,
-									Description: "The id of the API key to be injected into note when editing the disk",
+									Description: "The id of the API key to be injected into script when editing the disk",
 									Validators: []validator.String{
 										sacloudvalidator.SakuraIDValidator(),
 									},
@@ -307,7 +306,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 								"variables": schema.MapAttribute{
 									ElementType: types.StringType,
 									Optional:    true,
-									Description: "The value of the variable that be injected into note when editing the disk",
+									Description: "The value of the variable that be injected into script when editing the disk",
 								},
 							},
 						},
@@ -613,7 +612,7 @@ func expandServerDisks(ctx context.Context, client *common.APIClient, zone strin
 					DefaultRoute:        de.Gateway.ValueString(),
 					SSHKeys:             common.TsetToStringsOrDefault(de.SSHKeys),
 					SSHKeyIDs:           common.ExpandSakuraCloudIDs(de.SSHKeyIDs),
-					Notes:               expandDiskEditNotes(de),
+					Notes:               expandDiskEditScripts(de),
 				}
 			}
 		}
@@ -622,18 +621,18 @@ func expandServerDisks(ctx context.Context, client *common.APIClient, zone strin
 	return builders, nil
 }
 
-func expandDiskEditNotes(model *serverDiskEditModel) []*iaas.DiskEditNote {
-	var notes []*iaas.DiskEditNote
-	if model.Note != nil {
-		for _, note := range model.Note {
-			notes = append(notes, &iaas.DiskEditNote{
-				ID:        common.ExpandSakuraCloudID(note.ID),
-				APIKeyID:  common.ExpandSakuraCloudID(note.APIKeyID),
-				Variables: tmapToVariables(note.Variables),
+func expandDiskEditScripts(model *serverDiskEditModel) []*iaas.DiskEditNote {
+	var scripts []*iaas.DiskEditNote
+	if model.Script != nil {
+		for _, script := range model.Script {
+			scripts = append(scripts, &iaas.DiskEditNote{
+				ID:        common.ExpandSakuraCloudID(script.ID),
+				APIKeyID:  common.ExpandSakuraCloudID(script.APIKeyID),
+				Variables: tmapToVariables(script.Variables),
 			})
 		}
 	}
-	return notes
+	return scripts
 }
 
 func tmapToVariables(d types.Map) map[string]interface{} {

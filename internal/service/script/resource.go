@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package note
+package script
 
 import (
 	"context"
@@ -34,25 +34,25 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
-type noteResource struct {
+type scriptResource struct {
 	client *common.APIClient
 }
 
 var (
-	_ resource.Resource                = &noteResource{}
-	_ resource.ResourceWithConfigure   = &noteResource{}
-	_ resource.ResourceWithImportState = &noteResource{}
+	_ resource.Resource                = &scriptResource{}
+	_ resource.ResourceWithConfigure   = &scriptResource{}
+	_ resource.ResourceWithImportState = &scriptResource{}
 )
 
-func NewNoteResource() resource.Resource {
-	return &noteResource{}
+func NewScriptResource() resource.Resource {
+	return &scriptResource{}
 }
 
-func (r *noteResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_note"
+func (r *scriptResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_script"
 }
 
-func (r *noteResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *scriptResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -60,31 +60,31 @@ func (r *noteResource) Configure(ctx context.Context, req resource.ConfigureRequ
 	r.client = apiclient
 }
 
-type noteResourceModel struct {
-	noteBaseModel
+type scriptResourceModel struct {
+	scriptBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *noteResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *scriptResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":      common.SchemaResourceId("Note"),
-			"name":    common.SchemaResourceName("Note"),
-			"tags":    common.SchemaResourceTags("Note"),
-			"icon_id": common.SchemaResourceIconID("Note"),
+			"id":      common.SchemaResourceId("Script"),
+			"name":    common.SchemaResourceName("Script"),
+			"tags":    common.SchemaResourceTags("Script"),
+			"icon_id": common.SchemaResourceIconID("Script"),
 			"description": schema.StringAttribute{
 				Computed:    true,
-				Description: desc.Sprintf("The description of the Note. This will be computed from special tags within body of `content`"),
+				Description: desc.Sprintf("The description of the Script. This will be computed from special tags within body of `content`"),
 			},
 			"content": schema.StringAttribute{
 				Required:    true,
-				Description: "The content of the Note. This must be specified as a shell script or as a cloud-config",
+				Description: "The content of the Script. This must be specified as a shell script or as a cloud-config",
 			},
 			"class": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("shell"),
-				Description: desc.Sprintf("The class of the Note. This must be one of %s", iaastypes.NoteClassStrings),
+				Description: desc.Sprintf("The class of the Script. This must be one of %s", iaastypes.NoteClassStrings),
 				Validators: []validator.String{
 					stringvalidator.OneOf(iaastypes.NoteClassStrings...),
 				},
@@ -96,12 +96,12 @@ func (r *noteResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 	}
 }
 
-func (r *noteResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *scriptResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *noteResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan noteResourceModel
+func (r *scriptResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan scriptResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -110,8 +110,8 @@ func (r *noteResource) Create(ctx context.Context, req resource.CreateRequest, r
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	noteOp := iaas.NewNoteOp(r.client)
-	note, err := noteOp.Create(ctx, &iaas.NoteCreateRequest{
+	scriptOp := iaas.NewNoteOp(r.client)
+	script, err := scriptOp.Create(ctx, &iaas.NoteCreateRequest{
 		Name:    plan.Name.ValueString(),
 		Tags:    common.TsetToStrings(plan.Tags),
 		IconID:  common.ExpandSakuraCloudID(plan.IconID),
@@ -119,32 +119,32 @@ func (r *noteResource) Create(ctx context.Context, req resource.CreateRequest, r
 		Class:   plan.Class.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud Note is failed: %s", err))
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud Script is failed: %s", err))
 		return
 	}
 
-	plan.updateState(note)
+	plan.updateState(script)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *noteResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state noteResourceModel
+func (r *scriptResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state scriptResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	note := getNote(ctx, r.client, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
-	if note == nil || resp.Diagnostics.HasError() {
+	script := getScript(ctx, r.client, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if script == nil || resp.Diagnostics.HasError() {
 		return
 	}
 
-	state.updateState(note)
+	state.updateState(script)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *noteResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan noteResourceModel
+func (r *scriptResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan scriptResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -153,8 +153,8 @@ func (r *noteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	noteOp := iaas.NewNoteOp(r.client)
-	note, err := noteOp.Update(ctx, common.ExpandSakuraCloudID(plan.ID), &iaas.NoteUpdateRequest{
+	scriptOp := iaas.NewNoteOp(r.client)
+	script, err := scriptOp.Update(ctx, common.ExpandSakuraCloudID(plan.ID), &iaas.NoteUpdateRequest{
 		Name:    plan.Name.ValueString(),
 		Tags:    common.TsetToStrings(plan.Tags),
 		IconID:  common.ExpandSakuraCloudID(plan.IconID),
@@ -162,16 +162,16 @@ func (r *noteResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		Class:   plan.Class.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Note[%s] is failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Script[%s] is failed: %s", plan.ID.ValueString(), err))
 		return
 	}
 
-	plan.updateState(note)
+	plan.updateState(script)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *noteResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state noteResourceModel
+func (r *scriptResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state scriptResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -180,29 +180,29 @@ func (r *noteResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	noteOp := iaas.NewNoteOp(r.client)
-	note := getNote(ctx, r.client, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
-	if note == nil {
+	script := getScript(ctx, r.client, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+	if script == nil {
 		return
 	}
 
-	if err := noteOp.Delete(ctx, note.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not delete SakuraCloud Note[%s]: %s", state.ID.ValueString(), err))
+	scriptOp := iaas.NewNoteOp(r.client)
+	if err := scriptOp.Delete(ctx, script.ID); err != nil {
+		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not delete SakuraCloud Script[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
 
-func getNote(ctx context.Context, client *common.APIClient, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Note {
-	noteOp := iaas.NewNoteOp(client)
-	note, err := noteOp.Read(ctx, id)
+func getScript(ctx context.Context, client *common.APIClient, id iaastypes.ID, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Note {
+	scriptOp := iaas.NewNoteOp(client)
+	script, err := scriptOp.Read(ctx, id)
 	if err != nil {
 		if iaas.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("could not read SakuraCloud Note[%s]: %s", id.String(), err))
+		diags.AddError("API Read Error", fmt.Sprintf("could not read SakuraCloud Script[%s]: %s", id.String(), err))
 		return nil
 	}
 
-	return note
+	return script
 }
