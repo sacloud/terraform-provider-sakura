@@ -51,7 +51,7 @@ signs:
   - artifacts: checksum
     args:
       - "--local-user"
-      - "5264D98612F6A89C194A3E821E27C7E869BF6369"
+      - "6AC3820B37388C5ECF4A1C188D264CA32277CF9A"
       - "--output"
       - "${signature}"
       - "--detach-sign"
