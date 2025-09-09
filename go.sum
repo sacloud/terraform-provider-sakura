@@ -159,8 +159,8 @@ github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZb
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/rogpeppe/go-internal v1.8.0 h1:FCbCCtXNOY3UtUuHUYaghJg4y7Fd14rXifAYUAtL9R8=
 github.com/rogpeppe/go-internal v1.8.0/go.mod h1:WmiCO8CzOY8rg0OYDC4/i/2WRWAB6poM+XZ2dLUbcbE=
-github.com/sacloud/api-client-go v0.3.2 h1:INbdSpQbyGN9Ai4hQ+Gbv3UQcgtRPG2tJrOmqT7HGl0=
-github.com/sacloud/api-client-go v0.3.2/go.mod h1:0p3ukcWYXRCc2AUWTl1aA+3sXLvurvvDqhRaLZRLBwo=
+github.com/sacloud/api-client-go v0.3.3 h1:ZpSAyGpITA8UFO3Hq4qMHZLGuNI1FgxAxo4sqBnCKDs=
+github.com/sacloud/api-client-go v0.3.3/go.mod h1:0p3ukcWYXRCc2AUWTl1aA+3sXLvurvvDqhRaLZRLBwo=
 github.com/sacloud/ftps v1.2.0 h1:7UlSWd7cnm1J+sANz7IiBV9ffVcS+4g6ZV5UHVVbvaw=
 github.com/sacloud/ftps v1.2.0/go.mod h1:h4awhOi3PEyhKLj1FpXjoVV5yVkmRUU+d5L95EwX2JU=
 github.com/sacloud/go-http v0.1.9 h1:Xa5PY8/pb7XWhwG9nAeXSrYXPbtfBWqawgzxD5co3VE=
