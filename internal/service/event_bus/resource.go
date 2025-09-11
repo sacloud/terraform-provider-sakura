@@ -34,25 +34,25 @@ import (
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
 )
 
-type eventBusProcessConfigurationResource struct {
+type processConfigurationResource struct {
 	client *eventbus_api.Client
 }
 
 var (
-	_ resource.Resource                = &eventBusProcessConfigurationResource{}
-	_ resource.ResourceWithConfigure   = &eventBusProcessConfigurationResource{}
-	_ resource.ResourceWithImportState = &eventBusProcessConfigurationResource{}
+	_ resource.Resource                = &processConfigurationResource{}
+	_ resource.ResourceWithConfigure   = &processConfigurationResource{}
+	_ resource.ResourceWithImportState = &processConfigurationResource{}
 )
 
 func NewEventBusProcessConfigurationResource() resource.Resource {
-	return &eventBusProcessConfigurationResource{}
+	return &processConfigurationResource{}
 }
 
-func (r *eventBusProcessConfigurationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+func (r *processConfigurationResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_event_bus_process_configuration"
 }
 
-func (r *eventBusProcessConfigurationResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *processConfigurationResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -60,12 +60,12 @@ func (r *eventBusProcessConfigurationResource) Configure(ctx context.Context, re
 	r.client = apiclient.EventBusClient
 }
 
-type eventBusProcessConfigurationResourceModel struct {
-	eventBusProcessConfigurationBaseModel
+type processConfigurationResourceModel struct {
+	processConfigurationBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *eventBusProcessConfigurationResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	const resourceName = "EventBus ProcessConfiguration"
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -114,12 +114,12 @@ func (r *eventBusProcessConfigurationResource) Schema(ctx context.Context, _ res
 	}
 }
 
-func (r *eventBusProcessConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *processConfigurationResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *eventBusProcessConfigurationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan eventBusProcessConfigurationResourceModel
+func (r *processConfigurationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan processConfigurationResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -152,8 +152,8 @@ func (r *eventBusProcessConfigurationResource) Create(ctx context.Context, req r
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *eventBusProcessConfigurationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state eventBusProcessConfigurationResourceModel
+func (r *processConfigurationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state processConfigurationResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -168,8 +168,8 @@ func (r *eventBusProcessConfigurationResource) Read(ctx context.Context, req res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *eventBusProcessConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan eventBusProcessConfigurationResourceModel
+func (r *processConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan processConfigurationResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -203,8 +203,8 @@ func (r *eventBusProcessConfigurationResource) Update(ctx context.Context, req r
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *eventBusProcessConfigurationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state eventBusProcessConfigurationResourceModel
+func (r *processConfigurationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state processConfigurationResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -225,7 +225,7 @@ func (r *eventBusProcessConfigurationResource) Delete(ctx context.Context, req r
 	}
 }
 
-func (r *eventBusProcessConfigurationResource) callUpdateSecretRequest(ctx context.Context, id string, plan *eventBusProcessConfigurationResourceModel, pc *eventbus_api.ProcessConfiguration) error {
+func (r *processConfigurationResource) callUpdateSecretRequest(ctx context.Context, id string, plan *processConfigurationResourceModel, pc *eventbus_api.ProcessConfiguration) error {
 	var err error
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
@@ -259,7 +259,7 @@ func getProcessConfiguration(ctx context.Context, client *eventbus_api.Client, i
 	return pc
 }
 
-func expandProcessConfigurationCreateRequest(d *eventBusProcessConfigurationResourceModel) eventbus_api.ProcessConfigurationRequestSettings {
+func expandProcessConfigurationCreateRequest(d *processConfigurationResourceModel) eventbus_api.ProcessConfigurationRequestSettings {
 	req := eventbus_api.ProcessConfigurationRequestSettings{
 		Name:        d.Name.ValueString(),
 		Description: d.Description.ValueString(),
@@ -276,7 +276,7 @@ func expandProcessConfigurationCreateRequest(d *eventBusProcessConfigurationReso
 	return req
 }
 
-func expandProcessConfigurationUpdateSecretRequest(d *eventBusProcessConfigurationResourceModel) eventbus_api.ProcessConfigurationSecret {
+func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResourceModel) eventbus_api.ProcessConfigurationSecret {
 	req := eventbus_api.ProcessConfigurationSecret{}
 
 	if !d.SimpleNotificationAccessToken.IsNull() && !d.SimpleNotificationAccessToken.IsUnknown() {

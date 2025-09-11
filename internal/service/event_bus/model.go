@@ -22,7 +22,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
 
-type eventBusProcessConfigurationBaseModel struct {
+type processConfigurationBaseModel struct {
 	common.SakuraBaseModel
 	IconID types.String `tfsdk:"icon_id"`
 
@@ -34,7 +34,7 @@ type eventBusProcessConfigurationBaseModel struct {
 	SimpleMQAPIKey                      types.String `tfsdk:"simplemq_api_key"`
 }
 
-func (model *eventBusProcessConfigurationBaseModel) updateState(data *eventbus_api.ProcessConfiguration) {
+func (model *processConfigurationBaseModel) updateState(data *eventbus_api.ProcessConfiguration) {
 	id := strconv.FormatInt(data.ID, 10)
 	model.ID = types.StringValue(id)
 	model.Name = types.StringValue(data.Name)
