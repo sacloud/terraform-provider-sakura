@@ -90,6 +90,11 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 				Description: desc.Sprintf("The parameter of the %s.", resourceName),
 			},
 
+			// TODO: some extra fields
+			// group_id, message
+			// queue_name, content
+			// ref: https://manual.sakura.ad.jp/cloud/appliance/eventbus/index.html#id16
+
 			// TODO: credentialsを見て動的にdestinationをcomputeできると良い？でないとユーザ的には二度手間
 			"simplemq_api_key": schema.StringAttribute{
 				Optional:    true,

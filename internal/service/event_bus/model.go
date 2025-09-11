@@ -24,7 +24,6 @@ import (
 
 type processConfigurationBaseModel struct {
 	common.SakuraBaseModel
-	IconID types.String `tfsdk:"icon_id"`
 
 	Destination types.String `tfsdk:"destination"`
 	Parameters  types.String `tfsdk:"parameters"`
