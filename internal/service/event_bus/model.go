@@ -15,7 +15,10 @@
 package event_bus
 
 import (
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
 
@@ -26,8 +29,20 @@ type eventBusProcessConfigurationBaseModel struct {
 	Destination types.String `tfsdk:"destination"`
 	Parameters  types.String `tfsdk:"parameters"`
 
-	// GroupName         types.String `tfsdk:"group_name"`
-	// Message           types.String `tfsdk:"message"`
-	// AccessToken       types.String `tfsdk:"access_token"`
-	// AccessTokenSecret types.String `tfsdk:"access_token_secret"`
+	SimpleNotificationAccessToken       types.String `tfsdk:"simplenotification_access_token_secret"`
+	SimpleNotificationAccessTokenSecret types.String `tfsdk:"simplenotification_access_token_secret"`
+	SimpleMQAPIKey                      types.String `tfsdk:"simplemq_api_key"`
+}
+
+func (model *eventBusProcessConfigurationBaseModel) updateState(data *eventbus_api.ProcessConfiguration) {
+	id := strconv.FormatInt(data.ID, 10)
+	model.ID = types.StringValue(id)
+	model.Name = types.StringValue(data.Name)
+	model.Description = types.StringValue(data.Description)
+	model.Tags = common.StringsToTset(data.Tags)
+
+	model.Destination = types.StringValue(string(data.Settings.Destination))
+	model.Parameters = types.StringValue(data.Settings.Parameters)
+
+	// TODO: data does not contain secrets. what do we do now?
 }

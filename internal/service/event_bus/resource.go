@@ -17,12 +17,16 @@ package event_bus
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/eventbus-api-go"
 	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
@@ -73,7 +77,7 @@ func (r *eventBusProcessConfigurationResource) Schema(ctx context.Context, _ res
 			// "icon_id":     common.SchemaResourceIconID(resourceName),
 
 			"destination": schema.StringAttribute{
-				Required:    true,
+				Computed:    true,
 				Description: desc.Sprintf("The destination of the %s.", resourceName),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
@@ -86,9 +90,22 @@ func (r *eventBusProcessConfigurationResource) Schema(ctx context.Context, _ res
 				Description: desc.Sprintf("The parameter of the %s.", resourceName),
 			},
 
-			// TODO: credentialsどうしようかなー
-			// TODO: AccessToken, AccessTokenSecret for simplenotification
-			// TODO: APIKey for simplemq
+			// TODO: credentialsを見て動的にdestinationをcomputeできると良い？でないとユーザ的には二度手間
+			"simplemq_api_key": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				Description: desc.Sprintf("The SimpleMQ API key for %s.", resourceName),
+			},
+			"simplenotification_api_key": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				Description: desc.Sprintf("The SimpleNotification API key for %s.", resourceName),
+			},
+			"simplenotification_api_key_secret": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				Description: desc.Sprintf("The SimpleNotification API key secret for %s.", resourceName),
+			},
 
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
@@ -112,27 +129,26 @@ func (r *eventBusProcessConfigurationResource) Create(ctx context.Context, req r
 	defer cancel()
 
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
-	// TODO:
-	mq, err := processConfigurationOp.Create(ctx, expandEventBusProcessConfigurationCreateRequest(&plan))
+	pc, err := processConfigurationOp.Create(ctx, expandEventBusProcessConfigurationCreateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus ProcessConfiguration failed: %s", err))
 		return
 	}
-	pcID := eventbus_api.GetProcessConfiguration(mq)
+	pcID := strconv.FormatInt(pc.ID, 10)
 
 	// SDK v2ではUpdateを呼び出して更新していたが、Frameworkではアクション間での状態の共有が難しいためメソッドに括り出して処理を共通化
-	err = r.callUpdateRequest(ctx, qid, &plan, mq)
+	err = r.callUpdateSecretRequest(ctx, pcID, &plan, pc)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
 		return
 	}
 
-	q := getMessageQueue(ctx, r.client, qid, &resp.State, &resp.Diagnostics)
-	if q == nil {
+	gotPC := getProcessConfiguration(ctx, r.client, pcID, &resp.State, &resp.Diagnostics)
+	if gotPC == nil {
 		return
 	}
 
-	plan.updateState(q)
+	plan.updateState(gotPC)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -148,6 +164,40 @@ func (r *eventBusProcessConfigurationResource) Delete(ctx context.Context, req r
 	// TODO: impl
 }
 
+func (r *eventBusProcessConfigurationResource) callUpdateSecretRequest(ctx context.Context, id string, plan *eventBusProcessConfigurationResourceModel, pc *eventbus_api.ProcessConfiguration) error {
+	var err error
+	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
+
+	if pc == nil {
+		_, err = processConfigurationOp.Read(ctx, id)
+		if err != nil {
+			return fmt.Errorf("could not read EventBus ProcessConfiguration[%s]: %w", id, err)
+		}
+	}
+
+	err = processConfigurationOp.UpdateSecret(ctx, id, expandEventBusUpdateRequest(plan))
+	if err != nil {
+		return fmt.Errorf("update secret on EventBus ProcessConfiguration[%s] failed: %w", id, err)
+	}
+
+	return nil
+}
+
+func getProcessConfiguration(ctx context.Context, client *eventbus_api.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *eventbus_api.ProcessConfiguration {
+	processConfigurationOp := eventbus.NewProcessConfigurationOp(client)
+	pc, err := processConfigurationOp.Read(ctx, id)
+	if err != nil {
+		if api.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("Get ProcessConfiguration Error", fmt.Sprintf("could not read EventBus ProcessConfiguration[%s]: %s", id, err))
+		return nil
+	}
+
+	return pc
+}
+
 func expandEventBusProcessConfigurationCreateRequest(d *eventBusProcessConfigurationResourceModel) eventbus_api.ProcessConfigurationRequestSettings {
 	req := eventbus_api.ProcessConfigurationRequestSettings{
 		Name:        d.Name.ValueString(),
@@ -160,6 +210,22 @@ func expandEventBusProcessConfigurationCreateRequest(d *eventBusProcessConfigura
 			Class: "eventbusprocessconfiguration",
 		},
 		// TODO: Icon, Tagsはsdkが対応していないので保留中
+	}
+
+	return req
+}
+
+func expandEventBusUpdateRequest(d *eventBusProcessConfigurationResourceModel) eventbus_api.ProcessConfigurationSecret {
+	req := eventbus_api.ProcessConfigurationSecret{}
+
+	if !d.SimpleNotificationAccessToken.IsNull() && !d.SimpleNotificationAccessToken.IsUnknown() {
+		req.AccessToken = d.SimpleNotificationAccessToken.ValueString()
+	}
+	if !d.SimpleNotificationAccessTokenSecret.IsNull() && !d.SimpleNotificationAccessTokenSecret.IsUnknown() {
+		req.AccessTokenSecret = d.SimpleNotificationAccessTokenSecret.ValueString()
+	}
+	if !d.SimpleMQAPIKey.IsNull() && !d.SimpleMQAPIKey.IsUnknown() {
+		req.APIKey = d.SimpleMQAPIKey.ValueString()
 	}
 
 	return req
