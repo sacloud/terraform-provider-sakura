@@ -153,7 +153,19 @@ func (r *eventBusProcessConfigurationResource) Create(ctx context.Context, req r
 }
 
 func (r *eventBusProcessConfigurationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// TODO: impl
+	var state eventBusProcessConfigurationResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	pc := getProcessConfiguration(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if pc == nil {
+		return
+	}
+
+	state.updateState(pc)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *eventBusProcessConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
