@@ -45,3 +45,25 @@ func (model *processConfigurationBaseModel) updateState(data *eventbus_api.Proce
 
 	// TODO: data does not contain secrets. what do we do now?
 }
+
+type scheduleBaseModel struct {
+	common.SakuraBaseModel
+
+	ProcessConfigurationID types.String `tfsdk:"process_configuration_id"`
+	RecurringStep          types.Int64  `tfsdk:"recurring_step"`
+	RecurringUnit          types.String `tfsdk:"recurring_unit"`
+	StartsAt               types.Int64  `tfsdk:"starts_at"`
+}
+
+func (model *scheduleBaseModel) updateState(data *eventbus_api.Schedule) {
+	id := strconv.FormatInt(data.ID, 10)
+	model.ID = types.StringValue(id)
+	model.Name = types.StringValue(data.Name)
+	model.Description = types.StringValue(data.Description)
+	model.Tags = common.StringsToTset(data.Tags)
+
+	model.ProcessConfigurationID = types.StringValue(data.Settings.ProcessConfigurationID)
+	model.RecurringStep = types.Int64Value(int64(data.Settings.RecurringStep))
+	model.RecurringUnit = types.StringValue(string(data.Settings.RecurringUnit))
+	model.StartsAt = types.Int64Value(data.Settings.StartsAt)
+}

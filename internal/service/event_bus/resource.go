@@ -189,6 +189,7 @@ func (r *processConfigurationResource) Update(ctx context.Context, req resource.
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read EventBus ProcessConfiguration[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
+	// TODO: expandProcessConfigurationCreateRequestでいいか確認。たまたま全部Requiredだから良いかも知れないが、一応。
 	if _, err := processConfigurationOp.Update(ctx, plan.ID.ValueString(), expandProcessConfigurationCreateRequest(&plan)); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus ProcessConfiguration[%s] failed: %s", plan.ID.ValueString(), err))
 		return
@@ -292,6 +293,153 @@ func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResour
 	}
 	if !d.SimpleMQAPIKey.IsNull() && !d.SimpleMQAPIKey.IsUnknown() {
 		req.APIKey = d.SimpleMQAPIKey.ValueString()
+	}
+
+	return req
+}
+
+type scheduleResource struct {
+	client *eventbus_api.Client
+}
+
+var (
+	_ resource.Resource                = &scheduleResource{}
+	_ resource.ResourceWithConfigure   = &scheduleResource{}
+	_ resource.ResourceWithImportState = &scheduleResource{}
+)
+
+func NewEventBusScheduleResource() resource.Resource {
+	return &scheduleResource{}
+}
+
+func (r *scheduleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_event_bus_schedule"
+}
+
+func (r *scheduleResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
+		return
+	}
+	r.client = apiclient.EventBusClient
+}
+
+type scheduleResourceModel struct {
+	scheduleBaseModel
+	Timeouts timeouts.Value `tfsdk:"timeouts"`
+}
+
+func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	const resourceName = "EventBus Schedule"
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id":          common.SchemaResourceId(resourceName),
+			"name":        common.SchemaResourceName(resourceName),
+			"description": common.SchemaResourceDescription(resourceName),
+			// TODO: icon, tagsはsdkが対応していないので保留中
+			// "tags":        common.SchemaResourceTags(resourceName),
+			// "icon_id":     common.SchemaResourceIconID(resourceName),
+
+			"process_configuration_id": schema.StringAttribute{
+				Required:    true,
+				Description: desc.Sprintf("The ProcessConfiguration ID of the %s.", resourceName),
+			},
+			"recurring_step": schema.Int64Attribute{
+				Description: desc.Sprintf("The RecurringStep of the %s.", resourceName),
+			},
+			"recurring_unit": schema.StringAttribute{
+				Description: desc.Sprintf("The RecurringUnit of the %s.", resourceName),
+				Validators: []validator.String{
+					sacloudvalidator.StringFuncValidator(func(v string) error {
+						return eventbus_api.ScheduleRecurringUnit(v).Validate()
+					}),
+				},
+			},
+			"starts_at": schema.Int64Attribute{
+				Required:    true,
+				Description: desc.Sprintf("The start time of the %s. (in epoch milliseconds)", resourceName),
+			},
+
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+				Create: true, Update: true, Delete: true,
+			}),
+		},
+	}
+}
+
+func (r *scheduleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+}
+
+func (r *scheduleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan scheduleResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
+	defer cancel()
+
+	scheduleOp := eventbus.NewScheduleOp(r.client)
+	schedule, err := scheduleOp.Create(ctx, expandScheduleCreateRequest(&plan))
+	if err != nil {
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus Schedule failed: %s", err))
+		return
+	}
+	scheduleID := strconv.FormatInt(schedule.ID, 10)
+
+	gotSchedule := getSchedule(ctx, r.client, scheduleID, &resp.State, &resp.Diagnostics)
+	if gotSchedule == nil {
+		return
+	}
+
+	plan.updateState(gotSchedule)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+func (r *scheduleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	// TODO: impl
+}
+
+func (r *scheduleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// TODO: impl
+}
+
+func (r *scheduleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// TODO: impl
+}
+
+func getSchedule(ctx context.Context, client *eventbus_api.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *eventbus_api.Schedule {
+	scheduleOp := eventbus.NewScheduleOp(client)
+	schedule, err := scheduleOp.Read(ctx, id)
+	if err != nil {
+		if api.IsNotFoundError(err) {
+			state.RemoveResource(ctx)
+			return nil
+		}
+		diags.AddError("Get Schedule Error", fmt.Sprintf("could not read EventBus Schedule[%s]: %s", id, err))
+		return nil
+	}
+
+	return schedule
+}
+
+func expandScheduleCreateRequest(d *scheduleResourceModel) eventbus_api.ScheduleRequestSettings {
+	req := eventbus_api.ScheduleRequestSettings{
+		Name:        d.Name.ValueString(),
+		Description: d.Description.ValueString(),
+		// TODO: Icon, Tagsはsdkが対応していないので保留中
+
+		Settings: eventbus_api.ScheduleSettings{
+			ProcessConfigurationID: d.ProcessConfigurationID.ValueString(),
+			RecurringStep:          int(d.RecurringStep.ValueInt64()),
+			RecurringUnit:          eventbus_api.CreateScheduleRequestRecurringUnit(d.RecurringUnit.ValueString()),
+			StartsAt:               d.StartsAt.ValueInt64(),
+		},
+		Provider: eventbus_api.ScheduleProvider{
+			Class: "eventbusschedule",
+		},
 	}
 
 	return req
