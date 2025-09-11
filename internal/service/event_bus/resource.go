@@ -129,7 +129,7 @@ func (r *eventBusProcessConfigurationResource) Create(ctx context.Context, req r
 	defer cancel()
 
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
-	pc, err := processConfigurationOp.Create(ctx, expandEventBusProcessConfigurationCreateRequest(&plan))
+	pc, err := processConfigurationOp.Create(ctx, expandProcessConfigurationCreateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus ProcessConfiguration failed: %s", err))
 		return
@@ -169,7 +169,38 @@ func (r *eventBusProcessConfigurationResource) Read(ctx context.Context, req res
 }
 
 func (r *eventBusProcessConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// TODO: impl
+	var plan eventBusProcessConfigurationResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
+	defer cancel()
+
+	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
+
+	if _, err := processConfigurationOp.Read(ctx, plan.ID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read EventBus ProcessConfiguration[%s]: %s", plan.ID.ValueString(), err.Error()))
+		return
+	}
+	if _, err := processConfigurationOp.Update(ctx, plan.ID.ValueString(), expandProcessConfigurationCreateRequest(&plan)); err != nil {
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus ProcessConfiguration[%s] failed: %s", plan.ID.ValueString(), err.Error()))
+		return
+	}
+
+	if err := r.callUpdateSecretRequest(ctx, plan.ID.ValueString(), &plan, nil); err != nil {
+		resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
+		return
+	}
+
+	pc := getProcessConfiguration(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if pc == nil {
+		return
+	}
+
+	plan.updateState(pc)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *eventBusProcessConfigurationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -187,7 +218,7 @@ func (r *eventBusProcessConfigurationResource) callUpdateSecretRequest(ctx conte
 		}
 	}
 
-	err = processConfigurationOp.UpdateSecret(ctx, id, expandEventBusUpdateRequest(plan))
+	err = processConfigurationOp.UpdateSecret(ctx, id, expandProcessConfigurationUpdateSecretRequest(plan))
 	if err != nil {
 		return fmt.Errorf("update secret on EventBus ProcessConfiguration[%s] failed: %w", id, err)
 	}
@@ -210,7 +241,7 @@ func getProcessConfiguration(ctx context.Context, client *eventbus_api.Client, i
 	return pc
 }
 
-func expandEventBusProcessConfigurationCreateRequest(d *eventBusProcessConfigurationResourceModel) eventbus_api.ProcessConfigurationRequestSettings {
+func expandProcessConfigurationCreateRequest(d *eventBusProcessConfigurationResourceModel) eventbus_api.ProcessConfigurationRequestSettings {
 	req := eventbus_api.ProcessConfigurationRequestSettings{
 		Name:        d.Name.ValueString(),
 		Description: d.Description.ValueString(),
@@ -227,7 +258,7 @@ func expandEventBusProcessConfigurationCreateRequest(d *eventBusProcessConfigura
 	return req
 }
 
-func expandEventBusUpdateRequest(d *eventBusProcessConfigurationResourceModel) eventbus_api.ProcessConfigurationSecret {
+func expandProcessConfigurationUpdateSecretRequest(d *eventBusProcessConfigurationResourceModel) eventbus_api.ProcessConfigurationSecret {
 	req := eventbus_api.ProcessConfigurationSecret{}
 
 	if !d.SimpleNotificationAccessToken.IsNull() && !d.SimpleNotificationAccessToken.IsUnknown() {
