@@ -20,12 +20,9 @@ builds:
       - darwin
     goarch:
       - amd64
-      - '386'
       - arm
       - arm64
     ignore:
-      - goos: darwin
-        goarch: '386'
       - goos: darwin
         goarch: arm
 #      - goos: darwin
@@ -38,8 +35,6 @@ builds:
         goarch: arm
       - goos: solaris
         goarch: arm64
-      - goos: solaris
-        goarch: '386'
     binary: '{{ .ProjectName }}_v{{ .Version }}'
 archives:
   - formats: ['zip']
