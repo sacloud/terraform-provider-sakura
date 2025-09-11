@@ -181,11 +181,11 @@ func (r *eventBusProcessConfigurationResource) Update(ctx context.Context, req r
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
 	if _, err := processConfigurationOp.Read(ctx, plan.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read EventBus ProcessConfiguration[%s]: %s", plan.ID.ValueString(), err.Error()))
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read EventBus ProcessConfiguration[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 	if _, err := processConfigurationOp.Update(ctx, plan.ID.ValueString(), expandProcessConfigurationCreateRequest(&plan)); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus ProcessConfiguration[%s] failed: %s", plan.ID.ValueString(), err.Error()))
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus ProcessConfiguration[%s] failed: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -204,7 +204,25 @@ func (r *eventBusProcessConfigurationResource) Update(ctx context.Context, req r
 }
 
 func (r *eventBusProcessConfigurationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// TODO: impl
+	var state eventBusProcessConfigurationResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
+	defer cancel()
+
+	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
+	pc := getProcessConfiguration(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if pc == nil {
+		return
+	}
+
+	if err := processConfigurationOp.Delete(ctx, state.ID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("delete EventBus ProcessConfiguration[%s] failed: %s", state.ID.ValueString(), err))
+		return
+	}
 }
 
 func (r *eventBusProcessConfigurationResource) callUpdateSecretRequest(ctx context.Context, id string, plan *eventBusProcessConfigurationResourceModel, pc *eventbus_api.ProcessConfiguration) error {
