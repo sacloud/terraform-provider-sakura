@@ -25,9 +25,9 @@ import (
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/sacloud/eventbus-api-go"
 	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
-	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
 )
 
 type eventBusProcessConfigurationResource struct {
@@ -40,7 +40,7 @@ var (
 	_ resource.ResourceWithImportState = &eventBusProcessConfigurationResource{}
 )
 
-func eventBusProcessConfigurationResource() resource.Resource {
+func NewEventBusProcessConfigurationResource() resource.Resource {
 	return &eventBusProcessConfigurationResource{}
 }
 
@@ -134,6 +134,18 @@ func (r *eventBusProcessConfigurationResource) Create(ctx context.Context, req r
 
 	plan.updateState(q)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+}
+
+func (r *eventBusProcessConfigurationResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	// TODO: impl
+}
+
+func (r *eventBusProcessConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	// TODO: impl
+}
+
+func (r *eventBusProcessConfigurationResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	// TODO: impl
 }
 
 func expandEventBusProcessConfigurationCreateRequest(d *eventBusProcessConfigurationResourceModel) eventbus_api.ProcessConfigurationRequestSettings {
