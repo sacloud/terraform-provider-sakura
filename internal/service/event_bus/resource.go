@@ -142,7 +142,7 @@ func (r *processConfigurationResource) Create(ctx context.Context, req resource.
 	pcID := strconv.FormatInt(pc.ID, 10)
 
 	// SDK v2ではUpdateを呼び出して更新していたが、Frameworkではアクション間での状態の共有が難しいためメソッドに括り出して処理を共通化
-	err = r.callUpdateSecretRequest(ctx, pcID, &plan, pc)
+	err = r.callProcessConfigurationUpdateSecretRequest(ctx, pcID, &plan, pc)
 	if err != nil {
 		resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
 		return
@@ -185,17 +185,13 @@ func (r *processConfigurationResource) Update(ctx context.Context, req resource.
 
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
-	if _, err := processConfigurationOp.Read(ctx, plan.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read EventBus ProcessConfiguration[%s]: %s", plan.ID.ValueString(), err))
-		return
-	}
 	// TODO: expandProcessConfigurationCreateRequestでいいか確認。たまたま全部Requiredだから良いかも知れないが、一応。
 	if _, err := processConfigurationOp.Update(ctx, plan.ID.ValueString(), expandProcessConfigurationCreateRequest(&plan)); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus ProcessConfiguration[%s] failed: %s", plan.ID.ValueString(), err))
 		return
 	}
 
-	if err := r.callUpdateSecretRequest(ctx, plan.ID.ValueString(), &plan, nil); err != nil {
+	if err := r.callProcessConfigurationUpdateSecretRequest(ctx, plan.ID.ValueString(), &plan, nil); err != nil {
 		resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
 		return
 	}
@@ -231,7 +227,7 @@ func (r *processConfigurationResource) Delete(ctx context.Context, req resource.
 	}
 }
 
-func (r *processConfigurationResource) callUpdateSecretRequest(ctx context.Context, id string, plan *processConfigurationResourceModel, pc *eventbus_api.ProcessConfiguration) error {
+func (r *processConfigurationResource) callProcessConfigurationUpdateSecretRequest(ctx context.Context, id string, plan *processConfigurationResourceModel, pc *eventbus_api.ProcessConfiguration) error {
 	var err error
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
@@ -399,15 +395,68 @@ func (r *scheduleResource) Create(ctx context.Context, req resource.CreateReques
 }
 
 func (r *scheduleResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	// TODO: impl
+	var state scheduleResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	schedule := getSchedule(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if schedule == nil {
+		return
+	}
+
+	state.updateState(schedule)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *scheduleResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// TODO: impl
+	var plan scheduleResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
+	defer cancel()
+
+	scheduleOp := eventbus.NewScheduleOp(r.client)
+
+	// TODO: expandScheduleCreateRequestでいいか確認。たまたま全部Requiredだから良いかも知れないが、一応。
+	if _, err := scheduleOp.Update(ctx, plan.ID.ValueString(), expandScheduleCreateRequest(&plan)); err != nil {
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus Schedule[%s] failed: %s", plan.ID.ValueString(), err))
+		return
+	}
+
+	schedule := getSchedule(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if schedule == nil {
+		return
+	}
+
+	plan.updateState(schedule)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *scheduleResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	// TODO: impl
+	var state scheduleResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
+	defer cancel()
+
+	scheduleOp := eventbus.NewScheduleOp(r.client)
+	schedule := getSchedule(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	if schedule == nil {
+		return
+	}
+
+	if err := scheduleOp.Delete(ctx, state.ID.ValueString()); err != nil {
+		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("delete EventBus Schedule[%s] failed: %s", state.ID.ValueString(), err))
+		return
+	}
 }
 
 func getSchedule(ctx context.Context, client *eventbus_api.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *eventbus_api.Schedule {
