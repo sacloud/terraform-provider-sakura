@@ -50,5 +50,5 @@ resource "sakura_event_bus_process_configuration" "foobar" {
 }
 
 data "sakura_event_bus_process_configuration" "foobar" {
-	id = sakura_event_bus.foobar.id
+	id = sakura_event_bus_process_configuration.foobar.id
 }`
