@@ -22,14 +22,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/sacloud/eventbus-api-go"
-	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
+	v1 "github.com/sacloud/eventbus-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
 )
 
 type processConfigurationDataSource struct {
-	client *eventbus_api.Client
+	client *v1.Client
 }
 
 var (
@@ -73,12 +73,12 @@ func (d *processConfigurationDataSource) Schema(_ context.Context, _ datasource.
 				Description: desc.Sprintf("The destination of the %s.", resourceName),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return eventbus_api.ProcessConfigurationDestination(v).Validate()
+						return v1.ProcessConfigurationDestination(v).Validate()
 					}),
 				},
 			},
 			"parameters": schema.StringAttribute{
-				Required:    true,
+				Computed:    true,
 				Description: desc.Sprintf("The parameter of the %s.", resourceName),
 			},
 		},
@@ -111,7 +111,7 @@ func (d *processConfigurationDataSource) Read(ctx context.Context, req datasourc
 }
 
 type scheduleDataSource struct {
-	client *eventbus_api.Client
+	client *v1.Client
 }
 
 var (
@@ -155,13 +155,15 @@ func (d *scheduleDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 				Description: desc.Sprintf("The ProcessConfiguration ID of the %s.", resourceName),
 			},
 			"recurring_step": schema.Int64Attribute{
+				Optional:    true,
 				Description: desc.Sprintf("The RecurringStep of the %s.", resourceName),
 			},
 			"recurring_unit": schema.StringAttribute{
+				Optional:    true,
 				Description: desc.Sprintf("The RecurringUnit of the %s.", resourceName),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return eventbus_api.ScheduleRecurringUnit(v).Validate()
+						return v1.ScheduleRecurringUnit(v).Validate()
 					}),
 				},
 			},

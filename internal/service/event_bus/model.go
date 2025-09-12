@@ -18,7 +18,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
+	v1 "github.com/sacloud/eventbus-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 )
 
@@ -28,12 +28,12 @@ type processConfigurationBaseModel struct {
 	Destination types.String `tfsdk:"destination"`
 	Parameters  types.String `tfsdk:"parameters"`
 
-	SimpleNotificationAccessToken       types.String `tfsdk:"simplenotification_access_token_secret"`
+	SimpleNotificationAccessToken       types.String `tfsdk:"simplenotification_access_token"`
 	SimpleNotificationAccessTokenSecret types.String `tfsdk:"simplenotification_access_token_secret"`
 	SimpleMQAPIKey                      types.String `tfsdk:"simplemq_api_key"`
 }
 
-func (model *processConfigurationBaseModel) updateState(data *eventbus_api.ProcessConfiguration) {
+func (model *processConfigurationBaseModel) updateState(data *v1.ProcessConfiguration) {
 	id := strconv.FormatInt(data.ID, 10)
 	model.ID = types.StringValue(id)
 	model.Name = types.StringValue(data.Name)
@@ -55,7 +55,7 @@ type scheduleBaseModel struct {
 	StartsAt               types.Int64  `tfsdk:"starts_at"`
 }
 
-func (model *scheduleBaseModel) updateState(data *eventbus_api.Schedule) {
+func (model *scheduleBaseModel) updateState(data *v1.Schedule) {
 	id := strconv.FormatInt(data.ID, 10)
 	model.ID = types.StringValue(id)
 	model.Name = types.StringValue(data.Name)

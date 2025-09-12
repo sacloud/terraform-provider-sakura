@@ -45,8 +45,8 @@ var testAccSakuraDataSourceProcessConfiguration_basic = `
 resource "sakura_event_bus_process_configuration" "foobar" {
   name          = "{{ .arg0 }}"
 
-	destination = "unknown"
-	undefined = "hello"
+	destination = "simplenotification"
+	parameters = "params"
 }
 
 data "sakura_event_bus_process_configuration" "foobar" {

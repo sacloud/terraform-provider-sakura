@@ -28,14 +28,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/eventbus-api-go"
-	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
+	v1 "github.com/sacloud/eventbus-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/common"
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakuracloud/internal/validator"
 )
 
 type processConfigurationResource struct {
-	client *eventbus_api.Client
+	client *v1.Client
 }
 
 var (
@@ -73,15 +73,15 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 			"name":        common.SchemaResourceName(resourceName),
 			"description": common.SchemaResourceDescription(resourceName),
 			// TODO: icon, tagsはsdkが対応していないので保留中
-			// "tags":        common.SchemaResourceTags(resourceName),
+			"tags": common.SchemaResourceTags(resourceName), // tfsdk tagでエラーになるので定義だけする
 			// "icon_id":     common.SchemaResourceIconID(resourceName),
 
 			"destination": schema.StringAttribute{
-				Computed:    true,
+				Required:    true,
 				Description: desc.Sprintf("The destination of the %s.", resourceName),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return eventbus_api.ProcessConfigurationDestination(v).Validate()
+						return v1.ProcessConfigurationDestination(v).Validate()
 					}),
 				},
 			},
@@ -101,15 +101,15 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 				Sensitive:   true,
 				Description: desc.Sprintf("The SimpleMQ API key for %s.", resourceName),
 			},
-			"simplenotification_api_key": schema.StringAttribute{
+			"simplenotification_access_token": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
-				Description: desc.Sprintf("The SimpleNotification API key for %s.", resourceName),
+				Description: desc.Sprintf("The SimpleNotification access token for %s.", resourceName),
 			},
-			"simplenotification_api_key_secret": schema.StringAttribute{
+			"simplenotification_access_token_secret": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
-				Description: desc.Sprintf("The SimpleNotification API key secret for %s.", resourceName),
+				Description: desc.Sprintf("The SimpleNotification access token secret for %s.", resourceName),
 			},
 
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -227,7 +227,7 @@ func (r *processConfigurationResource) Delete(ctx context.Context, req resource.
 	}
 }
 
-func (r *processConfigurationResource) callProcessConfigurationUpdateSecretRequest(ctx context.Context, id string, plan *processConfigurationResourceModel, pc *eventbus_api.ProcessConfiguration) error {
+func (r *processConfigurationResource) callProcessConfigurationUpdateSecretRequest(ctx context.Context, id string, plan *processConfigurationResourceModel, pc *v1.ProcessConfiguration) error {
 	var err error
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
@@ -246,7 +246,7 @@ func (r *processConfigurationResource) callProcessConfigurationUpdateSecretReque
 	return nil
 }
 
-func getProcessConfiguration(ctx context.Context, client *eventbus_api.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *eventbus_api.ProcessConfiguration {
+func getProcessConfiguration(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.ProcessConfiguration {
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(client)
 	pc, err := processConfigurationOp.Read(ctx, id)
 	if err != nil {
@@ -261,15 +261,15 @@ func getProcessConfiguration(ctx context.Context, client *eventbus_api.Client, i
 	return pc
 }
 
-func expandProcessConfigurationCreateRequest(d *processConfigurationResourceModel) eventbus_api.ProcessConfigurationRequestSettings {
-	req := eventbus_api.ProcessConfigurationRequestSettings{
+func expandProcessConfigurationCreateRequest(d *processConfigurationResourceModel) v1.ProcessConfigurationRequestSettings {
+	req := v1.ProcessConfigurationRequestSettings{
 		Name:        d.Name.ValueString(),
 		Description: d.Description.ValueString(),
-		Settings: eventbus_api.DestinationSettings{
-			Destination: eventbus_api.CreateProcessConfigurationRequestDestination(d.Destination.ValueString()),
+		Settings: v1.DestinationSettings{
+			Destination: v1.CreateProcessConfigurationRequestDestination(d.Destination.ValueString()),
 			Parameters:  d.Parameters.ValueString(),
 		},
-		Provider: eventbus_api.ProcessConfigurationProvider{
+		Provider: v1.ProcessConfigurationProvider{
 			Class: "eventbusprocessconfiguration",
 		},
 		// TODO: Icon, Tagsはsdkが対応していないので保留中
@@ -278,8 +278,8 @@ func expandProcessConfigurationCreateRequest(d *processConfigurationResourceMode
 	return req
 }
 
-func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResourceModel) eventbus_api.ProcessConfigurationSecret {
-	req := eventbus_api.ProcessConfigurationSecret{}
+func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResourceModel) v1.ProcessConfigurationSecret {
+	req := v1.ProcessConfigurationSecret{}
 
 	if !d.SimpleNotificationAccessToken.IsNull() && !d.SimpleNotificationAccessToken.IsUnknown() {
 		req.AccessToken = d.SimpleNotificationAccessToken.ValueString()
@@ -295,7 +295,7 @@ func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResour
 }
 
 type scheduleResource struct {
-	client *eventbus_api.Client
+	client *v1.Client
 }
 
 var (
@@ -341,13 +341,15 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Description: desc.Sprintf("The ProcessConfiguration ID of the %s.", resourceName),
 			},
 			"recurring_step": schema.Int64Attribute{
+				Optional:    true,
 				Description: desc.Sprintf("The RecurringStep of the %s.", resourceName),
 			},
 			"recurring_unit": schema.StringAttribute{
+				Optional:    true,
 				Description: desc.Sprintf("The RecurringUnit of the %s.", resourceName),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return eventbus_api.ScheduleRecurringUnit(v).Validate()
+						return v1.ScheduleRecurringUnit(v).Validate()
 					}),
 				},
 			},
@@ -459,7 +461,7 @@ func (r *scheduleResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 }
 
-func getSchedule(ctx context.Context, client *eventbus_api.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *eventbus_api.Schedule {
+func getSchedule(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.Schedule {
 	scheduleOp := eventbus.NewScheduleOp(client)
 	schedule, err := scheduleOp.Read(ctx, id)
 	if err != nil {
@@ -474,19 +476,19 @@ func getSchedule(ctx context.Context, client *eventbus_api.Client, id string, st
 	return schedule
 }
 
-func expandScheduleCreateRequest(d *scheduleResourceModel) eventbus_api.ScheduleRequestSettings {
-	req := eventbus_api.ScheduleRequestSettings{
+func expandScheduleCreateRequest(d *scheduleResourceModel) v1.ScheduleRequestSettings {
+	req := v1.ScheduleRequestSettings{
 		Name:        d.Name.ValueString(),
 		Description: d.Description.ValueString(),
 		// TODO: Icon, Tagsはsdkが対応していないので保留中
 
-		Settings: eventbus_api.ScheduleSettings{
+		Settings: v1.ScheduleSettings{
 			ProcessConfigurationID: d.ProcessConfigurationID.ValueString(),
 			RecurringStep:          int(d.RecurringStep.ValueInt64()),
-			RecurringUnit:          eventbus_api.CreateScheduleRequestRecurringUnit(d.RecurringUnit.ValueString()),
+			RecurringUnit:          v1.CreateScheduleRequestRecurringUnit(d.RecurringUnit.ValueString()),
 			StartsAt:               d.StartsAt.ValueInt64(),
 		},
-		Provider: eventbus_api.ScheduleProvider{
+		Provider: v1.ScheduleProvider{
 			Class: "eventbusschedule",
 		},
 	}
