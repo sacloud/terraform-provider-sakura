@@ -74,6 +74,42 @@ user {
 
 また、Frameworkはより厳密に型や値をチェックするようになったため、SDK v2でチェックされない挙動に依存してたリソースも一部挙動が変更されています。
 
+#### プロバイダの設定
+
+`sakuracloud`を`sakura`に書き換えてください。
+
+- v2
+
+```
+terraform {
+  required_providers {
+    sakuracloud = {
+      source = "sacloud/sakuracloud"
+    }
+  }
+}
+
+provider "sakuracloud" {
+  zone = "tk1b"
+}
+```
+
+- v3
+
+```
+terraform {
+  required_providers {
+    sakura = {
+      source = "sacloud/sakura"
+    }
+  }
+}
+
+provider "sakura" {
+  zone = "tk1b"
+}
+```
+
 #### タイムアウト設定
 
 BlockからAttributeに変更されたため、以下のように書き換える必要があります
