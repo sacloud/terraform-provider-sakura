@@ -109,3 +109,91 @@ func (d *processConfigurationDataSource) Read(ctx context.Context, req datasourc
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
+
+type scheduleDataSource struct {
+	client *eventbus_api.Client
+}
+
+var (
+	_ datasource.DataSource              = &scheduleDataSource{}
+	_ datasource.DataSourceWithConfigure = &scheduleDataSource{}
+)
+
+func NewEventBusScheduleDataSource() datasource.DataSource {
+	return &scheduleDataSource{}
+}
+
+func (d *scheduleDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_event_bus_schedule"
+}
+
+func (d *scheduleDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
+		return
+	}
+	d.client = apiclient.EventBusClient
+}
+
+type scheduleDataSourceModel struct {
+	scheduleBaseModel
+}
+
+func (d *scheduleDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	const resourceName = "EventBus Schedule"
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id":          common.SchemaResourceId(resourceName),
+			"name":        common.SchemaResourceName(resourceName),
+			"description": common.SchemaResourceDescription(resourceName),
+			// TODO: icon, tagsはsdkが対応していないので保留中
+			// "tags":        common.SchemaResourceTags(resourceName),
+			// "icon_id":     common.SchemaResourceIconID(resourceName),
+
+			"process_configuration_id": schema.StringAttribute{
+				Required:    true,
+				Description: desc.Sprintf("The ProcessConfiguration ID of the %s.", resourceName),
+			},
+			"recurring_step": schema.Int64Attribute{
+				Description: desc.Sprintf("The RecurringStep of the %s.", resourceName),
+			},
+			"recurring_unit": schema.StringAttribute{
+				Description: desc.Sprintf("The RecurringUnit of the %s.", resourceName),
+				Validators: []validator.String{
+					sacloudvalidator.StringFuncValidator(func(v string) error {
+						return eventbus_api.ScheduleRecurringUnit(v).Validate()
+					}),
+				},
+			},
+			"starts_at": schema.Int64Attribute{
+				Required:    true,
+				Description: desc.Sprintf("The start time of the %s. (in epoch milliseconds)", resourceName),
+			},
+		},
+	}
+}
+
+func (d *scheduleDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data scheduleDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id := data.ID.ValueString()
+	if id == "" {
+		resp.Diagnostics.AddError("Invalid Attribute", "ID must be specified.")
+		return
+	}
+
+	scheduleOp := eventbus.NewScheduleOp(d.client)
+	schedule, err := scheduleOp.Read(ctx, id)
+	if err != nil {
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find SakuraCloud EventBus Schedule[%s] resource: %s", id, err))
+		return
+	}
+
+	data.updateState(schedule)
+
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
