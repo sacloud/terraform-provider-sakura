@@ -65,7 +65,7 @@ func (d *processConfigurationDataSource) Schema(_ context.Context, _ datasource.
 			"name":        common.SchemaResourceName(resourceName),
 			"description": common.SchemaResourceDescription(resourceName),
 			// TODO: icon, tagsはsdkが対応していないので保留中
-			// "tags":        common.SchemaResourceTags(resourceName),
+			"tags": common.SchemaResourceTags(resourceName),
 			// "icon_id":     common.SchemaResourceIconID(resourceName),
 
 			"destination": schema.StringAttribute{
@@ -92,20 +92,29 @@ func (d *processConfigurationDataSource) Read(ctx context.Context, req datasourc
 		return
 	}
 
-	id := data.ID.ValueString()
-	if id == "" {
-		resp.Diagnostics.AddError("Invalid Attribute", "ID must be specified.")
+	name := data.Name.ValueString()
+	if name == "" {
+		resp.Diagnostics.AddError("Invalid Attribute", "Name must be specified.")
 		return
 	}
 
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(d.client)
-	pc, err := processConfigurationOp.Read(ctx, id)
+	pcs, err := processConfigurationOp.List(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find SakuraCloud EventBus ProcessConfiguration[%s] resource: %s", id, err))
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus ProcessConfiguration resources: %s", err))
 		return
 	}
 
-	data.updateState(pc)
+	// TODO: 最初にnameが一致するものを対象としているが、tagsの設定がsdk側で対応されれば、よりフィルタを掛けやすい
+	for _, pc := range pcs {
+		if pc.Name != name {
+			continue
+		}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		data.updateState(&pc)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		return
+	}
+
+	resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus ProcessConfiguration resources with the same name: %s", name))
 }

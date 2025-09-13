@@ -34,7 +34,8 @@ func TestAccSakuraDataSourceProcessConfiguration_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
-					resource.TestCheckResourceAttr(resourceName, "destination", "unknown"),
+					resource.TestCheckResourceAttr(resourceName, "destination", "simplenotification"),
+					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"),
 				),
 			},
 		},
@@ -43,12 +44,20 @@ func TestAccSakuraDataSourceProcessConfiguration_basic(t *testing.T) {
 
 var testAccSakuraDataSourceProcessConfiguration_basic = `
 resource "sakura_event_bus_process_configuration" "foobar" {
-  name          = "{{ .arg0 }}"
+  name        = "{{ .arg0 }}"
+  description = "description"
 
-	destination = "simplenotification"
-	parameters = "params"
+  destination = "simplenotification"
+  parameters  = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
+
+  simplenotification_access_token        = "test"
+  simplenotification_access_token_secret = "test"
 }
 
 data "sakura_event_bus_process_configuration" "foobar" {
-	id = sakura_event_bus_process_configuration.foobar.id
+  name = "{{ .arg0 }}"
+
+  depends_on = [
+    sakura_event_bus_process_configuration.foobar
+  ]
 }`

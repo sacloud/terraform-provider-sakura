@@ -27,6 +27,10 @@ type processConfigurationBaseModel struct {
 
 	Destination types.String `tfsdk:"destination"`
 	Parameters  types.String `tfsdk:"parameters"`
+}
+
+type processConfigurationWithCredentialsBaseModel struct {
+	processConfigurationBaseModel
 
 	SimpleNotificationAccessToken       types.String `tfsdk:"simplenotification_access_token"`
 	SimpleNotificationAccessTokenSecret types.String `tfsdk:"simplenotification_access_token_secret"`
@@ -42,28 +46,4 @@ func (model *processConfigurationBaseModel) updateState(data *v1.ProcessConfigur
 
 	model.Destination = types.StringValue(string(data.Settings.Destination))
 	model.Parameters = types.StringValue(data.Settings.Parameters)
-
-	// TODO: data does not contain secrets. what do we do now?
-}
-
-type scheduleBaseModel struct {
-	common.SakuraBaseModel
-
-	ProcessConfigurationID types.String `tfsdk:"process_configuration_id"`
-	RecurringStep          types.Int64  `tfsdk:"recurring_step"`
-	RecurringUnit          types.String `tfsdk:"recurring_unit"`
-	StartsAt               types.Int64  `tfsdk:"starts_at"`
-}
-
-func (model *scheduleBaseModel) updateState(data *v1.Schedule) {
-	id := strconv.FormatInt(data.ID, 10)
-	model.ID = types.StringValue(id)
-	model.Name = types.StringValue(data.Name)
-	model.Description = types.StringValue(data.Description)
-	model.Tags = common.StringsToTset(data.Tags)
-
-	model.ProcessConfigurationID = types.StringValue(data.Settings.ProcessConfigurationID)
-	model.RecurringStep = types.Int64Value(int64(data.Settings.RecurringStep))
-	model.RecurringUnit = types.StringValue(string(data.Settings.RecurringUnit))
-	model.StartsAt = types.Int64Value(data.Settings.StartsAt)
 }

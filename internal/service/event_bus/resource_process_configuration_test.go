@@ -120,9 +120,9 @@ resource "sakura_event_bus_process_configuration" "foobar" {
   description = "description"
 
   destination = "simplenotification"
-  parameters = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
+  parameters  = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
 
-  simplenotification_access_token = "test"
+  simplenotification_access_token        = "test"
   simplenotification_access_token_secret = "test"
 }`
 
@@ -132,7 +132,7 @@ resource "sakura_event_bus_process_configuration" "foobar" {
   description = "description-updated"
 
   destination = "simplemq"
-  parameters = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"
+  parameters  = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"
 
 	simplemq_api_key = "test"
 }`

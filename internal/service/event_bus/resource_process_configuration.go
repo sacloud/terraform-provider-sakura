@@ -61,7 +61,7 @@ func (r *processConfigurationResource) Configure(ctx context.Context, req resour
 }
 
 type processConfigurationResourceModel struct {
-	processConfigurationBaseModel
+	processConfigurationWithCredentialsBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
