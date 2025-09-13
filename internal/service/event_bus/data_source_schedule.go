@@ -17,6 +17,7 @@ package event_bus
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -104,8 +105,9 @@ func (d *scheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 	}
 
 	name := data.Name.ValueString()
-	if name == "" {
-		resp.Diagnostics.AddError("Invalid Attribute", "Name must be specified.")
+	tags := common.TsetToStrings(data.Tags)
+	if name == "" && len(tags) == 0 {
+		resp.Diagnostics.AddError("Invalid Attribute", "Either name or tags must be specified.")
 		return
 	}
 
@@ -116,9 +118,20 @@ func (d *scheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	// TODO: 最初にnameが一致するものを対象としているが、tagsの設定がsdk側で対応されれば、よりフィルタを掛けやすい
 	for _, s := range schedules {
-		if s.Name != name {
+		if name != "" && s.Name != name {
+			continue
+		}
+
+		tagsMatched := true
+		for _, tagToFind := range tags {
+			if slices.Contains(s.Tags, tagToFind) {
+				continue
+			}
+			tagsMatched = false
+			break
+		}
+		if !tagsMatched {
 			continue
 		}
 
@@ -127,5 +140,5 @@ func (d *scheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus Schedule resources with the same name: %s", name))
+	resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus Schedule resources with  name=%q and tags=%v", name, tags))
 }

@@ -17,6 +17,7 @@ package event_bus
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -82,6 +83,8 @@ func (d *processConfigurationDataSource) Schema(_ context.Context, _ datasource.
 				Computed:    true,
 				Description: desc.Sprintf("The parameter of the %s.", resourceName),
 			},
+
+			// NOTE: credentialsはdata sourceから参照不可能
 		},
 	}
 }
@@ -94,8 +97,9 @@ func (d *processConfigurationDataSource) Read(ctx context.Context, req datasourc
 	}
 
 	name := data.Name.ValueString()
-	if name == "" {
-		resp.Diagnostics.AddError("Invalid Attribute", "Name must be specified.")
+	tags := common.TsetToStrings(data.Tags)
+	if name == "" && len(tags) == 0 {
+		resp.Diagnostics.AddError("Invalid Attribute", "Either name or tags must be specified.")
 		return
 	}
 
@@ -106,9 +110,20 @@ func (d *processConfigurationDataSource) Read(ctx context.Context, req datasourc
 		return
 	}
 
-	// TODO: 最初にnameが一致するものを対象としているが、tagsの設定がsdk側で対応されれば、よりフィルタを掛けやすい
 	for _, pc := range pcs {
-		if pc.Name != name {
+		if name != "" && pc.Name != name {
+			continue
+		}
+
+		tagsMatched := true
+		for _, tagToFind := range tags {
+			if slices.Contains(pc.Tags, tagToFind) {
+				continue
+			}
+			tagsMatched = false
+			break
+		}
+		if !tagsMatched {
 			continue
 		}
 
@@ -117,5 +132,5 @@ func (d *processConfigurationDataSource) Read(ctx context.Context, req datasourc
 		return
 	}
 
-	resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus ProcessConfiguration resources with the same name: %s", name))
+	resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus ProcessConfiguration resources with name=%q and tags=%v", name, tags))
 }
