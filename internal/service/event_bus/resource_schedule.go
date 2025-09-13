@@ -72,9 +72,10 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"id":          common.SchemaResourceId(resourceName),
 			"name":        common.SchemaResourceName(resourceName),
 			"description": common.SchemaResourceDescription(resourceName),
-			// TODO: icon, tagsはsdkが対応していないので保留中
-			"tags": common.SchemaResourceTags(resourceName), // NOTE: common.SakuraBaseModelには存在するためtfsdk tagでエラーになるので定義だけするが、設定不可能
+			// TODO: iconはsdkが対応していないので保留中
 			// "icon_id":     common.SchemaResourceIconID(resourceName),
+			// NOTE: tagsは設定がsdk非対応のためTFからは設定不可能だが、UI上などで設定した値はsdkが返してくれているので取得可能。
+			"tags": common.SchemaResourceTags(resourceName),
 
 			"process_configuration_id": schema.StringAttribute{
 				Required:    true,
@@ -121,7 +122,7 @@ func (r *scheduleResource) Create(ctx context.Context, req resource.CreateReques
 	defer cancel()
 
 	scheduleOp := eventbus.NewScheduleOp(r.client)
-	schedule, err := scheduleOp.Create(ctx, expandScheduleCreateRequest(&plan))
+	schedule, err := scheduleOp.Create(ctx, expandScheduleCreateUpdateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus Schedule failed: %s", err))
 		return
@@ -165,8 +166,7 @@ func (r *scheduleResource) Update(ctx context.Context, req resource.UpdateReques
 
 	scheduleOp := eventbus.NewScheduleOp(r.client)
 
-	// TODO: expandScheduleCreateRequestでいいか確認。たまたま全部Requiredだから良いかも知れないが、一応。
-	if _, err := scheduleOp.Update(ctx, plan.ID.ValueString(), expandScheduleCreateRequest(&plan)); err != nil {
+	if _, err := scheduleOp.Update(ctx, plan.ID.ValueString(), expandScheduleCreateUpdateRequest(&plan)); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus Schedule[%s] failed: %s", plan.ID.ValueString(), err))
 		return
 	}
@@ -217,11 +217,11 @@ func getSchedule(ctx context.Context, client *v1.Client, id string, state *tfsdk
 	return schedule
 }
 
-func expandScheduleCreateRequest(d *scheduleResourceModel) v1.ScheduleRequestSettings {
+func expandScheduleCreateUpdateRequest(d *scheduleResourceModel) v1.ScheduleRequestSettings {
 	req := v1.ScheduleRequestSettings{
 		Name:        d.Name.ValueString(),
 		Description: d.Description.ValueString(),
-		// TODO: Icon, Tagsはsdkが対応していないので保留中
+		// TODO: Icon, Tags, Crontabはsdkが対応していないので保留中
 
 		Settings: v1.ScheduleSettings{
 			ProcessConfigurationID: d.ProcessConfigurationID.ValueString(),

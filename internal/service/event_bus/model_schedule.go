@@ -24,6 +24,8 @@ import (
 
 type scheduleBaseModel struct {
 	common.SakuraBaseModel
+	// TODO: iconはsdkで未対応
+	// IconID types.String `tfsdk:"icon_id"`
 
 	ProcessConfigurationID types.String `tfsdk:"process_configuration_id"`
 	RecurringStep          types.Int64  `tfsdk:"recurring_step"`

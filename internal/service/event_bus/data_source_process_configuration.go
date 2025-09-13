@@ -64,9 +64,10 @@ func (d *processConfigurationDataSource) Schema(_ context.Context, _ datasource.
 			"id":          common.SchemaDataSourceId(resourceName),
 			"name":        common.SchemaDataSourceName(resourceName),
 			"description": common.SchemaDataSourceDescription(resourceName),
-			// TODO: icon, tagsはsdkが対応していないので保留中
-			"tags": common.SchemaDataSourceTags(resourceName), // NOTE: common.SakuraBaseModelには存在するためtfsdk tagでエラーになるので定義だけするが、設定不可能
+			// TODO: iconはsdkが対応していないので保留中
 			// "icon_id":     common.SchemaDataSourceIconID(resourceName),
+			// NOTE: tagsは設定がsdk非対応のためTFからは設定不可能だが、UI上などで設定した値はsdkが返してくれているので取得可能。
+			"tags": common.SchemaDataSourceTags(resourceName),
 
 			"destination": schema.StringAttribute{
 				Computed:    true,
