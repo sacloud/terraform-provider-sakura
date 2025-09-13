@@ -43,6 +43,10 @@ func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
 					testCheckSakuraProcessConfigurationExists(resourceName, &pc),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "destination", "simplenotification"),
+					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"),
+					resource.TestCheckResourceAttr(resourceName, "simplenotification_access_token", "test"),
+					resource.TestCheckResourceAttr(resourceName, "simplenotification_access_token_secret", "test"),
 				),
 			},
 			{
@@ -51,6 +55,9 @@ func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
 					testCheckSakuraProcessConfigurationExists(resourceName, &pc),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
+					resource.TestCheckResourceAttr(resourceName, "destination", "simplemq"),
+					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"),
+					resource.TestCheckResourceAttr(resourceName, "simplemq_api_key", "test"),
 				),
 			},
 		},
@@ -112,8 +119,11 @@ resource "sakura_event_bus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
 
-	destination = "simplenotification"
-	parameters = "params"
+  destination = "simplenotification"
+  parameters = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
+
+  simplenotification_access_token = "test"
+  simplenotification_access_token_secret = "test"
 }`
 
 var testAccSakuraProcessConfiguration_update = `
@@ -121,6 +131,8 @@ resource "sakura_event_bus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description-updated"
 
-	destination = "simplemq"
-	parameters = "params-upd"
+  destination = "simplemq"
+  parameters = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"
+
+	simplemq_api_key = "test"
 }`
