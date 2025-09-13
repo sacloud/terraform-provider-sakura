@@ -91,12 +91,6 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 				Description: desc.Sprintf("The parameter of the %s.", resourceName),
 			},
 
-			// TODO: some extra fields
-			// group_id, message
-			// queue_name, content
-			// ref: https://manual.sakura.ad.jp/cloud/appliance/eventbus/index.html#id16
-
-			// TODO: credentialsを見て動的にdestinationをcomputeできると良い？でないとユーザ的には二度手間
 			"simplemq_api_key": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
@@ -135,7 +129,7 @@ func (r *processConfigurationResource) Create(ctx context.Context, req resource.
 	defer cancel()
 
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
-	pc, err := processConfigurationOp.Create(ctx, expandProcessConfigurationCreateRequest(&plan))
+	pc, err := processConfigurationOp.Create(ctx, expandProcessConfigurationCreateUpdateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus ProcessConfiguration failed: %s", err))
 		return
@@ -186,8 +180,7 @@ func (r *processConfigurationResource) Update(ctx context.Context, req resource.
 
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
-	// TODO: expandProcessConfigurationCreateRequestでいいか確認。たまたま全部Requiredだから良いかも知れないが、一応。
-	if _, err := processConfigurationOp.Update(ctx, plan.ID.ValueString(), expandProcessConfigurationCreateRequest(&plan)); err != nil {
+	if _, err := processConfigurationOp.Update(ctx, plan.ID.ValueString(), expandProcessConfigurationCreateUpdateRequest(&plan)); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus ProcessConfiguration[%s] failed: %s", plan.ID.ValueString(), err))
 		return
 	}
@@ -262,7 +255,7 @@ func getProcessConfiguration(ctx context.Context, client *v1.Client, id string, 
 	return pc
 }
 
-func expandProcessConfigurationCreateRequest(d *processConfigurationResourceModel) v1.ProcessConfigurationRequestSettings {
+func expandProcessConfigurationCreateUpdateRequest(d *processConfigurationResourceModel) v1.ProcessConfigurationRequestSettings {
 	req := v1.ProcessConfigurationRequestSettings{
 		Name:        d.Name.ValueString(),
 		Description: d.Description.ValueString(),
