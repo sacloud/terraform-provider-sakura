@@ -61,12 +61,12 @@ func (d *processConfigurationDataSource) Schema(_ context.Context, _ datasource.
 	const resourceName = "EventBus ProcessConfiguration"
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId(resourceName),
-			"name":        common.SchemaResourceName(resourceName),
-			"description": common.SchemaResourceDescription(resourceName),
+			"id":          common.SchemaDataSourceId(resourceName),
+			"name":        common.SchemaDataSourceName(resourceName),
+			"description": common.SchemaDataSourceDescription(resourceName),
 			// TODO: icon, tagsはsdkが対応していないので保留中
-			"tags": common.SchemaResourceTags(resourceName),
-			// "icon_id":     common.SchemaResourceIconID(resourceName),
+			"tags": common.SchemaDataSourceTags(resourceName), // NOTE: common.SakuraBaseModelには存在するためtfsdk tagでエラーになるので定義だけするが、設定不可能
+			// "icon_id":     common.SchemaDataSourceIconID(resourceName),
 
 			"destination": schema.StringAttribute{
 				Computed:    true,
@@ -101,7 +101,7 @@ func (d *processConfigurationDataSource) Read(ctx context.Context, req datasourc
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(d.client)
 	pcs, err := processConfigurationOp.List(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus ProcessConfiguration resources: %s", err))
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find SakuraCloud EventBus ProcessConfiguration resources: %s", err))
 		return
 	}
 

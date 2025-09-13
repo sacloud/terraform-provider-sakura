@@ -73,7 +73,7 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"name":        common.SchemaResourceName(resourceName),
 			"description": common.SchemaResourceDescription(resourceName),
 			// TODO: icon, tagsはsdkが対応していないので保留中
-			// "tags":        common.SchemaResourceTags(resourceName),
+			"tags": common.SchemaResourceTags(resourceName), // NOTE: common.SakuraBaseModelには存在するためtfsdk tagでエラーになるので定義だけするが、設定不可能
 			// "icon_id":     common.SchemaResourceIconID(resourceName),
 
 			"process_configuration_id": schema.StringAttribute{
@@ -93,6 +93,7 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 					}),
 				},
 			},
+			// TODO: Crontabはsdkが対応していないので保留中
 			"starts_at": schema.Int64Attribute{
 				Required:    true,
 				Description: desc.Sprintf("The start time of the %s. (in epoch milliseconds)", resourceName),

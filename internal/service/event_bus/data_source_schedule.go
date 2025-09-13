@@ -61,22 +61,24 @@ func (d *scheduleDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 	const resourceName = "EventBus Schedule"
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId(resourceName),
-			"name":        common.SchemaResourceName(resourceName),
-			"description": common.SchemaResourceDescription(resourceName),
+			"id":          common.SchemaDataSourceId(resourceName),
+			"name":        common.SchemaDataSourceName(resourceName),
+			"description": common.SchemaDataSourceDescription(resourceName),
 			// TODO: icon, tagsはsdkが対応していないので保留中
-			// "tags":        common.SchemaResourceTags(resourceName),
-			// "icon_id":     common.SchemaResourceIconID(resourceName),
+			"tags": common.SchemaDataSourceTags(resourceName), // NOTE: common.SakuraBaseModelには存在するためtfsdk tagでエラーになるので定義だけするが、設定不可能
+			// "icon_id":     common.SchemaDataSourceIconID(resourceName),
 
 			"process_configuration_id": schema.StringAttribute{
-				Required:    true,
+				Computed:    true,
 				Description: desc.Sprintf("The ProcessConfiguration ID of the %s.", resourceName),
 			},
 			"recurring_step": schema.Int64Attribute{
+				Computed:    true,
 				Optional:    true,
 				Description: desc.Sprintf("The RecurringStep of the %s.", resourceName),
 			},
 			"recurring_unit": schema.StringAttribute{
+				Computed:    true,
 				Optional:    true,
 				Description: desc.Sprintf("The RecurringUnit of the %s.", resourceName),
 				Validators: []validator.String{
@@ -86,7 +88,7 @@ func (d *scheduleDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 				},
 			},
 			"starts_at": schema.Int64Attribute{
-				Required:    true,
+				Computed:    true,
 				Description: desc.Sprintf("The start time of the %s. (in epoch milliseconds)", resourceName),
 			},
 		},
@@ -100,20 +102,29 @@ func (d *scheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	id := data.ID.ValueString()
-	if id == "" {
-		resp.Diagnostics.AddError("Invalid Attribute", "ID must be specified.")
+	name := data.Name.ValueString()
+	if name == "" {
+		resp.Diagnostics.AddError("Invalid Attribute", "Name must be specified.")
 		return
 	}
 
 	scheduleOp := eventbus.NewScheduleOp(d.client)
-	schedule, err := scheduleOp.Read(ctx, id)
+	schedules, err := scheduleOp.List(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find SakuraCloud EventBus Schedule[%s] resource: %s", id, err))
+		resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find SakuraCloud EventBus Schedule resource: %s", err))
 		return
 	}
 
-	data.updateState(schedule)
+	// TODO: 最初にnameが一致するものを対象としているが、tagsの設定がsdk側で対応されれば、よりフィルタを掛けやすい
+	for _, s := range schedules {
+		if s.Name != name {
+			continue
+		}
 
-	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		data.updateState(&s)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		return
+	}
+
+	resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus Schedule resources with the same name: %s", name))
 }

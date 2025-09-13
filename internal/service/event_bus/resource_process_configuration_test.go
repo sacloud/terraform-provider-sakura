@@ -104,8 +104,8 @@ func testCheckSakuraProcessConfigurationExists(n string, pc *v1.ProcessConfigura
 			return err
 		}
 
-		foundPCID := strconv.FormatInt(foundPC.ID, 10)
-		if foundPCID != rs.Primary.ID {
+		foundID := strconv.FormatInt(foundPC.ID, 10)
+		if foundID != rs.Primary.ID {
 			return fmt.Errorf("not found ProcessConfiguration: %s", rs.Primary.ID)
 		}
 

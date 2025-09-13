@@ -73,7 +73,7 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 			"name":        common.SchemaResourceName(resourceName),
 			"description": common.SchemaResourceDescription(resourceName),
 			// TODO: icon, tagsはsdkが対応していないので保留中
-			"tags": common.SchemaResourceTags(resourceName), // tfsdk tagでエラーになるので定義だけする
+			"tags": common.SchemaResourceTags(resourceName), // NOTE: common.SakuraBaseModelには存在するためtfsdk tagでエラーになるので定義だけするが、設定不可能
 			// "icon_id":     common.SchemaResourceIconID(resourceName),
 
 			"destination": schema.StringAttribute{

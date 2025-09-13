@@ -21,8 +21,8 @@ import (
 	"github.com/sacloud/terraform-provider-sakuracloud/internal/test"
 )
 
-func TestAccSakuraDataSourceProcessConfiguration_basic(t *testing.T) {
-	resourceName := "data.sakura_event_bus_process_configuration.foobar"
+func TestAccSakuraDataSourceSchedule_basic(t *testing.T) {
+	resourceName := "data.sakura_event_bus_schedule.foobar"
 	rand := test.RandomName()
 
 	resource.Test(t, resource.TestCase{
@@ -30,21 +30,21 @@ func TestAccSakuraDataSourceProcessConfiguration_basic(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceProcessConfiguration_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceSchedule_basic, rand),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
-					resource.TestCheckResourceAttr(resourceName, "destination", "simplenotification"),
-					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"),
-					// NOTE: credentialsはdata sourceから参照不可能
+					resource.TestCheckResourceAttr(resourceName, "recurring_step", "1"),
+					resource.TestCheckResourceAttr(resourceName, "recurring_unit", "day"),
+					resource.TestCheckResourceAttr(resourceName, "starts_at", "1700000000000"),
 				),
 			},
 		},
 	})
 }
 
-var testAccSakuraDataSourceProcessConfiguration_basic = `
+var testAccSakuraDataSourceSchedule_basic = `
 resource "sakura_event_bus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
@@ -56,10 +56,20 @@ resource "sakura_event_bus_process_configuration" "foobar" {
   simplenotification_access_token_secret = "test"
 }
 
-data "sakura_event_bus_process_configuration" "foobar" {
+resource "sakura_event_bus_schedule" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+
+  process_configuration_id = sakura_event_bus_process_configuration.foobar.id
+  recurring_step           = 1
+  recurring_unit           = "day"
+  starts_at                = 1700000000000
+}
+
+data "sakura_event_bus_schedule" "foobar" {
   name = "{{ .arg0 }}"
 
   depends_on = [
-    sakura_event_bus_process_configuration.foobar
+    sakura_event_bus_schedule.foobar
   ]
 }`
