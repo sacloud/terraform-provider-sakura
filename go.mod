@@ -15,6 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.13.2
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sacloud/api-client-go v0.3.3
+	github.com/sacloud/eventbus-api-go v0.3.2
 	github.com/sacloud/iaas-api-go v1.17.1
 	github.com/sacloud/iaas-service-go v1.13.0
 	github.com/sacloud/kms-api-go v0.2.2
