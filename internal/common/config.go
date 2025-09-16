@@ -29,6 +29,8 @@ import (
 
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/api-client-go/profile"
+	"github.com/sacloud/eventbus-api-go"
+	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/api"
 	"github.com/sacloud/iaas-api-go/helper/query"
@@ -95,6 +97,7 @@ type APIClient struct {
 	KmsClient                        *kmsapi.Client
 	SecretManagerClient              *smapi.Client
 	SimpleMqClient                   *queue.Client
+	EventBusClient                   *eventbus_api.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -242,6 +245,10 @@ func (c *Config) NewClient() (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	eventbusClient, err := eventbus.NewClient(client.WithOptions(callerOptions))
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -255,6 +262,7 @@ func (c *Config) NewClient() (*APIClient, error) {
 		KmsClient:                        kmsClient,
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,
+		EventBusClient:                   eventbusClient,
 	}, nil
 }
 
