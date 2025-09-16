@@ -37,7 +37,7 @@ type internetBaseModel struct {
 	Gateway            types.String `tfsdk:"gateway"`
 	MinIPAddress       types.String `tfsdk:"min_ip_address"`
 	MaxIPAddress       types.String `tfsdk:"max_ip_address"`
-	IPAddresses        types.Set    `tfsdk:"ip_addresses"`
+	IPAddresses        types.List   `tfsdk:"ip_addresses"`
 	IPv6Prefix         types.String `tfsdk:"ipv6_prefix"`
 	IPv6PrefixLen      types.Int32  `tfsdk:"ipv6_prefix_len"`
 	IPv6NetworkAddress types.String `tfsdk:"ipv6_network_address"`
@@ -87,7 +87,7 @@ func (model *internetBaseModel) updateState(ctx context.Context, client *common.
 	model.IPv6PrefixLen = types.Int32Value(int32(ipv6PrefixLen))
 	model.IPv6NetworkAddress = types.StringValue(ipv6NetworkAddress)
 	model.Zone = types.StringValue(zone)
-	model.IPAddresses = common.StringsToTset(sw.Subnets[0].GetAssignedIPAddresses())
+	model.IPAddresses = common.StringsToTlist(sw.Subnets[0].GetAssignedIPAddresses())
 	model.AssignedTags = common.StringsToTset(assigned)
 
 	return nil

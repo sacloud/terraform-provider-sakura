@@ -133,7 +133,7 @@ func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Computed:    true,
 				Description: desc.Sprintf("Maximum IP address in assigned global addresses to the %s", resourceName),
 			},
-			"ip_addresses": schema.SetAttribute{
+			"ip_addresses": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: desc.Sprintf("A set of assigned global address to the %s", resourceName),

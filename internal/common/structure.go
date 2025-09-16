@@ -118,6 +118,14 @@ func TsetToStrings(d types.Set) []string {
 	return tags
 }
 
+func TlistToStringsOrDefault(d types.List) []string {
+	list := TlistToStrings(d)
+	if list == nil {
+		return []string{}
+	}
+	return list
+}
+
 func TsetToStringsOrDefault(d types.Set) []string {
 	set := TsetToStrings(d)
 	if set == nil {
@@ -126,10 +134,16 @@ func TsetToStringsOrDefault(d types.Set) []string {
 	return set
 }
 
-func StringsToTset(tags []string) types.Set {
+func StringsToTset(values []string) types.Set {
 	// types.SetValueでは内部でcontext.Background()を呼び出しているため、同じアプローチを採用
-	setValue, _ := types.SetValueFrom(context.Background(), types.StringType, tags)
+	setValue, _ := types.SetValueFrom(context.Background(), types.StringType, values)
 	return setValue
+}
+
+func StringsToTlist(values []string) types.List {
+	// types.SetValueでは内部でcontext.Background()を呼び出しているため、同じアプローチを採用
+	listValue, _ := types.ListValueFrom(context.Background(), types.StringType, values)
+	return listValue
 }
 
 func IntToInt32(i int) int32 {
