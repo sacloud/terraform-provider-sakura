@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event_bus_test
+package eventbus_test
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ import (
 )
 
 func TestAccSakuraDataSourceProcessConfiguration_basic(t *testing.T) {
-	resourceName := "data.sakura_event_bus_process_configuration.foobar"
+	resourceName := "data.sakura_eventbus_process_configuration.foobar"
 	rand := test.RandomName()
 
 	resource.Test(t, resource.TestCase{
@@ -45,7 +45,7 @@ func TestAccSakuraDataSourceProcessConfiguration_basic(t *testing.T) {
 }
 
 var testAccSakuraDataSourceProcessConfiguration_basic = `
-resource "sakura_event_bus_process_configuration" "foobar" {
+resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
 
@@ -56,10 +56,10 @@ resource "sakura_event_bus_process_configuration" "foobar" {
   simplenotification_access_token_secret = "test"
 }
 
-data "sakura_event_bus_process_configuration" "foobar" {
+data "sakura_eventbus_process_configuration" "foobar" {
   name = "{{ .arg0 }}"
 
   depends_on = [
-    sakura_event_bus_process_configuration.foobar
+    sakura_eventbus_process_configuration.foobar
   ]
 }`

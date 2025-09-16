@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event_bus_test
+package eventbus_test
 
 import (
 	"testing"
@@ -22,7 +22,7 @@ import (
 )
 
 func TestAccSakuraDataSourceSchedule_basic(t *testing.T) {
-	resourceName := "data.sakura_event_bus_schedule.foobar"
+	resourceName := "data.sakura_eventbus_schedule.foobar"
 	rand := test.RandomName()
 
 	resource.Test(t, resource.TestCase{
@@ -45,7 +45,7 @@ func TestAccSakuraDataSourceSchedule_basic(t *testing.T) {
 }
 
 var testAccSakuraDataSourceSchedule_basic = `
-resource "sakura_event_bus_process_configuration" "foobar" {
+resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
 
@@ -56,20 +56,20 @@ resource "sakura_event_bus_process_configuration" "foobar" {
   simplenotification_access_token_secret = "test"
 }
 
-resource "sakura_event_bus_schedule" "foobar" {
+resource "sakura_eventbus_schedule" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
 
-  process_configuration_id = sakura_event_bus_process_configuration.foobar.id
+  process_configuration_id = sakura_eventbus_process_configuration.foobar.id
   recurring_step           = 1
   recurring_unit           = "day"
   starts_at                = 1700000000000
 }
 
-data "sakura_event_bus_schedule" "foobar" {
+data "sakura_eventbus_schedule" "foobar" {
   name = "{{ .arg0 }}"
 
   depends_on = [
-    sakura_event_bus_schedule.foobar
+    sakura_eventbus_schedule.foobar
   ]
 }`

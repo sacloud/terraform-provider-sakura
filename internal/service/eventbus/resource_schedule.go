@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event_bus
+package eventbus
 
 import (
 	"context"
@@ -49,7 +49,7 @@ func NewEventBusScheduleResource() resource.Resource {
 }
 
 func (r *scheduleResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_event_bus_schedule"
+	resp.TypeName = req.ProviderTypeName + "_eventbus_schedule"
 }
 
 func (r *scheduleResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {

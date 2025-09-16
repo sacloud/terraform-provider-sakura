@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event_bus_test
+package eventbus_test
 
 import (
 	"context"
@@ -29,7 +29,7 @@ import (
 )
 
 func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
-	resourceName := "sakura_event_bus_process_configuration.foobar"
+	resourceName := "sakura_eventbus_process_configuration.foobar"
 	rand := test.RandomName()
 	var pc v1.ProcessConfiguration
 	resource.Test(t, resource.TestCase{
@@ -69,7 +69,7 @@ func testCheckSakuraProcessConfigurationDestroy(s *terraform.State) error {
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(client.EventBusClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_event_bus_process_configuration" {
+		if rs.Type != "sakura_eventbus_process_configuration" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -115,7 +115,7 @@ func testCheckSakuraProcessConfigurationExists(n string, pc *v1.ProcessConfigura
 }
 
 var testAccSakuraProcessConfiguration_basic = `
-resource "sakura_event_bus_process_configuration" "foobar" {
+resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
 
@@ -127,7 +127,7 @@ resource "sakura_event_bus_process_configuration" "foobar" {
 }`
 
 var testAccSakuraProcessConfiguration_update = `
-resource "sakura_event_bus_process_configuration" "foobar" {
+resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description-updated"
 

@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event_bus
+package eventbus
 
 import (
 	"context"
@@ -43,7 +43,7 @@ func NewEventBusProcessConfigurationDataSource() datasource.DataSource {
 }
 
 func (d *processConfigurationDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_event_bus_process_configuration"
+	resp.TypeName = req.ProviderTypeName + "_eventbus_process_configuration"
 }
 
 func (d *processConfigurationDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

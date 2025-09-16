@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package event_bus_test
+package eventbus_test
 
 import (
 	"context"
@@ -29,7 +29,7 @@ import (
 )
 
 func TestAccSakuraResourceSchedule_basic(t *testing.T) {
-	resourceName := "sakura_event_bus_schedule.foobar"
+	resourceName := "sakura_eventbus_schedule.foobar"
 	rand := test.RandomName()
 	var schedule v1.Schedule
 	resource.Test(t, resource.TestCase{
@@ -68,7 +68,7 @@ func testCheckSakuraScheduleDestroy(s *terraform.State) error {
 	scheduleOp := eventbus.NewScheduleOp(client.EventBusClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_event_bus_schedule" {
+		if rs.Type != "sakura_eventbus_schedule" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -114,7 +114,7 @@ func testCheckSakuraScheduleExists(n string, schedule *v1.Schedule) resource.Tes
 }
 
 var testAccSakuraSchedule_basic = `
-resource "sakura_event_bus_process_configuration" "foobar" {
+resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
 
@@ -125,18 +125,18 @@ resource "sakura_event_bus_process_configuration" "foobar" {
   simplenotification_access_token_secret = "test"
 }
 
-resource "sakura_event_bus_schedule" "foobar" {
+resource "sakura_eventbus_schedule" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
 
-  process_configuration_id = sakura_event_bus_process_configuration.foobar.id
+  process_configuration_id = sakura_eventbus_process_configuration.foobar.id
   recurring_step           = 1
   recurring_unit           = "day"
   starts_at                = 1700000000000
 }`
 
 var testAccSakuraSchedule_update = `
-resource "sakura_event_bus_process_configuration" "foobar" {
+resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
 
@@ -147,11 +147,11 @@ resource "sakura_event_bus_process_configuration" "foobar" {
   simplenotification_access_token_secret = "test"
 }
 
-resource "sakura_event_bus_schedule" "foobar" {
+resource "sakura_eventbus_schedule" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description-updated"
 
-  process_configuration_id = sakura_event_bus_process_configuration.foobar.id
+  process_configuration_id = sakura_eventbus_process_configuration.foobar.id
   recurring_step           = 20
   recurring_unit           = "min"
   starts_at                = 1800000000000
