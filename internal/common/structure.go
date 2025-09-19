@@ -24,6 +24,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -177,6 +178,11 @@ func StringInSlice(validList []string, k string, v string, ignoreCase bool) erro
 	}
 
 	return fmt.Errorf("invalid %s value: %s. valid values are %s", k, v, validList)
+}
+
+func MustAtoI(target string) int {
+	v, _ := strconv.Atoi(target)
+	return v
 }
 
 func ExpandHomeDir(path string) (string, error) {

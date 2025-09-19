@@ -166,6 +166,42 @@ user = [
 ]
 ```
 
+#### dns
+
+`record`フィールドがBlockからLst型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+record {
+  name  = "www"
+  type  = "A"
+  value = "192.168.11.1"
+}
+record {
+  name  = "foobar-dev"
+  type  = "CNAME"
+  value = "dev.foobar.org"
+}
+```
+
+- v3
+
+```
+record = [
+  {
+    name  = "www"
+    type  = "A"
+    value = "192.168.11.1"
+  },
+  {
+    name  = "foobar-dev"
+    type  = "CNAME"
+    value = "dev.foobar.org"
+  }
+]
+```
+
 #### internet
 
 `assigned_tags`というフィールドが増えています。これは`band_width`の変更によって`id`が変更された場合に自動で付与される`@previous-id`というタグが格納されるフィールドです。v2では`tags`に格納されていましたが、厳格にチェックされるFrameworkによるv3では実現が不可能なため、分離されました。
