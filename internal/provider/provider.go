@@ -34,6 +34,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/disk"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/eventbus"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/dns"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/icon"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/internet"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/kms"
@@ -46,6 +47,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_mq"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/ssh_key"
 	sw1tch "github.com/sacloud/terraform-provider-sakura/internal/service/switch"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/vpn_router"
 )
 
 type sakuraProviderModel struct {
@@ -219,9 +221,10 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		archive.NewArchiveDataSource,
 		bridge.NewBridgeDataSource,
 		container_registry.NewContainerRegistryDataSource,
-		eventbus.NewEventBusProcessConfigurationDataSource,
-		eventbus.NewEventBusScheduleDataSource,
 		disk.NewDiskDataSource,
+		dns.NewDNSDataSource,
+    eventbus.NewEventBusProcessConfigurationDataSource,
+		eventbus.NewEventBusScheduleDataSource,
 		icon.NewIconDataSource,
 		internet.NewInternetDataSource,
 		kms.NewKmsDataSource,
@@ -235,6 +238,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		simple_mq.NewSimpleMQDataSource,
 		ssh_key.NewSSHKeyDataSource,
 		sw1tch.NewSwitchDataSource,
+		vpn_router.NewVPNRouterDataSource,
 		// ...他のデータソースも同様に追加...
 	}
 }
@@ -245,7 +249,9 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		bridge.NewBridgeResource,
 		container_registry.NewContainerRegistryResource,
 		disk.NewDiskResource,
-		eventbus.NewEventBusProcessConfigurationResource,
+		dns.NewDNSResource,
+		dns.NewDNSRecordResource,
+    eventbus.NewEventBusProcessConfigurationResource,
 		eventbus.NewEventBusScheduleResource,
 		icon.NewIconResource,
 		internet.NewInternetResource,
@@ -261,6 +267,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		simple_mq.NewSimpleMQResource,
 		ssh_key.NewSSHKeyResource,
 		sw1tch.NewSwitchResource,
+		vpn_router.NewVPNRouterResource,
 		// ...他のリソースも同様に追加...
 	}
 }

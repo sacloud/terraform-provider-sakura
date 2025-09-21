@@ -24,6 +24,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -118,6 +119,14 @@ func TsetToStrings(d types.Set) []string {
 	return tags
 }
 
+func TlistToStringsOrDefault(d types.List) []string {
+	list := TlistToStrings(d)
+	if list == nil {
+		return []string{}
+	}
+	return list
+}
+
 func TsetToStringsOrDefault(d types.Set) []string {
 	set := TsetToStrings(d)
 	if set == nil {
@@ -126,10 +135,16 @@ func TsetToStringsOrDefault(d types.Set) []string {
 	return set
 }
 
-func StringsToTset(tags []string) types.Set {
+func StringsToTset(values []string) types.Set {
 	// types.SetValueでは内部でcontext.Background()を呼び出しているため、同じアプローチを採用
-	setValue, _ := types.SetValueFrom(context.Background(), types.StringType, tags)
+	setValue, _ := types.SetValueFrom(context.Background(), types.StringType, values)
 	return setValue
+}
+
+func StringsToTlist(values []string) types.List {
+	// types.SetValueでは内部でcontext.Background()を呼び出しているため、同じアプローチを採用
+	listValue, _ := types.ListValueFrom(context.Background(), types.StringType, values)
+	return listValue
 }
 
 func IntToInt32(i int) int32 {
@@ -163,6 +178,11 @@ func StringInSlice(validList []string, k string, v string, ignoreCase bool) erro
 	}
 
 	return fmt.Errorf("invalid %s value: %s. valid values are %s", k, v, validList)
+}
+
+func MustAtoI(target string) int {
+	v, _ := strconv.Atoi(target)
+	return v
 }
 
 func ExpandHomeDir(path string) (string, error) {
