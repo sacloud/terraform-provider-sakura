@@ -21,12 +21,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/sacloud/eventbus-api-go"
 	v1 "github.com/sacloud/eventbus-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
-	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
 type scheduleDataSource struct {
@@ -76,18 +74,11 @@ func (d *scheduleDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			},
 			"recurring_step": schema.Int64Attribute{
 				Computed:    true,
-				Optional:    true,
 				Description: desc.Sprintf("The RecurringStep of the %s.", resourceName),
 			},
 			"recurring_unit": schema.StringAttribute{
 				Computed:    true,
-				Optional:    true,
 				Description: desc.Sprintf("The RecurringUnit of the %s.", resourceName),
-				Validators: []validator.String{
-					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return v1.ScheduleRecurringUnit(v).Validate()
-					}),
-				},
 			},
 			"starts_at": schema.Int64Attribute{
 				Computed:    true,
