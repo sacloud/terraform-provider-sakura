@@ -43,7 +43,7 @@ type serverBaseModel struct {
 	NetworkAddress   types.String                  `tfsdk:"network_address"`
 	Netmask          types.Int32                   `tfsdk:"netmask"`
 	Hostname         types.String                  `tfsdk:"hostname"`
-	DNSServers       types.Set                     `tfsdk:"dns_servers"`
+	DNSServers       types.List                    `tfsdk:"dns_servers"`
 }
 
 type serverNetworkInterfaceModel struct {
@@ -70,7 +70,7 @@ func (model *serverBaseModel) updateState(server *iaas.Server, zone string) {
 	model.NetworkAddress = types.StringValue(nwAddress)
 	model.Netmask = types.Int32Value(int32(nwMaskLen))
 	model.Hostname = types.StringValue(server.HostName)
-	model.DNSServers = common.StringsToTset(server.Zone.Region.NameServers)
+	model.DNSServers = common.StringsToTlist(server.Zone.Region.NameServers)
 	model.Zone = types.StringValue(zone)
 }
 
