@@ -80,6 +80,9 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"process_configuration_id": schema.StringAttribute{
 				Required:    true,
 				Description: desc.Sprintf("The ProcessConfiguration ID of the %s.", resourceName),
+				Validators: []validator.String{
+					sacloudvalidator.SakuraIDValidator(),
+				},
 			},
 			"recurring_step": schema.Int64Attribute{
 				Optional:    true,
