@@ -35,10 +35,7 @@ type scheduleBaseModel struct {
 
 func (model *scheduleBaseModel) updateState(data *v1.Schedule) {
 	id := strconv.FormatInt(data.ID, 10)
-	model.ID = types.StringValue(id)
-	model.Name = types.StringValue(data.Name)
-	model.Description = types.StringValue(data.Description)
-	model.Tags = common.StringsToTset(data.Tags)
+	model.UpdateBaseState(id, data.Name, data.Description, data.Tags)
 
 	model.ProcessConfigurationID = types.StringValue(data.Settings.ProcessConfigurationID)
 	model.RecurringStep = types.Int64Value(int64(data.Settings.RecurringStep))

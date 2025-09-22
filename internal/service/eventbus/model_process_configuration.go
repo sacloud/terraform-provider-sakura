@@ -41,10 +41,7 @@ type processConfigurationWithCredentialsBaseModel struct {
 
 func (model *processConfigurationBaseModel) updateState(data *v1.ProcessConfiguration) {
 	id := strconv.FormatInt(data.ID, 10)
-	model.ID = types.StringValue(id)
-	model.Name = types.StringValue(data.Name)
-	model.Description = types.StringValue(data.Description)
-	model.Tags = common.StringsToTset(data.Tags)
+	model.UpdateBaseState(id, data.Name, data.Description, data.Tags)
 
 	model.Destination = types.StringValue(string(data.Settings.Destination))
 	model.Parameters = types.StringValue(data.Settings.Parameters)
