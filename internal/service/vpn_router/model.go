@@ -28,11 +28,10 @@ import (
 
 type vpnRouterBaseModel struct {
 	common.SakuraBaseModel
-	IconID  types.String `tfsdk:"icon_id"`
-	Zone    types.String `tfsdk:"zone"`
-	Plan    types.String `tfsdk:"plan"`
-	Version types.Int32  `tfsdk:"version"`
-	//PublicNetworkInterface  *vpnRouterPublicNetworkInterfaceModel   `tfsdk:"public_network_interface"`
+	IconID                  types.String                            `tfsdk:"icon_id"`
+	Zone                    types.String                            `tfsdk:"zone"`
+	Plan                    types.String                            `tfsdk:"plan"`
+	Version                 types.Int32                             `tfsdk:"version"`
 	PublicNetworkInterface  types.Object                            `tfsdk:"public_network_interface"`
 	PublicIP                types.String                            `tfsdk:"public_ip"`
 	PublicNetmask           types.Int64                             `tfsdk:"public_netmask"`
@@ -41,24 +40,18 @@ type vpnRouterBaseModel struct {
 	PrivateNetworkInterface []vpnRouterPrivateNetworkInterfaceModel `tfsdk:"private_network_interface"`
 	DHCPServer              []vpnRouterDHCPServerModel              `tfsdk:"dhcp_server"`
 	DHCPStaticMapping       []vpnRouterDHCPStaticMappingModel       `tfsdk:"dhcp_static_mapping"`
-	//DNSForwarding           *vpnRouterDNSForwardingModel            `tfsdk:"dns_forwarding"`
-	DNSForwarding types.Object             `tfsdk:"dns_forwarding"`
-	Firewall      []vpnRouterFirewallModel `tfsdk:"firewall"`
-	//L2TP           *vpnRouterL2TPModel            `tfsdk:"l2tp"`
-	L2TP           types.Object                   `tfsdk:"l2tp"`
-	PortForwarding []vpnRouterPortForwardingModel `tfsdk:"port_forwarding"`
-	//PPTP           *vpnRouterPPTPModel            `tfsdk:"pptp"`
-	PPTP types.Object `tfsdk:"pptp"`
-	//WireGuard     *vpnRouterWireGuardModel      `tfsdk:"wire_guard"`
-	WireGuard     types.Object                  `tfsdk:"wire_guard"`
-	SiteToSiteVPN []vpnRouterSiteToSiteVPNModel `tfsdk:"site_to_site_vpn"`
-	//SiteToSiteVPNParameter  *vpnRouterSiteToSiteVPNParameterModel   `tfsdk:"site_to_site_vpn_parameter"`
-	SiteToSiteVPNParameter types.Object                `tfsdk:"site_to_site_vpn_parameter"`
-	StaticNAT              []vpnRouterStaticNATModel   `tfsdk:"static_nat"`
-	StaticRoute            []vpnRouterStaticRouteModel `tfsdk:"static_route"`
-	//ScheduledMaintenance    *vpnRouterScheduledMaintenanceModel     `tfsdk:"scheduled_maintenance"`
-	ScheduledMaintenance types.Object         `tfsdk:"scheduled_maintenance"`
-	User                 []vpnRouterUserModel `tfsdk:"user"`
+	DNSForwarding           types.Object                            `tfsdk:"dns_forwarding"`
+	Firewall                []vpnRouterFirewallModel                `tfsdk:"firewall"`
+	L2TP                    types.Object                            `tfsdk:"l2tp"`
+	PortForwarding          []vpnRouterPortForwardingModel          `tfsdk:"port_forwarding"`
+	PPTP                    types.Object                            `tfsdk:"pptp"`
+	WireGuard               types.Object                            `tfsdk:"wire_guard"`
+	SiteToSiteVPN           []vpnRouterSiteToSiteVPNModel           `tfsdk:"site_to_site_vpn"`
+	SiteToSiteVPNParameter  types.Object                            `tfsdk:"site_to_site_vpn_parameter"`
+	StaticNAT               []vpnRouterStaticNATModel               `tfsdk:"static_nat"`
+	StaticRoute             []vpnRouterStaticRouteModel             `tfsdk:"static_route"`
+	ScheduledMaintenance    types.Object                            `tfsdk:"scheduled_maintenance"`
+	User                    []vpnRouterUserModel                    `tfsdk:"user"`
 }
 
 type vpnRouterPublicNetworkInterfaceModel struct {

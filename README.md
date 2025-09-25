@@ -331,11 +331,371 @@ disk_edit_parameter {
 
 - v3
 
-```
+```hcl
 disk_edit_parameter = {
   hostname = "foobar"
   password = "foobar-password"
   ssh_key_ids = ["xxxxxxxxxxxx"]
+  // ...
+}
+```
+
+#### vpn_router
+
+`public_network_interface`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+public_network_interface {
+  switch_id = sakura_internet.foobar.switch_id
+  // ...
+}
+```
+
+- v3
+
+```
+public_network_interface = {
+  switch_id = sakura_internet.foobar.switch_id
+  // ...
+}
+```
+
+`private_network_interface`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+private_network_interface {
+  index = 1
+  // ...
+}
+```
+
+- v3
+
+```
+private_network_interface = [{
+  index = 1
+  // ...
+}]
+```
+
+`dhcp_server`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+dhcp_server {
+  interface_index = 1
+  // ...
+}
+```
+
+- v3
+
+```
+dhcp_server = [{
+  interface_index = 1
+  // ...
+}]
+```
+
+`dhcp_static_mapping`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+dhcp_static_mapping {
+  ip_address = "192.168.11.10"
+  // ...
+}
+```
+
+- v3
+
+```
+dhcp_static_mapping = [{
+  ip_address = "192.168.11.10"
+  // ...
+}]
+```
+
+`dns_forwarding`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+dns_forwarding {
+  interface_index = 1
+  // ...
+}
+```
+
+- v3
+
+```
+dns_forwarding = {
+  interface_index = 1
+  // ...
+}
+```
+
+`firewall`フィールドとその中の`expression`がBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+firewall {
+  interface_index = 1
+  direction = "send"
+  expression {
+    protocol = "tcp"
+    // ...
+  }
+  // ...
+}
+```
+
+- v3
+
+```
+firewall = [{
+  interface_index = 1
+  direction = "send"
+  expression = [
+    {
+      protocol = "tcp"
+      // ...
+    },
+    // ...
+  ]
+}
+```
+
+`l2tp`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+l2tp {
+  pre_shared_secret = "example"
+  // ...
+}
+```
+
+- v3
+
+```
+l2tp = {
+  pre_shared_secret = "example"
+  // ...
+}
+```
+
+`pptp`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+pptp {
+  range_start = "192.168.11.31"
+  // ...
+}
+```
+
+- v3
+
+```
+pptp = {
+  range_start = "192.168.11.31"
+  // ...
+}
+```
+
+`port_forwarding`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+port_forwarding {
+  protocol = "udp"
+  // ...
+}
+```
+
+- v3
+
+```
+port_forwarding = [{
+  protocol = "udp"
+  // ...
+}]
+```
+
+`wire_guard`フィールドがBlockからSingle型のAttributeに変更、その中の`peer`がBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+wire_guard {
+  ip_address = "192.168.31.1/24"
+  peer {
+    name = "example"
+    // ...
+  }
+}
+```
+
+- v3
+
+```
+wire_guard = {
+  ip_address = "192.168.31.1/24"
+  peer = [{
+    name = "example"
+    // ...
+  }]
+}
+```
+
+`site_to_site_vpn`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+site_to_site_vpn {
+  peer = "10.0.0.1"
+  // ...
+}
+```
+
+- v3
+
+```
+site_to_site_vpn = [{
+  peer = "10.0.0.1"
+  // ...
+}]
+```
+
+`site_to_site_vpn_parameter`フィールドとその中の全てのネストされたフィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+site_to_site_vpn_parameter {
+  ike {
+    lifetime = 28800
+    dpd {
+      interval = 15
+      timeout  = 30
+    }
+  }
+  esp {
+    lifetime = 1800
+  }
+  encryption_algo = "aes256"
+  // ...
+}
+```
+
+- v3
+
+```
+site_to_site_vpn_parameter = {
+  ike = {
+    lifetime = 28800
+    dpd = {
+      interval = 15
+      timeout  = 30
+    }
+  }
+  esp = {
+    lifetime = 1800
+  }
+  encryption_algo = "aes256"
+  // ...
+}
+```
+
+`static_nat`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+static_nat {
+  public_ip = sakura_internet.foobar.ip_addresses[3]
+  // ...
+}
+```
+
+- v3
+
+```
+static_nat = [{
+  public_ip = sakura_internet.foobar.ip_addresses[3]
+  // ...
+}]
+```
+
+`static_route`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+static_route {
+  prefix = "172.16.0.0/16"
+  // ...
+}
+```
+
+- v3
+
+```
+static_route = [{
+  prefix = "172.16.0.0/16"
+  // ...
+}]
+```
+
+user`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+user {
+  name = "username"
+  // ...
+}
+```
+
+- v3
+
+```
+user = [{
+  name = "username"
+  // ...
+}]
+```
+
+`scheduled_maintenance`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```
+scheduled_maintenance {
+  day_of_week = "tue"
+  // ...
+}
+```
+
+- v3
+
+```
+scheduled_maintenance = {
+  day_of_week = "tue"
   // ...
 }
 ```
