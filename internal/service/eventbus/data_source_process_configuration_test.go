@@ -52,6 +52,7 @@ var testAccSakuraDataSourceProcessConfiguration_basic = `
 resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
+  tags        = ["tag1"]
 
   destination = "simplenotification"
   parameters  = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
@@ -63,6 +64,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
 
 data "sakura_eventbus_process_configuration" "foobar" {
   name = "{{ .arg0 }}"
+  tags = ["tag1"]
 
   depends_on = [
     sakura_eventbus_process_configuration.foobar

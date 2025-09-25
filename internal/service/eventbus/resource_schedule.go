@@ -72,10 +72,9 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"id":          common.SchemaResourceId(resourceName),
 			"name":        common.SchemaResourceName(resourceName),
 			"description": common.SchemaResourceDescription(resourceName),
+			"tags":        common.SchemaResourceTags(resourceName),
 			// TODO: iconはsdkが対応していないので保留中
 			// "icon_id":     common.SchemaResourceIconID(resourceName),
-			// NOTE: tagsは設定がsdk非対応のためTFからは設定不可能だが、UI上などで設定した値はsdkが返してくれているので取得可能。
-			"tags": common.SchemaResourceTags(resourceName),
 
 			"process_configuration_id": schema.StringAttribute{
 				Required:    true,
@@ -224,7 +223,8 @@ func expandScheduleCreateUpdateRequest(d *scheduleResourceModel) v1.ScheduleRequ
 	req := v1.ScheduleRequestSettings{
 		Name:        d.Name.ValueString(),
 		Description: d.Description.ValueString(),
-		// TODO: Icon, Tags, Crontabはsdkが対応していないので保留中
+		Tags:        common.TsetToStrings(d.Tags),
+		// TODO: Icon, Crontabはsdkが対応していないので保留中
 
 		Settings: v1.ScheduleSettings{
 			ProcessConfigurationID: d.ProcessConfigurationID.ValueString(),

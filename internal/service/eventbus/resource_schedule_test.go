@@ -43,6 +43,9 @@ func TestAccSakuraResourceSchedule_basic(t *testing.T) {
 					testCheckSakuraScheduleExists(resourceName, &schedule),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
+					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "recurring_step", "1"),
 					resource.TestCheckResourceAttr(resourceName, "recurring_unit", "day"),
 					resource.TestCheckResourceAttr(resourceName, "starts_at", "1700000000000"),
@@ -54,6 +57,9 @@ func TestAccSakuraResourceSchedule_basic(t *testing.T) {
 					testCheckSakuraScheduleExists(resourceName, &schedule),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag3"),
 					resource.TestCheckResourceAttr(resourceName, "recurring_step", "20"),
 					resource.TestCheckResourceAttr(resourceName, "recurring_unit", "min"),
 					resource.TestCheckResourceAttr(resourceName, "starts_at", "1800000000000"),
@@ -129,6 +135,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
 resource "sakura_eventbus_schedule" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
+  tags        = ["tag1", "tag2"]
 
   process_configuration_id = sakura_eventbus_process_configuration.foobar.id
   recurring_step           = 1
@@ -152,6 +159,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
 resource "sakura_eventbus_schedule" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description-updated"
+  tags        = ["tag2", "tag3"]
 
   process_configuration_id = sakura_eventbus_process_configuration.foobar.id
   recurring_step           = 20

@@ -44,6 +44,8 @@ func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
 					testCheckSakuraProcessConfigurationExists(resourceName, &pc),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "destination", "simplenotification"),
 					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"),
 					resource.TestCheckNoResourceAttr(resourceName, "simplemq_api_key_wo"),
@@ -59,6 +61,9 @@ func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
 					testCheckSakuraProcessConfigurationExists(resourceName, &pc),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag3"),
 					resource.TestCheckResourceAttr(resourceName, "destination", "simplemq"),
 					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"),
 					resource.TestCheckNoResourceAttr(resourceName, "simplemq_api_key_wo"),
@@ -153,6 +158,7 @@ var testAccSakuraProcessConfiguration_basic = `
 resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
+  tags        = ["tag1"]
 
   destination = "simplenotification"
   parameters  = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
@@ -166,6 +172,7 @@ var testAccSakuraProcessConfiguration_update = `
 resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description-updated"
+  tags        = ["tag2", "tag3"]
 
   destination = "simplemq"
   parameters  = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"

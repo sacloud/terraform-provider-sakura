@@ -60,6 +60,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
 resource "sakura_eventbus_schedule" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
+  tags        = ["tag1"]
 
   process_configuration_id = sakura_eventbus_process_configuration.foobar.id
   recurring_step           = 1
@@ -69,6 +70,7 @@ resource "sakura_eventbus_schedule" "foobar" {
 
 data "sakura_eventbus_schedule" "foobar" {
   name = "{{ .arg0 }}"
+  tags = ["tag1"]
 
   depends_on = [
     sakura_eventbus_schedule.foobar
