@@ -84,7 +84,27 @@ func (d *processConfigurationDataSource) Schema(_ context.Context, _ datasource.
 				Description: desc.Sprintf("The parameter of the %s.", resourceName),
 			},
 
-			// NOTE: credentialsはdata sourceから参照不可能
+			// NOTE: credentialsはversionも含め参照不可能
+			"simplemq_api_key_wo": schema.StringAttribute{
+				Computed:    true,
+				Description: desc.Sprintf("The SimpleMQ API key for %s.", resourceName),
+			},
+			"simplemq_credentials_wo_version": schema.Int32Attribute{
+				Computed:    true,
+				Description: desc.Sprintf("Version number for SimpleMQ credentials."),
+			},
+			"simplenotification_access_token_wo": schema.StringAttribute{
+				Computed:    true,
+				Description: desc.Sprintf("The SimpleNotification access token for %s.", resourceName),
+			},
+			"simplenotification_access_token_secret_wo": schema.StringAttribute{
+				Computed:    true,
+				Description: desc.Sprintf("The SimpleNotification access token secret for %s.", resourceName),
+			},
+			"simplenotification_credentials_wo_version": schema.Int32Attribute{
+				Computed:    true,
+				Description: desc.Sprintf("Version number for SimpleNotification credentials."),
+			},
 		},
 	}
 }

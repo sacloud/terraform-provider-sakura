@@ -39,9 +39,11 @@ type processConfigurationResource struct {
 }
 
 var (
-	_ resource.Resource                = &processConfigurationResource{}
-	_ resource.ResourceWithConfigure   = &processConfigurationResource{}
-	_ resource.ResourceWithImportState = &processConfigurationResource{}
+	_ resource.Resource                   = &processConfigurationResource{}
+	_ resource.ResourceWithConfigure      = &processConfigurationResource{}
+	_ resource.ResourceWithImportState    = &processConfigurationResource{}
+	_ resource.ResourceWithValidateConfig = &processConfigurationResource{}
+	_ resource.ResourceWithModifyPlan     = &processConfigurationResource{}
 )
 
 func NewEventBusProcessConfigurationResource() resource.Resource {
@@ -60,8 +62,101 @@ func (r *processConfigurationResource) Configure(ctx context.Context, req resour
 	r.client = apiclient.EventBusClient
 }
 
+func requiredAttributeMissing(resp *resource.ValidateConfigResponse, rootAttributeName, destination string) {
+	resp.Diagnostics.AddAttributeError(
+		path.Root(rootAttributeName),
+		"Missing attribute",
+		fmt.Sprintf("Expected %q to be configured when destination is %q", rootAttributeName, destination),
+	)
+}
+
+func attributeNeedToBeUndefined(resp *resource.ValidateConfigResponse, rootAttributeName, destination string) {
+	resp.Diagnostics.AddAttributeError(
+		path.Root(rootAttributeName),
+		"Unnecessary attribute defined",
+		fmt.Sprintf("%q is not necessary when destination is %q", rootAttributeName, destination),
+	)
+}
+
+func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config processConfigurationResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	switch destination := config.Destination.ValueString(); destination {
+	case destinationSimpleMQ:
+		if config.SimpleMQAPIKey.ValueString() == "" {
+			requiredAttributeMissing(resp, "simplemq_api_key_wo", destinationSimpleMQ)
+		}
+		version := config.SimpleMQCredentialsVersion
+		if version.IsNull() || version.IsUnknown() {
+			requiredAttributeMissing(resp, "simplemq_credentials_wo_version", destinationSimpleMQ)
+		}
+
+		if config.SimpleNotificationAccessToken.ValueString() != "" {
+			attributeNeedToBeUndefined(resp, "simplenotification_access_token_wo", destinationSimpleMQ)
+		}
+		if config.SimpleNotificationAccessTokenSecret.ValueString() != "" {
+			attributeNeedToBeUndefined(resp, "simplenotification_access_token_secret_wo", destinationSimpleMQ)
+		}
+		snVersion := config.SimpleNotificationCredentialsVersion
+		if !snVersion.IsNull() && !snVersion.IsUnknown() {
+			attributeNeedToBeUndefined(resp, "simplenotification_credentials_wo_version", destinationSimpleMQ)
+		}
+	case destinationSimpleNotification:
+		if config.SimpleNotificationAccessToken.ValueString() == "" {
+			requiredAttributeMissing(resp, "simplenotification_access_token_wo", destinationSimpleNotification)
+		}
+		if config.SimpleNotificationAccessTokenSecret.ValueString() == "" {
+			requiredAttributeMissing(resp, "simplenotification_access_token_secret_wo", destinationSimpleNotification)
+		}
+		version := config.SimpleNotificationCredentialsVersion
+		if version.IsNull() || version.IsUnknown() {
+			requiredAttributeMissing(resp, "simplenotification_credentials_wo_version", destinationSimpleNotification)
+		}
+
+		if config.SimpleMQAPIKey.ValueString() != "" {
+			attributeNeedToBeUndefined(resp, "simplemq_api_key_wo", destinationSimpleNotification)
+		}
+		mqVersion := config.SimpleMQCredentialsVersion
+		if !mqVersion.IsNull() && !version.IsUnknown() {
+			attributeNeedToBeUndefined(resp, "simplemq_credentials_wo_version", destinationSimpleNotification)
+		}
+	default:
+		resp.Diagnostics.AddAttributeError(
+			path.Root("destination"),
+			"Unknown destination",
+			fmt.Sprintf("Destination should be either %q or %q", destinationSimpleNotification, destinationSimpleMQ),
+		)
+	}
+}
+
+func (r *processConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan, state *processConfigurationResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if plan == nil || state == nil {
+		return
+	}
+
+	if !plan.SimpleMQCredentialsVersion.Equal(state.SimpleMQCredentialsVersion) {
+		resp.RequiresReplace = append(resp.RequiresReplace, path.Root("simplemq_api_key_wo"))
+	}
+	if !plan.SimpleNotificationCredentialsVersion.Equal(state.SimpleNotificationCredentialsVersion) {
+		resp.RequiresReplace = append(resp.RequiresReplace,
+			path.Root("simplenotification_access_token_wo"),
+			path.Root("simplenotification_access_token_secret_wo"),
+		)
+	}
+}
+
 type processConfigurationResourceModel struct {
-	processConfigurationWithCredentialsBaseModel
+	processConfigurationBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -91,20 +186,31 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 				Description: desc.Sprintf("The parameter of the %s.", resourceName),
 			},
 
-			"simplemq_api_key": schema.StringAttribute{
+			"simplemq_api_key_wo": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
+				WriteOnly:   true,
 				Description: desc.Sprintf("The SimpleMQ API key for %s.", resourceName),
 			},
-			"simplenotification_access_token": schema.StringAttribute{
+			"simplemq_credentials_wo_version": schema.Int32Attribute{
+				Optional:    true,
+				Description: desc.Sprintf("Version number for SimpleMQ credentials. Change this when changing API key."),
+			},
+			"simplenotification_access_token_wo": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
+				WriteOnly:   true,
 				Description: desc.Sprintf("The SimpleNotification access token for %s.", resourceName),
 			},
-			"simplenotification_access_token_secret": schema.StringAttribute{
+			"simplenotification_access_token_secret_wo": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
+				WriteOnly:   true,
 				Description: desc.Sprintf("The SimpleNotification access token secret for %s.", resourceName),
+			},
+			"simplenotification_credentials_wo_version": schema.Int32Attribute{
+				Optional:    true,
+				Description: desc.Sprintf("Version number for SimpleNotification credentials. Change this when changing Access Token."),
 			},
 
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -119,8 +225,9 @@ func (r *processConfigurationResource) ImportState(ctx context.Context, req reso
 }
 
 func (r *processConfigurationResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan processConfigurationResourceModel
+	var plan, config processConfigurationResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -137,7 +244,7 @@ func (r *processConfigurationResource) Create(ctx context.Context, req resource.
 	pcID := strconv.FormatInt(pc.ID, 10)
 
 	// SDK v2ではUpdateを呼び出して更新していたが、Frameworkではアクション間での状態の共有が難しいためメソッドに括り出して処理を共通化
-	err = r.callProcessConfigurationUpdateSecretRequest(ctx, pcID, &plan, pc)
+	err = r.callProcessConfigurationUpdateSecretRequest(ctx, pcID, &config, pc)
 	if err != nil {
 		resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
 		return
@@ -169,8 +276,9 @@ func (r *processConfigurationResource) Read(ctx context.Context, req resource.Re
 }
 
 func (r *processConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan processConfigurationResourceModel
+	var plan, config processConfigurationResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -185,7 +293,7 @@ func (r *processConfigurationResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	if err := r.callProcessConfigurationUpdateSecretRequest(ctx, plan.ID.ValueString(), &plan, nil); err != nil {
+	if err := r.callProcessConfigurationUpdateSecretRequest(ctx, plan.ID.ValueString(), &config, nil); err != nil {
 		resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
 		return
 	}
@@ -221,7 +329,7 @@ func (r *processConfigurationResource) Delete(ctx context.Context, req resource.
 	}
 }
 
-func (r *processConfigurationResource) callProcessConfigurationUpdateSecretRequest(ctx context.Context, id string, plan *processConfigurationResourceModel, pc *v1.ProcessConfiguration) error {
+func (r *processConfigurationResource) callProcessConfigurationUpdateSecretRequest(ctx context.Context, id string, config *processConfigurationResourceModel, pc *v1.ProcessConfiguration) error {
 	var err error
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
@@ -232,7 +340,7 @@ func (r *processConfigurationResource) callProcessConfigurationUpdateSecretReque
 		}
 	}
 
-	err = processConfigurationOp.UpdateSecret(ctx, id, expandProcessConfigurationUpdateSecretRequest(plan))
+	err = processConfigurationOp.UpdateSecret(ctx, id, expandProcessConfigurationUpdateSecretRequest(config))
 	if err != nil {
 		return fmt.Errorf("update secret on EventBus ProcessConfiguration[%s] failed: %w", id, err)
 	}
@@ -275,14 +383,12 @@ func expandProcessConfigurationCreateUpdateRequest(d *processConfigurationResour
 func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResourceModel) v1.ProcessConfigurationSecret {
 	req := v1.ProcessConfigurationSecret{}
 
-	if !d.SimpleNotificationAccessToken.IsNull() && !d.SimpleNotificationAccessToken.IsUnknown() {
-		req.AccessToken = d.SimpleNotificationAccessToken.ValueString()
-	}
-	if !d.SimpleNotificationAccessTokenSecret.IsNull() && !d.SimpleNotificationAccessTokenSecret.IsUnknown() {
-		req.AccessTokenSecret = d.SimpleNotificationAccessTokenSecret.ValueString()
-	}
-	if !d.SimpleMQAPIKey.IsNull() && !d.SimpleMQAPIKey.IsUnknown() {
+	switch destination := d.Destination.ValueString(); destination {
+	case destinationSimpleMQ:
 		req.APIKey = d.SimpleMQAPIKey.ValueString()
+	case destinationSimpleNotification:
+		req.AccessToken = d.SimpleNotificationAccessToken.ValueString()
+		req.AccessTokenSecret = d.SimpleNotificationAccessTokenSecret.ValueString()
 	}
 
 	return req

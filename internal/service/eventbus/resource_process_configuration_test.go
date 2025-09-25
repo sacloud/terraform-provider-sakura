@@ -18,6 +18,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strconv"
 	"testing"
 
@@ -45,8 +46,11 @@ func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "destination", "simplenotification"),
 					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"),
-					resource.TestCheckResourceAttr(resourceName, "simplenotification_access_token", "test"),
-					resource.TestCheckResourceAttr(resourceName, "simplenotification_access_token_secret", "test"),
+					resource.TestCheckNoResourceAttr(resourceName, "simplemq_api_key_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_secret_wo"),
+					resource.TestCheckResourceAttr(resourceName, "simplenotification_credentials_wo_version", "1"),
+					resource.TestCheckNoResourceAttr(resourceName, "simplemq_credentials_wo_version"),
 				),
 			},
 			{
@@ -57,8 +61,39 @@ func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
 					resource.TestCheckResourceAttr(resourceName, "destination", "simplemq"),
 					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"),
-					resource.TestCheckResourceAttr(resourceName, "simplemq_api_key", "test"),
+					resource.TestCheckNoResourceAttr(resourceName, "simplemq_api_key_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_secret_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_credentials_wo_version"),
+					resource.TestCheckResourceAttr(resourceName, "simplemq_credentials_wo_version", "1"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraResourceProcessConfiguration_validation_credentials(t *testing.T) {
+	rand := test.RandomName()
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraProcessConfigurationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config:      test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_unknownDestination, rand),
+				ExpectError: regexp.MustCompile(`Unknown destination`),
+			},
+			{
+				Config:      test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_multipleVersion, rand),
+				ExpectError: regexp.MustCompile(`"simplenotification_credentials_wo_version" is not necessary`),
+			},
+			{
+				Config:      test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_SimpleNotificationCredential, rand),
+				ExpectError: regexp.MustCompile(`Expected "simplenotification_access_token_wo" to be configured`),
+			},
+			{
+				Config:      test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_SimpleMQCredential, rand),
+				ExpectError: regexp.MustCompile(`Expected "simplemq_api_key_wo" to be configured`),
 			},
 		},
 	})
@@ -122,8 +157,9 @@ resource "sakura_eventbus_process_configuration" "foobar" {
   destination = "simplenotification"
   parameters  = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
 
-  simplenotification_access_token        = "test"
-  simplenotification_access_token_secret = "test"
+  simplenotification_access_token_wo        = "test"
+  simplenotification_access_token_secret_wo = "test"
+  simplenotification_credentials_wo_version = 1
 }`
 
 var testAccSakuraProcessConfiguration_update = `
@@ -134,5 +170,54 @@ resource "sakura_eventbus_process_configuration" "foobar" {
   destination = "simplemq"
   parameters  = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"
 
-	simplemq_api_key = "test"
+  simplemq_api_key_wo             = "test"
+  simplemq_credentials_wo_version = 1
+}`
+
+var testAccSakuraProcessConfiguration_validation_unknownDestination = `
+resource "sakura_eventbus_process_configuration" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description-updated"
+
+  destination = "unknown"
+  parameters  = "{\"param\": \"something\"}"
+}`
+
+var testAccSakuraProcessConfiguration_validation_multipleVersion = `
+resource "sakura_eventbus_process_configuration" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description-updated"
+
+  destination = "simplemq"
+  parameters  = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"
+
+  simplemq_api_key_wo                       = "test"
+  simplemq_credentials_wo_version           = 1
+  # unnecessary
+  simplenotification_credentials_wo_version = 1
+}`
+
+var testAccSakuraProcessConfiguration_validation_SimpleNotificationCredential = `
+resource "sakura_eventbus_process_configuration" "foobar" {
+  name        = "{{ .arg0 }}"
+
+  destination = "simplenotification"
+  parameters  = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
+
+  # missing -> simplenotification_access_token_wo
+  simplenotification_access_token_secret_wo       = "test"
+  simplenotification_credentials_wo_version       = 1
+}`
+
+var testAccSakuraProcessConfiguration_validation_SimpleMQCredential = `
+resource "sakura_eventbus_process_configuration" "foobar" {
+  name        = "{{ .arg0 }}"
+
+  destination = "simplemq"
+  parameters  = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"
+
+  # wrong credentials
+  simplenotification_access_token_wo        = "test"
+  simplenotification_access_token_secret_wo = "test"
+  simplenotification_credentials_wo_version = 1
 }`
