@@ -33,6 +33,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/bridge"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/disk"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/eventbus"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dns"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/icon"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/internet"
@@ -222,6 +223,8 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		container_registry.NewContainerRegistryDataSource,
 		disk.NewDiskDataSource,
 		dns.NewDNSDataSource,
+    eventbus.NewEventBusProcessConfigurationDataSource,
+		eventbus.NewEventBusScheduleDataSource,
 		icon.NewIconDataSource,
 		internet.NewInternetDataSource,
 		kms.NewKmsDataSource,
@@ -248,6 +251,8 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		disk.NewDiskResource,
 		dns.NewDNSResource,
 		dns.NewDNSRecordResource,
+    eventbus.NewEventBusProcessConfigurationResource,
+		eventbus.NewEventBusScheduleResource,
 		icon.NewIconResource,
 		internet.NewInternetResource,
 		kms.NewKMSResource,
