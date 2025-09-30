@@ -26,6 +26,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/eventbus-api-go"
 	v1 "github.com/sacloud/eventbus-api-go/apis/v1"
@@ -158,6 +159,12 @@ func (r *processConfigurationResource) ModifyPlan(ctx context.Context, req resou
 type processConfigurationResourceModel struct {
 	processConfigurationBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
+
+	SimpleNotificationAccessToken        types.String `tfsdk:"simplenotification_access_token_wo"`
+	SimpleNotificationAccessTokenSecret  types.String `tfsdk:"simplenotification_access_token_secret_wo"`
+	SimpleNotificationCredentialsVersion types.Int32  `tfsdk:"simplenotification_credentials_wo_version"`
+	SimpleMQAPIKey                       types.String `tfsdk:"simplemq_api_key_wo"`
+	SimpleMQCredentialsVersion           types.Int32  `tfsdk:"simplemq_credentials_wo_version"`
 }
 
 func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

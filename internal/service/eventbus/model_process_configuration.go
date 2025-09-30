@@ -34,12 +34,6 @@ type processConfigurationBaseModel struct {
 
 	Destination types.String `tfsdk:"destination"`
 	Parameters  types.String `tfsdk:"parameters"`
-
-	SimpleNotificationAccessToken        types.String `tfsdk:"simplenotification_access_token_wo"`
-	SimpleNotificationAccessTokenSecret  types.String `tfsdk:"simplenotification_access_token_secret_wo"`
-	SimpleNotificationCredentialsVersion types.Int32  `tfsdk:"simplenotification_credentials_wo_version"`
-	SimpleMQAPIKey                       types.String `tfsdk:"simplemq_api_key_wo"`
-	SimpleMQCredentialsVersion           types.Int32  `tfsdk:"simplemq_credentials_wo_version"`
 }
 
 func (model *processConfigurationBaseModel) updateState(data *v1.ProcessConfiguration) {
