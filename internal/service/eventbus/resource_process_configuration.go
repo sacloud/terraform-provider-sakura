@@ -71,14 +71,6 @@ func requiredAttributeMissing(resp *resource.ValidateConfigResponse, rootAttribu
 	)
 }
 
-func attributeNeedToBeUndefined(resp *resource.ValidateConfigResponse, rootAttributeName, destination string) {
-	resp.Diagnostics.AddAttributeError(
-		path.Root(rootAttributeName),
-		"Unnecessary attribute defined",
-		fmt.Sprintf("%q is not necessary when destination is %q", rootAttributeName, destination),
-	)
-}
-
 func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
 	var config processConfigurationResourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
@@ -96,16 +88,6 @@ func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req r
 			requiredAttributeMissing(resp, "simplemq_credentials_wo_version", destinationSimpleMQ)
 		}
 
-		if config.SimpleNotificationAccessToken.ValueString() != "" {
-			attributeNeedToBeUndefined(resp, "simplenotification_access_token_wo", destinationSimpleMQ)
-		}
-		if config.SimpleNotificationAccessTokenSecret.ValueString() != "" {
-			attributeNeedToBeUndefined(resp, "simplenotification_access_token_secret_wo", destinationSimpleMQ)
-		}
-		snVersion := config.SimpleNotificationCredentialsVersion
-		if !snVersion.IsNull() && !snVersion.IsUnknown() {
-			attributeNeedToBeUndefined(resp, "simplenotification_credentials_wo_version", destinationSimpleMQ)
-		}
 	case destinationSimpleNotification:
 		if config.SimpleNotificationAccessToken.ValueString() == "" {
 			requiredAttributeMissing(resp, "simplenotification_access_token_wo", destinationSimpleNotification)
@@ -116,14 +98,6 @@ func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req r
 		version := config.SimpleNotificationCredentialsVersion
 		if version.IsNull() || version.IsUnknown() {
 			requiredAttributeMissing(resp, "simplenotification_credentials_wo_version", destinationSimpleNotification)
-		}
-
-		if config.SimpleMQAPIKey.ValueString() != "" {
-			attributeNeedToBeUndefined(resp, "simplemq_api_key_wo", destinationSimpleNotification)
-		}
-		mqVersion := config.SimpleMQCredentialsVersion
-		if !mqVersion.IsNull() && !version.IsUnknown() {
-			attributeNeedToBeUndefined(resp, "simplemq_credentials_wo_version", destinationSimpleNotification)
 		}
 	default:
 		resp.Diagnostics.AddAttributeError(

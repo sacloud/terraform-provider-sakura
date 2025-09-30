@@ -89,10 +89,6 @@ func TestAccSakuraResourceProcessConfiguration_validation_credentials(t *testing
 				ExpectError: regexp.MustCompile(`Unknown destination`),
 			},
 			{
-				Config:      test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_multipleVersion, rand),
-				ExpectError: regexp.MustCompile(`"simplenotification_credentials_wo_version" is not necessary`),
-			},
-			{
 				Config:      test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_SimpleNotificationCredential, rand),
 				ExpectError: regexp.MustCompile(`Expected "simplenotification_access_token_wo" to be configured`),
 			},
@@ -188,20 +184,6 @@ resource "sakura_eventbus_process_configuration" "foobar" {
 
   destination = "unknown"
   parameters  = "{\"param\": \"something\"}"
-}`
-
-var testAccSakuraProcessConfiguration_validation_multipleVersion = `
-resource "sakura_eventbus_process_configuration" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description-updated"
-
-  destination = "simplemq"
-  parameters  = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"
-
-  simplemq_api_key_wo                       = "test"
-  simplemq_credentials_wo_version           = 1
-  # unnecessary
-  simplenotification_credentials_wo_version = 1
 }`
 
 var testAccSakuraProcessConfiguration_validation_SimpleNotificationCredential = `
