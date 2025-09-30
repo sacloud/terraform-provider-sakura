@@ -361,10 +361,10 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Computed:    true,
 				Description: "The bit length of the subnet assigned to the Server",
 			},
-			"dns_servers": schema.SetAttribute{
+			"dns_servers": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: "A set of IP address of DNS server in the zone",
+				Description: "A list of IP address of DNS server in the zone",
 			},
 			"hostname": schema.StringAttribute{
 				Computed:    true,

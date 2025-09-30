@@ -149,10 +149,10 @@ func (d *serverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Computed:    true,
 				Description: "The hostname of the Server",
 			},
-			"dns_servers": schema.SetAttribute{
+			"dns_servers": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: "A set of IP address of DNS server in the zone",
+				Description: "A list of IP address of DNS server in the zone",
 			},
 		},
 	}
