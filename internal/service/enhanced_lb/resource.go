@@ -667,7 +667,7 @@ func (r *enhancedLBResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	if err := enhancedLBOp.Delete(ctx, elb.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprint("could not delete SakuraCloud Enhanced LB[%s]: %s", elb.ID, err))
+		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not delete SakuraCloud Enhanced LB[%s]: %s", elb.ID, err))
 		return
 	}
 }
