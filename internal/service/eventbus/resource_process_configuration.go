@@ -44,7 +44,6 @@ var (
 	_ resource.ResourceWithConfigure      = &processConfigurationResource{}
 	_ resource.ResourceWithImportState    = &processConfigurationResource{}
 	_ resource.ResourceWithValidateConfig = &processConfigurationResource{}
-	_ resource.ResourceWithModifyPlan     = &processConfigurationResource{}
 )
 
 func NewEventBusProcessConfigurationResource() resource.Resource {
@@ -104,28 +103,6 @@ func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req r
 			path.Root("destination"),
 			"Unknown destination",
 			fmt.Sprintf("Destination should be either %q or %q", destinationSimpleNotification, destinationSimpleMQ),
-		)
-	}
-}
-
-func (r *processConfigurationResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
-	var plan, state *processConfigurationResourceModel
-	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-	if plan == nil || state == nil {
-		return
-	}
-
-	if !plan.SimpleMQCredentialsVersion.Equal(state.SimpleMQCredentialsVersion) {
-		resp.RequiresReplace = append(resp.RequiresReplace, path.Root("simplemq_api_key_wo"))
-	}
-	if !plan.SimpleNotificationCredentialsVersion.Equal(state.SimpleNotificationCredentialsVersion) {
-		resp.RequiresReplace = append(resp.RequiresReplace,
-			path.Root("simplenotification_access_token_wo"),
-			path.Root("simplenotification_access_token_secret_wo"),
 		)
 	}
 }
