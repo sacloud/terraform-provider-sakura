@@ -82,9 +82,9 @@ func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req r
 		if config.SimpleMQAPIKey.ValueString() == "" {
 			requiredAttributeMissing(resp, "simplemq_api_key_wo", destinationSimpleMQ)
 		}
-		version := config.SimpleMQCredentialsVersion
+		version := config.CredentialsVersion
 		if version.IsNull() || version.IsUnknown() {
-			requiredAttributeMissing(resp, "simplemq_credentials_wo_version", destinationSimpleMQ)
+			requiredAttributeMissing(resp, "credentials_wo_version", destinationSimpleMQ)
 		}
 
 	case destinationSimpleNotification:
@@ -94,9 +94,9 @@ func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req r
 		if config.SimpleNotificationAccessTokenSecret.ValueString() == "" {
 			requiredAttributeMissing(resp, "simplenotification_access_token_secret_wo", destinationSimpleNotification)
 		}
-		version := config.SimpleNotificationCredentialsVersion
+		version := config.CredentialsVersion
 		if version.IsNull() || version.IsUnknown() {
-			requiredAttributeMissing(resp, "simplenotification_credentials_wo_version", destinationSimpleNotification)
+			requiredAttributeMissing(resp, "credentials_wo_version", destinationSimpleNotification)
 		}
 	default:
 		resp.Diagnostics.AddAttributeError(
@@ -111,11 +111,10 @@ type processConfigurationResourceModel struct {
 	processConfigurationBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 
-	SimpleNotificationAccessToken        types.String `tfsdk:"simplenotification_access_token_wo"`
-	SimpleNotificationAccessTokenSecret  types.String `tfsdk:"simplenotification_access_token_secret_wo"`
-	SimpleNotificationCredentialsVersion types.Int32  `tfsdk:"simplenotification_credentials_wo_version"`
-	SimpleMQAPIKey                       types.String `tfsdk:"simplemq_api_key_wo"`
-	SimpleMQCredentialsVersion           types.Int32  `tfsdk:"simplemq_credentials_wo_version"`
+	SimpleNotificationAccessToken       types.String `tfsdk:"simplenotification_access_token_wo"`
+	SimpleNotificationAccessTokenSecret types.String `tfsdk:"simplenotification_access_token_secret_wo"`
+	SimpleMQAPIKey                      types.String `tfsdk:"simplemq_api_key_wo"`
+	CredentialsVersion                  types.Int32  `tfsdk:"credentials_wo_version"`
 }
 
 func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -149,10 +148,6 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 				WriteOnly:   true,
 				Description: desc.Sprintf("The SimpleMQ API key for %s.", resourceName),
 			},
-			"simplemq_credentials_wo_version": schema.Int32Attribute{
-				Optional:    true,
-				Description: desc.Sprintf("Version number for SimpleMQ credentials. Change this when changing API key."),
-			},
 			"simplenotification_access_token_wo": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
@@ -165,9 +160,9 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 				WriteOnly:   true,
 				Description: desc.Sprintf("The SimpleNotification access token secret for %s.", resourceName),
 			},
-			"simplenotification_credentials_wo_version": schema.Int32Attribute{
+			"credentials_wo_version": schema.Int32Attribute{
 				Optional:    true,
-				Description: desc.Sprintf("Version number for SimpleNotification credentials. Change this when changing Access Token."),
+				Description: desc.Sprintf("Version number for credentials. Change this when changing credentials."),
 			},
 
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -233,9 +228,10 @@ func (r *processConfigurationResource) Read(ctx context.Context, req resource.Re
 }
 
 func (r *processConfigurationResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, config processConfigurationResourceModel
+	var plan, config, state processConfigurationResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -250,9 +246,12 @@ func (r *processConfigurationResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	if err := r.callProcessConfigurationUpdateSecretRequest(ctx, plan.ID.ValueString(), &config, nil); err != nil {
-		resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
-		return
+	if !plan.CredentialsVersion.Equal(state.CredentialsVersion) {
+		// credentialsの更新があるときだけ実行
+		if err := r.callProcessConfigurationUpdateSecretRequest(ctx, plan.ID.ValueString(), &config, nil); err != nil {
+			resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
+			return
+		}
 	}
 
 	pc := getProcessConfiguration(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)

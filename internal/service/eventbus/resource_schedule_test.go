@@ -129,7 +129,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
 
   simplenotification_access_token_wo        = "test"
   simplenotification_access_token_secret_wo = "test"
-  simplenotification_credentials_wo_version = 1
+  credentials_wo_version                    = 1
 }
 
 resource "sakura_eventbus_schedule" "foobar" {
@@ -153,7 +153,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
 
   simplenotification_access_token_wo        = "test"
   simplenotification_access_token_secret_wo = "test"
-  simplenotification_credentials_wo_version = 1
+  credentials_wo_version                    = 1
 }
 
 resource "sakura_eventbus_schedule" "foobar" {
