@@ -228,13 +228,18 @@ func expandScheduleCreateUpdateRequest(d *scheduleResourceModel) v1.ScheduleRequ
 
 		Settings: v1.ScheduleSettings{
 			ProcessConfigurationID: d.ProcessConfigurationID.ValueString(),
-			RecurringStep:          int(d.RecurringStep.ValueInt64()),
-			RecurringUnit:          v1.CreateScheduleRequestRecurringUnit(d.RecurringUnit.ValueString()),
 			StartsAt:               d.StartsAt.ValueInt64(),
 		},
 		Provider: v1.ScheduleProvider{
 			Class: "eventbusschedule",
 		},
+	}
+
+	if !d.RecurringStep.IsNull() && !d.RecurringStep.IsUnknown() {
+		req.Settings.RecurringStep = int(d.RecurringStep.ValueInt64())
+	}
+	if ru := d.RecurringUnit.ValueString(); ru != "" {
+		req.Settings.RecurringUnit = v1.CreateScheduleRequestRecurringUnit(ru)
 	}
 
 	return req
