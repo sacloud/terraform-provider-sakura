@@ -35,6 +35,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/disk"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dns"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/enhanced_lb"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/eventbus"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/icon"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/internet"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/kms"
@@ -78,7 +79,7 @@ type sakuraProvider struct {
 }
 
 func (p *sakuraProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	//resp.TypeName = "sakuracloud"
+	// resp.TypeName = "sakuracloud"
 	resp.TypeName = "sakura"
 	resp.Version = p.version
 }
@@ -224,6 +225,8 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		disk.NewDiskDataSource,
 		dns.NewDNSDataSource,
 		enhanced_lb.NewEnhancedLBDataSource,
+		eventbus.NewEventBusProcessConfigurationDataSource,
+		eventbus.NewEventBusScheduleDataSource,
 		icon.NewIconDataSource,
 		internet.NewInternetDataSource,
 		kms.NewKmsDataSource,
@@ -252,6 +255,8 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		dns.NewDNSRecordResource,
 		enhanced_lb.NewEnhancedLBResource,
 		enhanced_lb.NewEnhancedLBACMEResource,
+		eventbus.NewEventBusProcessConfigurationResource,
+		eventbus.NewEventBusScheduleResource,
 		icon.NewIconResource,
 		internet.NewInternetResource,
 		kms.NewKMSResource,
