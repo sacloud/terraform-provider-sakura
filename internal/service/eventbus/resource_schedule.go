@@ -20,6 +20,8 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -86,11 +88,15 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"recurring_step": schema.Int64Attribute{
 				Optional:    true,
 				Description: desc.Sprintf("The RecurringStep of the %s.", resourceName),
+				Validators: []validator.Int64{
+					int64validator.AlsoRequires(path.MatchRelative().AtParent().AtName("recurring_unit")),
+				},
 			},
 			"recurring_unit": schema.StringAttribute{
 				Optional:    true,
 				Description: desc.Sprintf("The RecurringUnit of the %s.", resourceName),
 				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("recurring_step")),
 					sacloudvalidator.StringFuncValidator(func(v string) error {
 						return v1.ScheduleRecurringUnit(v).Validate()
 					}),
