@@ -38,7 +38,11 @@ func (model *scheduleBaseModel) updateState(data *v1.Schedule) {
 	model.UpdateBaseState(id, data.Name, data.Description, data.Tags)
 
 	model.ProcessConfigurationID = types.StringValue(data.Settings.ProcessConfigurationID)
+	model.StartsAt = types.Int64Value(data.Settings.StartsAt)
+
+	// TODO: 現状はcrontabの指定が未対応なので実質Requiredとなっているが本来Optionalなので、
+	// SDKの更新に伴いcrontab対応をする際に指定のあるなしで適切に分岐をする or 代入をdata sourceのみに移す。
+	// https://github.com/sacloud/terraform-provider-sakura/pull/8#discussion_r2404952468
 	model.RecurringStep = types.Int64Value(int64(data.Settings.RecurringStep))
 	model.RecurringUnit = types.StringValue(string(data.Settings.RecurringUnit))
-	model.StartsAt = types.Int64Value(data.Settings.StartsAt)
 }
