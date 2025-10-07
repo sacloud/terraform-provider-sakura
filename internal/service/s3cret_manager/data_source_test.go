@@ -105,7 +105,7 @@ resource "sakura_secret_manager" "foobar" {
 }
 
 data "sakura_secret_manager" "foobar" {
-  resource_id = sakura_secret_manager.foobar.id
+  id = sakura_secret_manager.foobar.id
 
   depends_on = [sakura_secret_manager.foobar]
 }`
