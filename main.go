@@ -18,7 +18,7 @@ func main() {
 	flag.Parse()
 
 	opts := providerserver.ServeOpts{
-		Address: "registry.terraform.io/sacloud/sakuracloud",
+		Address: "registry.terraform.io/sacloud/sakura",
 		Debug:   debug,
 	}
 	err := providerserver.Serve(context.Background(), sakura.New(ver.Version), opts)
