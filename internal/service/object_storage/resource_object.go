@@ -245,10 +245,29 @@ func (r *objectStorageObjectResource) Delete(ctx context.Context, req resource.D
 		return
 	}
 
-	err = client.RemoveObject(ctx, state.Bucket.ValueString(), state.Key.ValueString(), minio.RemoveObjectOptions{})
-	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete object: %s", err.Error()))
-		return
+	if state.VersionID.ValueString() == "" {
+		err = client.RemoveObject(ctx, state.Bucket.ValueString(), state.Key.ValueString(), minio.RemoveObjectOptions{ForceDelete: true})
+		if err != nil {
+			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete object: %s", err.Error()))
+			return
+		}
+	} else {
+		objCh := make(chan minio.ObjectInfo)
+		go func() {
+			defer close(objCh)
+			opts := minio.ListObjectsOptions{Prefix: state.Key.ValueString(), WithVersions: true, Recursive: true}
+			for object := range client.ListObjects(ctx, state.Bucket.ValueString(), opts) {
+				if object.Err != nil {
+					resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to list object with key(%s): %s", state.Key.ValueString(), object.Err.Error()))
+				}
+				objCh <- object
+			}
+		}()
+
+		errCh := client.RemoveObjects(ctx, state.Bucket.ValueString(), objCh, minio.RemoveObjectsOptions{})
+		for e := range errCh {
+			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete %s/%s, error: %s", e.ObjectName, e.VersionID, e.Err.Error()))
+		}
 	}
 }
 
