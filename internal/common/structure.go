@@ -147,6 +147,25 @@ func StringsToTlist(values []string) types.List {
 	return listValue
 }
 
+func StrMapToTmap(values map[string]string) types.Map {
+	mapValue, _ := types.MapValueFrom(context.Background(), types.StringType, values)
+	return mapValue
+}
+
+func TmapToStrMap(values types.Map) map[string]string {
+	if values.IsNull() || values.IsUnknown() {
+		return nil
+	}
+
+	result := make(map[string]string)
+	for k, v := range values.Elements() {
+		if vStr, ok := v.(types.String); ok && !vStr.IsNull() && !vStr.IsUnknown() {
+			result[k] = vStr.ValueString()
+		}
+	}
+	return result
+}
+
 func IntToInt32(i int) int32 {
 	return int32(i)
 }
@@ -182,6 +201,11 @@ func StringInSlice(validList []string, k string, v string, ignoreCase bool) erro
 
 func MustAtoI(target string) int {
 	v, _ := strconv.Atoi(target)
+	return v
+}
+
+func MustAtoInt64(target string) int64 {
+	v, _ := strconv.ParseInt(target, 10, 64)
 	return v
 }
 

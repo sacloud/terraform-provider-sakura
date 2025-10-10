@@ -31,9 +31,11 @@ import (
 	"github.com/sacloud/api-client-go/profile"
 	"github.com/sacloud/eventbus-api-go"
 	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
+	saht "github.com/sacloud/go-http"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/api"
 	"github.com/sacloud/iaas-api-go/helper/query"
+	objectstorage "github.com/sacloud/object-storage-api-go"
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 
@@ -98,6 +100,7 @@ type APIClient struct {
 	SecretManagerClient              *smapi.Client
 	SimpleMqClient                   *queue.Client
 	EventBusClient                   *eventbus_api.Client
+	ObjectStorageClient              *objectstorage.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -221,6 +224,24 @@ func (c *Config) NewClient() (*APIClient, error) {
 		UserAgent:            ua,
 		Trace:                enableHTTPTrace,
 	}
+	callerOptionsWithoutBigInt := &client.Options{
+		AccessToken:          c.AccessToken,
+		AccessTokenSecret:    c.AccessTokenSecret,
+		AcceptLanguage:       c.AcceptLanguage,
+		HttpClient:           http.DefaultClient,
+		HttpRequestTimeout:   c.APIRequestTimeout,
+		HttpRequestRateLimit: c.APIRequestRateLimit,
+		RetryMax:             c.RetryMax,
+		RetryWaitMax:         c.RetryWaitMax,
+		RetryWaitMin:         c.RetryWaitMin,
+		UserAgent:            ua,
+		Trace:                enableHTTPTrace,
+		RequestCustomizers: []saht.RequestCustomizer{
+			func(req *http.Request) error {
+				req.Header.Set("X-Sakura-Bigint-As-Int", "0")
+				return nil
+			}},
+	}
 	caller := api.NewCallerWithOptions(&api.CallerOptions{
 		Options:     callerOptions,
 		APIRootURL:  c.APIRootURL,
@@ -263,6 +284,7 @@ func (c *Config) NewClient() (*APIClient, error) {
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,
 		EventBusClient:                   eventbusClient,
+		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
 	}, nil
 }
 
