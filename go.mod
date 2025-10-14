@@ -16,8 +16,8 @@ require (
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sacloud/api-client-go v0.3.3
 	github.com/sacloud/eventbus-api-go v0.4.0
-	github.com/sacloud/iaas-api-go v1.17.2
-	github.com/sacloud/iaas-service-go v1.13.0
+	github.com/sacloud/iaas-api-go v1.17.3
+	github.com/sacloud/iaas-service-go v1.14.1
 	github.com/sacloud/kms-api-go v0.2.2
 	github.com/sacloud/packages-go v0.0.11
 	github.com/sacloud/secretmanager-api-go v0.2.1
