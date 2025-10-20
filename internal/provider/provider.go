@@ -32,6 +32,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/bridge"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/database"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/disk"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dns"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/enhanced_lb"
@@ -222,6 +223,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		archive.NewArchiveDataSource,
 		bridge.NewBridgeDataSource,
 		container_registry.NewContainerRegistryDataSource,
+		database.NewDatabaseDataSource,
 		disk.NewDiskDataSource,
 		dns.NewDNSDataSource,
 		enhanced_lb.NewEnhancedLBDataSource,
@@ -250,6 +252,8 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		archive.NewArchiveResource,
 		bridge.NewBridgeResource,
 		container_registry.NewContainerRegistryResource,
+		database.NewDatabaseResource,
+		database.NewDatabaseReadReplicaResource,
 		disk.NewDiskResource,
 		dns.NewDNSResource,
 		dns.NewDNSRecordResource,

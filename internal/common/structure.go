@@ -31,6 +31,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/mitchellh/go-homedir"
+	"github.com/sacloud/iaas-api-go/helper/plans"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 )
 
@@ -147,6 +148,25 @@ func StringsToTlist(values []string) types.List {
 	return listValue
 }
 
+func StrMapToTmap(values map[string]string) types.Map {
+	mapValue, _ := types.MapValueFrom(context.Background(), types.StringType, values)
+	return mapValue
+}
+
+func TmapToStrMap(values types.Map) map[string]string {
+	if values.IsNull() || values.IsUnknown() {
+		return nil
+	}
+
+	result := make(map[string]string)
+	for k, v := range values.Elements() {
+		if vStr, ok := v.(types.String); ok && !vStr.IsNull() && !vStr.IsUnknown() {
+			result[k] = vStr.ValueString()
+		}
+	}
+	return result
+}
+
 func IntToInt32(i int) int32 {
 	return int32(i)
 }
@@ -219,4 +239,32 @@ func Md5CheckSumFromFile(path string) (string, error) {
 	}
 
 	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+func ExpandBackupWeekdays(d types.Set) []iaastypes.EDayOfTheWeek {
+	var vs []iaastypes.EDayOfTheWeek
+
+	for _, w := range TsetToStrings(d) {
+		vs = append(vs, iaastypes.EDayOfTheWeek(w))
+	}
+	iaastypes.SortDayOfTheWeekList(vs)
+	return vs
+}
+
+func FlattenBackupWeekdays(weekdays []iaastypes.EDayOfTheWeek) types.Set {
+	set := make([]string, 0, len(weekdays))
+	for _, w := range weekdays {
+		set = append(set, w.String())
+	}
+	return StringsToTset(set)
+}
+
+func FlattenTags(tags iaastypes.Tags) types.Set {
+	filtered := iaastypes.Tags{}
+	for _, t := range tags {
+		if !strings.HasPrefix(t, plans.PreviousIDTagName) {
+			filtered = append(filtered, t)
+		}
+	}
+	return StringsToTset(filtered)
 }

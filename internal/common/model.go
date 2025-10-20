@@ -27,5 +27,5 @@ func (model *SakuraBaseModel) UpdateBaseState(id string, name string, desc strin
 	model.ID = types.StringValue(id)
 	model.Name = types.StringValue(name)
 	model.Description = types.StringValue(desc)
-	model.Tags = StringsToTset(tags)
+	model.Tags = FlattenTags(tags)
 }
