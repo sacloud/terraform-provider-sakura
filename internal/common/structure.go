@@ -205,6 +205,11 @@ func MustAtoI(target string) int {
 	return v
 }
 
+func MustAtoInt64(target string) int64 {
+	v, _ := strconv.ParseInt(target, 10, 64)
+	return v
+}
+
 func ExpandHomeDir(path string) (string, error) {
 	expanded, err := homedir.Expand(path)
 	if err != nil {

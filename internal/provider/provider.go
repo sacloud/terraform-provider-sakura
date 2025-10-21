@@ -41,6 +41,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/internet"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/kms"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/nfs"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/object_storage"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/packet_filter"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/private_host"
 	secret_manager "github.com/sacloud/terraform-provider-sakura/internal/service/s3cret_manager"
@@ -233,6 +234,9 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		internet.NewInternetDataSource,
 		kms.NewKmsDataSource,
 		nfs.NewNFSDataSource,
+		object_storage.NewObjectStorageSiteDataSource,
+		object_storage.NewObjectStorageBucketDataSource,
+		object_storage.NewObjectStorageObjectDataSource,
 		packet_filter.NewPacketFilterDataSource,
 		private_host.NewPrivateHostDataSource,
 		script.NewScriptDataSource,
@@ -265,6 +269,11 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		internet.NewInternetResource,
 		kms.NewKMSResource,
 		nfs.NewNFSResource,
+		object_storage.NewObjectStorageBucketResource,
+		object_storage.NewObjectStorageBucketCorsResource,
+		object_storage.NewObjectStorageBucketVersioningResource,
+		object_storage.NewObjectStorageObjectResource,
+		object_storage.NewObjectStoragePermissionResource,
 		packet_filter.NewPacketFilterResource,
 		packet_filter.NewPacketFilterRulesResource,
 		private_host.NewPrivateHostResource,
