@@ -6,7 +6,6 @@ package eventbus
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -114,15 +113,14 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 			"name":        common.SchemaResourceName(resourceName),
 			"description": common.SchemaResourceDescription(resourceName),
 			"tags":        common.SchemaResourceTags(resourceName),
-			// TODO: iconはsdkが対応していないので保留中
-			// "icon_id":     common.SchemaResourceIconID(resourceName),
+			"icon_id":     common.SchemaResourceIconID(resourceName),
 
 			"destination": schema.StringAttribute{
 				Required:    true,
 				Description: desc.Sprintf("The destination of the %s.", resourceName),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return v1.ProcessConfigurationDestination(v).Validate()
+						return v1.ProcessConfigurationSettingsDestination(v).Validate()
 					}),
 				},
 			},
@@ -177,12 +175,12 @@ func (r *processConfigurationResource) Create(ctx context.Context, req resource.
 	defer cancel()
 
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
-	pc, err := processConfigurationOp.Create(ctx, expandProcessConfigurationCreateUpdateRequest(&plan))
+	pc, err := processConfigurationOp.Create(ctx, expandProcessConfigurationCreateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus ProcessConfiguration failed: %s", err))
 		return
 	}
-	pcID := strconv.FormatInt(pc.ID, 10)
+	pcID := pc.ID
 
 	// SDK v2ではUpdateを呼び出して更新していたが、Frameworkではアクション間での状態の共有が難しいためメソッドに括り出して処理を共通化
 	err = r.callProcessConfigurationUpdateSecretRequest(ctx, pcID, &config, pc)
@@ -196,7 +194,10 @@ func (r *processConfigurationResource) Create(ctx context.Context, req resource.
 		return
 	}
 
-	plan.updateState(gotPC)
+	if err := plan.updateState(gotPC); err != nil {
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", plan.ID.String(), err))
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -212,7 +213,10 @@ func (r *processConfigurationResource) Read(ctx context.Context, req resource.Re
 		return
 	}
 
-	state.updateState(pc)
+	if err := state.updateState(pc); err != nil {
+		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", state.ID.String(), err))
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -230,7 +234,7 @@ func (r *processConfigurationResource) Update(ctx context.Context, req resource.
 
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
-	if _, err := processConfigurationOp.Update(ctx, plan.ID.ValueString(), expandProcessConfigurationCreateUpdateRequest(&plan)); err != nil {
+	if _, err := processConfigurationOp.Update(ctx, plan.ID.ValueString(), expandProcessConfigurationUpdateRequest(&plan)); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus ProcessConfiguration[%s] failed: %s", plan.ID.ValueString(), err))
 		return
 	}
@@ -248,7 +252,10 @@ func (r *processConfigurationResource) Update(ctx context.Context, req resource.
 		return
 	}
 
-	plan.updateState(pc)
+	if err := plan.updateState(pc); err != nil {
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", plan.ID.String(), err))
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -274,7 +281,7 @@ func (r *processConfigurationResource) Delete(ctx context.Context, req resource.
 	}
 }
 
-func (r *processConfigurationResource) callProcessConfigurationUpdateSecretRequest(ctx context.Context, id string, config *processConfigurationResourceModel, pc *v1.ProcessConfiguration) error {
+func (r *processConfigurationResource) callProcessConfigurationUpdateSecretRequest(ctx context.Context, id string, config *processConfigurationResourceModel, pc *v1.CommonServiceItem) error {
 	var err error
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
@@ -293,7 +300,7 @@ func (r *processConfigurationResource) callProcessConfigurationUpdateSecretReque
 	return nil
 }
 
-func getProcessConfiguration(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.ProcessConfiguration {
+func getProcessConfiguration(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.CommonServiceItem {
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(client)
 	pc, err := processConfigurationOp.Read(ctx, id)
 	if err != nil {
@@ -308,33 +315,73 @@ func getProcessConfiguration(ctx context.Context, client *v1.Client, id string, 
 	return pc
 }
 
-func expandProcessConfigurationCreateUpdateRequest(d *processConfigurationResourceModel) v1.ProcessConfigurationRequestSettings {
-	req := v1.ProcessConfigurationRequestSettings{
-		Name:        d.Name.ValueString(),
-		Description: d.Description.ValueString(),
-		Settings: v1.DestinationSettings{
-			Destination: v1.CreateProcessConfigurationRequestDestination(d.Destination.ValueString()),
-			Parameters:  d.Parameters.ValueString(),
+func expandProcessConfigurationCreateRequest(d *processConfigurationResourceModel) v1.CreateCommonServiceItemRequest {
+	req := v1.CreateCommonServiceItemRequest{
+		CommonServiceItem: v1.CreateCommonServiceItemRequestCommonServiceItem{
+			Name:        d.Name.ValueString(),
+			Description: v1.NewOptNilString(d.Description.ValueString()),
+			Settings: v1.NewProcessConfigurationSettingsSettings(v1.ProcessConfigurationSettings{
+				Destination: v1.ProcessConfigurationSettingsDestination(d.Destination.ValueString()),
+				Parameters:  d.Parameters.ValueString(),
+			}),
+			Provider: v1.Provider{
+				Class: v1.ProviderClassEventbusprocessconfiguration,
+			},
+			Tags: common.TsetToStrings(d.Tags),
 		},
-		Provider: v1.ProcessConfigurationProvider{
-			Class: "eventbusprocessconfiguration",
-		},
-		Tags: common.TsetToStrings(d.Tags),
-		// TODO: Iconはsdkが対応していないので保留中
+	}
+
+	if !d.IconID.IsNull() && !d.IconID.IsUnknown() {
+		req.CommonServiceItem.Icon = v1.NewOptNilIcon(v1.Icon{
+			ID: v1.NewOptString(d.IconID.ValueString()),
+		})
 	}
 
 	return req
 }
 
-func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResourceModel) v1.ProcessConfigurationSecret {
-	req := v1.ProcessConfigurationSecret{}
+func expandProcessConfigurationUpdateRequest(d *processConfigurationResourceModel) v1.UpdateCommonServiceItemRequest {
+	req := v1.UpdateCommonServiceItemRequest{
+		CommonServiceItem: v1.UpdateCommonServiceItemRequestCommonServiceItem{
+			Name:        v1.NewOptString(d.Name.ValueString()),
+			Description: v1.NewOptNilString(d.Description.ValueString()),
+			Settings: v1.NewOptSettings(
+				v1.NewProcessConfigurationSettingsSettings(v1.ProcessConfigurationSettings{
+					Destination: v1.ProcessConfigurationSettingsDestination(d.Destination.ValueString()),
+					Parameters:  d.Parameters.ValueString(),
+				}),
+			),
+			Provider: v1.NewOptProvider(
+				v1.Provider{
+					Class: v1.ProviderClassEventbusprocessconfiguration,
+				},
+			),
+			Tags: common.TsetToStrings(d.Tags),
+		},
+	}
+
+	if !d.IconID.IsNull() && !d.IconID.IsUnknown() {
+		req.CommonServiceItem.Icon = v1.NewOptNilIcon(v1.Icon{
+			ID: v1.NewOptString(d.IconID.ValueString()),
+		})
+	}
+
+	return req
+}
+
+func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResourceModel) v1.SetSecretRequest {
+	req := v1.SetSecretRequest{}
 
 	switch destination := d.Destination.ValueString(); destination {
 	case destinationSimpleMQ:
-		req.APIKey = d.SimpleMQAPIKey.ValueString()
+		req.Secret = v1.NewSimpleMQSecretSetSecretRequestSecret(v1.SimpleMQSecret{
+			APIKey: d.SimpleMQAPIKey.ValueString(),
+		})
 	case destinationSimpleNotification:
-		req.AccessToken = d.SimpleNotificationAccessToken.ValueString()
-		req.AccessTokenSecret = d.SimpleNotificationAccessTokenSecret.ValueString()
+		req.Secret = v1.NewSacloudAPISecretSetSecretRequestSecret(v1.SacloudAPISecret{
+			AccessToken:       d.SimpleNotificationAccessToken.ValueString(),
+			AccessTokenSecret: d.SimpleNotificationAccessTokenSecret.ValueString(),
+		})
 	}
 
 	return req

@@ -6,7 +6,6 @@ package eventbus
 import (
 	"context"
 	"fmt"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
@@ -64,8 +63,7 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"name":        common.SchemaResourceName(resourceName),
 			"description": common.SchemaResourceDescription(resourceName),
 			"tags":        common.SchemaResourceTags(resourceName),
-			// TODO: iconはsdkが対応していないので保留中
-			// "icon_id":     common.SchemaResourceIconID(resourceName),
+			"icon_id":     common.SchemaResourceIconID(resourceName),
 
 			"process_configuration_id": schema.StringAttribute{
 				Required:    true,
@@ -87,11 +85,14 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Validators: []validator.String{
 					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("recurring_step")),
 					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return v1.ScheduleRecurringUnit(v).Validate()
+						return v1.ScheduleSettingsRecurringUnit(v).Validate()
 					}),
 				},
 			},
-			// TODO: Crontabはsdkが対応していないので保留中
+			"crontab": schema.StringAttribute{
+				Optional:    true,
+				Description: desc.Sprintf("Crontab of the %s.", resourceName),
+			},
 			"starts_at": schema.Int64Attribute{
 				Required:    true,
 				Description: desc.Sprintf("The start time of the %s. (in epoch milliseconds)", resourceName),
@@ -119,19 +120,22 @@ func (r *scheduleResource) Create(ctx context.Context, req resource.CreateReques
 	defer cancel()
 
 	scheduleOp := eventbus.NewScheduleOp(r.client)
-	schedule, err := scheduleOp.Create(ctx, expandScheduleCreateUpdateRequest(&plan))
+	schedule, err := scheduleOp.Create(ctx, expandScheduleCreateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus Schedule failed: %s", err))
 		return
 	}
-	scheduleID := strconv.FormatInt(schedule.ID, 10)
+	scheduleID := schedule.ID
 
 	gotSchedule := getSchedule(ctx, r.client, scheduleID, &resp.State, &resp.Diagnostics)
 	if gotSchedule == nil {
 		return
 	}
 
-	plan.updateState(gotSchedule)
+	if err := plan.updateState(gotSchedule); err != nil {
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", plan.ID.String(), err))
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -147,7 +151,10 @@ func (r *scheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	state.updateState(schedule)
+	if err := state.updateState(schedule); err != nil {
+		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", state.ID.String(), err))
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -163,7 +170,7 @@ func (r *scheduleResource) Update(ctx context.Context, req resource.UpdateReques
 
 	scheduleOp := eventbus.NewScheduleOp(r.client)
 
-	if _, err := scheduleOp.Update(ctx, plan.ID.ValueString(), expandScheduleCreateUpdateRequest(&plan)); err != nil {
+	if _, err := scheduleOp.Update(ctx, plan.ID.ValueString(), expandScheduleUpdateRequest(&plan)); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus Schedule[%s] failed: %s", plan.ID.ValueString(), err))
 		return
 	}
@@ -173,7 +180,10 @@ func (r *scheduleResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	plan.updateState(schedule)
+	if err := plan.updateState(schedule); err != nil {
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", plan.ID.String(), err))
+		return
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -199,7 +209,7 @@ func (r *scheduleResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 }
 
-func getSchedule(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.Schedule {
+func getSchedule(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.CommonServiceItem {
 	scheduleOp := eventbus.NewScheduleOp(client)
 	schedule, err := scheduleOp.Read(ctx, id)
 	if err != nil {
@@ -214,27 +224,77 @@ func getSchedule(ctx context.Context, client *v1.Client, id string, state *tfsdk
 	return schedule
 }
 
-func expandScheduleCreateUpdateRequest(d *scheduleResourceModel) v1.ScheduleRequestSettings {
-	req := v1.ScheduleRequestSettings{
-		Name:        d.Name.ValueString(),
-		Description: d.Description.ValueString(),
-		Tags:        common.TsetToStrings(d.Tags),
-		// TODO: Icon, Crontabはsdkが対応していないので保留中
-
-		Settings: v1.ScheduleSettings{
-			ProcessConfigurationID: d.ProcessConfigurationID.ValueString(),
-			StartsAt:               d.StartsAt.ValueInt64(),
-		},
-		Provider: v1.ScheduleProvider{
-			Class: "eventbusschedule",
+func expandScheduleCreateRequest(d *scheduleResourceModel) v1.CreateCommonServiceItemRequest {
+	req := v1.CreateCommonServiceItemRequest{
+		CommonServiceItem: v1.CreateCommonServiceItemRequestCommonServiceItem{
+			Name:        d.Name.ValueString(),
+			Description: v1.NewOptNilString(d.Description.ValueString()),
+			Settings: v1.NewScheduleSettingsSettings(v1.ScheduleSettings{
+				ProcessConfigurationID: d.ProcessConfigurationID.ValueString(),
+				StartsAt:               v1.NewInt64ScheduleSettingsStartsAt(d.StartsAt.ValueInt64()),
+			}),
+			Provider: v1.Provider{
+				Class: v1.ProviderClassEventbusschedule,
+			},
+			Tags: common.TsetToStrings(d.Tags),
 		},
 	}
 
 	if !d.RecurringStep.IsNull() && !d.RecurringStep.IsUnknown() {
-		req.Settings.RecurringStep = int(d.RecurringStep.ValueInt64())
+		req.CommonServiceItem.Settings.ScheduleSettings.RecurringStep = v1.NewOptInt(int(d.RecurringStep.ValueInt64()))
 	}
 	if ru := d.RecurringUnit.ValueString(); ru != "" {
-		req.Settings.RecurringUnit = v1.CreateScheduleRequestRecurringUnit(ru)
+		req.CommonServiceItem.Settings.ScheduleSettings.RecurringUnit = v1.NewOptScheduleSettingsRecurringUnit(v1.ScheduleSettingsRecurringUnit(ru))
+	}
+
+	if crontab := d.Crontab.ValueString(); crontab != "" {
+		req.CommonServiceItem.Settings.ScheduleSettings.Crontab = v1.NewOptString(crontab)
+	}
+
+	if !d.IconID.IsNull() && !d.IconID.IsUnknown() {
+		req.CommonServiceItem.Icon = v1.NewOptNilIcon(v1.Icon{
+			ID: v1.NewOptString(d.IconID.ValueString()),
+		})
+	}
+
+	return req
+}
+
+func expandScheduleUpdateRequest(d *scheduleResourceModel) v1.UpdateCommonServiceItemRequest {
+	req := v1.UpdateCommonServiceItemRequest{
+		CommonServiceItem: v1.UpdateCommonServiceItemRequestCommonServiceItem{
+			Name:        v1.NewOptString(d.Name.ValueString()),
+			Description: v1.NewOptNilString(d.Description.ValueString()),
+			Settings: v1.NewOptSettings(
+				v1.NewScheduleSettingsSettings(v1.ScheduleSettings{
+					ProcessConfigurationID: d.ProcessConfigurationID.ValueString(),
+					StartsAt:               v1.NewInt64ScheduleSettingsStartsAt(d.StartsAt.ValueInt64()),
+				}),
+			),
+			Provider: v1.NewOptProvider(
+				v1.Provider{
+					Class: v1.ProviderClassEventbusprocessconfiguration,
+				},
+			),
+			Tags: common.TsetToStrings(d.Tags),
+		},
+	}
+
+	if !d.RecurringStep.IsNull() && !d.RecurringStep.IsUnknown() {
+		req.CommonServiceItem.Settings.Value.ScheduleSettings.RecurringStep = v1.NewOptInt(int(d.RecurringStep.ValueInt64()))
+	}
+	if ru := d.RecurringUnit.ValueString(); ru != "" {
+		req.CommonServiceItem.Settings.Value.ScheduleSettings.RecurringUnit = v1.NewOptScheduleSettingsRecurringUnit(v1.ScheduleSettingsRecurringUnit(ru))
+	}
+
+	if crontab := d.Crontab.ValueString(); crontab != "" {
+		req.CommonServiceItem.Settings.Value.ScheduleSettings.Crontab = v1.NewOptString(crontab)
+	}
+
+	if !d.IconID.IsNull() && !d.IconID.IsUnknown() {
+		req.CommonServiceItem.Icon = v1.NewOptNilIcon(v1.Icon{
+			ID: v1.NewOptString(d.IconID.ValueString()),
+		})
 	}
 
 	return req

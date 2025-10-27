@@ -8,7 +8,6 @@ import (
 	"errors"
 	"fmt"
 	"regexp"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -21,7 +20,7 @@ import (
 func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
 	resourceName := "sakura_eventbus_process_configuration.foobar"
 	rand := test.RandomName()
-	var pc v1.ProcessConfiguration
+	var pc v1.CommonServiceItem
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -107,7 +106,7 @@ func testCheckSakuraProcessConfigurationDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testCheckSakuraProcessConfigurationExists(n string, pc *v1.ProcessConfiguration) resource.TestCheckFunc {
+func testCheckSakuraProcessConfigurationExists(n string, pc *v1.CommonServiceItem) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -127,7 +126,7 @@ func testCheckSakuraProcessConfigurationExists(n string, pc *v1.ProcessConfigura
 			return err
 		}
 
-		foundID := strconv.FormatInt(foundPC.ID, 10)
+		foundID := foundPC.ID
 		if foundID != rs.Primary.ID {
 			return fmt.Errorf("not found ProcessConfiguration: %s", rs.Primary.ID)
 		}
@@ -173,6 +172,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
   parameters  = "{\"param\": \"something\"}"
 }`
 
+//nolint:gosec // hardcoded credentials but this is dummy data for test
 var testAccSakuraProcessConfiguration_validation_SimpleNotificationCredential = `
 resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"
@@ -185,6 +185,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
   credentials_wo_version                    = 1
 }`
 
+//nolint:gosec // hardcoded credentials but this is dummy data for test
 var testAccSakuraProcessConfiguration_validation_SimpleMQCredential = `
 resource "sakura_eventbus_process_configuration" "foobar" {
   name        = "{{ .arg0 }}"

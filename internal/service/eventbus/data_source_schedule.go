@@ -53,8 +53,7 @@ func (d *scheduleDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"name":        common.SchemaDataSourceName(resourceName),
 			"description": common.SchemaDataSourceDescription(resourceName),
 			"tags":        common.SchemaDataSourceTags(resourceName),
-			// TODO: iconはsdkが対応していないので保留中
-			// "icon_id":     common.SchemaDataSourceIconID(resourceName),
+			"icon_id":     common.SchemaDataSourceIconID(resourceName),
 
 			"process_configuration_id": schema.StringAttribute{
 				Computed:    true,
@@ -67,6 +66,10 @@ func (d *scheduleDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 			"recurring_unit": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The RecurringUnit of the %s.", resourceName),
+			},
+			"crontab": schema.StringAttribute{
+				Computed:    true,
+				Description: desc.Sprintf("Crontab of the %s.", resourceName),
 			},
 			"starts_at": schema.Int64Attribute{
 				Computed:    true,
@@ -114,7 +117,10 @@ func (d *scheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 			continue
 		}
 
-		data.updateState(&s)
+		if err := data.updateState(&s); err != nil {
+			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", data.ID.String(), err))
+			return
+		}
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 		return
 	}
