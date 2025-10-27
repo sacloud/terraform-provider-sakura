@@ -34,7 +34,7 @@ func (model *processConfigurationBaseModel) updateState(data *v1.CommonServiceIt
 
 	pc, ok := data.Settings.GetProcessConfigurationSettings()
 	if !ok {
-		return errors.New("invalid Settings for ProcessConfiguration")
+		return errors.New("invalid settings for ProcessConfiguration")
 	}
 	model.Destination = types.StringValue(string(pc.Destination))
 	model.Parameters = types.StringValue(pc.Parameters)

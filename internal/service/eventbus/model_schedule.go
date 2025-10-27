@@ -34,7 +34,7 @@ func (model *scheduleBaseModel) updateState(data *v1.CommonServiceItem) error {
 
 	schedule, ok := data.Settings.GetScheduleSettings()
 	if !ok {
-		return errors.New("invalid Settings for Schedule")
+		return errors.New("invalid settings for Schedule")
 	}
 	model.ProcessConfigurationID = types.StringValue(schedule.ProcessConfigurationID)
 	if v := schedule.StartsAt; v.IsString() {
