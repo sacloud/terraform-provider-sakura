@@ -29,6 +29,7 @@ import (
 
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/api-client-go/profile"
+	"github.com/sacloud/apprun-api-go"
 	"github.com/sacloud/eventbus-api-go"
 	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
 	saht "github.com/sacloud/go-http"
@@ -96,6 +97,7 @@ type APIClient struct {
 	databaseWaitAfterCreateDuration  time.Duration
 	vpcRouterWaitAfterCreateDuration time.Duration
 	CallerOptions                    *client.Options
+	AppRunClient                     *apprun.Client
 	KmsClient                        *kmsapi.Client
 	SecretManagerClient              *smapi.Client
 	SimpleMqClient                   *queue.Client
@@ -284,6 +286,7 @@ func (c *Config) NewClient() (*APIClient, error) {
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,
 		EventBusClient:                   eventbusClient,
+		AppRunClient:                     &apprun.Client{Options: callerOptions},
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
 	}, nil
 }

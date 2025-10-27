@@ -29,6 +29,7 @@ import (
 	apiprof "github.com/sacloud/api-client-go/profile"
 	"github.com/sacloud/packages-go/envvar"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_shared"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/bridge"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
@@ -221,6 +222,7 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		apprun_shared.NewApprunSharedDataSource,
 		archive.NewArchiveDataSource,
 		bridge.NewBridgeDataSource,
 		container_registry.NewContainerRegistryDataSource,
@@ -253,6 +255,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 
 func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		apprun_shared.NewApprunSharedResource,
 		archive.NewArchiveResource,
 		bridge.NewBridgeResource,
 		container_registry.NewContainerRegistryResource,

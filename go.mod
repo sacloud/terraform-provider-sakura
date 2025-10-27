@@ -1,8 +1,6 @@
 module github.com/sacloud/terraform-provider-sakura
 
-go 1.24.0
-
-toolchain go1.24.4
+go 1.25
 
 require (
 	github.com/google/go-cmp v0.7.0
@@ -16,6 +14,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.95
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sacloud/api-client-go v0.3.3
+	github.com/sacloud/apprun-api-go v0.4.1
 	github.com/sacloud/eventbus-api-go v0.4.0
 	github.com/sacloud/go-http v0.1.9
 	github.com/sacloud/iaas-api-go v1.17.2
