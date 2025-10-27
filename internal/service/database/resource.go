@@ -60,21 +60,6 @@ func (d *databaseResource) Configure(ctx context.Context, req resource.Configure
 }
 
 type databaseResourceModel struct {
-	/*
-		common.SakuraBaseModel
-		IconID           types.String   `tfsdk:"icon_id"`
-		Zone             types.String   `tfsdk:"zone"`
-		DatabaseType     types.String   `tfsdk:"database_type"`
-		DatabaseVersion  types.String   `tfsdk:"database_version"`
-		Plan             types.String   `tfsdk:"plan"`
-		Username         types.String   `tfsdk:"username"`
-		Password         types.String   `tfsdk:"password"`
-		ReplicaUser      types.String   `tfsdk:"replica_user"`
-		ReplicaPassword  types.String   `tfsdk:"replica_password"`
-		NetworkInterface types.List     `tfsdk:"network_interface"`
-		Backup           types.List     `tfsdk:"backup"`
-		Parameters       types.Map      `tfsdk:"parameters"`
-	*/
 	databaseBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
