@@ -77,6 +77,7 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Description: desc.Sprintf("The RecurringStep of the %s.", resourceName),
 				Validators: []validator.Int64{
 					int64validator.AlsoRequires(path.MatchRelative().AtParent().AtName("recurring_unit")),
+					int64validator.ConflictsWith(path.MatchRelative().AtParent().AtName("crontab")),
 				},
 			},
 			"recurring_unit": schema.StringAttribute{
@@ -84,6 +85,7 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Description: desc.Sprintf("The RecurringUnit of the %s.", resourceName),
 				Validators: []validator.String{
 					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("recurring_step")),
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("crontab")),
 					sacloudvalidator.StringFuncValidator(func(v string) error {
 						return v1.ScheduleSettingsRecurringUnit(v).Validate()
 					}),
@@ -92,6 +94,12 @@ func (r *scheduleResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"crontab": schema.StringAttribute{
 				Optional:    true,
 				Description: desc.Sprintf("Crontab of the %s.", resourceName),
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(
+						path.MatchRelative().AtParent().AtName("recurring_step"),
+						path.MatchRelative().AtParent().AtName("recurring_unit"),
+					),
+				},
 			},
 			"starts_at": schema.Int64Attribute{
 				Required:    true,
