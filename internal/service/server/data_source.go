@@ -65,6 +65,10 @@ func (d *serverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Computed:    true,
 				Description: "The number of GPUs",
 			},
+			"gpu_model": schema.StringAttribute{
+				Computed:    true,
+				Description: "The model of gpu",
+			},
 			"cpu_model": schema.StringAttribute{
 				Computed:    true,
 				Description: "The model of cpu",
@@ -173,7 +177,6 @@ func (d *serverDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	server := res.Servers[0]
 	data.updateState(server, zone)
-	data.GPU = types.Int64Value(int64(server.GPU))
 	data.IconID = types.StringValue(server.IconID.String())
 	data.CDROMID = types.StringValue(server.CDROMID.String())
 	data.PrivateHostID = types.StringValue(server.PrivateHostID.String())

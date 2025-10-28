@@ -113,7 +113,18 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			},
 			"gpu": schema.Int64Attribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The number of GPUs",
+			},
+			"gpu_model": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The model of gpu",
+				PlanModifiers: []planmodifier.String{
+					// gpu_modelはUpdate時のシャットダウン判定(IsNeedShutdown)で使われるため、Unknown時はStateの値を利用する
+					// これをしないと""と"none"のような差分が出てしまい、不要な再起動が発生する
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"cpu_model": schema.StringAttribute{
 				Optional:    true,
@@ -121,6 +132,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Description: "The model of cpu",
 				PlanModifiers: []planmodifier.String{
 					// cpu_modelはUpdate時のシャットダウン判定(IsNeedShutdown)で使われるため、Unknown時はStateの値を利用する
+					// これをしないと""と"uncategorized"のような差分が出てしまい、不要な再起動が発生する
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
@@ -375,6 +387,25 @@ func (r *serverResource) ImportState(ctx context.Context, req resource.ImportSta
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
+func (r *serverResource) ModifyPlan(ctx context.Context, req resource.ModifyPlanRequest, resp *resource.ModifyPlanResponse) {
+	var plan, state *serverResourceModel
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	if state == nil || plan == nil {
+		return
+	}
+
+	// これらの属性が変更された時はリソースIDが変更されるので、PlanのIDをUnknownにしてconsistent errorを防ぐ
+	if (plan.Core.ValueInt64() != state.Core.ValueInt64()) ||
+		(plan.Memory.ValueInt64() != state.Memory.ValueInt64()) ||
+		(plan.CPUModel.ValueString() != state.CPUModel.ValueString()) ||
+		(plan.GPUModel.ValueString() != state.GPUModel.ValueString()) ||
+		(plan.GPU.ValueInt64() != state.GPU.ValueInt64()) ||
+		(plan.Commitment.ValueString() != state.Commitment.ValueString()) {
+		resp.Plan.SetAttribute(ctx, path.Root("id"), types.StringUnknown())
+	}
+}
+
 func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan serverResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
@@ -464,6 +495,10 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 		resp.Diagnostics.AddError("Validate Server Builder Error", fmt.Sprintf("validating SakuraCloud Server[%s] is failed: %s", sid, err))
 		return
 	}
+	// 特定条件下ではIDを変更させるためにModifyPlanでUnknownにしているため、その場合はstateのIDをセットしてUpdateを実行する
+	if plan.ID.IsUnknown() {
+		builder.ServerID = common.ExpandSakuraCloudID(state.ID)
+	}
 	result, err := builder.Update(ctx, zone)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Server Error", fmt.Sprintf("updating SakuraCloud Server[%s] is failed: %s", sid, err))
@@ -537,6 +572,7 @@ func expandServerBuilder(ctx context.Context, client *common.APIClient, zone str
 		CPU:             int(plan.Core.ValueInt64()),
 		MemoryGB:        int(plan.Memory.ValueInt64()),
 		GPU:             int(plan.GPU.ValueInt64()),
+		GPUModel:        plan.GPUModel.ValueString(),
 		CPUModel:        plan.CPUModel.ValueString(),
 		Commitment:      iaastypes.ECommitment(plan.Commitment.ValueString()),
 		Generation:      iaastypes.PlanGenerations.Default,
