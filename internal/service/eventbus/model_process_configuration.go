@@ -4,7 +4,7 @@
 package eventbus
 
 import (
-	"strconv"
+	"errors"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1 "github.com/sacloud/eventbus-api-go/apis/v1"
@@ -12,23 +12,32 @@ import (
 )
 
 const (
-	destinationSimpleMQ           = "simplemq"
-	destinationSimpleNotification = "simplenotification"
+	destinationSimpleMQ           = string(v1.ProcessConfigurationSettingsDestinationSimplemq)
+	destinationSimpleNotification = string(v1.ProcessConfigurationSettingsDestinationSimplenotification)
 )
 
 type processConfigurationBaseModel struct {
 	common.SakuraBaseModel
-	// TODO: iconはsdkで未対応
-	// IconID types.String `tfsdk:"icon_id"`
+	IconID types.String `tfsdk:"icon_id"`
 
 	Destination types.String `tfsdk:"destination"`
 	Parameters  types.String `tfsdk:"parameters"`
 }
 
-func (model *processConfigurationBaseModel) updateState(data *v1.ProcessConfiguration) {
-	id := strconv.FormatInt(data.ID, 10)
-	model.UpdateBaseState(id, data.Name, data.Description, data.Tags)
+func (model *processConfigurationBaseModel) updateState(data *v1.CommonServiceItem) error {
+	model.UpdateBaseState(data.ID, data.Name, data.Description.Value, data.Tags)
+	if iconID, ok := data.Icon.Value.ID.Get(); ok {
+		model.IconID = types.StringValue(iconID)
+	} else {
+		model.IconID = types.StringNull()
+	}
 
-	model.Destination = types.StringValue(string(data.Settings.Destination))
-	model.Parameters = types.StringValue(data.Settings.Parameters)
+	pc, ok := data.Settings.GetProcessConfigurationSettings()
+	if !ok {
+		return errors.New("invalid settings for ProcessConfiguration")
+	}
+	model.Destination = types.StringValue(string(pc.Destination))
+	model.Parameters = types.StringValue(pc.Parameters)
+
+	return nil
 }

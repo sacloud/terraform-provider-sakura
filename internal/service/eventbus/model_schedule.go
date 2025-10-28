@@ -4,6 +4,8 @@
 package eventbus
 
 import (
+	"errors"
+	"fmt"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -13,25 +15,50 @@ import (
 
 type scheduleBaseModel struct {
 	common.SakuraBaseModel
-	// TODO: iconはsdkで未対応
-	// IconID types.String `tfsdk:"icon_id"`
+	IconID types.String `tfsdk:"icon_id"`
 
 	ProcessConfigurationID types.String `tfsdk:"process_configuration_id"`
 	RecurringStep          types.Int64  `tfsdk:"recurring_step"`
 	RecurringUnit          types.String `tfsdk:"recurring_unit"`
+	Crontab                types.String `tfsdk:"crontab"`
 	StartsAt               types.Int64  `tfsdk:"starts_at"`
 }
 
-func (model *scheduleBaseModel) updateState(data *v1.Schedule) {
-	id := strconv.FormatInt(data.ID, 10)
-	model.UpdateBaseState(id, data.Name, data.Description, data.Tags)
+func (model *scheduleBaseModel) updateState(data *v1.CommonServiceItem) error {
+	model.UpdateBaseState(data.ID, data.Name, data.Description.Value, data.Tags)
+	if iconID, ok := data.Icon.Value.ID.Get(); ok {
+		model.IconID = types.StringValue(iconID)
+	} else {
+		model.IconID = types.StringNull()
+	}
 
-	model.ProcessConfigurationID = types.StringValue(data.Settings.ProcessConfigurationID)
-	model.StartsAt = types.Int64Value(data.Settings.StartsAt)
+	schedule, ok := data.Settings.GetScheduleSettings()
+	if !ok {
+		return errors.New("invalid settings for Schedule")
+	}
+	model.ProcessConfigurationID = types.StringValue(schedule.ProcessConfigurationID)
+	if v := schedule.StartsAt; v.IsString() {
+		vInt64, err := strconv.ParseInt(v.String, 10, 64)
+		if err != nil {
+			return fmt.Errorf("invalid StartsAt value as int64: %w", err)
+		}
+		model.StartsAt = types.Int64Value(vInt64)
+	} else if v.IsInt64() {
+		model.StartsAt = types.Int64Value(v.Int64)
+	}
 
-	// TODO: 現状はcrontabの指定が未対応なので実質Requiredとなっているが本来Optionalなので、
-	// SDKの更新に伴いcrontab対応をする際に指定のあるなしで適切に分岐をする or 代入をdata sourceのみに移す。
-	// https://github.com/sacloud/terraform-provider-sakura/pull/8#discussion_r2404952468
-	model.RecurringStep = types.Int64Value(int64(data.Settings.RecurringStep))
-	model.RecurringUnit = types.StringValue(string(data.Settings.RecurringUnit))
+	if crontab, ok := schedule.Crontab.Get(); ok {
+		model.Crontab = types.StringValue(crontab)
+	} else {
+		model.Crontab = types.StringNull()
+	}
+
+	if schedule.RecurringStep.IsSet() && schedule.RecurringUnit.IsSet() {
+		model.RecurringStep = types.Int64Value(int64(schedule.RecurringStep.Value))
+		model.RecurringUnit = types.StringValue(string(schedule.RecurringUnit.Value))
+	} else {
+		model.RecurringStep = types.Int64Null()
+		model.RecurringUnit = types.StringNull()
+	}
+	return nil
 }

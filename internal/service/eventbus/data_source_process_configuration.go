@@ -55,15 +55,14 @@ func (d *processConfigurationDataSource) Schema(_ context.Context, _ datasource.
 			"name":        common.SchemaDataSourceName(resourceName),
 			"description": common.SchemaDataSourceDescription(resourceName),
 			"tags":        common.SchemaDataSourceTags(resourceName),
-			// TODO: iconはsdkが対応していないので保留中
-			// "icon_id":     common.SchemaDataSourceIconID(resourceName),
+			"icon_id":     common.SchemaDataSourceIconID(resourceName),
 
 			"destination": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The destination of the %s.", resourceName),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return v1.ProcessConfigurationDestination(v).Validate()
+						return v1.ProcessConfigurationSettingsDestination(v).Validate()
 					}),
 				},
 			},
@@ -113,7 +112,10 @@ func (d *processConfigurationDataSource) Read(ctx context.Context, req datasourc
 			continue
 		}
 
-		data.updateState(&pc)
+		if err := data.updateState(&pc); err != nil {
+			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", data.ID.String(), err))
+			return
+		}
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 		return
 	}

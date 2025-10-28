@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -20,7 +19,7 @@ import (
 func TestAccSakuraResourceSchedule_basic(t *testing.T) {
 	resourceName := "sakura_eventbus_schedule.foobar"
 	rand := test.RandomName()
-	var schedule v1.Schedule
+	var schedule v1.CommonServiceItem
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -37,6 +36,7 @@ func TestAccSakuraResourceSchedule_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "recurring_step", "1"),
 					resource.TestCheckResourceAttr(resourceName, "recurring_unit", "day"),
+					resource.TestCheckNoResourceAttr(resourceName, "crontab"),
 					resource.TestCheckResourceAttr(resourceName, "starts_at", "1700000000000"),
 				),
 			},
@@ -49,8 +49,9 @@ func TestAccSakuraResourceSchedule_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag3"),
-					resource.TestCheckResourceAttr(resourceName, "recurring_step", "20"),
-					resource.TestCheckResourceAttr(resourceName, "recurring_unit", "min"),
+					resource.TestCheckNoResourceAttr(resourceName, "recurring_step"),
+					resource.TestCheckNoResourceAttr(resourceName, "recurring_unit"),
+					resource.TestCheckResourceAttr(resourceName, "crontab", "*/15 * * * *"),
 					resource.TestCheckResourceAttr(resourceName, "starts_at", "1800000000000"),
 				),
 			},
@@ -78,7 +79,7 @@ func testCheckSakuraScheduleDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testCheckSakuraScheduleExists(n string, schedule *v1.Schedule) resource.TestCheckFunc {
+func testCheckSakuraScheduleExists(n string, schedule *v1.CommonServiceItem) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -98,7 +99,7 @@ func testCheckSakuraScheduleExists(n string, schedule *v1.Schedule) resource.Tes
 			return err
 		}
 
-		foundID := strconv.FormatInt(foundSchedule.ID, 10)
+		foundID := foundSchedule.ID
 		if foundID != rs.Primary.ID {
 			return fmt.Errorf("not found Schedule: %s", rs.Primary.ID)
 		}
@@ -151,7 +152,6 @@ resource "sakura_eventbus_schedule" "foobar" {
   tags        = ["tag2", "tag3"]
 
   process_configuration_id = sakura_eventbus_process_configuration.foobar.id
-  recurring_step           = 20
-  recurring_unit           = "min"
+  crontab                  = "*/15 * * * *"
   starts_at                = 1800000000000
 }`
