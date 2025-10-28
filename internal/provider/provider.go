@@ -9,15 +9,18 @@ import (
 	"os"
 	"strconv"
 
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	apiprof "github.com/sacloud/api-client-go/profile"
 	"github.com/sacloud/packages-go/envvar"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_shared"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/bridge"
@@ -51,11 +54,11 @@ type sakuraProviderModel struct {
 	Zones               types.List   `tfsdk:"zones"`
 	DefaultZone         types.String `tfsdk:"default_zone"`
 	APIRootURL          types.String `tfsdk:"api_root_url"`
-	RetryMax            types.Int64  `tfsdk:"retry_max"`
+	RetryMax            types.Int32  `tfsdk:"retry_max"`
 	RetryWaitMax        types.Int64  `tfsdk:"retry_wait_max"`
 	RetryWaitMin        types.Int64  `tfsdk:"retry_wait_min"`
 	APIRequestTimeout   types.Int64  `tfsdk:"api_request_timeout"`
-	APIRequestRateLimit types.Int64  `tfsdk:"api_request_rate_limit"`
+	APIRequestRateLimit types.Int32  `tfsdk:"api_request_rate_limit"`
 	TraceMode           types.String `tfsdk:"trace"`
 }
 
@@ -71,7 +74,6 @@ type sakuraProvider struct {
 }
 
 func (p *sakuraProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	// resp.TypeName = "sakuracloud"
 	resp.TypeName = "sakura"
 	resp.Version = p.version
 }
@@ -79,24 +81,81 @@ func (p *sakuraProvider) Metadata(_ context.Context, _ provider.MetadataRequest,
 func (p *sakuraProvider) Schema(_ context.Context, _ provider.SchemaRequest, resp *provider.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"profile": schema.StringAttribute{Optional: true},
-			"token":   schema.StringAttribute{Optional: true},
-			"secret":  schema.StringAttribute{Optional: true},
-			"zone":    schema.StringAttribute{Optional: true},
+			"profile": schema.StringAttribute{
+				Optional:    true,
+				Description: "The profile name of your SakuraCloud account. Default:`default`",
+			},
+			"token": schema.StringAttribute{
+				Optional:    true,
+				Description: "The API token of your SakuraCloud account. It must be provided, but it can also be sourced from the `SAKURACLOUD_ACCESS_TOKEN` environment variables, or via a shared credentials file if `profile` is specified",
+			},
+			"secret": schema.StringAttribute{
+				Optional:    true,
+				Description: "The API secret of your SakuraCloud account. It must be provided, but it can also be sourced from the `SAKURACLOUD_ACCESS_TOKEN_SECRET` environment variables, or via a shared credentials file if `profile` is specified",
+			},
+			"zone": schema.StringAttribute{
+				Optional:    true,
+				Description: "The name of zone to use as default. It must be provided, but it can also be sourced from the `SAKURACLOUD_ZONE` environment variables, or via a shared credentials file if `profile` is specified",
+			},
 			"zones": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
+				Description: "A list of available SakuraCloud zone name. It can also be sourced via a shared credentials file if `profile` is specified. Default:[`is1a`, `is1b`, `tk1a`, `tk1v`]",
 			},
-			"default_zone":           schema.StringAttribute{Optional: true},
-			"api_root_url":           schema.StringAttribute{Optional: true},
-			"retry_max":              schema.Int64Attribute{Optional: true},
-			"retry_wait_max":         schema.Int64Attribute{Optional: true},
-			"retry_wait_min":         schema.Int64Attribute{Optional: true},
-			"api_request_timeout":    schema.Int64Attribute{Optional: true},
-			"api_request_rate_limit": schema.Int64Attribute{Optional: true},
-			"trace":                  schema.StringAttribute{Optional: true},
+			"default_zone": schema.StringAttribute{
+				Optional:    true,
+				Description: "The name of zone to use as default for global resources. It must be provided, but it can also be sourced from the `SAKURACLOUD_DEFAULT_ZONE` environment variables, or via a shared credentials file if `profile` is specified",
+			},
+			"api_root_url": schema.StringAttribute{
+				Optional:    true,
+				Description: "The root URL of SakuraCloud API. It can also be sourced from the `SAKURACLOUD_API_ROOT_URL` environment variables, or via a shared credentials file if `profile` is specified. Default:`https://secure.sakura.ad.jp/cloud/zone`",
+			},
+			"retry_max": schema.Int32Attribute{
+				Optional:    true,
+				Description: "The maximum number of API call retries used when SakuraCloud API returns status code `423` or `503`. It can also be sourced from the `SAKURACLOUD_RETRY_MAX` environment variables, or via a shared credentials file if `profile` is specified. Default:`100`",
+				Validators: []validator.Int32{
+					int32validator.Between(0, 100),
+				},
+			},
+			"retry_wait_max": schema.Int64Attribute{
+				Optional:    true,
+				Description: "The maximum wait interval(in seconds) for retrying API call used when SakuraCloud API returns status code `423` or `503`.  It can also be sourced from the `SAKURACLOUD_RETRY_WAIT_MAX` environment variables, or via a shared credentials file if `profile` is specified",
+			},
+			"retry_wait_min": schema.Int64Attribute{
+				Optional:    true,
+				Description: "The minimum wait interval(in seconds) for retrying API call used when SakuraCloud API returns status code `423` or `503`. It can also be sourced from the `SAKURACLOUD_RETRY_WAIT_MIN` environment variables, or via a shared credentials file if `profile` is specified",
+			},
+			"api_request_timeout": schema.Int64Attribute{
+				Optional: true,
+				Description: desc.Sprintf(
+					"The timeout seconds for each SakuraCloud API call. It can also be sourced from the `SAKURACLOUD_API_REQUEST_TIMEOUT` environment variables, or via a shared credentials file if `profile` is specified. Default:`%d`",
+					common.APIRequestTimeout,
+				),
+			},
+			"api_request_rate_limit": schema.Int32Attribute{
+				Optional: true,
+				Description: desc.Sprintf(
+					"The maximum number of SakuraCloud API calls per second. It can also be sourced from the `SAKURACLOUD_RATE_LIMIT` environment variables, or via a shared credentials file if `profile` is specified. Default:`%d`",
+					common.APIRequestRateLimit,
+				),
+				Validators: []validator.Int32{
+					int32validator.Between(1, 10),
+				},
+			},
+			"trace": schema.StringAttribute{
+				Optional:    true,
+				Description: "The flag to enable output trace log. It can also be sourced from the `SAKURACLOUD_TRACE` environment variables, or via a shared credentials file if `profile` is specified",
+			},
 		},
 	}
+}
+
+func getStrValueFromEnv(envVar string, defaultValue string) string {
+	value, ok := os.LookupEnv(envVar)
+	if !ok {
+		return defaultValue
+	}
+	return value
 }
 
 func getIntValueFromEnv(resp *provider.ConfigureResponse, envVar string, defaultValue int) int {
@@ -106,25 +165,19 @@ func getIntValueFromEnv(resp *provider.ConfigureResponse, envVar string, default
 	}
 	value, err := strconv.Atoi(valueStr)
 	if err != nil {
-		resp.Diagnostics.AddError(fmt.Sprintf("Error parsing environment variable %q", envVar), err.Error())
+		resp.Diagnostics.AddError("Environment Variable Error", fmt.Sprintf("failed to parse environment variable[%q]: %s", envVar, err.Error()))
 		return defaultValue
 	}
 	return value
 }
 
 func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	profile, ok := os.LookupEnv("SAKURACLOUD_PROFILE")
-	if !ok {
-		profile = apiprof.DefaultProfileName
-	}
-	token := os.Getenv("SAKURACLOUD_ACCESS_TOKEN")
-	secret := os.Getenv("SAKURACLOUD_ACCESS_TOKEN_SECRET")
-	zone, ok := os.LookupEnv("SAKURACLOUD_ZONE")
-	if !ok {
-		zone = common.Zone
-	}
-	defaultZone, _ := os.LookupEnv("SAKURACLOUD_DEFAULT_ZONE")
-	apiRootUrl := os.Getenv("SAKURACLOUD_API_ROOT_URL")
+	profile := getStrValueFromEnv("SAKURACLOUD_PROFILE", apiprof.DefaultProfileName)
+	token := getStrValueFromEnv("SAKURACLOUD_ACCESS_TOKEN", "")
+	secret := getStrValueFromEnv("SAKURACLOUD_ACCESS_TOKEN_SECRET", "")
+	zone := getStrValueFromEnv("SAKURACLOUD_ZONE", common.Zone)
+	defaultZone := getStrValueFromEnv("SAKURACLOUD_DEFAULT_ZONE", "")
+	apiRootUrl := getStrValueFromEnv("SAKURACLOUD_API_ROOT_URL", "")
 	retryMax := getIntValueFromEnv(resp, "SAKURACLOUD_RETRY_MAX", common.RetryMax)
 	retryWaitMax := getIntValueFromEnv(resp, "SAKURACLOUD_RETRY_WAIT_MAX", 0)
 	retryWaitMin := getIntValueFromEnv(resp, "SAKURACLOUD_RETRY_WAIT_MIN", 0)
@@ -157,7 +210,7 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		apiRootUrl = config.APIRootURL.ValueString()
 	}
 	if !config.RetryMax.IsNull() && !config.RetryMax.IsUnknown() {
-		retryMax = int(config.RetryMax.ValueInt64())
+		retryMax = int(config.RetryMax.ValueInt32())
 	}
 	if !config.RetryWaitMax.IsNull() && !config.RetryWaitMax.IsUnknown() {
 		retryWaitMax = int(config.RetryWaitMax.ValueInt64())
@@ -169,7 +222,7 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		apiRequestTimeout = int(config.APIRequestTimeout.ValueInt64())
 	}
 	if !config.APIRequestRateLimit.IsNull() && !config.APIRequestRateLimit.IsUnknown() {
-		apiRequestRateLimit = int(config.APIRequestRateLimit.ValueInt64())
+		apiRequestRateLimit = int(config.APIRequestRateLimit.ValueInt32())
 	}
 	zones := []string{}
 	if !config.Zones.IsNull() && !config.Zones.IsUnknown() {
