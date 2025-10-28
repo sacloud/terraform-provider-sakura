@@ -6,7 +6,7 @@ package common
 import (
 	"bytes"
 	"context"
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec
 	"encoding/base64"
 	"encoding/hex"
 	"fmt"

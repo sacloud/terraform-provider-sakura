@@ -181,8 +181,6 @@ type vpnRouterSiteToSiteVPNModel struct {
 }
 
 type vpnRouterSiteToSiteVPNParameterModel struct {
-	//IKE            *vpnRouterIKEModel `tfsdk:"ike"`
-	//ESP            *vpnRouterESPModel `tfsdk:"esp"`
 	IKE            types.Object `tfsdk:"ike"`
 	ESP            types.Object `tfsdk:"esp"`
 	EncryptionAlgo types.String `tfsdk:"encryption_algo"`
@@ -192,7 +190,6 @@ type vpnRouterSiteToSiteVPNParameterModel struct {
 
 func (m vpnRouterSiteToSiteVPNParameterModel) AttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		//"ike":             types.ObjectType{AttrTypes: m.IKE.AttributeTypes()},
 		"ike":             types.ObjectType{AttrTypes: vpnRouterIKEModel{}.AttributeTypes()},
 		"esp":             types.ObjectType{AttrTypes: vpnRouterESPModel{}.AttributeTypes()},
 		"encryption_algo": types.StringType,
@@ -204,7 +201,6 @@ func (m vpnRouterSiteToSiteVPNParameterModel) AttributeTypes() map[string]attr.T
 type vpnRouterIKEModel struct {
 	Lifetime types.Int64  `tfsdk:"lifetime"`
 	DPD      types.Object `tfsdk:"dpd"`
-	//DPD      *vpnRouterDPDModel `tfsdk:"dpd"`
 }
 
 func (m vpnRouterIKEModel) AttributeTypes() map[string]attr.Type {
@@ -275,7 +271,7 @@ func (model *vpnRouterBaseModel) updateState(ctx context.Context, client *common
 	model.PublicIP = types.StringValue(flattenVPNRouterGlobalAddress(vpnRouter))
 	model.PublicNetmask = types.Int64Value(int64(flattenVPNRouterGlobalNetworkMaskLen(vpnRouter)))
 	model.PublicNetworkInterface = flattenVPNRouterPublicNetworkInterface(vpnRouter)
-	model.InternetConnection = types.BoolValue(vpnRouter.Settings.InternetConnectionEnabled.Bool()) //nolint
+	model.InternetConnection = types.BoolValue(vpnRouter.Settings.InternetConnectionEnabled.Bool())
 	model.PrivateNetworkInterface = flattenVPNRouterPrivateNetworkInterfaces(vpnRouter)
 	model.DHCPServer = flattenVPNRouterDHCPServers(vpnRouter)
 	model.DHCPStaticMapping = flattenVPNRouterDHCPStaticMappings(vpnRouter)
@@ -597,7 +593,6 @@ func flattenVPNRouterSiteToSiteConfig(vpcRouter *iaas.VPCRouter) []vpnRouterSite
 	return s2sSettings
 }
 
-// func flattenVPNRouterSiteToSiteParameter(vpcRouter *iaas.VPCRouter) *vpnRouterSiteToSiteVPNParameterModel {
 func flattenVPNRouterSiteToSiteParameter(vpcRouter *iaas.VPCRouter) types.Object {
 	v := types.ObjectNull(vpnRouterSiteToSiteVPNParameterModel{}.AttributeTypes())
 	if vpcRouter.Settings.SiteToSiteIPsecVPN != nil {
@@ -671,8 +666,6 @@ func flattenVPNRouterUsers(vpcRouter *iaas.VPCRouter) []vpnRouterUserModel {
 
 func flattenVPNRouterScheduledMaintenance(vpcRouter *iaas.VPCRouter) types.Object {
 	v := types.ObjectNull(vpnRouterScheduledMaintenanceModel{}.AttributeTypes())
-	//var v types.Object
-	//tflog.Info(context.Background(), fmt.Sprintf("ScheduledMaintenance check: %#v", vpcRouter.Settings))
 	if vpcRouter.Settings != nil && vpcRouter.Settings.ScheduledMaintenance != nil {
 		model := vpnRouterScheduledMaintenanceModel{
 			DayOfWeek: types.StringValue(iaastypes.DayOfTheWeekFromInt(vpcRouter.Settings.ScheduledMaintenance.DayOfWeek).String()),

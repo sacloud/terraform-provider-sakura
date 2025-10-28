@@ -37,7 +37,7 @@ func init() {
 	AccClientGetter = func() *common.APIClient {
 		var v = reflect.ValueOf(AccProvider).Elem()
 		var c = v.FieldByName("client").Elem()
-		return (*common.APIClient)(unsafe.Pointer(c.UnsafeAddr()))
+		return (*common.APIClient)(unsafe.Pointer(c.UnsafeAddr())) //nolint:gosec
 	}
 }
 

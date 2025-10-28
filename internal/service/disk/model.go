@@ -29,7 +29,7 @@ func (model *diskBaseModel) updateState(disk *iaas.Disk, zone string) {
 	model.Plan = types.StringValue(iaastypes.DiskPlanNameMap[disk.DiskPlanID])
 	model.Size = types.Int64Value(int64(disk.GetSizeGB()))
 	model.Connector = types.StringValue(disk.Connection.String())
-	model.EncryptionAlgorithm = types.StringValue(string(disk.EncryptionAlgorithm.String()))
+	model.EncryptionAlgorithm = types.StringValue(disk.EncryptionAlgorithm.String())
 	model.SourceArchiveID = types.StringValue(disk.SourceArchiveID.String())
 	model.SourceDiskID = types.StringValue(disk.SourceDiskID.String())
 	model.ServerID = types.StringValue(disk.ServerID.String())

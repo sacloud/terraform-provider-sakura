@@ -10,7 +10,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -469,9 +468,7 @@ func (d *vpnRouterDataSource) Read(ctx context.Context, req datasource.ReadReque
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not update state for SakuraCloud VPCRouter resource: %s", err))
 		return
 	}
-	tflog.Info(ctx, fmt.Sprintf("VPNRouter state: %#v", vpnRouter))
-	tflog.Info(ctx, fmt.Sprintf("VPNRouter settings: %#v", vpnRouter.Settings))
-	tflog.Info(ctx, fmt.Sprintf("VPNRouter s2s parameter: %#v", vpnRouter.Settings.SiteToSiteIPsecVPN))
+
 	data.IconID = types.StringValue(vpnRouter.IconID.String())
 	data.SyslogHost = types.StringValue(vpnRouter.Settings.SyslogHost)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

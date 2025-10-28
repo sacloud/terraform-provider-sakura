@@ -152,7 +152,6 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.0.fixed_message_body", ""),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.redirect_status_code", "301"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.redirect_location", "https://redirect.usacloud.jp"),
-					//resource.TestCheckResourceAttr(resourceName, "certificate.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "certificate.common_name", subDomain+"."+elbDomain),
 					resource.TestCheckResourceAttr(resourceName,
 						"certificate.0.subject_alt_names",

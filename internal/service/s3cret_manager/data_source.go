@@ -74,7 +74,7 @@ func (d *secretManagerDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	var vault *v1.Vault
 	var err error
-	if !data.Name.IsNull() {
+	if !data.Name.IsNull() { //nolint:gocritic
 		vaults, err := vaultOp.List(ctx)
 		if err != nil {
 			resp.Diagnostics.AddError("SecretManager List Error", err.Error())

@@ -78,7 +78,7 @@ type serverDiskEditModel struct {
 	DisablePwAuth       types.Bool                   `tfsdk:"disable_pw_auth"`
 	EnableDHCP          types.Bool                   `tfsdk:"enable_dhcp"`
 	ChangePartitionUUID types.Bool                   `tfsdk:"change_partition_uuid"`
-	IPAddress           types.String                 `tfsdk:"ip_address"` //iptypes.IPv4Address `tfsdk:"ip_address"`
+	IPAddress           types.String                 `tfsdk:"ip_address"` // TODO: iptypes.IPv4Address `tfsdk:"ip_address"`
 	Gateway             types.String                 `tfsdk:"gateway"`
 	Netmask             types.Int32                  `tfsdk:"netmask"`
 	Script              []*serverDiskEditScriptModel `tfsdk:"script"`
@@ -467,7 +467,6 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if err != nil {
 		resp.Diagnostics.AddError("Update Server Error", fmt.Sprintf("updating SakuraCloud Server[%s] is failed: %s", sid, err))
 		return
-
 	}
 
 	server := getServer(ctx, r.client, zone, result.ServerID, &resp.State, &resp.Diagnostics)
@@ -559,10 +558,8 @@ func expandServerBuilder(ctx context.Context, client *common.APIClient, zone str
 func expandServerUserData(plan *serverResourceModel, state *serverResourceModel) string {
 	if state == nil {
 		return plan.UserData.ValueString()
-	} else {
-		if !plan.UserData.Equal(state.UserData) {
-			return plan.UserData.ValueString()
-		}
+	} else if !plan.UserData.Equal(state.UserData) {
+		return plan.UserData.ValueString()
 	}
 	return ""
 }

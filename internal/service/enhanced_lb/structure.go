@@ -32,7 +32,7 @@ func expandEnhancedLBCreateRequest(model *enhancedLBResourceModel) *iaas.ProxyLB
 		Description:          model.Description.ValueString(),
 		Tags:                 common.TsetToStrings(model.Tags),
 		IconID:               common.ExpandSakuraCloudID(model.IconID),
-		//LetsEncryptフィールドはenhanced_lb_acmeで管理するためCreate時には設定しない
+		// LetsEncryptフィールドはenhanced_lb_acmeで管理するためCreate時には設定しない
 	}
 }
 

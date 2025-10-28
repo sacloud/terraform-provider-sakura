@@ -734,20 +734,11 @@ func (r *vpnRouterResource) Update(ctx context.Context, req resource.UpdateReque
 	common.SakuraMutexKV.Lock(sid)
 	defer common.SakuraMutexKV.Unlock(sid)
 
-	/*
-		vpnRouter, err := vrOp.Read(ctx, zone, common.SakuraCloudID(sid))
-		if err != nil {
-			resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read SakuraCloud VPCRouter[%s]: %s", sid, err))
-			return
-		}
-	*/
-
 	builder := expandVPNRouterBuilder(&plan, r.client, zone)
 	if err := builder.Validate(ctx, zone); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("validating parameter for SakuraCloud VPCRouter[%s] is failed: %s", sid, err))
 		return
 	}
-	//builder.ID = vpnRouter.ID
 	builder.ID = common.SakuraCloudID(sid)
 
 	_, err := builder.Build(ctx)

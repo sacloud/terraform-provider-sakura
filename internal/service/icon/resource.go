@@ -199,7 +199,7 @@ func getIcon(ctx context.Context, client *common.APIClient, id iaastypes.ID, sta
 
 func expandIconBody(d *iconResourceModel) (string, error) {
 	var body string
-	if !d.Source.IsNull() {
+	if !d.Source.IsNull() { //nolint:gocritic
 		source := d.Source.ValueString()
 		path, err := homedir.Expand(source)
 		if err != nil {

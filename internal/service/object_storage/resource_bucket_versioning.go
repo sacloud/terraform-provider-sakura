@@ -41,7 +41,7 @@ type objectStorageBucketVersioningResourceModel struct {
 
 type objectStorageBucketVersioningConfigModel struct {
 	Status types.String `tfsdk:"status"`
-	//MFADelete types.String `tfsdk:"mfa_delete"`
+	// MFADelete types.String `tfsdk:"mfa_delete"`
 }
 
 func (r *objectStorageBucketVersioningResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {

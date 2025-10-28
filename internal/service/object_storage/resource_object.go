@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -55,7 +56,6 @@ type objectStorageObjectResourceModel struct {
 	UserMetadata         types.Map      `tfsdk:"user_metadata"`
 	UserTags             types.Map      `tfsdk:"user_tags"`
 	Timeouts             timeouts.Value `tfsdk:"timeouts"`
-	//Expires         types.String   `tfsdk:"expires"`
 }
 
 func (r *objectStorageObjectResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -158,7 +158,6 @@ func (r *objectStorageObjectResource) Schema(ctx context.Context, _ resource.Sch
 				Computed:    true,
 				Description: "The version ID of the Object Storage Object.",
 			},
-			//"expires": schema.StringAttribute{
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -273,12 +272,12 @@ func (r *objectStorageObjectResource) Delete(ctx context.Context, req resource.D
 
 func uploadObject(ctx context.Context, model *objectStorageObjectResourceModel) error {
 	var body io.ReadSeeker
-	if model.Source.ValueString() != "" {
+	if model.Source.ValueString() != "" { //nolint:gocritic
 		path, err := common.ExpandHomeDir(model.Source.ValueString())
 		if err != nil {
 			return err
 		}
-		file, err := os.Open(path)
+		file, err := os.Open(filepath.Clean(path))
 		if err != nil {
 			return fmt.Errorf("failed to open source file(%s): %w", path, err)
 		}

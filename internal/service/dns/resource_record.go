@@ -28,7 +28,6 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
-// Resource struct
 type dnsRecordResource struct {
 	client *common.APIClient
 }
@@ -39,7 +38,6 @@ var (
 	_ resource.ResourceWithImportState = &dnsRecordResource{}
 )
 
-// New resource constructor
 func NewDNSRecordResource() resource.Resource {
 	return &dnsRecordResource{}
 }
@@ -250,7 +248,7 @@ func (d *dnsRecordResourceModel) updateState(id, dnsID string, model *dnsRecordM
 
 func expandDNSRecordCreateRequest(model *dnsRecordResourceModel, dns *iaas.DNS) (*iaas.DNSRecord, *iaas.DNSUpdateSettingsRequest) {
 	record := expandDNSRecord(convertToDNSRecordModel(model))
-	records := append(dns.Records, record)
+	records := append(dns.Records, record) //nolint:gocritic
 
 	return record, &iaas.DNSUpdateSettingsRequest{
 		Records:      records,

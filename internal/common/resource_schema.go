@@ -117,7 +117,7 @@ func SchemaResourceSize(name string, defaultValue int64, validSizes ...int64) sc
 		},
 	}
 	if defaultValue > 0 {
-		s.Default = int64default.StaticInt64(int64(defaultValue))
+		s.Default = int64default.StaticInt64(defaultValue)
 	}
 	if len(validSizes) > 0 {
 		s.Validators = []validator.Int64{
