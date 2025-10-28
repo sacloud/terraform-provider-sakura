@@ -134,6 +134,7 @@ func (r *dnsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a DNS",
 	}
 }
 

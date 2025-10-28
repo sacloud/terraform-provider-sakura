@@ -162,6 +162,7 @@ func (r *objectStorageObjectResource) Schema(ctx context.Context, _ resource.Sch
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages an Object Storage's Object",
 	}
 }
 

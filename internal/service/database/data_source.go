@@ -121,6 +121,7 @@ func (d *databaseDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Description: "The map for setting RDBMS-specific parameters. Valid keys can be found with the `usacloud database list-parameters` command",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Database Appliance.",
 	}
 }
 

@@ -156,6 +156,7 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a EventBus Process Configuration.",
 	}
 }
 

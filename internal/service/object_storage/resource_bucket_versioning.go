@@ -78,6 +78,7 @@ func (r *objectStorageBucketVersioningResource) Schema(ctx context.Context, _ re
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages an Object Storage's Bucket Versioning.",
 	}
 }
 

@@ -93,6 +93,7 @@ func (r *privateHostResource) Schema(ctx context.Context, req resource.SchemaReq
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a Private Host.",
 	}
 }
 

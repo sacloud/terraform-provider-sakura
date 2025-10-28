@@ -61,6 +61,7 @@ func (d *kmsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, 
 				Description: "The key origin of the KMS key.",
 			},
 		},
+		MarkdownDescription: "Get information about an existing KMS.",
 	}
 }
 

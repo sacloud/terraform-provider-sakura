@@ -173,6 +173,7 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages an Archive.",
 	}
 }
 

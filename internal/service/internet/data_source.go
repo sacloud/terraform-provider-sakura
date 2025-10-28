@@ -106,6 +106,7 @@ func (d *internetDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Description: desc.Sprintf("The auto assigned tags of the %s when band_width is changed", resourceName),
 			},
 		},
+		MarkdownDescription: "Get information about an existing Internet(Router + Switch).",
 	}
 }
 

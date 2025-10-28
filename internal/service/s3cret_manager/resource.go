@@ -64,6 +64,7 @@ func (r *secretManagerResource) Schema(ctx context.Context, req resource.SchemaR
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a Secret Manager.",
 	}
 }
 

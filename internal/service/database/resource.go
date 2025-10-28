@@ -190,6 +190,7 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a Database appliance.",
 	}
 }
 

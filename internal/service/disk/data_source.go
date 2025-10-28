@@ -74,6 +74,7 @@ func (d *diskDataSource) Schema(_ context.Context, req datasource.SchemaRequest,
 				Description: "The id of the source disk",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Disk.",
 	}
 }
 

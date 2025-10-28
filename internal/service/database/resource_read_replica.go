@@ -138,6 +138,7 @@ func (r *databaseReadReplicaResource) Schema(ctx context.Context, _ resource.Sch
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a Database Appliance's read replica",
 	}
 }
 

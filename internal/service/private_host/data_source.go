@@ -14,18 +14,15 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-// PrivateHostDataSource implements datasource.DataSource
 type privateHostDataSource struct {
 	client *common.APIClient
 }
 
-// Ensure privateHostDataSource implements the required interfaces
 var (
 	_ datasource.DataSource              = &privateHostDataSource{}
 	_ datasource.DataSourceWithConfigure = &privateHostDataSource{}
 )
 
-// NewPrivateHostDataSource returns a new instance
 func NewPrivateHostDataSource() datasource.DataSource {
 	return &privateHostDataSource{}
 }
@@ -69,6 +66,7 @@ func (d *privateHostDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 				Description: "The total size of memory assigned to servers on the private host",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Private Host.",
 	}
 }
 

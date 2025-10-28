@@ -83,6 +83,7 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a KMS.",
 	}
 }
 

@@ -51,6 +51,7 @@ func (d *bridgeDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 			"description": common.SchemaDataSourceDescription("Bridge"),
 			"zone":        common.SchemaDataSourceZone("Bridge"),
 		},
+		MarkdownDescription: "Get information about an existing Bridge.",
 	}
 }
 

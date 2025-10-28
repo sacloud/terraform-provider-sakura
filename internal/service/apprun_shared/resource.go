@@ -274,6 +274,7 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages an AppRun Shared Application.",
 	}
 }
 

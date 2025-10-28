@@ -57,6 +57,7 @@ func (d *objectStorageBucketDataSource) Schema(_ context.Context, _ datasource.S
 				Description: "The ID of the Object Storage Site.",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Object Storage's Bucket.",
 	}
 }
 

@@ -214,6 +214,7 @@ func (r *apprunSharedDataSource) Schema(ctx context.Context, req datasource.Sche
 				Description: "The public URL of the AppRun Shared application",
 			},
 		},
+		MarkdownDescription: "Get information about an existing AppRun Application.",
 	}
 }
 

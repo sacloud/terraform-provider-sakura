@@ -144,6 +144,7 @@ func (d *serverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Description: "A list of IP address of DNS server in the zone",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Server.",
 	}
 }
 

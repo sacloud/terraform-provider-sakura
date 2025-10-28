@@ -58,6 +58,7 @@ func (d *sshKeyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Description: "The fingerprint of public key",
 			},
 		},
+		MarkdownDescription: "Get information about an existing SSH keys.",
 	}
 }
 

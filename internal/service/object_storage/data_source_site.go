@@ -122,6 +122,7 @@ func (d *objectStorageSiteDataSource) Schema(_ context.Context, _ datasource.Sch
 				},
 			},
 		},
+		MarkdownDescription: "Get information about an Object Storage's Site.",
 	}
 }
 

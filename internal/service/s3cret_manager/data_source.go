@@ -60,6 +60,7 @@ func (d *secretManagerDataSource) Schema(_ context.Context, req datasource.Schem
 				Description: "KMS key id for the SecretManager vault.",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Secret Manager.",
 	}
 }
 

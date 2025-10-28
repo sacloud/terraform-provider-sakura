@@ -137,6 +137,7 @@ func (r *dnsRecordResource) Schema(ctx context.Context, _ resource.SchemaRequest
 				Create: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a Disk's record",
 	}
 }
 

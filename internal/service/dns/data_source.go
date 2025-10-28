@@ -97,6 +97,7 @@ func (d *dnsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 				},
 			},
 		},
+		MarkdownDescription: "Get information about an existing DNS.",
 	}
 }
 

@@ -150,6 +150,7 @@ func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages an Internet(Router + Switch).",
 	}
 }
 

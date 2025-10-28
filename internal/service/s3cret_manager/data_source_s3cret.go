@@ -64,6 +64,7 @@ func (d *secretManagerSecretDataSource) Schema(_ context.Context, req datasource
 				Description: "Unveiled result of stored secret.",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Secret Manager's secret.",
 	}
 }
 

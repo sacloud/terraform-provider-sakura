@@ -67,6 +67,7 @@ func (d *simpleMQDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 				Description: "The duration in seconds that a message is stored in a queue. Default is 345600 seconds (4 days).",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Simple MQ.",
 	}
 }
 

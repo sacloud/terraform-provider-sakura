@@ -87,6 +87,7 @@ func (r *iconResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages an Icon.",
 	}
 }
 

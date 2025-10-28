@@ -52,6 +52,7 @@ func (d *iconDataSource) Schema(_ context.Context, req datasource.SchemaRequest,
 				Description: "The URL for getting the icon's raw data",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Icon.",
 	}
 }
 

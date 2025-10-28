@@ -486,6 +486,7 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a VPN Router.",
 	}
 }
 

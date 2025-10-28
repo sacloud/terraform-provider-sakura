@@ -107,6 +107,7 @@ func (r *nfsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a NFS.",
 	}
 }
 

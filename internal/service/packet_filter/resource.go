@@ -62,6 +62,7 @@ func (r *packetFilterResource) Schema(ctx context.Context, _ resource.SchemaRequ
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a Packet Filter.",
 	}
 }
 

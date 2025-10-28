@@ -82,6 +82,7 @@ func (d *packetFilterDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 				},
 			},
 		},
+		MarkdownDescription: "Get information abount an existing Packet Filter.",
 	}
 }
 

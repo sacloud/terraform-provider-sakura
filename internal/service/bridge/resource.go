@@ -61,6 +61,7 @@ func (r *bridgeResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a Bridge.",
 	}
 }
 

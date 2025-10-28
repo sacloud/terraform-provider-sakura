@@ -167,6 +167,7 @@ func (r *enhancedLBACMEResource) Schema(ctx context.Context, _ resource.SchemaRe
 				Create: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a VPN Router's ACME",
 	}
 }
 

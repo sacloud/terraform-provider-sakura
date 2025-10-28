@@ -76,6 +76,7 @@ func (d *archiveDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 				},
 			},
 		},
+		MarkdownDescription: "Get information about an existing Archive.",
 	}
 }
 

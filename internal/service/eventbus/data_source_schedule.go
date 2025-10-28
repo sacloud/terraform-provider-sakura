@@ -76,6 +76,7 @@ func (d *scheduleDataSource) Schema(_ context.Context, _ datasource.SchemaReques
 				Description: desc.Sprintf("The start time of the %s. (in epoch milliseconds)", resourceName),
 			},
 		},
+		MarkdownDescription: "Get information about an existing EventBus Schedule.",
 	}
 }
 

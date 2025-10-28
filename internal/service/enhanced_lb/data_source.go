@@ -337,6 +337,7 @@ func (d *enhancedLBDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Description: "A list of CIDR block used by the Enhanced LB to access the server",
 			},
 		},
+		MarkdownDescription: "Get information about an existing VPN Router.",
 	}
 }
 

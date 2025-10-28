@@ -87,6 +87,7 @@ func (d *containerRegistryDataSource) Schema(_ context.Context, _ datasource.Sch
 				},
 			},
 		},
+		MarkdownDescription: "Get information about an existing Container Registry.",
 	}
 }
 

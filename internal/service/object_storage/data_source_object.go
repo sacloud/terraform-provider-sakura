@@ -141,6 +141,7 @@ func (d *objectStorageObjectDataSource) Schema(_ context.Context, _ datasource.S
 				Description: "Whether the ObjectStorage Object is a delete marker",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Object Storage's Object.",
 	}
 }
 

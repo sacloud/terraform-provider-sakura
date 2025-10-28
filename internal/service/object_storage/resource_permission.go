@@ -110,6 +110,7 @@ func (r *objectStoragePermissionResource) Schema(ctx context.Context, _ resource
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages an Object Storage's Permission.",
 	}
 }
 

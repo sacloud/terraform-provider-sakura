@@ -126,6 +126,7 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 				Create: true, Update: true, Delete: true,
 			}),
 		},
+		MarkdownDescription: "Manages a Container Registry.",
 	}
 }
 

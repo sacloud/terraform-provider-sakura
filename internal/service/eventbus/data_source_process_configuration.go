@@ -71,6 +71,7 @@ func (d *processConfigurationDataSource) Schema(_ context.Context, _ datasource.
 				Description: desc.Sprintf("The parameter of the %s.", resourceName),
 			},
 		},
+		MarkdownDescription: "Get information about an existing EventBus Process Configuration.",
 	}
 }
 

@@ -61,6 +61,7 @@ func (d *switchDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Description: "A set of server id connected to the Switch",
 			},
 		},
+		MarkdownDescription: "Get information about an existing Switch.",
 	}
 }
 
