@@ -1,0 +1,1 @@
+data "sakura_object_storage_site" "foobar" {}

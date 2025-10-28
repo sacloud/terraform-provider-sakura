@@ -1,0 +1,50 @@
+# based on Sakura Cloud manual: https://manual.sakura.ad.jp/cloud/
+Computing:
+  - apprun_shared
+  - server
+  - private_host
+Storage and Data:
+  - archive
+  - disk
+  - nfs
+  - object_storage_bucket
+  - object_storage_bucket_cors
+  - object_storage_bucket_versioning
+  - object_storage_object
+  - object_storage_permission
+  - object_storage_site
+Database:
+  - database
+  - database_replica
+  - nosql
+Networking:
+  - bridge
+  - dns
+  - dns_record
+  - enhanced_lb
+  - internet
+  - packet_filter
+  - packet_filter_rules
+  - switch
+  - vpn_router
+Application Integration:
+  - addon
+  - apigw
+  - eventbus_process_configuration
+  - eventbus_schedule
+  - simple_mq
+  - workflows
+Monitoring:
+  - simple_monitor
+  - monitoring_suite
+Security:
+  - cloudhsm
+  - kms
+  - secret_manager
+  - secret_manager_secret
+Container and Image:
+  - container_registry
+Misc:
+  - icon
+  - script
+  - ssh_key
