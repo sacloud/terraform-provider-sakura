@@ -25,6 +25,10 @@ resource "sakura_disk" "foobar" {
   source_archive_id = data.sakura_archive.ubuntu.id
   #distant_from      = ["111111111111"]
 
+  # For encryption
+  #encryption_algorithm = "aes256_xts"
+  #kms_key_id           = data.sakura_kms.foobar.id
+
   description = "description"
   tags        = ["tag1", "tag2"]
 }
@@ -44,6 +48,7 @@ resource "sakura_disk" "foobar" {
 - `distant_from` (Set of String) A list of disk id. The disk will be located to different storage from these disks
 - `encryption_algorithm` (String) The disk encryption algorithm. This must be one of [`none`/`aes256_xts`]
 - `icon_id` (String) The icon id to attach to the Disk
+- `kms_key_id` (String) ID of the KMS key for encryption
 - `plan` (String) The plan name of the Disk. This must be one of [`ssd`/`hdd`]
 - `server_id` (String) The id of the server connected to the Disk
 - `size` (Number) The size of Disk in GiB

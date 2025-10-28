@@ -39,6 +39,7 @@ data "sakura_server" "foobar" {
 - `dns_servers` (List of String) A list of IP address of DNS server in the zone
 - `gateway` (String) The IP address of the gateway used by Server
 - `gpu` (Number) The number of GPUs
+- `gpu_model` (String) The model of gpu
 - `hostname` (String) The hostname of the Server
 - `icon_id` (String) The icon id attached to the Server
 - `interface_driver` (String) The driver name of network interface. This will be one of [`virtio`/`e1000`]

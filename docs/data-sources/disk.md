@@ -34,6 +34,7 @@ data "sakura_disk" "foobar" {
 - `description` (String) The description of the Disk.
 - `encryption_algorithm` (String) The disk encryption algorithm. This must be one of [`none`/`aes256_xts`]
 - `icon_id` (String) The icon id attached to the Disk
+- `kms_key_id` (String) ID of the KMS key for encryption
 - `plan` (String) The plan name of the Disk. This will be one of [`ssd`/`hdd`]
 - `server_id` (String) The id of the server connected to the Disk
 - `size` (Number) The size of Disk in GiB
