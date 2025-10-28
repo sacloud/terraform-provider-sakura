@@ -21,6 +21,7 @@ type diskBaseModel struct {
 	SourceArchiveID     types.String `tfsdk:"source_archive_id"`
 	SourceDiskID        types.String `tfsdk:"source_disk_id"`
 	ServerID            types.String `tfsdk:"server_id"`
+	KMSKeyID            types.String `tfsdk:"kms_key_id"`
 }
 
 func (model *diskBaseModel) updateState(disk *iaas.Disk, zone string) {
@@ -33,4 +34,5 @@ func (model *diskBaseModel) updateState(disk *iaas.Disk, zone string) {
 	model.SourceArchiveID = types.StringValue(disk.SourceArchiveID.String())
 	model.SourceDiskID = types.StringValue(disk.SourceDiskID.String())
 	model.ServerID = types.StringValue(disk.ServerID.String())
+	model.KMSKeyID = types.StringValue(disk.KMSKeyID.String())
 }
