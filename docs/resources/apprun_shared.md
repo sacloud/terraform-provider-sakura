@@ -3,12 +3,12 @@
 page_title: "sakura_apprun_shared Resource - sakura"
 subcategory: "Computing"
 description: |-
-  Manages an AppRun Shared Application.
+  Manages an AppRun Shared Application(apprun_application in v2).
 ---
 
 # sakura_apprun_shared (Resource)
 
-Manages an AppRun Shared Application.
+Manages an AppRun Shared Application(apprun_application in v2).
 
 ## Example Usage
 

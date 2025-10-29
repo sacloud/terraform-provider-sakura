@@ -3,12 +3,12 @@
 page_title: "sakura_enhanced_lb Resource - sakura"
 subcategory: "Networking"
 description: |-
-  Manages a VPN Router.
+  Manages an Enhanced Load Balancer(proxylb in v2).
 ---
 
 # sakura_enhanced_lb (Resource)
 
-Manages a VPN Router.
+Manages an Enhanced Load Balancer(proxylb in v2).
 
 ## Example Usage
 

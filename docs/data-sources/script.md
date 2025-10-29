@@ -3,12 +3,12 @@
 page_title: "sakura_script Data Source - sakura"
 subcategory: "Misc"
 description: |-
-  Get information about an existing Script.
+  Get information about an existing Script(note in v2).
 ---
 
 # sakura_script (Data Source)
 
-Get information about an existing Script.
+Get information about an existing Script(note in v2).
 
 ## Example Usage
 

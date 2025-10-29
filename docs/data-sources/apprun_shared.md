@@ -3,12 +3,12 @@
 page_title: "sakura_apprun_shared Data Source - sakura"
 subcategory: "Computing"
 description: |-
-  Get information about an existing AppRun Application.
+  Get information about an existing AppRun Shared Application(apprun_application in v2).
 ---
 
 # sakura_apprun_shared (Data Source)
 
-Get information about an existing AppRun Application.
+Get information about an existing AppRun Shared Application(apprun_application in v2).
 
 ## Example Usage
 

@@ -100,7 +100,7 @@ func (r *objectStorageBucketCorsResource) Schema(ctx context.Context, _ resource
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages an Object Storage's Bucket CORS Configuration.",
+		MarkdownDescription: "Manages an Object Storage's Bucket CORS Configuration.\n\nThis resource needs object_storage_permission's access_key/secret_key for the S3-compatible API.",
 	}
 }
 

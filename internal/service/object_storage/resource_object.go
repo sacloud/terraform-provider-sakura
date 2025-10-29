@@ -162,7 +162,7 @@ func (r *objectStorageObjectResource) Schema(ctx context.Context, _ resource.Sch
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages an Object Storage's Object",
+		MarkdownDescription: "Manages an Object Storage's Object.\n\nThis resource needs object_storage_permission's access_key/secret_key for the S3-compatible API.",
 	}
 }
 

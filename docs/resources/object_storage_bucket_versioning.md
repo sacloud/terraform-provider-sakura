@@ -4,11 +4,14 @@ page_title: "sakura_object_storage_bucket_versioning Resource - sakura"
 subcategory: "Storage and Data"
 description: |-
   Manages an Object Storage's Bucket Versioning.
+  This resource needs object_storage_permission's access_key/secret_key for the S3-compatible API.
 ---
 
 # sakura_object_storage_bucket_versioning (Resource)
 
 Manages an Object Storage's Bucket Versioning.
+
+This resource needs object_storage_permission's access_key/secret_key for the S3-compatible API.
 
 ## Example Usage
 

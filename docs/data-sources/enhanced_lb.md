@@ -3,12 +3,12 @@
 page_title: "sakura_enhanced_lb Data Source - sakura"
 subcategory: "Networking"
 description: |-
-  Get information about an existing VPN Router.
+  Get information about an existing Enhanced Load Balancer(proxylb in v2).
 ---
 
 # sakura_enhanced_lb (Data Source)
 
-Get information about an existing VPN Router.
+Get information about an existing Enhanced Load Balancer(proxylb in v2).
 
 ## Example Usage
 

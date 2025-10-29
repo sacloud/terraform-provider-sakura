@@ -3,12 +3,15 @@
 page_title: "sakura_object_storage_object Data Source - sakura"
 subcategory: "Storage and Data"
 description: |-
-  Get information about an existing Object Storage's Object.
+  Get information about an existing Object Storage's Object
+  This data source needs object_storage_permission's access_key/secret_key for the S3-compatible API.
 ---
 
 # sakura_object_storage_object (Data Source)
 
-Get information about an existing Object Storage's Object.
+Get information about an existing Object Storage's Object
+
+This data source needs object_storage_permission's access_key/secret_key for the S3-compatible API.
 
 ## Example Usage
 

@@ -437,7 +437,7 @@ func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing VPN Router.",
+		MarkdownDescription: "Get information about an existing VPN Router(vpc_outer in v2).",
 	}
 }
 

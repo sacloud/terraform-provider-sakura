@@ -3,12 +3,12 @@
 page_title: "sakura_script Resource - sakura"
 subcategory: "Misc"
 description: |-
-  Manages a Script.
+  Manages a Script(note in v2).
 ---
 
 # sakura_script (Resource)
 
-Manages a Script.
+Manages a Script(note in v2).
 
 ## Example Usage
 

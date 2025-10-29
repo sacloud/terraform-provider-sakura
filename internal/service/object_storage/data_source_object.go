@@ -141,7 +141,7 @@ func (d *objectStorageObjectDataSource) Schema(_ context.Context, _ datasource.S
 				Description: "Whether the ObjectStorage Object is a delete marker",
 			},
 		},
-		MarkdownDescription: "Get information about an existing Object Storage's Object.",
+		MarkdownDescription: "Get information about an existing Object Storage's Object\n\nThis data source needs object_storage_permission's access_key/secret_key for the S3-compatible API.",
 	}
 }
 

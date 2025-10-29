@@ -486,7 +486,7 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages a VPN Router.",
+		MarkdownDescription: "Manages an Enhanced Load Balancer(proxylb in v2).",
 	}
 }
 

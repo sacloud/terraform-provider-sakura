@@ -15,13 +15,14 @@ Storage and Data:
   - object_storage_site
 Database:
   - database
-  - database_replica
+  - database_read_replica
   - nosql
 Networking:
   - bridge
   - dns
   - dns_record
   - enhanced_lb
+  - enhanced_lb_acme
   - internet
   - packet_filter
   - packet_filter_rules
@@ -48,3 +49,4 @@ Misc:
   - icon
   - script
   - ssh_key
+  - zone

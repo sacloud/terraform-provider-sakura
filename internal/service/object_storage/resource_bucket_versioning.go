@@ -78,7 +78,7 @@ func (r *objectStorageBucketVersioningResource) Schema(ctx context.Context, _ re
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages an Object Storage's Bucket Versioning.",
+		MarkdownDescription: "Manages an Object Storage's Bucket Versioning.\n\nThis resource needs object_storage_permission's access_key/secret_key for the S3-compatible API.",
 	}
 }
 

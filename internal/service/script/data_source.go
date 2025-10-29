@@ -59,7 +59,7 @@ func (d *scriptDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Description: "The content of the Script",
 			},
 		},
-		MarkdownDescription: "Get information about an existing Script.",
+		MarkdownDescription: "Get information about an existing Script(note in v2).",
 	}
 }
 

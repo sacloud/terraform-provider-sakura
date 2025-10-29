@@ -3,12 +3,15 @@
 page_title: "sakura_object_storage_object Resource - sakura"
 subcategory: "Storage and Data"
 description: |-
-  Manages an Object Storage's Object
+  Manages an Object Storage's Object.
+  This resource needs object_storage_permission's access_key/secret_key for the S3-compatible API.
 ---
 
 # sakura_object_storage_object (Resource)
 
-Manages an Object Storage's Object
+Manages an Object Storage's Object.
+
+This resource needs object_storage_permission's access_key/secret_key for the S3-compatible API.
 
 ## Example Usage
 

@@ -3,12 +3,12 @@
 page_title: "sakura_vpn_router Data Source - sakura"
 subcategory: "Networking"
 description: |-
-  Get information about an existing VPN Router.
+  Get information about an existing VPN Router(vpc_outer in v2).
 ---
 
 # sakura_vpn_router (Data Source)
 
-Get information about an existing VPN Router.
+Get information about an existing VPN Router(vpc_outer in v2).
 
 ## Example Usage
 

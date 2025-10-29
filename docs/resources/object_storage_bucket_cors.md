@@ -4,11 +4,14 @@ page_title: "sakura_object_storage_bucket_cors Resource - sakura"
 subcategory: "Storage and Data"
 description: |-
   Manages an Object Storage's Bucket CORS Configuration.
+  This resource needs object_storage_permission's access_key/secret_key for the S3-compatible API.
 ---
 
 # sakura_object_storage_bucket_cors (Resource)
 
 Manages an Object Storage's Bucket CORS Configuration.
+
+This resource needs object_storage_permission's access_key/secret_key for the S3-compatible API.
 
 ## Example Usage
 

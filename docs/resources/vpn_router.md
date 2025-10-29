@@ -3,12 +3,12 @@
 page_title: "sakura_vpn_router Resource - sakura"
 subcategory: "Networking"
 description: |-
-  Manages a VPN Router.
+  Manages a VPN Router(vpc_router in v2).
 ---
 
 # sakura_vpn_router (Resource)
 
-Manages a VPN Router.
+Manages a VPN Router(vpc_router in v2).
 
 ## Example Usage
 
