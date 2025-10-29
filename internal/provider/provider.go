@@ -44,6 +44,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/ssh_key"
 	sw1tch "github.com/sacloud/terraform-provider-sakura/internal/service/switch"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/vpn_router"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/zone"
 )
 
 type sakuraProviderModel struct {
@@ -291,6 +292,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		ssh_key.NewSSHKeyDataSource,
 		sw1tch.NewSwitchDataSource,
 		vpn_router.NewVPNRouterDataSource,
+		zone.NewZoneDataSource,
 		// ...他のデータソースも同様に追加...
 	}
 }
