@@ -105,7 +105,7 @@ func (r *triggerResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 						"values": schema.SetAttribute{
 							ElementType: types.StringType,
 							Required:    true,
-							Description: desc.Sprintf("The values of the condition for %s.", resourceName),
+							Description: desc.Sprintf("The values of the condition for %s. Length shoud be 1 when `op` is `eq`, and at least 1 when `op` is `in`.", resourceName),
 						},
 					},
 					Validators: []validator.Object{
