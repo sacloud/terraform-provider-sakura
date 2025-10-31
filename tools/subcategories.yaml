@@ -33,6 +33,7 @@ Application Integration:
   - apigw
   - eventbus_process_configuration
   - eventbus_schedule
+  - eventbus_trigger
   - simple_mq
   - workflows
 Monitoring:
