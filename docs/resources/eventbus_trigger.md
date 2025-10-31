@@ -65,7 +65,7 @@ Required:
 
 - `key` (String) The key of the condition for EventBus Trigger.
 - `op` (String) The operator of the condition for EventBus Trigger.
-- `values` (Set of String) The values of the condition for EventBus Trigger.
+- `values` (Set of String) The values of the condition for EventBus Trigger. Length shoud be 1 when `op` is `eq`, and at least 1 when `op` is `in`.
 
 
 <a id="nestedatt--timeouts"></a>
