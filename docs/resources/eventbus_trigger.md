@@ -43,16 +43,16 @@ resource "sakura_eventbus_trigger" "foobar" {
 
 - `name` (String) The name of the EventBus Trigger.
 - `process_configuration_id` (String) The ProcessConfiguration ID of the EventBus Trigger.
-- `source` (String) The Source of the EventBus Trigger.
+- `source` (String) The source of the EventBus Trigger.
 
 ### Optional
 
-- `conditions` (Attributes List) The Conditions of the EventBus Trigger. (see [below for nested schema](#nestedatt--conditions))
+- `conditions` (Attributes List) The conditions of the EventBus Trigger. (see [below for nested schema](#nestedatt--conditions))
 - `description` (String) The description of the EventBus Trigger. The length of this value must be in the range [`1`-`512`]
 - `icon_id` (String) The icon id to attach to the EventBus Trigger
 - `tags` (Set of String) The tags of the EventBus Trigger.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `types` (Set of String) The Types of the EventBus Trigger.
+- `types` (Set of String) The types of the EventBus Trigger.
 
 ### Read-Only
 
@@ -63,9 +63,9 @@ resource "sakura_eventbus_trigger" "foobar" {
 
 Required:
 
-- `key` (String) The Key of the condition for EventBus Trigger.
-- `op` (String) The Operator of the condition for EventBus Trigger.
-- `values` (Set of String) The Values of the condition for EventBus Trigger.
+- `key` (String) The key of the condition for EventBus Trigger.
+- `op` (String) The operator of the condition for EventBus Trigger.
+- `values` (Set of String) The values of the condition for EventBus Trigger.
 
 
 <a id="nestedatt--timeouts"></a>
