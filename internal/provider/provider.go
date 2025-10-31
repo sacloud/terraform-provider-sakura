@@ -312,6 +312,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		enhanced_lb.NewEnhancedLBACMEResource,
 		eventbus.NewEventBusProcessConfigurationResource,
 		eventbus.NewEventBusScheduleResource,
+		eventbus.NewEventBusTriggerResource,
 		icon.NewIconResource,
 		internet.NewInternetResource,
 		kms.NewKMSResource,
