@@ -274,6 +274,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		enhanced_lb.NewEnhancedLBDataSource,
 		eventbus.NewEventBusProcessConfigurationDataSource,
 		eventbus.NewEventBusScheduleDataSource,
+		eventbus.NewEventBusTriggerDataSource,
 		icon.NewIconDataSource,
 		internet.NewInternetDataSource,
 		kms.NewKmsDataSource,
