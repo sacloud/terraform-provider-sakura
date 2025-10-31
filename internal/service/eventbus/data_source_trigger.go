@@ -62,30 +62,30 @@ func (d *triggerDataSource) Schema(_ context.Context, _ datasource.SchemaRequest
 			},
 			"source": schema.StringAttribute{
 				Computed:    true,
-				Description: desc.Sprintf("The Source of the %s.", resourceName),
+				Description: desc.Sprintf("The source of the %s.", resourceName),
 			},
 			"types": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: desc.Sprintf("The Types of the %s.", resourceName),
+				Description: desc.Sprintf("The types of the %s.", resourceName),
 			},
 			"conditions": schema.ListNestedAttribute{
 				Computed:    true,
-				Description: desc.Sprintf("The Conditions of the %s.", resourceName),
+				Description: desc.Sprintf("The conditions of the %s.", resourceName),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"key": schema.StringAttribute{
 							Computed:    true,
-							Description: desc.Sprintf("The Key of the condition for %s.", resourceName),
+							Description: desc.Sprintf("The key of the condition for %s.", resourceName),
 						},
 						"op": schema.StringAttribute{
 							Computed:    true,
-							Description: desc.Sprintf("The Operator of the condition for %s.", resourceName),
+							Description: desc.Sprintf("The operator of the condition for %s.", resourceName),
 						},
 						"values": schema.SetAttribute{
 							ElementType: types.StringType,
 							Computed:    true,
-							Description: desc.Sprintf("The Values of the condition for %s.", resourceName),
+							Description: desc.Sprintf("The values of the condition for %s.", resourceName),
 						},
 					},
 				},
