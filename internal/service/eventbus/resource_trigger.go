@@ -110,32 +110,23 @@ func (r *triggerResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 					},
 					Validators: []validator.Object{
 						sacloudvalidator.ObjectFuncValidator(func(o types.Object) error {
-							keyAttr, ok := o.Attributes()["key"].(types.String)
-							if !ok {
-								return errors.New("key attribute is not string type")
-							}
-							opAttr, ok := o.Attributes()["op"].(types.String)
-							if !ok {
-								return errors.New("op attribute is not string type")
-							}
-							valuesAttr, ok := o.Attributes()["values"].(types.Set)
-							if !ok {
-								return errors.New("key attribute is not set type")
-							}
+							key := o.Attributes()["key"].(types.String).ValueString()
+							op := o.Attributes()["op"].(types.String).ValueString()
+							values := o.Attributes()["values"].(types.Set)
 
 							var cond v1.TriggerSettingsConditionsItem
-							switch opAttr.ValueString() {
+							switch op {
 							case string(v1.TriggerConditionEqTriggerSettingsConditionsItem):
 								cond = v1.NewTriggerConditionEqTriggerSettingsConditionsItem(v1.TriggerConditionEq{
-									Key:    keyAttr.ValueString(),
+									Key:    key,
 									Op:     v1.TriggerConditionEqOpEq,
-									Values: common.TsetToStrings(valuesAttr),
+									Values: common.TsetToStrings(values),
 								})
 							case string(v1.TriggerConditionInTriggerSettingsConditionsItem):
 								cond = v1.NewTriggerConditionInTriggerSettingsConditionsItem(v1.TriggerConditionIn{
-									Key:    keyAttr.ValueString(),
+									Key:    key,
 									Op:     v1.TriggerConditionInOpIn,
-									Values: common.TsetToStrings(valuesAttr),
+									Values: common.TsetToStrings(values),
 								})
 							default:
 								return errors.New("invalid operator for condition")
