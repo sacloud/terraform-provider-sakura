@@ -76,10 +76,10 @@ func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req r
 		}
 
 	case destinationSimpleNotification, destinationAutoScale:
-		if config.SimpleNotificationAccessToken.ValueString() == "" {
+		if config.SakuraAccessToken.ValueString() == "" {
 			requiredAttributeMissing(resp, "sakura_access_token_wo", destination)
 		}
-		if config.SimpleNotificationAccessTokenSecret.ValueString() == "" {
+		if config.SakuraAccessTokenSecret.ValueString() == "" {
 			requiredAttributeMissing(resp, "sakura_access_token_secret_wo", destination)
 		}
 		version := config.CredentialsVersion
@@ -99,10 +99,10 @@ type processConfigurationResourceModel struct {
 	processConfigurationBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 
-	SimpleNotificationAccessToken       types.String `tfsdk:"sakura_access_token_wo"`
-	SimpleNotificationAccessTokenSecret types.String `tfsdk:"sakura_access_token_secret_wo"`
-	SimpleMQAPIKey                      types.String `tfsdk:"simplemq_api_key_wo"`
-	CredentialsVersion                  types.Int32  `tfsdk:"credentials_wo_version"`
+	SakuraAccessToken       types.String `tfsdk:"sakura_access_token_wo"`
+	SakuraAccessTokenSecret types.String `tfsdk:"sakura_access_token_secret_wo"`
+	SimpleMQAPIKey          types.String `tfsdk:"simplemq_api_key_wo"`
+	CredentialsVersion      types.Int32  `tfsdk:"credentials_wo_version"`
 }
 
 func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -380,8 +380,8 @@ func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResour
 		})
 	case destinationSimpleNotification, destinationAutoScale:
 		req.Secret = v1.NewSacloudAPISecretSetSecretRequestSecret(v1.SacloudAPISecret{
-			AccessToken:       d.SimpleNotificationAccessToken.ValueString(),
-			AccessTokenSecret: d.SimpleNotificationAccessTokenSecret.ValueString(),
+			AccessToken:       d.SakuraAccessToken.ValueString(),
+			AccessTokenSecret: d.SakuraAccessTokenSecret.ValueString(),
 		})
 	}
 
