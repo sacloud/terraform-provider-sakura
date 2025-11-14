@@ -75,22 +75,22 @@ func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req r
 			requiredAttributeMissing(resp, "credentials_wo_version", destinationSimpleMQ)
 		}
 
-	case destinationSimpleNotification:
+	case destinationSimpleNotification, destinationAutoScale:
 		if config.SimpleNotificationAccessToken.ValueString() == "" {
-			requiredAttributeMissing(resp, "simplenotification_access_token_wo", destinationSimpleNotification)
+			requiredAttributeMissing(resp, "sakura_access_token_wo", destination)
 		}
 		if config.SimpleNotificationAccessTokenSecret.ValueString() == "" {
-			requiredAttributeMissing(resp, "simplenotification_access_token_secret_wo", destinationSimpleNotification)
+			requiredAttributeMissing(resp, "sakura_access_token_secret_wo", destination)
 		}
 		version := config.CredentialsVersion
 		if version.IsNull() || version.IsUnknown() {
-			requiredAttributeMissing(resp, "credentials_wo_version", destinationSimpleNotification)
+			requiredAttributeMissing(resp, "credentials_wo_version", destination)
 		}
 	default:
 		resp.Diagnostics.AddAttributeError(
 			path.Root("destination"),
 			"Unknown destination",
-			fmt.Sprintf("Destination should be either %q or %q", destinationSimpleNotification, destinationSimpleMQ),
+			fmt.Sprintf("Destination should be either %q, %q or %q", destinationSimpleNotification, destinationSimpleMQ, destinationAutoScale),
 		)
 	}
 }
@@ -99,8 +99,8 @@ type processConfigurationResourceModel struct {
 	processConfigurationBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 
-	SimpleNotificationAccessToken       types.String `tfsdk:"simplenotification_access_token_wo"`
-	SimpleNotificationAccessTokenSecret types.String `tfsdk:"simplenotification_access_token_secret_wo"`
+	SimpleNotificationAccessToken       types.String `tfsdk:"sakura_access_token_wo"`
+	SimpleNotificationAccessTokenSecret types.String `tfsdk:"sakura_access_token_secret_wo"`
 	SimpleMQAPIKey                      types.String `tfsdk:"simplemq_api_key_wo"`
 	CredentialsVersion                  types.Int32  `tfsdk:"credentials_wo_version"`
 }
@@ -135,17 +135,17 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 				WriteOnly:   true,
 				Description: desc.Sprintf("The SimpleMQ API key for %s.", resourceName),
 			},
-			"simplenotification_access_token_wo": schema.StringAttribute{
+			"sakura_access_token_wo": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
 				WriteOnly:   true,
-				Description: desc.Sprintf("The SimpleNotification access token for %s.", resourceName),
+				Description: desc.Sprintf("The SimpleNotification/AutoScale access token for %s.", resourceName),
 			},
-			"simplenotification_access_token_secret_wo": schema.StringAttribute{
+			"sakura_access_token_secret_wo": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
 				WriteOnly:   true,
-				Description: desc.Sprintf("The SimpleNotification access token secret for %s.", resourceName),
+				Description: desc.Sprintf("The SimpleNotification/AutoScale access token secret for %s.", resourceName),
 			},
 			"credentials_wo_version": schema.Int32Attribute{
 				Optional:    true,
@@ -378,7 +378,7 @@ func expandProcessConfigurationUpdateSecretRequest(d *processConfigurationResour
 		req.Secret = v1.NewSimpleMQSecretSetSecretRequestSecret(v1.SimpleMQSecret{
 			APIKey: d.SimpleMQAPIKey.ValueString(),
 		})
-	case destinationSimpleNotification:
+	case destinationSimpleNotification, destinationAutoScale:
 		req.Secret = v1.NewSacloudAPISecretSetSecretRequestSecret(v1.SacloudAPISecret{
 			AccessToken:       d.SimpleNotificationAccessToken.ValueString(),
 			AccessTokenSecret: d.SimpleNotificationAccessTokenSecret.ValueString(),
