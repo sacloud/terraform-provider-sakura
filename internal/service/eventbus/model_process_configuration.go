@@ -14,6 +14,7 @@ import (
 const (
 	destinationSimpleMQ           = string(v1.ProcessConfigurationSettingsDestinationSimplemq)
 	destinationSimpleNotification = string(v1.ProcessConfigurationSettingsDestinationSimplenotification)
+	destinationAutoScale          = string(v1.ProcessConfigurationSettingsDestinationAutoscale)
 )
 
 type processConfigurationBaseModel struct {

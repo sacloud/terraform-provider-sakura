@@ -26,8 +26,8 @@ func TestAccSakuraDataSourceProcessConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "destination", "simplenotification"),
 					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"),
-					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_wo"),
-					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_secret_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "sakura_access_token_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "sakura_access_token_secret_wo"),
 					resource.TestCheckNoResourceAttr(resourceName, "credentials_wo_version"),
 					resource.TestCheckNoResourceAttr(resourceName, "simplemq_api_key_wo"),
 				),
@@ -45,9 +45,9 @@ resource "sakura_eventbus_process_configuration" "foobar" {
   destination = "simplenotification"
   parameters  = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
 
-  simplenotification_access_token_wo        = "test"
-  simplenotification_access_token_secret_wo = "test"
-  credentials_wo_version                    = 1
+  sakura_access_token_wo        = "test"
+  sakura_access_token_secret_wo = "test"
+  credentials_wo_version        = 1
 }
 
 data "sakura_eventbus_process_configuration" "foobar" {

@@ -37,8 +37,8 @@ func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "destination", "simplenotification"),
 					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"),
 					resource.TestCheckNoResourceAttr(resourceName, "simplemq_api_key_wo"),
-					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_wo"),
-					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_secret_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "sakura_access_token_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "sakura_access_token_secret_wo"),
 					resource.TestCheckResourceAttr(resourceName, "credentials_wo_version", "1"),
 				),
 			},
@@ -54,8 +54,8 @@ func TestAccSakuraResourceProcessConfiguration_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "destination", "simplemq"),
 					resource.TestCheckResourceAttr(resourceName, "parameters", "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"),
 					resource.TestCheckNoResourceAttr(resourceName, "simplemq_api_key_wo"),
-					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_wo"),
-					resource.TestCheckNoResourceAttr(resourceName, "simplenotification_access_token_secret_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "sakura_access_token_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "sakura_access_token_secret_wo"),
 					resource.TestCheckResourceAttr(resourceName, "credentials_wo_version", "1"),
 				),
 			},
@@ -76,7 +76,7 @@ func TestAccSakuraResourceProcessConfiguration_validation_credentials(t *testing
 			},
 			{
 				Config:      test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_SimpleNotificationCredential, rand),
-				ExpectError: regexp.MustCompile(`Expected "simplenotification_access_token_wo" to be configured`),
+				ExpectError: regexp.MustCompile(`Expected "sakura_access_token_wo" to be configured`),
 			},
 			{
 				Config:      test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_SimpleMQCredential, rand),
@@ -145,9 +145,9 @@ resource "sakura_eventbus_process_configuration" "foobar" {
   destination = "simplenotification"
   parameters  = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
 
-  simplenotification_access_token_wo        = "test"
-  simplenotification_access_token_secret_wo = "test"
-  credentials_wo_version                    = 1
+  sakura_access_token_wo        = "test"
+  sakura_access_token_secret_wo = "test"
+  credentials_wo_version        = 1
 }`
 
 var testAccSakuraProcessConfiguration_update = `
@@ -180,9 +180,9 @@ resource "sakura_eventbus_process_configuration" "foobar" {
   destination = "simplenotification"
   parameters  = "{\"group_id\": \"123456789012\", \"message\":\"test message\"}"
 
-  # missing -> simplenotification_access_token_wo
-  simplenotification_access_token_secret_wo = "test"
-  credentials_wo_version                    = 1
+  # missing -> sakura_access_token_wo
+  sakura_access_token_secret_wo = "test"
+  credentials_wo_version        = 1
 }`
 
 //nolint:gosec // hardcoded credentials but this is dummy data for test
@@ -194,7 +194,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
   parameters  = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"
 
   # wrong credentials
-  simplenotification_access_token_wo        = "test"
-  simplenotification_access_token_secret_wo = "test"
-  credentials_wo_version                    = 1
+  sakura_access_token_wo        = "test"
+  sakura_access_token_secret_wo = "test"
+  credentials_wo_version        = 1
 }`
