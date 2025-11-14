@@ -18,7 +18,7 @@ require (
 	github.com/sacloud/apprun-api-go v0.4.1
 	github.com/sacloud/eventbus-api-go v0.5.2
 	github.com/sacloud/go-http v0.1.9
-	github.com/sacloud/iaas-api-go v1.20.0
+	github.com/sacloud/iaas-api-go v1.21.1
 	github.com/sacloud/iaas-service-go v1.17.0
 	github.com/sacloud/kms-api-go v0.2.2
 	github.com/sacloud/object-storage-api-go v0.0.12
