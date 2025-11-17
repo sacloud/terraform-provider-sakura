@@ -17,6 +17,7 @@ Database:
   - database
   - database_read_replica
   - nosql
+  - nosql_additional_nodes
 Networking:
   - bridge
   - dns
