@@ -38,7 +38,7 @@ resource "sakura_vpn_router" "premium" {
 
   private_network_interface = [{
     index        = 1
-    switch_id    = sakura_cloud_switch.foobar.id
+    switch_id    = sakura_vswitch.foobar.id
     vip          = "192.168.11.1"
     ip_addresses = ["192.168.11.2", "192.168.11.3"]
     netmask      = 24
@@ -164,7 +164,7 @@ resource "sakura_internet" "foobar" {
   name = "foobar"
 }
 
-resource "sakura_switch" "foobar" {
+resource "sakura_vswitch" "foobar" {
   name = "foobar"
 }
 ```

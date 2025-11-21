@@ -1,14 +1,14 @@
 // Copyright 2016-2025 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package sw1tch
+package vswitch
 
 import (
 	"context"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -23,25 +23,25 @@ import (
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
-type switchResource struct {
+type vSwitchResource struct {
 	client *common.APIClient
 }
 
 var (
-	_ resource.Resource                = &switchResource{}
-	_ resource.ResourceWithConfigure   = &switchResource{}
-	_ resource.ResourceWithImportState = &switchResource{}
+	_ resource.Resource                = &vSwitchResource{}
+	_ resource.ResourceWithConfigure   = &vSwitchResource{}
+	_ resource.ResourceWithImportState = &vSwitchResource{}
 )
 
-func NewSwitchResource() resource.Resource {
-	return &switchResource{}
+func NewvSwitchResource() resource.Resource {
+	return &vSwitchResource{}
 }
 
-func (r *switchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_switch"
+func (r *vSwitchResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_vswitch"
 }
 
-func (r *switchResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *vSwitchResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -49,52 +49,50 @@ func (r *switchResource) Configure(ctx context.Context, req resource.ConfigureRe
 	r.client = apiclient
 }
 
-type switchResourceModel struct {
-	switchBaseModel
+type vSwitchResourceModel struct {
+	vSwitchBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *switchResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *vSwitchResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId("Switch"),
-			"name":        common.SchemaResourceName("Switch"),
-			"icon_id":     common.SchemaResourceIconID("Switch"),
-			"description": common.SchemaResourceDescription("Switch"),
-			"tags":        common.SchemaResourceTags("Switch"),
-			"zone":        common.SchemaResourceZone("Switch"),
+			"id":          common.SchemaResourceId("vSwitch"),
+			"name":        common.SchemaResourceName("vSwitch"),
+			"icon_id":     common.SchemaResourceIconID("vSwitch"),
+			"description": common.SchemaResourceDescription("vSwitch"),
+			"tags":        common.SchemaResourceTags("vSwitch"),
+			"zone":        common.SchemaResourceZone("vSwitch"),
 			"bridge_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The bridge id attached to the switch",
+				Description: "The bridge id attached to the vSwitch",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
 			},
-			"server_ids": schema.SetAttribute{
+			"server_ids": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: "A list of server ids connected to the switch",
-				Validators: []validator.Set{
-					setvalidator.ValueStringsAre(sacloudvalidator.SakuraIDValidator()),
+				Description: "A list of server ids connected to the vSwitch",
+				Validators: []validator.List{
+					listvalidator.ValueStringsAre(sacloudvalidator.SakuraIDValidator()),
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Deprecated: Use vswitch resource instead.",
+		MarkdownDescription: "Manages a vSwitch(Switch in v2).",
 	}
 }
 
-func (r *switchResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *vSwitchResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *switchResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	resp.Diagnostics.AddWarning("Deprecation", "sakura_switch resource is deprecated. Use sakura_vswitch resource instead.")
-
-	var plan switchResourceModel
+func (r *vSwitchResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan vSwitchResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -115,7 +113,7 @@ func (r *switchResource) Create(ctx context.Context, req resource.CreateRequest,
 		IconID:      common.ExpandSakuraCloudID(plan.IconID),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud Switch is failed: %s", err))
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create vSwitch: %s", err))
 		return
 	}
 
@@ -123,7 +121,7 @@ func (r *switchResource) Create(ctx context.Context, req resource.CreateRequest,
 		brId := common.ExpandSakuraCloudID(plan.BridgeID)
 		if err := swOp.ConnectToBridge(ctx, zone, sw.ID, brId); err != nil {
 			resp.Diagnostics.AddError("Bridge Connect Error",
-				fmt.Sprintf("connecting Switch[%s] to Bridge[%s] is failed: %s", sw.ID, brId, err))
+				fmt.Sprintf("failed to connect vSwitch[%s] to Bridge[%s]: %s", sw.ID, brId, err))
 			return
 		}
 	}
@@ -136,10 +134,8 @@ func (r *switchResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *switchResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	resp.Diagnostics.AddWarning("Deprecation", "sakura_switch resource is deprecated. Use sakura_vswitch resource instead.")
-
-	var state switchResourceModel
+func (r *vSwitchResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state vSwitchResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -149,7 +145,7 @@ func (r *switchResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	sw := getSwitch(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
+	sw := getvSwitch(ctx, r.client, common.ExpandSakuraCloudID(state.ID), zone, &resp.State, &resp.Diagnostics)
 	if sw == nil || resp.Diagnostics.HasError() {
 		return
 	}
@@ -162,10 +158,8 @@ func (r *switchResource) Read(ctx context.Context, req resource.ReadRequest, res
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *switchResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddWarning("Deprecation", "sakura_switch resource is deprecated. Use sakura_vswitch resource instead.")
-
-	var plan, state switchResourceModel
+func (r *vSwitchResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan, state vSwitchResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
@@ -192,7 +186,7 @@ func (r *switchResource) Update(ctx context.Context, req resource.UpdateRequest,
 		IconID:      common.ExpandSakuraCloudID(plan.IconID),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Switch[%s] is failed : %s", sw.ID, err))
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update vSwitch[%s]: %s", sw.ID, err))
 		return
 	}
 
@@ -203,12 +197,12 @@ func (r *switchResource) Update(ctx context.Context, req resource.UpdateRequest,
 			if brId == "" && !sw.BridgeID.IsEmpty() {
 				if err := swOp.DisconnectFromBridge(ctx, zone, sw.ID); err != nil {
 					resp.Diagnostics.AddError("Update Error",
-						fmt.Sprintf("disconnecting from Bridge[%s] is failed: %s", sw.BridgeID, err))
+						fmt.Sprintf("failed to disconnect from Bridge[%s]: %s", sw.BridgeID, err))
 					return
 				}
 			} else {
 				if err := swOp.ConnectToBridge(ctx, zone, sw.ID, common.SakuraCloudID(brId)); err != nil {
-					resp.Diagnostics.AddError("Update Error", fmt.Sprintf("connecting to Bridge[%s] is failed: %s", brId, err))
+					resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to connect to Bridge[%s]: %s", brId, err))
 					return
 				}
 			}
@@ -223,10 +217,8 @@ func (r *switchResource) Update(ctx context.Context, req resource.UpdateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *switchResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	resp.Diagnostics.AddWarning("Deprecation", "sakura_switch resource is deprecated. Use sakura_vswitch resource instead.")
-
-	var state switchResourceModel
+func (r *vSwitchResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state vSwitchResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -244,7 +236,7 @@ func (r *switchResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	defer common.SakuraMutexKV.Unlock(sid)
 
 	swOp := iaas.NewSwitchOp(r.client)
-	sw := getSwitch(ctx, r.client, common.SakuraCloudID(sid), zone, &resp.State, &resp.Diagnostics)
+	sw := getvSwitch(ctx, r.client, common.SakuraCloudID(sid), zone, &resp.State, &resp.Diagnostics)
 	if sw == nil || resp.Diagnostics.HasError() {
 		return
 	}
@@ -252,19 +244,19 @@ func (r *switchResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if !sw.BridgeID.IsEmpty() {
 		if err := swOp.DisconnectFromBridge(ctx, zone, sw.ID); err != nil {
 			resp.Diagnostics.AddError("Delete Error",
-				fmt.Sprintf("disconnecting Switch[%s] from Bridge[%s] is failed: %s", sw.ID, sw.BridgeID, err))
+				fmt.Sprintf("failed to disconnect vSwitch[%s] from Bridge[%s]: %s", sw.ID, sw.BridgeID, err))
 			return
 		}
 	}
 
 	if err := cleanup.DeleteSwitch(ctx, r.client, zone, sw.ID, r.client.CheckReferencedOption()); err != nil {
 		resp.Diagnostics.AddError("Delete Error",
-			fmt.Sprintf("deleting SakuraCloud Switch[%s] is failed: %s", state.ID.ValueString(), err))
+			fmt.Sprintf("failed to delete vSwitch[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
 
-func getSwitch(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Switch {
+func getvSwitch(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Switch {
 	swOp := iaas.NewSwitchOp(client)
 	sw, err := swOp.Read(ctx, zone, id)
 	if err != nil {
@@ -272,14 +264,14 @@ func getSwitch(ctx context.Context, client *common.APIClient, id iaastypes.ID, z
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("could not read SakuraCloud Switch[%s] : %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read vSwitch[%s] : %s", id, err))
 		return nil
 	}
 	return sw
 }
 
-func updateModelByRead(ctx context.Context, model *switchResourceModel, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) bool {
-	sw := getSwitch(ctx, client, id, zone, state, diags)
+func updateModelByRead(ctx context.Context, model *vSwitchResourceModel, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) bool {
+	sw := getvSwitch(ctx, client, id, zone, state, diags)
 	if sw == nil {
 		return true
 	}

@@ -28,7 +28,7 @@ resource "sakura_database" "foobar" {
   replica_password = var.replica_password
 
   network_interface = {
-    switch_id     = sakura_switch.foobar.id
+    switch_id     = sakura_vswitch.foobar.id
     ip_address    = "192.168.11.11"
     netmask       = 24
     gateway       = "192.168.11.1"
@@ -50,7 +50,7 @@ resource "sakura_database" "foobar" {
   tags        = ["tag1", "tag2"]
 }
 
-resource "sakura_switch" "foobar" {
+resource "sakura_vswitch" "foobar" {
   name = "foobar"
 }
 ```

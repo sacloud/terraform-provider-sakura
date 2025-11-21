@@ -27,6 +27,7 @@ Networking:
   - packet_filter
   - packet_filter_rules
   - switch
+  - vswitch
   - vpn_router
 Application Integration:
   - addon

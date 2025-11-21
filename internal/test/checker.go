@@ -28,11 +28,11 @@ func CheckSakuraDataSourceExists(n string) resource.TestCheckFunc {
 	}
 }
 
-func CheckSakuraSwitchDestroy(s *terraform.State) error {
+func CheckSakuravSwitchDestroy(s *terraform.State) error {
 	swOp := iaas.NewSwitchOp(AccClientGetter())
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_switch" {
+		if rs.Type != "sakura_vswitch" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -42,7 +42,7 @@ func CheckSakuraSwitchDestroy(s *terraform.State) error {
 		zone := rs.Primary.Attributes["zone"]
 		_, err := swOp.Read(context.Background(), zone, common.SakuraCloudID(rs.Primary.ID))
 		if err == nil {
-			return fmt.Errorf("resource Switch[%s] still exists", rs.Primary.ID)
+			return fmt.Errorf("resource vSwitch[%s] still exists", rs.Primary.ID)
 		}
 	}
 
