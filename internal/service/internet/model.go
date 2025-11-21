@@ -20,7 +20,7 @@ type internetBaseModel struct {
 	Netmask            types.Int32  `tfsdk:"netmask"`
 	BandWidth          types.Int32  `tfsdk:"band_width"`
 	EnableIPv6         types.Bool   `tfsdk:"enable_ipv6"`
-	SwitchID           types.String `tfsdk:"switch_id"`
+	VSwitchID          types.String `tfsdk:"vswitch_id"`
 	ServerIDs          types.Set    `tfsdk:"server_ids"`
 	NetworkAddress     types.String `tfsdk:"network_address"`
 	Gateway            types.String `tfsdk:"gateway"`
@@ -65,7 +65,7 @@ func (model *internetBaseModel) updateState(ctx context.Context, client *common.
 	model.UpdateBaseState(data.ID.String(), data.Name, data.Description, unassigned)
 	model.Netmask = types.Int32Value(int32(data.NetworkMaskLen))
 	model.BandWidth = types.Int32Value(int32(data.BandWidthMbps))
-	model.SwitchID = types.StringValue(sw.ID.String())
+	model.VSwitchID = types.StringValue(sw.ID.String())
 	model.ServerIDs = common.StringsToTset(serverIDs)
 	model.NetworkAddress = types.StringValue(sw.Subnets[0].NetworkAddress)
 	model.Gateway = types.StringValue(sw.Subnets[0].DefaultRoute)

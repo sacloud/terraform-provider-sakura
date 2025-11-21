@@ -61,7 +61,7 @@ func TestAccSakuraIcon_withSwitch(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			test.CheckSakuraIconDestroy,
-			test.CheckSakuraSwitchDestroy,
+			test.CheckSakuravSwitchDestroy,
 		),
 		Steps: []resource.TestStep{
 			{

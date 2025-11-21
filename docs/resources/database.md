@@ -28,7 +28,7 @@ resource "sakura_database" "foobar" {
   replica_password = var.replica_password
 
   network_interface = {
-    switch_id     = sakura_vswitch.foobar.id
+    vswitch_id    = sakura_vswitch.foobar.id
     ip_address    = "192.168.11.11"
     netmask       = 24
     gateway       = "192.168.11.1"
@@ -92,7 +92,7 @@ Required:
 - `gateway` (String) The IP address of the gateway used by Database
 - `ip_address` (String) The IP address to assign to the Database
 - `netmask` (Number) The bit length of the subnet to assign to the Database. This must be in the range [`8`-`29`]
-- `switch_id` (String) The id of the switch to which the Database connects
+- `vswitch_id` (String) The id of the vSwitch to which the Database connects
 
 Optional:
 

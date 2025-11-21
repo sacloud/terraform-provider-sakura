@@ -124,7 +124,7 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"network_interface": schema.SingleNestedAttribute{
 				Required: true,
 				Attributes: map[string]schema.Attribute{
-					"switch_id": common.SchemaResourceSwitchID("Database"),
+					"vswitch_id": common.SchemaResourceSwitchID("Database"),
 					"ip_address": schema.StringAttribute{
 						Required:    true,
 						Description: "The IP address to assign to the Database",
@@ -346,7 +346,7 @@ func expandDatabaseBuilder(model *databaseResourceModel, client *common.APIClien
 
 	req := &databaseBuilder.Builder{
 		PlanID:         iaastypes.DatabasePlanIDMap[model.Plan.ValueString()],
-		SwitchID:       common.ExpandSakuraCloudID(nic.SwitchID),
+		SwitchID:       common.ExpandSakuraCloudID(nic.VSwitchID),
 		IPAddresses:    []string{nic.IPAddress.ValueString()},
 		NetworkMaskLen: int(nic.Netmask.ValueInt32()),
 		DefaultRoute:   nic.Gateway.ValueString(),

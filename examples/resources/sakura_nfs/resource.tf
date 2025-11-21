@@ -4,7 +4,7 @@ resource "sakura_nfs" "foobar" {
   size = "500"
 
   network_interface = {
-    switch_id   = sakura_vswitch.foobar.id
+    vswitch_id  = sakura_vswitch.foobar.id
     ip_address  = "192.168.11.101"
     netmask     = 24
     gateway     = "192.168.11.1"

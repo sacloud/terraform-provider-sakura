@@ -75,7 +75,7 @@ func (r *nfsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Required:    true,
 				Description: "The network interface of the NFS.",
 				Attributes: map[string]schema.Attribute{
-					"switch_id": common.SchemaResourceSwitchID("NFS"),
+					"vswitch_id": common.SchemaResourceSwitchID("NFS"),
 					"ip_address": schema.StringAttribute{
 						Required:    true,
 						Description: "The IP address to assign to the NFS",
@@ -302,7 +302,7 @@ func expandNFSDiskPlanID(ctx context.Context, client *common.APIClient, d *nfsRe
 func expandNFSCreateRequest(d *nfsResourceModel, planID iaastypes.ID) *iaas.NFSCreateRequest {
 	nic := d.NetworkInterface
 	return &iaas.NFSCreateRequest{
-		SwitchID:       common.ExpandSakuraCloudID(nic.SwitchID),
+		SwitchID:       common.ExpandSakuraCloudID(nic.VSwitchID),
 		PlanID:         planID,
 		IPAddresses:    []string{nic.IPAddress.ValueString()},
 		NetworkMaskLen: int(nic.Netmask.ValueInt32()),

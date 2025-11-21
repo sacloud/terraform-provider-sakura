@@ -35,7 +35,7 @@ type databaseBaseModel struct {
 }
 
 type databaseNetworkInterfaceModel struct {
-	SwitchID     types.String `tfsdk:"switch_id"`
+	VSwitchID    types.String `tfsdk:"vswitch_id"`
 	IPAddress    types.String `tfsdk:"ip_address"`
 	Netmask      types.Int32  `tfsdk:"netmask"`
 	Gateway      types.String `tfsdk:"gateway"`
@@ -99,7 +99,7 @@ func flattenDatabaseTags(db *iaas.Database) types.Set {
 
 func flattenDatabaseNetworkInterface(db *iaas.Database) *databaseNetworkInterfaceModel {
 	return &databaseNetworkInterfaceModel{
-		SwitchID:     types.StringValue(db.SwitchID.String()),
+		VSwitchID:    types.StringValue(db.SwitchID.String()),
 		IPAddress:    types.StringValue(db.IPAddresses[0]),
 		Netmask:      types.Int32Value(int32(db.NetworkMaskLen)),
 		Gateway:      types.StringValue(db.DefaultRoute),
