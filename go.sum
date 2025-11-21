@@ -234,6 +234,8 @@ github.com/sacloud/apprun-api-go v0.4.1 h1:vxFSHz4xvcLJ5QfHwBcvWAAjAGsOc/VXt+YUK
 github.com/sacloud/apprun-api-go v0.4.1/go.mod h1:0dJf7Msv9UPGbdY1YJH5zw8HAsJS8z4WJgJ2uG8dFCA=
 github.com/sacloud/eventbus-api-go v0.5.2 h1:RsPJqWKl7nsNyGH0yYrsHCbv7YBiNOTaTrAzUVypu6A=
 github.com/sacloud/eventbus-api-go v0.5.2/go.mod h1:P9fBLdnPvdZR95VGrixV6CNwl6ZbGZvmeZk/COkY0YA=
+github.com/sacloud/cloudhsm-api-go v0.1.0 h1:9WTFlHSwLoC5wDjhO0cFTggFhYHBI/Yg6LF79n7O8Ew=
+github.com/sacloud/cloudhsm-api-go v0.1.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
 github.com/sacloud/ftps v1.2.0 h1:7UlSWd7cnm1J+sANz7IiBV9ffVcS+4g6ZV5UHVVbvaw=
 github.com/sacloud/ftps v1.2.0/go.mod h1:h4awhOi3PEyhKLj1FpXjoVV5yVkmRUU+d5L95EwX2JU=
 github.com/sacloud/go-http v0.1.9 h1:Xa5PY8/pb7XWhwG9nAeXSrYXPbtfBWqawgzxD5co3VE=

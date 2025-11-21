@@ -262,3 +262,6 @@ func FlattenTags(tags iaastypes.Tags) types.Set {
 	}
 	return StringsToTset(filtered)
 }
+
+// Use saclient-go's version in the future
+func Ptr[T any](t T) *T { return &t }
