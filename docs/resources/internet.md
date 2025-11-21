@@ -56,7 +56,7 @@ resource "sakura_internet" "foobar" {
 - `min_ip_address` (String) Minimum IP address in assigned global addresses to the Switch+Router
 - `network_address` (String) The IPv4 network address assigned to the Switch+Router
 - `server_ids` (Set of String) A set of the ID of Servers connected to the Switch+Router
-- `switch_id` (String) The id of the switch
+- `vswitch_id` (String) The id of the vSwitch
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

@@ -85,10 +85,10 @@ func (r *databaseReadReplicaResource) Schema(ctx context.Context, _ resource.Sch
 			"network_interface": schema.SingleNestedAttribute{
 				Required: true,
 				Attributes: map[string]schema.Attribute{
-					"switch_id": schema.StringAttribute{
+					"vswitch_id": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
-						Description: "The id of the switch to which the Database Replica connects. If `switch_id` isn't specified, it will be set to the same value of the master database",
+						Description: "The id of the vSwitch to which the Database Replica connects. If `vswitch_id` isn't specified, it will be set to the same value of the master database",
 						Validators: []validator.String{
 							sacloudvalidator.SakuraIDValidator(),
 						},
@@ -288,7 +288,7 @@ func (model *databaseReadReplicaResourceModel) updateState(zone string, db *iaas
 
 func flattenDatabaseReadReplicaNetworkInterface(db *iaas.Database) *databaseNetworkInterfaceModel {
 	return &databaseNetworkInterfaceModel{
-		SwitchID:     types.StringValue(db.SwitchID.String()),
+		VSwitchID:    types.StringValue(db.SwitchID.String()),
 		IPAddress:    types.StringValue(db.IPAddresses[0]),
 		Netmask:      types.Int32Value(int32(db.NetworkMaskLen)),
 		Gateway:      types.StringValue(db.DefaultRoute),
@@ -309,8 +309,8 @@ func expandDatabaseReadReplicaBuilder(ctx context.Context, model *databaseReadRe
 
 	nic := model.NetworkInterface
 	switchID := masterDB.SwitchID.String()
-	if !nic.SwitchID.IsNull() && !nic.SwitchID.IsUnknown() {
-		switchID = nic.SwitchID.ValueString()
+	if !nic.VSwitchID.IsNull() && !nic.VSwitchID.IsUnknown() {
+		switchID = nic.VSwitchID.ValueString()
 	}
 	netmask := masterDB.NetworkMaskLen
 	if !nic.Netmask.IsNull() && !nic.Netmask.IsUnknown() {

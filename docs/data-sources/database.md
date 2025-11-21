@@ -62,4 +62,4 @@ Read-Only:
 - `netmask` (Number) The bit length of the subnet assigned to the Database
 - `port` (Number) The number of the listening port
 - `source_ranges` (List of String) The range of source IP addresses that allow to access to the Database via network
-- `switch_id` (String) The id of the switch connected from the Database
+- `vswitch_id` (String) The id of the vSwitch connected from the Database

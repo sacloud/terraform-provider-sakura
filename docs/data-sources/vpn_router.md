@@ -23,22 +23,22 @@ data "sakura_vpn_router" "foobar" {
 
 ### Optional
 
-- `id` (String) The ID of the VPNRouter.
-- `name` (String) The name of the VPNRouter.
-- `tags` (Set of String) The tags of the VPNRouter.
-- `zone` (String) The name of zone that the VPNRouter is in (e.g. `is1a`, `tk1a`)
+- `id` (String) The ID of the VPN Router.
+- `name` (String) The name of the VPN Router.
+- `tags` (Set of String) The tags of the VPN Router.
+- `zone` (String) The name of zone that the VPN Router is in (e.g. `is1a`, `tk1a`)
 
 ### Read-Only
 
-- `description` (String) The description of the VPNRouter.
+- `description` (String) The description of the VPN Router.
 - `dhcp_server` (Attributes List) (see [below for nested schema](#nestedatt--dhcp_server))
 - `dhcp_static_mapping` (Attributes List) (see [below for nested schema](#nestedatt--dhcp_static_mapping))
 - `dns_forwarding` (Attributes) (see [below for nested schema](#nestedatt--dns_forwarding))
 - `firewall` (Attributes List) (see [below for nested schema](#nestedatt--firewall))
-- `icon_id` (String) The icon id attached to the VPNRouter
+- `icon_id` (String) The icon id attached to the VPN Router
 - `internet_connection` (Boolean) The flag to enable connecting to the Internet from the VPN Router
 - `l2tp` (Attributes) (see [below for nested schema](#nestedatt--l2tp))
-- `plan` (String) The plan name of the VPNRouter. This will be one of [`standard`/`premium`/`highspec`/`highspec4000`]
+- `plan` (String) The plan name of the VPN Router. This will be one of [`standard`/`premium`/`highspec`/`highspec4000`]
 - `port_forwarding` (Attributes List) A list of `port_forwarding` blocks as defined below. This represents a `Reverse NAT` (see [below for nested schema](#nestedatt--port_forwarding))
 - `pptp` (Attributes) (see [below for nested schema](#nestedatt--pptp))
 - `private_network_interface` (Attributes List) A list of additional network interface setting. This doesn't include primary network interface setting (see [below for nested schema](#nestedatt--private_network_interface))
@@ -148,8 +148,8 @@ Read-Only:
 - `index` (Number) The index of the network interface. This will be between `1`-`7`
 - `ip_addresses` (List of String) A list of ip address assigned to the network interface. This will be only one value when `plan` is `standard`, two values otherwise
 - `netmask` (Number) The bit length of the subnet assigned to the network interface
-- `switch_id` (String) The id of the switch connected from the VPNRouter
 - `vip` (String) The virtual IP address assigned to the network interface. This is only used when `plan` is not `standard`
+- `vswitch_id` (String) The id of the vSwitch connected from the VPNRouter
 
 
 <a id="nestedatt--public_network_interface"></a>
@@ -159,9 +159,9 @@ Read-Only:
 
 - `aliases` (List of String) A list of ip alias assigned to the VPN Router. This is only used when `plan` is not `standard`
 - `ip_addresses` (List of String) The list of the IP address assigned to the VPN Router. This will be only one value when `plan` is `standard`, two values otherwise
-- `switch_id` (String) The id of the switch connected from the VPNRouter
 - `vip` (String) The virtual IP address of the VPN Router. This is only used when `plan` is not `standard`
 - `vrid` (Number) The Virtual Router Identifier. This is only used when `plan` is not `standard`
+- `vswitch_id` (String) The id of the vSwitch connected from the VPNRouter
 
 
 <a id="nestedatt--scheduled_maintenance"></a>

@@ -15,7 +15,7 @@ import (
 )
 
 type nfsNetworkInterfaceModel struct {
-	SwitchID  types.String `tfsdk:"switch_id"`
+	VSwitchID types.String `tfsdk:"vswitch_id"`
 	IPAddress types.String `tfsdk:"ip_address"`
 	Netmask   types.Int32  `tfsdk:"netmask"`
 	Gateway   types.String `tfsdk:"gateway"`
@@ -45,7 +45,7 @@ func (model *nfsBaseModel) updateState(ctx context.Context, client *common.APICl
 	model.Plan = types.StringValue(plan)
 	model.Size = types.Int64Value(int64(size))
 	model.NetworkInterface = &nfsNetworkInterfaceModel{
-		SwitchID:  types.StringValue(nfs.SwitchID.String()),
+		VSwitchID: types.StringValue(nfs.SwitchID.String()),
 		IPAddress: types.StringValue(nfs.IPAddresses[0]),
 		Netmask:   types.Int32Value(int32(nfs.NetworkMaskLen)),
 		Gateway:   types.StringValue(nfs.DefaultRoute),

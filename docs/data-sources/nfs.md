@@ -44,4 +44,4 @@ Read-Only:
 - `gateway` (String) The IP address of the gateway used by NFS
 - `ip_address` (String) The IP address assigned to the NFS
 - `netmask` (Number) The bit length of the subnet assigned to the NFS
-- `switch_id` (String) The id of the switch connected from the NFS
+- `vswitch_id` (String) The id of the vSwitch connected from the NFS

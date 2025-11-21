@@ -61,11 +61,13 @@ func (d *switchDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Description: "A set of server id connected to the Switch",
 			},
 		},
-		MarkdownDescription: "Get information about an existing Switch.",
+		MarkdownDescription: "Deprecated: Use vswitch data source instead.",
 	}
 }
 
 func (d *switchDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	resp.Diagnostics.AddWarning("Deprecation", "sakura_switch data source is deprecated. Use sakura_vswitch data source instead.")
+
 	var data switchDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {

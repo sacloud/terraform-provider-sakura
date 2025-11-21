@@ -15,8 +15,9 @@ muxなども使っておらず、完全移行となります。
 
 - `sakuracloud_`プレフィックスは`sakura_`となります。環境変数などを設定することで過去のプレフィックスもサポートする予定です。
 - 必要なものはリソース名が適切なものに変更される可能性があります。以下は予定のものになり、他にも増える可能性があります
+  - `switch` -> `vswitch`
   - `vpc_router` -> `vpn_router`
-  - `proxylb` -> `enhanced_load_balancer`
+  - `proxylb` -> `enhanced_lb`
   - `note` -> `script`
   - `internet` -> `???` (より良い名前を模索中)
 

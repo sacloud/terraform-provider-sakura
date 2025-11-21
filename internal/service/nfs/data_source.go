@@ -58,7 +58,7 @@ func (d *nfsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 			"network_interface": schema.SingleNestedAttribute{
 				Computed: true,
 				Attributes: map[string]schema.Attribute{
-					"switch_id":  common.SchemaDataSourceSwitchID("NFS"),
+					"vswitch_id": common.SchemaDataSourceSwitchID("NFS"),
 					"ip_address": common.SchemaDataSourceIPAddress("NFS"),
 					"netmask":    common.SchemaDataSourceNetMask("NFS"),
 					"gateway":    common.SchemaDataSourceGateway("NFS"),

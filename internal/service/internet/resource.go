@@ -97,9 +97,9 @@ func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Computed:    true,
 				Description: "The flag to enable IPv6",
 			},
-			"switch_id": schema.StringAttribute{
+			"vswitch_id": schema.StringAttribute{
 				Computed:    true,
-				Description: desc.Sprintf("The id of the switch"),
+				Description: desc.Sprintf("The id of the vSwitch"),
 			},
 			"server_ids": schema.SetAttribute{
 				ElementType: types.StringType,

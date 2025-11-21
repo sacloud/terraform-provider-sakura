@@ -80,7 +80,7 @@ func expandVPNRouterPublicNetworkInterface(model *vpnRouterResourceModel) *vpcRo
 	}
 
 	return &vpcRouterPublicNetworkInterface{
-		switchID:    common.ExpandSakuraCloudID(d.SwitchID),
+		switchID:    common.ExpandSakuraCloudID(d.VSwitchID),
 		ipAddresses: common.TlistToStringsOrDefault(d.IPAddresses),
 		vip:         d.VIP.ValueString(),
 		ipAliases:   common.TlistToStringsOrDefault(d.Aliases),
@@ -99,14 +99,14 @@ func expandVPNRouterAdditionalNICSettings(model *vpnRouterResourceModel) []build
 		switch planID {
 		case iaastypes.VPCRouterPlans.Standard:
 			nicSetting = &builder.AdditionalStandardNICSetting{
-				SwitchID:       common.ExpandSakuraCloudID(iface.SwitchID),
+				SwitchID:       common.ExpandSakuraCloudID(iface.VSwitchID),
 				IPAddress:      ipAddresses[0],
 				NetworkMaskLen: int(iface.Netmask.ValueInt32()),
 				Index:          int(iface.Index.ValueInt32()),
 			}
 		default:
 			nicSetting = &builder.AdditionalPremiumNICSetting{
-				SwitchID:         common.ExpandSakuraCloudID(iface.SwitchID),
+				SwitchID:         common.ExpandSakuraCloudID(iface.VSwitchID),
 				NetworkMaskLen:   int(iface.Netmask.ValueInt32()),
 				IPAddresses:      ipAddresses,
 				VirtualIPAddress: iface.VIP.ValueString(),

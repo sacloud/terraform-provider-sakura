@@ -19,7 +19,7 @@ resource "sakura_nfs" "foobar" {
   size = "500"
 
   network_interface = {
-    switch_id   = sakura_switch.foobar.id
+    vswitch_id  = sakura_vswitch.foobar.id
     ip_address  = "192.168.11.101"
     netmask     = 24
     gateway     = "192.168.11.1"
@@ -29,7 +29,7 @@ resource "sakura_nfs" "foobar" {
   tags        = ["tag1", "tag2"]
 }
 
-resource "sakura_switch" "foobar" {
+resource "sakura_vswitch" "foobar" {
   name = "foobar"
 }
 ```
@@ -63,7 +63,7 @@ Required:
 
 - `ip_address` (String) The IP address to assign to the NFS
 - `netmask` (Number) The bit length of the subnet to assign to the NFS. This must be in the range [`8`-`29`]
-- `switch_id` (String) The id of the switch to which the NFS connects
+- `vswitch_id` (String) The id of the vSwitch to which the NFS connects
 
 Optional:
 

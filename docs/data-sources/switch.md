@@ -3,12 +3,12 @@
 page_title: "sakura_switch Data Source - sakura"
 subcategory: "Networking"
 description: |-
-  Get information about an existing Switch.
+  Deprecated: Use vswitch data source instead.
 ---
 
 # sakura_switch (Data Source)
 
-Get information about an existing Switch.
+Deprecated: Use vswitch data source instead.
 
 ## Example Usage
 

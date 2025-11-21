@@ -61,7 +61,7 @@ Optional:
 - `gateway` (String) The IP address of the gateway used by Database Replica. If `gateway` isn't specified, it will be set to the same value of the master database
 - `netmask` (Number) The bit length of the subnet to assign to the Database Replica. This must be in the range [`8`-`29`]. If `netmask` isn't specified, it will be set to the same value of the master database
 - `source_ranges` (List of String) The range of source IP addresses that allow to access to the Database Replica via network
-- `switch_id` (String) The id of the switch to which the Database Replica connects. If `switch_id` isn't specified, it will be set to the same value of the master database
+- `vswitch_id` (String) The id of the vSwitch to which the Database Replica connects. If `vswitch_id` isn't specified, it will be set to the same value of the master database
 
 Read-Only:
 

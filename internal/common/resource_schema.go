@@ -77,7 +77,7 @@ func SchemaResourceServerID(name string) schema.Attribute {
 func SchemaResourceSwitchID(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Required:    true,
-		Description: desc.Sprintf("The id of the switch to which the %s connects", name),
+		Description: desc.Sprintf("The id of the vSwitch to which the %s connects", name),
 		Validators: []validator.String{
 			sacloudvalidator.SakuraIDValidator(),
 		},

@@ -71,13 +71,13 @@ type vpnRouterResourceModel struct {
 func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId("VPNRouter"),
-			"name":        common.SchemaResourceName("VPNRouter"),
-			"description": common.SchemaResourceDescription("VPNRouter"),
-			"tags":        common.SchemaResourceTags("VPNRouter"),
-			"zone":        common.SchemaResourceZone("VPNRouter"),
-			"icon_id":     common.SchemaResourceIconID("VPNRouter"),
-			"plan":        common.SchemaResourcePlan("VPNRouter", "standard", iaastypes.VPCRouterPlanStrings),
+			"id":          common.SchemaResourceId("VPN Router"),
+			"name":        common.SchemaResourceName("VPN Router"),
+			"description": common.SchemaResourceDescription("VPN Router"),
+			"tags":        common.SchemaResourceTags("VPN Router"),
+			"zone":        common.SchemaResourceZone("VPN Router"),
+			"icon_id":     common.SchemaResourceIconID("VPN Router"),
+			"plan":        common.SchemaResourcePlan("VPN Router", "standard", iaastypes.VPCRouterPlanStrings),
 			"version": schema.Int32Attribute{
 				Optional:    true,
 				Computed:    true,
@@ -90,9 +90,9 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			"public_network_interface": schema.SingleNestedAttribute{
 				Optional: true, // only required when `plan` is not `standard`
 				Attributes: map[string]schema.Attribute{
-					"switch_id": schema.StringAttribute{
+					"vswitch_id": schema.StringAttribute{
 						Optional:    true,
-						Description: "The id of the switch to connect. This is only required when when `plan` is not `standard`",
+						Description: "The id of the vSwitch to connect. This is only required when when `plan` is not `standard`",
 						Validators: []validator.String{
 							sacloudvalidator.SakuraIDValidator(),
 						},
@@ -102,7 +102,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					},
 					"vip": schema.StringAttribute{
 						Optional:    true,
-						Description: "The virtual IP address of the VPC Router. This is only required when `plan` is not `standard`",
+						Description: "The virtual IP address of the VPN Router. This is only required when `plan` is not `standard`",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplaceIfConfigured(),
 						},
@@ -110,7 +110,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					"ip_addresses": schema.ListAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
-						Description: "The list of the IP address to assign to the VPC Router. This is required only one value when `plan` is `standard`, two values otherwise",
+						Description: "The list of the IP address to assign to the VPN Router. This is required only one value when `plan` is `standard`, two values otherwise",
 						Validators: []validator.List{
 							listvalidator.SizeAtLeast(2),
 							listvalidator.SizeAtMost(2),
@@ -129,7 +129,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					"aliases": schema.ListAttribute{
 						ElementType: types.StringType,
 						Optional:    true,
-						Description: "A list of ip alias to assign to the VPC Router. This can only be specified if `plan` is not `standard`",
+						Description: "A list of ip alias to assign to the VPN Router. This can only be specified if `plan` is not `standard`",
 						Validators: []validator.List{
 							listvalidator.SizeAtMost(19),
 						},
@@ -149,7 +149,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"syslog_host": schema.StringAttribute{
 				Optional:    true,
-				Description: "The ip address of the syslog host to which the VPC Router sends logs",
+				Description: "The ip address of the syslog host to which the VPN Router sends logs",
 			},
 			"internet_connection": schema.BoolAttribute{
 				Optional:    true,
@@ -172,9 +172,9 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 								int32validator.Between(1, 7),
 							},
 						},
-						"switch_id": schema.StringAttribute{
+						"vswitch_id": schema.StringAttribute{
 							Required:    true,
-							Description: "The id of the connected switch",
+							Description: "The id of the connected vSwitch",
 							Validators: []validator.String{
 								sacloudvalidator.SakuraIDValidator(),
 							},
@@ -186,7 +186,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 						"ip_addresses": schema.ListAttribute{
 							ElementType: types.StringType,
 							Required:    true,
-							Description: "A set of ip address to assign to the network interface. This is required only one value when `plan` is `standard`, two values otherwise",
+							Description: "A list of ip address to assign to the network interface. This is required only one value when `plan` is `standard`, two values otherwise",
 							Validators: []validator.List{
 								listvalidator.SizeAtLeast(1),
 								listvalidator.SizeAtMost(2),
@@ -415,7 +415,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					},
 				},
 			},
-			"wire_guard": schema.SingleNestedAttribute{ // TODO: Use SingleNestedAttribute
+			"wire_guard": schema.SingleNestedAttribute{
 				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"ip_address": schema.StringAttribute{

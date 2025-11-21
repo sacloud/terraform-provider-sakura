@@ -45,4 +45,4 @@ data "sakura_internet" "foobar" {
 - `netmask` (Number) The bit length of the subnet assigned to the Switch+Router
 - `network_address` (String) The network address assigned to the Switch+Router
 - `server_ids` (Set of String) A set of the ID of Servers connected to the Switch+Router
-- `switch_id` (String) The id of the switch connected from the Switch+Router
+- `vswitch_id` (String) The id of the vSwitch connected from the Switch+Router

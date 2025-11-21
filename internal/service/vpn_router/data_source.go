@@ -48,13 +48,13 @@ type vpnRouterDataSourceModel struct {
 func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("VPNRouter"),
-			"name":        common.SchemaDataSourceName("VPNRouter"),
-			"description": common.SchemaDataSourceDescription("VPNRouter"),
-			"tags":        common.SchemaDataSourceTags("VPNRouter"),
-			"zone":        common.SchemaDataSourceZone("VPNRouter"),
-			"icon_id":     common.SchemaDataSourceIconID("VPNRouter"),
-			"plan":        common.SchemaDataSourcePlan("VPNRouter", iaastypes.VPCRouterPlanStrings),
+			"id":          common.SchemaDataSourceId("VPN Router"),
+			"name":        common.SchemaDataSourceName("VPN Router"),
+			"description": common.SchemaDataSourceDescription("VPN Router"),
+			"tags":        common.SchemaDataSourceTags("VPN Router"),
+			"zone":        common.SchemaDataSourceZone("VPN Router"),
+			"icon_id":     common.SchemaDataSourceIconID("VPN Router"),
+			"plan":        common.SchemaDataSourcePlan("VPN Router", iaastypes.VPCRouterPlanStrings),
 			"version": schema.Int32Attribute{
 				Computed:    true,
 				Description: "The version of the VPN Router.",
@@ -63,7 +63,7 @@ func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				Computed:    true,
 				Description: "A list of additional network interface setting. This doesn't include primary network interface setting",
 				Attributes: map[string]schema.Attribute{
-					"switch_id": common.SchemaDataSourceSwitchID("VPNRouter"),
+					"vswitch_id": common.SchemaDataSourceSwitchID("VPNRouter"),
 					"vip": schema.StringAttribute{
 						Computed:    true,
 						Description: "The virtual IP address of the VPN Router. This is only used when `plan` is not `standard`",
@@ -109,7 +109,7 @@ func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 							Computed:    true,
 							Description: "The index of the network interface. This will be between `1`-`7`",
 						},
-						"switch_id": common.SchemaDataSourceSwitchID("VPNRouter"),
+						"vswitch_id": common.SchemaDataSourceSwitchID("VPNRouter"),
 						"vip": schema.StringAttribute{
 							Computed:    true,
 							Description: "The virtual IP address assigned to the network interface. This is only used when `plan` is not `standard`",

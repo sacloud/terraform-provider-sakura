@@ -1,11 +1,11 @@
-resource "sakura_switch" "is1a" {
+resource "sakura_vswitch" "is1a" {
   name        = "is1a"
   description = "description"
   bridge_id   = sakura_bridge.foobar.id
   zone        = "is1a"
 }
 
-resource "sakura_switch" "is1b" {
+resource "sakura_vswitch" "is1b" {
   name        = "is1b"
   description = "description"
   bridge_id   = sakura_bridge.foobar.id

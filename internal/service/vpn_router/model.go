@@ -44,7 +44,7 @@ type vpnRouterBaseModel struct {
 }
 
 type vpnRouterPublicNetworkInterfaceModel struct {
-	SwitchID    types.String `tfsdk:"switch_id"`
+	VSwitchID   types.String `tfsdk:"vswitch_id"`
 	VIP         types.String `tfsdk:"vip"`
 	IPAddresses types.List   `tfsdk:"ip_addresses"`
 	VRID        types.Int64  `tfsdk:"vrid"`
@@ -53,7 +53,7 @@ type vpnRouterPublicNetworkInterfaceModel struct {
 
 func (m vpnRouterPublicNetworkInterfaceModel) AttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"switch_id":    types.StringType,
+		"vswitch_id":   types.StringType,
 		"vip":          types.StringType,
 		"ip_addresses": types.ListType{ElemType: types.StringType},
 		"vrid":         types.Int64Type,
@@ -63,7 +63,7 @@ func (m vpnRouterPublicNetworkInterfaceModel) AttributeTypes() map[string]attr.T
 
 type vpnRouterPrivateNetworkInterfaceModel struct {
 	Index       types.Int32  `tfsdk:"index"`
-	SwitchID    types.String `tfsdk:"switch_id"`
+	VSwitchID   types.String `tfsdk:"vswitch_id"`
 	VIP         types.String `tfsdk:"vip"`
 	IPAddresses types.List   `tfsdk:"ip_addresses"`
 	Netmask     types.Int32  `tfsdk:"netmask"`
@@ -314,7 +314,7 @@ func flattenVPNRouterPublicNetworkInterface(vpcRouter *iaas.VPCRouter) types.Obj
 		return v
 	}
 	m := vpnRouterPublicNetworkInterfaceModel{
-		SwitchID:    types.StringValue(flattenVPNRouterSwitchID(vpcRouter)),
+		VSwitchID:   types.StringValue(flattenVPNRouterSwitchID(vpcRouter)),
 		VIP:         types.StringValue(flattenVPNRouterVIP(vpcRouter)),
 		IPAddresses: common.StringsToTlist(flattenVPNRouterIPAddresses(vpcRouter)),
 		VRID:        types.Int64Value(int64(flattenVPNRouterVRID(vpcRouter))),
@@ -348,7 +348,7 @@ func flattenVPNRouterPrivateNetworkInterfaces(vpcRouter *iaas.VPCRouter) []vpnRo
 
 			if nic != nil {
 				v := vpnRouterPrivateNetworkInterfaceModel{
-					SwitchID:    types.StringValue(nic.SwitchID.String()),
+					VSwitchID:   types.StringValue(nic.SwitchID.String()),
 					IPAddresses: common.StringsToTlist(iface.IPAddress),
 					Netmask:     types.Int32Value(int32(iface.NetworkMaskLen)),
 					Index:       types.Int32Value(int32(iface.Index)),
