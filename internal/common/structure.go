@@ -53,6 +53,23 @@ func ExpandSakuraCloudIDs(d basetypes.SetValue) []iaastypes.ID {
 	return ids
 }
 
+func ExpandSakuraCloudIDsFromList(d basetypes.ListValue) []iaastypes.ID {
+	strIDs := TlistToStrings(d)
+	if len(strIDs) == 0 {
+		return nil
+	}
+
+	var ids []iaastypes.ID
+	for _, strID := range strIDs {
+		if strID == "" {
+			continue
+		}
+		ids = append(ids, SakuraCloudID(strID))
+	}
+
+	return ids
+}
+
 func GetZone(zone basetypes.StringValue, client *APIClient, diags *diag.Diagnostics) string {
 	if zone.IsNull() || zone.IsUnknown() {
 		return client.defaultZone

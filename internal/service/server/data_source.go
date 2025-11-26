@@ -80,10 +80,10 @@ func (d *serverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 					iaastypes.CommitmentStrings,
 				),
 			},
-			"disks": schema.SetAttribute{
+			"disks": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: "A set of disk id connected to the server",
+				Description: "A list of disk id connected to the server",
 			},
 			"interface_driver": schema.StringAttribute{
 				Computed: true,
