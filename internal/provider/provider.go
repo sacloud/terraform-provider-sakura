@@ -24,6 +24,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_shared"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/bridge"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/cloudhsm"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/database"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/disk"
@@ -269,6 +270,10 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		apprun_shared.NewApprunSharedDataSource,
 		archive.NewArchiveDataSource,
 		bridge.NewBridgeDataSource,
+		cloudhsm.NewCloudHSMDataSource,
+		cloudhsm.NewCloudHSMClientDataSource,
+		cloudhsm.NewCloudHSMPeerDataSource,
+		cloudhsm.NewCloudHSMLicenseDataSource,
 		container_registry.NewContainerRegistryDataSource,
 		database.NewDatabaseDataSource,
 		disk.NewDiskDataSource,
@@ -305,6 +310,10 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		apprun_shared.NewApprunSharedResource,
 		archive.NewArchiveResource,
 		bridge.NewBridgeResource,
+		cloudhsm.NewCloudHSMResource,
+		cloudhsm.NewCloudHSMClientResource,
+		cloudhsm.NewCloudHSMPeerResource,
+		cloudhsm.NewCloudHSMLicenseResource,
 		container_registry.NewContainerRegistryResource,
 		database.NewDatabaseResource,
 		database.NewDatabaseReadReplicaResource,

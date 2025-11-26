@@ -42,6 +42,9 @@ Monitoring:
   - monitoring_suite
 Security:
   - cloudhsm
+  - cloudhsm_client
+  - cloudhsm_peer
+  - cloudhsm_license
   - kms
   - secret_manager
   - secret_manager_secret
