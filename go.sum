@@ -136,8 +136,8 @@ github.com/hashicorp/terraform-plugin-docs v0.24.0 h1:YNZYd+8cpYclQyXbl1EEngbld8
 github.com/hashicorp/terraform-plugin-docs v0.24.0/go.mod h1:YLg+7LEwVmRuJc0EuCw0SPLxuQXw5mW8iJ5ml/kvi+o=
 github.com/hashicorp/terraform-plugin-framework v1.16.1 h1:1+zwFm3MEqd/0K3YBB2v9u9DtyYHyEuhVOfeIXbteWA=
 github.com/hashicorp/terraform-plugin-framework v1.16.1/go.mod h1:0xFOxLy5lRzDTayc4dzK/FakIgBhNf/lC4499R9cV4Y=
-github.com/hashicorp/terraform-plugin-framework-timeouts v0.6.0 h1:Vv16e7EW4nT9668IV0RhdpEmnLl0im7BZx6J+QMlUkg=
-github.com/hashicorp/terraform-plugin-framework-timeouts v0.6.0/go.mod h1:rpHo9hZLn4vEkvNL5xsSdLRdaDZKSinuc0xL+BdOpVA=
+github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0 h1:jblRy1PkLfPm5hb5XeMa3tezusnMRziUGqtT5epSYoI=
+github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0/go.mod h1:5jm2XK8uqrdiSRfD5O47OoxyGMCnwTcl8eoiDgSa+tc=
 github.com/hashicorp/terraform-plugin-framework-validators v0.19.0 h1:Zz3iGgzxe/1XBkooZCewS0nJAaCFPFPHdNJd8FgE4Ow=
 github.com/hashicorp/terraform-plugin-framework-validators v0.19.0/go.mod h1:GBKTNGbGVJohU03dZ7U8wHqc2zYnMUawgCN+gC0itLc=
 github.com/hashicorp/terraform-plugin-go v0.29.0 h1:1nXKl/nSpaYIUBU1IG/EsDOX0vv+9JxAltQyDMpq5mU=
@@ -232,10 +232,10 @@ github.com/sacloud/api-client-go v0.3.3 h1:ZpSAyGpITA8UFO3Hq4qMHZLGuNI1FgxAxo4sq
 github.com/sacloud/api-client-go v0.3.3/go.mod h1:0p3ukcWYXRCc2AUWTl1aA+3sXLvurvvDqhRaLZRLBwo=
 github.com/sacloud/apprun-api-go v0.4.1 h1:vxFSHz4xvcLJ5QfHwBcvWAAjAGsOc/VXt+YUKZ0Aw3I=
 github.com/sacloud/apprun-api-go v0.4.1/go.mod h1:0dJf7Msv9UPGbdY1YJH5zw8HAsJS8z4WJgJ2uG8dFCA=
-github.com/sacloud/eventbus-api-go v0.5.2 h1:RsPJqWKl7nsNyGH0yYrsHCbv7YBiNOTaTrAzUVypu6A=
-github.com/sacloud/eventbus-api-go v0.5.2/go.mod h1:P9fBLdnPvdZR95VGrixV6CNwl6ZbGZvmeZk/COkY0YA=
 github.com/sacloud/cloudhsm-api-go v0.1.0 h1:9WTFlHSwLoC5wDjhO0cFTggFhYHBI/Yg6LF79n7O8Ew=
 github.com/sacloud/cloudhsm-api-go v0.1.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
+github.com/sacloud/eventbus-api-go v0.5.2 h1:RsPJqWKl7nsNyGH0yYrsHCbv7YBiNOTaTrAzUVypu6A=
+github.com/sacloud/eventbus-api-go v0.5.2/go.mod h1:P9fBLdnPvdZR95VGrixV6CNwl6ZbGZvmeZk/COkY0YA=
 github.com/sacloud/ftps v1.2.0 h1:7UlSWd7cnm1J+sANz7IiBV9ffVcS+4g6ZV5UHVVbvaw=
 github.com/sacloud/ftps v1.2.0/go.mod h1:h4awhOi3PEyhKLj1FpXjoVV5yVkmRUU+d5L95EwX2JU=
 github.com/sacloud/go-http v0.1.9 h1:Xa5PY8/pb7XWhwG9nAeXSrYXPbtfBWqawgzxD5co3VE=
