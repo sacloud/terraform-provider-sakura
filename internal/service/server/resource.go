@@ -145,12 +145,12 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 					stringvalidator.OneOf(iaastypes.CommitmentStrings...),
 				},
 			},
-			"disks": schema.SetAttribute{
+			"disks": schema.ListAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
-				Description: "A set of disk id connected to the server",
-				Validators: []validator.Set{
-					setvalidator.ValueStringsAre(sacloudvalidator.SakuraIDValidator()),
+				Description: "A list of disk id connected to the server",
+				Validators: []validator.List{
+					listvalidator.ValueStringsAre(sacloudvalidator.SakuraIDValidator()),
 				},
 			},
 			"interface_driver": schema.StringAttribute{
@@ -603,7 +603,7 @@ func expandServerUserData(plan *serverResourceModel, state *serverResourceModel)
 
 func expandServerDisks(ctx context.Context, client *common.APIClient, zone string, plan *serverResourceModel, state *serverResourceModel) ([]diskBuilder.Builder, error) {
 	var builders []diskBuilder.Builder
-	diskIDs := common.ExpandSakuraCloudIDs(plan.Disks)
+	diskIDs := common.ExpandSakuraCloudIDsFromList(plan.Disks)
 	diskOp := iaas.NewDiskOp(client)
 	for i, diskID := range diskIDs {
 		disk, err := diskOp.Read(ctx, zone, diskID)
