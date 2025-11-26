@@ -87,7 +87,7 @@ resource "sakura_disk" "foobar" {
 - `cpu_model` (String) The model of cpu
 - `description` (String) The description of the Server. The length of this value must be in the range [`1`-`512`]
 - `disk_edit_parameter` (Attributes) (see [below for nested schema](#nestedatt--disk_edit_parameter))
-- `disks` (Set of String) A set of disk id connected to the server
+- `disks` (List of String) A list of disk id connected to the server
 - `force_shutdown` (Boolean) The flag to use force shutdown when need to reboot/shutdown while applying
 - `gpu` (Number) The number of GPUs
 - `gpu_model` (String) The model of gpu

@@ -35,7 +35,7 @@ data "sakura_server" "foobar" {
 - `core` (Number) The number of virtual CPUs
 - `cpu_model` (String) The model of cpu
 - `description` (String) The description of the Server.
-- `disks` (Set of String) A set of disk id connected to the server
+- `disks` (List of String) A list of disk id connected to the server
 - `dns_servers` (List of String) A list of IP address of DNS server in the zone
 - `gateway` (String) The IP address of the gateway used by Server
 - `gpu` (Number) The number of GPUs

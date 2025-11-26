@@ -29,19 +29,19 @@ resource "sakura_cloudhsm" "foobar" {
 
 - `ipv4_netmask` (Number) The IPv4 netmask of the CloudHSM
 - `ipv4_network_address` (String) The IPv4 network address of the CloudHSM
-- `name` (String) The name of the Cloud HSM.
+- `name` (String) The name of the CloudHSM.
 
 ### Optional
 
-- `description` (String) The description of the Cloud HSM. The length of this value must be in the range [`1`-`512`]
-- `tags` (Set of String) The tags of the Cloud HSM.
+- `description` (String) The description of the CloudHSM. The length of this value must be in the range [`1`-`512`]
+- `tags` (Set of String) The tags of the CloudHSM.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
 - `availability` (String) The availability status of the CloudHSM
 - `created_at` (String) The creation date of the CloudHSM
-- `id` (String) The ID of the Cloud HSM.
+- `id` (String) The ID of the CloudHSM.
 - `ipv4_address` (String) The IPv4 address of the CloudHSM
 - `local_router` (Attributes) The local router information of the CloudHSM (see [below for nested schema](#nestedatt--local_router))
 - `modified_at` (String) The modification date of the CloudHSM
