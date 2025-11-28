@@ -24,6 +24,7 @@ Networking:
   - enhanced_lb
   - enhanced_lb_acme
   - internet
+  - local_router
   - packet_filter
   - packet_filter_rules
   - switch

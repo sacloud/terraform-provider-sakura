@@ -22,6 +22,11 @@ func SkipIfEnvIsNotSet(t *testing.T, key ...string) {
 	}
 }
 
+// Switchを複数作る等環境によってはうまくいかない場合のテストをスキップするためのヘルパー
+func IsResourceRequiredTest() bool {
+	return os.Getenv("SAKURA_RESOURCE_REQUIRED_TEST") != ""
+}
+
 func BuildConfigWithArgs(config string, args ...string) string {
 	data := make(map[string]string)
 	for i, v := range args {
