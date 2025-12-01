@@ -33,6 +33,8 @@ import (
 	cloudhsmapi "github.com/sacloud/cloudhsm-api-go/apis/v1"
 	kms "github.com/sacloud/kms-api-go"
 	kmsapi "github.com/sacloud/kms-api-go/apis/v1"
+	nosql "github.com/sacloud/nosql-api-go"
+	nosqlapi "github.com/sacloud/nosql-api-go/apis/v1"
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
@@ -95,6 +97,7 @@ type APIClient struct {
 	EventBusClient                   *eventbus_api.Client
 	ObjectStorageClient              *objectstorage.Client
 	CloudHSMClient                   *cloudhsmapi.Client
+	NosqlClient                      *nosqlapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -268,6 +271,10 @@ func (c *Config) NewClient() (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	nosqlClient, err := nosql.NewClient(client.WithOptions(callerOptions))
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -285,6 +292,7 @@ func (c *Config) NewClient() (*APIClient, error) {
 		AppRunClient:                     &apprun.Client{Options: callerOptions},
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
 		CloudHSMClient:                   cloudhsmClient,
+		NosqlClient:                      nosqlClient,
 	}, nil
 }
 
