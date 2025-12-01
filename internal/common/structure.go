@@ -181,6 +181,10 @@ func IntToInt64(i int) int64 {
 	return int64(i)
 }
 
+func ToString[S ~string](s S) string {
+	return string(s)
+}
+
 func MapTo[S any, T any](s []S, cast func(S) T) []T {
 	if len(s) == 0 {
 		return nil

@@ -10,7 +10,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	kms "github.com/sacloud/kms-api-go"
 	v1 "github.com/sacloud/kms-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -42,23 +41,35 @@ func (d *kmsDataSource) Configure(ctx context.Context, req datasource.ConfigureR
 }
 
 type kmsDataSourceModel struct {
-	common.SakuraBaseModel
-	KeyOrigin types.String `tfsdk:"key_origin"`
+	kmsBaseModel
 }
 
 func (d *kmsDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaDataSourceId("KMS key"),
+			"name":        common.SchemaDataSourceName("KMS key"),
 			"description": common.SchemaDataSourceDescription("KMS key"),
 			"tags":        common.SchemaDataSourceTags("KMS key"),
-			"name": schema.StringAttribute{
-				Optional:    true,
-				Description: "The name of the KMS key.",
-			},
 			"key_origin": schema.StringAttribute{
 				Computed:    true,
 				Description: "The key origin of the KMS key.",
+			},
+			"status": schema.StringAttribute{
+				Computed:    true,
+				Description: "The status of the KMS key.",
+			},
+			"latest_version": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The latest material version of the KMS key.",
+			},
+			"created_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The creation time of the KMS key.",
+			},
+			"modified_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The last modification time of the KMS key.",
 			},
 		},
 		MarkdownDescription: "Get information about an existing KMS.",
@@ -84,29 +95,27 @@ func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	if !data.Name.IsNull() {
 		keys, err := keyOp.List(ctx)
 		if err != nil {
-			resp.Diagnostics.AddError("KMS List Error", fmt.Sprintf("could not find KMS resource: %s", err))
+			resp.Diagnostics.AddError("List Error", fmt.Sprintf("failed to find KMS resources: %s", err))
 			return
 		}
 		key, err = FilterKMSByName(keys, data.Name.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("KMS Filter Error", err.Error())
+			resp.Diagnostics.AddError("Filter Error", err.Error())
 			return
 		}
 	} else {
 		key, err = keyOp.Read(ctx, data.ID.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("KMS Read Error", "No result found")
+			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to read KMS resource[%s]: %s", data.ID.ValueString(), err.Error()))
 			return
 		}
 	}
 
-	data.UpdateBaseState(key.ID, key.Name, key.Description.Value, key.Tags)
-	data.KeyOrigin = types.StringValue(string(key.KeyOrigin))
-
+	data.updateState(key)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func FilterKMSByName(keys v1.Keys, name string) (*v1.Key, error) {
+func FilterKMSByName(keys []v1.Key, name string) (*v1.Key, error) {
 	match := slices.Collect(func(yield func(v1.Key) bool) {
 		for _, v := range keys {
 			if name != v.Name {

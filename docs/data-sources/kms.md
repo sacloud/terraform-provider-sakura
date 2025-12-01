@@ -31,5 +31,9 @@ data "sakura_kms" "foobar" {
 
 ### Read-Only
 
+- `created_at` (String) The creation time of the KMS key.
 - `description` (String) The description of the KMS key.
 - `key_origin` (String) The key origin of the KMS key.
+- `latest_version` (Number) The latest material version of the KMS key.
+- `modified_at` (String) The last modification time of the KMS key.
+- `status` (String) The status of the KMS key.
