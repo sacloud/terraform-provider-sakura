@@ -15,6 +15,7 @@ import (
 
 type nosqlBaseModel struct {
 	common.SakuraBaseModel
+	Zone         types.String        `tfsdk:"zone"`
 	Settings     *nosqlSettingsModel `tfsdk:"settings"`
 	Remark       *nosqlRemarkModel   `tfsdk:"remark"`
 	Instance     types.Object        `tfsdk:"instance"`
@@ -94,7 +95,6 @@ type nosqlRemarkModel struct {
 }
 
 type nosqlRemarkNosqlModel struct {
-	//PrimaryNodes *nosqlRemarkNosqlPrimaryNodesModel `tfsdk:"primary_nodes"`
 	PrimaryNodes types.Object `tfsdk:"primary_nodes"`
 	Engine       types.String `tfsdk:"engine"`
 	Version      types.String `tfsdk:"version"`
@@ -268,6 +268,12 @@ func (m *nosqlBaseModel) updateState(nosql *v1.GetNosqlAppliance) {
 	m.Availability = types.StringValue(string(nosql.Availability.Value))
 	m.Generation = types.Int32Value(int32(nosql.Generation.Value))
 	m.CreatedAt = types.StringValue(nosql.CreatedAt.Value.String())
+	if m.Remark != nil {
+		m.Zone = m.Remark.Nosql.Zone
+	} else {
+		// This case should not happen, but just in case...
+		m.Zone = types.StringValue("tk1b")
+	}
 }
 
 func flattenSettings(nosql *v1.GetNosqlAppliance) *nosqlSettingsModel {

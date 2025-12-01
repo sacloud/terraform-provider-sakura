@@ -19,7 +19,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -72,6 +74,13 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 			"name":        common.SchemaResourceName("NoSQL appliance"),
 			"description": common.SchemaResourceDescription("NoSQL appliance"),
 			"tags":        common.SchemaResourceTags("NoSQL appliance"),
+			"zone": schema.StringAttribute{
+				Required:    true,
+				Description: "Zone where NoSQL appliance is located.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"password": schema.StringAttribute{
 				Required:    true,
 				Sensitive:   true,
@@ -214,8 +223,9 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 						Required:    true,
 						Description: "NoSQL database information",
 						Attributes: map[string]schema.Attribute{
+							// Use top-level zone attribute for resource creation
 							"zone": schema.StringAttribute{
-								Required:    true,
+								Computed:    true,
 								Description: "Zone where NoSQL appliance is located.",
 							},
 							"port": schema.Int32Attribute{
@@ -682,7 +692,7 @@ func expandNosqlCreateRequest(model *nosqlResourceModel) *v1.NosqlCreateRequestA
 				Port:            v1.NewOptInt(int(model.Remark.Nosql.Port.ValueInt32())),
 				Storage:         v1.NewOptNosqlRemarkNosqlStorage("SSD"),
 				Virtualcore:     v1.NewOptNosqlRemarkNosqlVirtualcore(3),
-				Zone:            model.Remark.Nosql.Zone.ValueString(),
+				Zone:            model.Zone.ValueString(),
 			},
 			Servers: []v1.NosqlRemarkServersItem{
 				{UserIPAddress: netip.MustParseAddr(servers[0])},

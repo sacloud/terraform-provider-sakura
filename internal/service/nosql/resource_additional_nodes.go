@@ -17,6 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
@@ -65,6 +67,13 @@ func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.Sc
 			"name":        common.SchemaResourceName("Additional nodes of NoSQL appliance"),
 			"description": common.SchemaResourceDescription("Additional nodes of NoSQL appliance"),
 			"tags":        common.SchemaResourceTags("Additional nodes of NoSQL appliance"),
+			"zone": schema.StringAttribute{
+				Required:    true,
+				Description: "Zone where the additional nodes of NoSQL appliance is located.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"switch_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the switch to connect to the Additional nodes of NoSQL appliance.",
@@ -191,8 +200,9 @@ func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.Sc
 								Required:    true,
 								Description: "Version of database engine used by NoSQL appliance.",
 							},
+							// Use top-level zone attribute for resource creation
 							"zone": schema.StringAttribute{
-								Required:    true,
+								Computed:    true,
 								Description: "Zone where the additional nodes of NoSQL appliance is located.",
 							},
 							// これより下のフィールドはAdditional nodesでは設定不可。
@@ -523,7 +533,7 @@ func expandNosqlAddNodesRequest(model *nosqlAdditionalNodesResourceModel) *v1.No
 			Nosql: v1.NosqlRemarkNosql{
 				DatabaseVersion: v1.NewOptString(model.Remark.Nosql.Version.ValueString()),
 				Nodes:           2,
-				Zone:            model.Remark.Nosql.Zone.ValueString(),
+				Zone:            model.Zone.ValueString(),
 			},
 			Servers: []v1.NosqlRemarkServersItem{
 				{UserIPAddress: netip.MustParseAddr(servers[0])},

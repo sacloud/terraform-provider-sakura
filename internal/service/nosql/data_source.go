@@ -48,10 +48,11 @@ type nosqlDataSourceModel struct {
 func (d *nosqlDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("NoSQL"),
-			"name":        common.SchemaDataSourceName("NoSQL"),
-			"description": common.SchemaDataSourceDescription("NoSQL"),
-			"tags":        common.SchemaDataSourceTags("NoSQL"),
+			"id":          common.SchemaDataSourceId("NoSQL appliance"),
+			"name":        common.SchemaDataSourceName("NoSQL appliance"),
+			"description": common.SchemaDataSourceDescription("NoSQL appliance"),
+			"tags":        common.SchemaDataSourceTags("NoSQL appliance"),
+			"zone":        common.SchemaDataSourceZone("NoSQL appliance"),
 			"settings": schema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "Settings of the NoSQL appliance",
