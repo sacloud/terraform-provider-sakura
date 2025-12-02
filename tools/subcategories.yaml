@@ -23,6 +23,7 @@ Networking:
   - dns_record
   - enhanced_lb
   - enhanced_lb_acme
+  - gslb
   - internet
   - local_router
   - packet_filter

@@ -31,6 +31,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dns"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/enhanced_lb"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/eventbus"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/gslb"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/icon"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/internet"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/kms"
@@ -284,6 +285,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		eventbus.NewEventBusProcessConfigurationDataSource,
 		eventbus.NewEventBusScheduleDataSource,
 		eventbus.NewEventBusTriggerDataSource,
+		gslb.NewGSLBDataSource,
 		icon.NewIconDataSource,
 		internet.NewInternetDataSource,
 		kms.NewKmsDataSource,
@@ -329,6 +331,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		eventbus.NewEventBusProcessConfigurationResource,
 		eventbus.NewEventBusScheduleResource,
 		eventbus.NewEventBusTriggerResource,
+		gslb.NewGSLBResource,
 		icon.NewIconResource,
 		internet.NewInternetResource,
 		kms.NewKMSResource,
