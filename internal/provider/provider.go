@@ -42,6 +42,7 @@ import (
 	secret_manager "github.com/sacloud/terraform-provider-sakura/internal/service/s3cret_manager"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/script"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/server"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_monitor"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_mq"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/ssh_key"
 	sw1tch "github.com/sacloud/terraform-provider-sakura/internal/service/switch"
@@ -297,6 +298,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		secret_manager.NewSecretManagerDataSource,
 		secret_manager.NewSecretManagerSecretDataSource,
 		server.NewServerDataSource,
+		simple_monitor.NewSimpleMonitorDataSource,
 		simple_mq.NewSimpleMQDataSource,
 		ssh_key.NewSSHKeyDataSource,
 		sw1tch.NewSwitchDataSource,
@@ -344,6 +346,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		secret_manager.NewSecretManagerResource,
 		secret_manager.NewSecretManagerSecretResource,
 		server.NewServerResource,
+		simple_monitor.NewSimpleMonitorResource,
 		simple_mq.NewSimpleMQResource,
 		ssh_key.NewSSHKeyResource,
 		sw1tch.NewSwitchResource,
