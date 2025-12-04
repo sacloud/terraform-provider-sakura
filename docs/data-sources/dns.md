@@ -15,6 +15,10 @@ Get information about an existing DNS.
 ```terraform
 data "sakura_dns" "foobar" {
   name = "foobar"
+  # or
+  # zone = "foobar"
+  # or
+  # id = "dns-resource-id"
 }
 ```
 
@@ -24,6 +28,7 @@ data "sakura_dns" "foobar" {
 ### Optional
 
 - `id` (String) The ID of the DNS.
+- `name` (String) The name of the DNS.
 - `tags` (Set of String) The tags of the DNS.
 - `zone` (String) The name of managed domain
 

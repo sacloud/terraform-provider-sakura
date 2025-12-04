@@ -16,6 +16,8 @@ Get information about an existing Simple Monitor.
 data "sakura_simple_monitor" "test" {
    target = "www.example.com"
    # or
+   # name = "www.example.com"
+   # or
    # id = "simple-monitor-resource-id"
 }
 ```
@@ -26,6 +28,7 @@ data "sakura_simple_monitor" "test" {
 ### Optional
 
 - `id` (String) The ID of the Simple Monitor.
+- `name` (String) The name of the Simple Monitor.
 - `tags` (Set of String) The tags of the Simple Monitor.
 - `target` (String) The monitoring target of the simple monitor. This will be IP address or FQDN
 
