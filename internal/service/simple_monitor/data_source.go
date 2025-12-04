@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
@@ -31,6 +32,7 @@ type simpleMonitorDataSource struct {
 
 type simpleMonitorDataSourceModel struct {
 	simpleMonitorBaseModel
+	Name types.String `tfsdk:"name"`
 }
 
 func (d *simpleMonitorDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -49,6 +51,7 @@ func (d *simpleMonitorDataSource) Schema(ctx context.Context, req datasource.Sch
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaDataSourceId("Simple Monitor"),
+			"name":        common.SchemaDataSourceName("Simple Monitor"),
 			"description": common.SchemaDataSourceDescription("Simple Monitor"),
 			"tags":        common.SchemaDataSourceTags("Simple Monitor"),
 			"icon_id":     common.SchemaDataSourceIconID("Simple Monitor"),
@@ -186,8 +189,17 @@ func (d *simpleMonitorDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
+	if (data.Name.IsNull() && data.Name.IsUnknown()) && (data.Target.IsNull() && data.Target.IsUnknown()) {
+		resp.Diagnostics.AddError("Invalid Attribute", "Either name or target must be specified.")
+		return
+	}
+	name := data.Name
+	if name.ValueString() == "" {
+		name = data.Target
+	}
+
 	smOp := iaas.NewSimpleMonitorOp(d.client)
-	res, err := smOp.Find(ctx, common.CreateFindCondition(data.ID, data.Target, data.Tags))
+	res, err := smOp.Find(ctx, common.CreateFindCondition(data.ID, name, data.Tags))
 	if err != nil {
 		resp.Diagnostics.AddError("Find Error", "failed to find SakuraCloud SimpleMonitor resource: "+err.Error())
 		return
@@ -198,5 +210,6 @@ func (d *simpleMonitorDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	data.updateState(res.SimpleMonitors[0])
+	data.Name = types.StringValue(res.SimpleMonitors[0].Name)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
