@@ -39,7 +39,7 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			test.CheckSakuraIconDestroy,
 			testCheckSakuraEnhancedLBDestroy,
-			test.CheckSakuraCloudServerDestroy,
+			test.CheckSakuraServerDestroy,
 		),
 		Steps: []resource.TestStep{
 			{

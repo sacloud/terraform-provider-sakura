@@ -36,7 +36,7 @@ func TestAccSakuraEnhancedLBACME_basic(t *testing.T) {
 			test.CheckSakuraCloudDiskDestroy,
 			test.CheckSakuraCloudDNSRecordDestroy,
 			testCheckSakuraEnhancedLBDestroy,
-			test.CheckSakuraCloudServerDestroy,
+			test.CheckSakuraServerDestroy,
 		),
 		Steps: []resource.TestStep{
 			{
