@@ -24,17 +24,17 @@ func (model *simpleMqBaseModel) updateState(data *queue.CommonServiceItem) {
 	model.Name = types.StringValue(simplemq.GetQueueName(data))
 	model.VisibilityTimeoutSeconds = types.Int64Value(int64(data.Settings.VisibilityTimeoutSeconds))
 	model.ExpireSeconds = types.Int64Value(int64(data.Settings.ExpireSeconds))
-	if v, ok := data.Description.Value.GetString(); ok {
+	if v, ok := data.Description.Get(); ok {
 		model.Description = types.StringValue(v)
 	}
-	if iconID, ok := data.Icon.Value.Icon1.ID.Get(); ok {
+	if iconID, ok := data.Icon.Value.ID.Get(); ok {
 		id, ok := iconID.GetString()
 		if !ok {
 			id = strconv.Itoa(iconID.Int)
 		}
 		model.IconID = types.StringValue(id)
 	} else {
-		model.IconID = types.StringValue("")
+		model.IconID = types.StringNull()
 	}
 	model.Tags = common.StringsToTset(data.Tags)
 }

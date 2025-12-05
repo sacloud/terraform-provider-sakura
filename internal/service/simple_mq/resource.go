@@ -244,9 +244,9 @@ func expandSimpleMQCreateRequest(d *simpleMQResourceModel) queue.CreateQueueRequ
 		CommonServiceItem: queue.CreateQueueRequestCommonServiceItem{
 			Name: queue.QueueName(d.Name.ValueString()),
 			Tags: common.TsetToStrings(d.Tags),
-			Icon: queue.NewOptIcon(queue.NewIcon1Icon(queue.Icon1{
-				ID: queue.NewOptIcon1ID(queue.NewStringIcon1ID(common.ExpandSakuraCloudID(d.IconID).String())),
-			})),
+			Icon: queue.NewOptNilCreateQueueRequestCommonServiceItemIcon(queue.CreateQueueRequestCommonServiceItemIcon{
+				ID: queue.NewOptCreateQueueRequestCommonServiceItemIconID(queue.NewStringCreateQueueRequestCommonServiceItemIconID(common.ExpandSakuraCloudID(d.IconID).String())),
+			}),
 		},
 	}
 
@@ -262,9 +262,9 @@ func expandSimpleMQUpdateRequest(d *simpleMQResourceModel, before *queue.CommonS
 		CommonServiceItem: queue.ConfigQueueRequestCommonServiceItem{
 			Settings: before.Settings,
 			Tags:     common.TsetToStrings(d.Tags),
-			Icon: queue.NewOptIcon(queue.NewIcon1Icon(queue.Icon1{
-				ID: queue.NewOptIcon1ID(queue.NewStringIcon1ID(common.ExpandSakuraCloudID(d.IconID).String())),
-			})),
+			Icon: queue.NewOptNilConfigQueueRequestCommonServiceItemIcon(queue.ConfigQueueRequestCommonServiceItemIcon{
+				ID: queue.NewOptConfigQueueRequestCommonServiceItemIconID(queue.NewStringConfigQueueRequestCommonServiceItemIconID(common.ExpandSakuraCloudID(d.IconID).String())),
+			}),
 		},
 	}
 
