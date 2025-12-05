@@ -23,7 +23,7 @@ require (
 	github.com/sacloud/iaas-service-go v1.17.0
 	github.com/sacloud/kms-api-go v0.3.0
 	github.com/sacloud/object-storage-api-go v0.0.12
-	github.com/sacloud/packages-go v0.0.11
+	github.com/sacloud/packages-go v0.0.12
 	github.com/sacloud/secretmanager-api-go v0.2.1
 	github.com/sacloud/simplemq-api-go v0.3.0
 	github.com/stretchr/testify v1.11.1
