@@ -40,6 +40,11 @@ func (model *dnsBaseModel) updateState(dns *iaas.DNS) {
 	model.Zone = types.StringValue(dns.DNSZone)
 	model.DNSServers = common.StringsToTlist(dns.DNSNameServers)
 	model.Record = flattenDNSRecords(dns)
+	if dns.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(dns.IconID.String())
+	}
 }
 
 func flattenDNSRecords(dns *iaas.DNS) []dnsRecordModel {

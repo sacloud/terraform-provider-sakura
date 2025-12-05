@@ -80,7 +80,6 @@ func (r *dnsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 			},
 			"record": schema.ListNestedAttribute{
 				Optional:    true,
-				Computed:    true,
 				Description: "A list of DNS records.",
 				Validators: []validator.List{
 					listvalidator.SizeAtMost(2000),
