@@ -248,8 +248,8 @@ github.com/sacloud/kms-api-go v0.3.0 h1:p/fOoHCmE42po/ge900viniSkGVq1/YdyOvZYaBA
 github.com/sacloud/kms-api-go v0.3.0/go.mod h1:7abgwUSKqVNYuky2Sw/wo83KArJ8Qnini0NNyaQH31E=
 github.com/sacloud/object-storage-api-go v0.0.12 h1:sIjUrMSlxT5OPYuDv9tXF0NM1FJ81GgyCofhdisikUc=
 github.com/sacloud/object-storage-api-go v0.0.12/go.mod h1:7qJ6OqXkuTIHpVICaK/VzlHpjnTiBqzCRb1VKL4QOEI=
-github.com/sacloud/packages-go v0.0.11 h1:hrRWLmfPM9w7GBs6xb5/ue6pEMl8t1UuDKyR/KfteHo=
-github.com/sacloud/packages-go v0.0.11/go.mod h1:XNF5MCTWcHo9NiqWnYctVbASSSZR3ZOmmQORIzcurJ8=
+github.com/sacloud/packages-go v0.0.12 h1:MKeZNN3FQn1heqUSRBrbZw89YusZA1n4kammjMFZYvQ=
+github.com/sacloud/packages-go v0.0.12/go.mod h1:XNF5MCTWcHo9NiqWnYctVbASSSZR3ZOmmQORIzcurJ8=
 github.com/sacloud/secretmanager-api-go v0.2.1 h1:Tb9wNyI31PHFYdEV8QGwLS4O3UOaarf41Zvh0AYl01U=
 github.com/sacloud/secretmanager-api-go v0.2.1/go.mod h1:d1+sjwvTVwjuAdYdtbzWYJ+cenBGG5MiGuX2nJLt0hE=
 github.com/sacloud/simplemq-api-go v0.3.0 h1:QVxnMGNxc9q4apW4J9Ucm05L8u54J92z5MhctLdrXOQ=
