@@ -232,8 +232,8 @@ github.com/sacloud/api-client-go v0.3.3 h1:ZpSAyGpITA8UFO3Hq4qMHZLGuNI1FgxAxo4sq
 github.com/sacloud/api-client-go v0.3.3/go.mod h1:0p3ukcWYXRCc2AUWTl1aA+3sXLvurvvDqhRaLZRLBwo=
 github.com/sacloud/apprun-api-go v0.4.1 h1:vxFSHz4xvcLJ5QfHwBcvWAAjAGsOc/VXt+YUKZ0Aw3I=
 github.com/sacloud/apprun-api-go v0.4.1/go.mod h1:0dJf7Msv9UPGbdY1YJH5zw8HAsJS8z4WJgJ2uG8dFCA=
-github.com/sacloud/cloudhsm-api-go v0.1.0 h1:9WTFlHSwLoC5wDjhO0cFTggFhYHBI/Yg6LF79n7O8Ew=
-github.com/sacloud/cloudhsm-api-go v0.1.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
+github.com/sacloud/cloudhsm-api-go v0.2.0 h1:ESBNWN1ZhwXOAwUCdzcnVe8JWXlJOK306MBoNoDs/cA=
+github.com/sacloud/cloudhsm-api-go v0.2.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
 github.com/sacloud/eventbus-api-go v0.5.2 h1:RsPJqWKl7nsNyGH0yYrsHCbv7YBiNOTaTrAzUVypu6A=
 github.com/sacloud/eventbus-api-go v0.5.2/go.mod h1:P9fBLdnPvdZR95VGrixV6CNwl6ZbGZvmeZk/COkY0YA=
 github.com/sacloud/ftps v1.2.0 h1:7UlSWd7cnm1J+sANz7IiBV9ffVcS+4g6ZV5UHVVbvaw=
