@@ -54,8 +54,8 @@ func (r *apprunSharedResource) Configure(_ context.Context, req resource.Configu
 
 type apprunSharedResourceModel struct {
 	apprunSharedBaseModel
-	Traffics types.List     `tfsdk:"traffics"`
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	Traffics []apprunSharedTrafficsModel `tfsdk:"traffics"`
+	Timeouts timeouts.Value              `tfsdk:"timeouts"`
 }
 
 type apprunSharedTrafficsModel struct {
@@ -235,7 +235,6 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 			},
 			"packet_filter": schema.SingleNestedAttribute{
 				Optional:    true,
-				Computed:    true,
 				Description: "The packet filter for the AppRun Shared application",
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
@@ -440,7 +439,7 @@ func (r *apprunSharedResource) Delete(ctx context.Context, req resource.DeleteRe
 	appOp := apprun.NewApplicationOp(r.client)
 	application, err := appOp.Read(ctx, state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Errorf("failed to read AppRun Shared application: %s", err).Error())
+		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to read AppRun Shared application: %s", err))
 		return
 	}
 
@@ -686,8 +685,7 @@ func expandApprunApplicationComponents(model *apprunSharedResourceModel) []v1.Po
 }
 
 func expandApprunApplicationTraffics(model *apprunSharedResourceModel, versions []v1.Version) (*[]v1.Traffic, error) {
-	// resourceにtraffics listが存在しない場合
-	if model.Traffics.IsNull() || model.Traffics.IsUnknown() || len(model.Traffics.Elements()) == 0 {
+	if len(model.Traffics) == 0 {
 		defaultIsLatestVersion := true
 		defaultPercent := 100
 
@@ -703,9 +701,7 @@ func expandApprunApplicationTraffics(model *apprunSharedResourceModel, versions 
 	}
 
 	var traffics []v1.Traffic
-	trafficsModel := make([]apprunSharedTrafficsModel, 0, len(model.Traffics.Elements()))
-	_ = model.Traffics.ElementsAs(context.Background(), &trafficsModel, false)
-	for _, traffic := range trafficsModel {
+	for _, traffic := range model.Traffics {
 		percent := int(traffic.Percent.ValueInt32())
 		version_index := int(traffic.VersionIndex.ValueInt64())
 		if len(versions) <= version_index {
@@ -731,13 +727,10 @@ func expandApprunPacketFilter(model *apprunSharedResourceModel) *v1.PatchPacketF
 	ret := &v1.PatchPacketFilter{
 		IsEnabled: &enabled,
 	}
-	if !model.PacketFilter.IsNull() && !model.PacketFilter.IsUnknown() {
-		var d apprunSharedPacketFilterModel
-		_ = model.PacketFilter.As(context.Background(), &d, basetypes.ObjectAsOptions{})
-
-		enabled = d.Enabled.ValueBool()
+	if model.PacketFilter != nil {
+		enabled = model.PacketFilter.Enabled.ValueBool()
 		var settings []v1.PacketFilterSetting
-		for _, setting := range d.Settings {
+		for _, setting := range model.PacketFilter.Settings {
 			settings = append(settings, v1.PacketFilterSetting{
 				FromIp:             setting.FromIP.ValueString(),
 				FromIpPrefixLength: int(setting.FromIPPrefixLength.ValueInt32()),
@@ -748,4 +741,28 @@ func expandApprunPacketFilter(model *apprunSharedResourceModel) *v1.PatchPacketF
 		ret.Settings = &settings
 	}
 	return ret
+}
+
+func flattenApprunApplicationTraffics(traffics []v1.Traffic, versions []v1.Version) []apprunSharedTrafficsModel {
+	if len(traffics) == 0 {
+		return nil
+	}
+
+	var results []apprunSharedTrafficsModel
+	for _, traffic := range traffics {
+		withVersion, err := traffic.AsTrafficWithVersionName()
+		if err != nil {
+			continue
+		}
+		for i, version := range versions {
+			if withVersion.VersionName == version.Name {
+				results = append(results, apprunSharedTrafficsModel{
+					VersionIndex: types.Int64Value(int64(i)),
+					Percent:      types.Int32Value(int32(withVersion.Percent)),
+				})
+				continue
+			}
+		}
+	}
+	return results
 }

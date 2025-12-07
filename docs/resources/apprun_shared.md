@@ -94,8 +94,8 @@ resource "sakura_apprun_shared" "foobar" {
 Required:
 
 - `deploy_source` (Attributes) The sources that make up the component (see [below for nested schema](#nestedatt--components--deploy_source))
-- `max_cpu` (String) The maximum number of CPUs for a component. The values in the list must be in [`0.1`/`0.2`/`0.3`/`0.4`/`0.5`/`0.6`/`0.7`/`0.8`/`0.9`/`1`]
-- `max_memory` (String) The maximum memory of component. The values in the list must be in [`256Mi`/`512Mi`/`1Gi`/`2Gi`]
+- `max_cpu` (String) The maximum number of CPUs for a component. The values in the list must be in [`0.5`/`1`/`2`]
+- `max_memory` (String) The maximum memory of component. The values in the list must be in [`1Gi`/`2Gi`/`4Gi`]
 - `name` (String) The component name
 
 Optional:

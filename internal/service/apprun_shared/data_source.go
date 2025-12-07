@@ -93,7 +93,6 @@ func (r *apprunSharedDataSource) Schema(ctx context.Context, req datasource.Sche
 							Description: "The sources that make up the component",
 							Attributes: map[string]schema.Attribute{
 								"container_registry": schema.SingleNestedAttribute{
-									Optional:    true,
 									Computed:    true,
 									Description: "Container registry settings",
 									Attributes: map[string]schema.Attribute{
@@ -102,12 +101,10 @@ func (r *apprunSharedDataSource) Schema(ctx context.Context, req datasource.Sche
 											Description: "The container image name",
 										},
 										"server": schema.StringAttribute{
-											Optional:    true,
 											Computed:    true,
 											Description: "The container registry server name",
 										},
 										"username": schema.StringAttribute{
-											Optional:    true,
 											Computed:    true,
 											Description: "The container registry credentials",
 										},
@@ -120,18 +117,15 @@ func (r *apprunSharedDataSource) Schema(ctx context.Context, req datasource.Sche
 							},
 						},
 						"env": schema.SetNestedAttribute{
-							Optional:    true,
 							Computed:    true,
 							Description: "The environment variables passed to components",
 							NestedObject: schema.NestedAttributeObject{
 								Attributes: map[string]schema.Attribute{
 									"key": schema.StringAttribute{
 										Computed:    true,
-										Optional:    true,
 										Description: "The environment variable name",
 									},
 									"value": schema.StringAttribute{
-										Optional:    true,
 										Computed:    true,
 										Sensitive:   true,
 										Description: "environment variable value",
@@ -140,7 +134,6 @@ func (r *apprunSharedDataSource) Schema(ctx context.Context, req datasource.Sche
 							},
 						},
 						"probe": schema.SingleNestedAttribute{
-							Optional:    true,
 							Computed:    true,
 							Description: "The component probe settings",
 							Attributes: map[string]schema.Attribute{
@@ -157,7 +150,6 @@ func (r *apprunSharedDataSource) Schema(ctx context.Context, req datasource.Sche
 											Description: "The port number for accessing HTTP server and checking probes",
 										},
 										"headers": schema.SetNestedAttribute{
-											Optional:    true,
 											Computed:    true,
 											Description: "HTTP headers for probe",
 											NestedObject: schema.NestedAttributeObject{
