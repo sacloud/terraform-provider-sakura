@@ -28,6 +28,7 @@ data "sakura_cloudhsm_license" "foobar" {
 - `id` (String) The ID of the CloudHSM License.
 - `name` (String) The name of the CloudHSM License.
 - `tags` (Set of String) The tags of the CloudHSM License.
+- `zone` (String) The zone of the CloudHSM License. This must be one of [`is1b`/`tk1a`]
 
 ### Read-Only
 

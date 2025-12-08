@@ -10,13 +10,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v1 "github.com/sacloud/cloudhsm-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
 type cloudHSMPeerDataSource struct {
-	client *v1.Client
+	client *common.APIClient
 }
 
 var (
@@ -37,7 +36,7 @@ func (d *cloudHSMPeerDataSource) Configure(ctx context.Context, req datasource.C
 	if apiclient == nil {
 		return
 	}
-	d.client = apiclient.CloudHSMClient
+	d.client = apiclient
 }
 
 type cloudHSMPeerDataSourceModel struct {
@@ -47,7 +46,8 @@ type cloudHSMPeerDataSourceModel struct {
 func (d *cloudHSMPeerDataSource) Schema(_ context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaDataSourceId("CloudHSM Peer"),
+			"id":   common.SchemaDataSourceId("CloudHSM Peer"),
+			"zone": schemaDataSourceZone("CloudHSM Peer"),
 			"cloudhsm_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the CloudHSM to associate with the client",
@@ -86,16 +86,18 @@ func (d *cloudHSMPeerDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	chsm := getCloudHSM(ctx, d.client, data.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(data.Zone, d.client, &resp.Diagnostics)
+	client := createClient(zone, d.client)
+	chsm := getCloudHSM(ctx, client, data.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	chsmPeer := getCloudHSMPeer(ctx, d.client, chsm, id, &resp.State, &resp.Diagnostics)
+	chsmPeer := getCloudHSMPeer(ctx, client, chsm, id, &resp.State, &resp.Diagnostics)
 	if chsmPeer == nil {
 		return
 	}
 
-	data.updateState(chsmPeer, chsm.ID)
+	data.updateState(chsmPeer, zone, chsm.ID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

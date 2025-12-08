@@ -21,7 +21,7 @@ import (
 )
 
 type cloudHSMLicenseResource struct {
-	client *v1.Client
+	client *common.APIClient
 }
 
 var (
@@ -43,7 +43,7 @@ func (r *cloudHSMLicenseResource) Configure(ctx context.Context, req resource.Co
 	if apiclient == nil {
 		return
 	}
-	r.client = apiclient.CloudHSMClient
+	r.client = apiclient
 }
 
 type cloudHSMLicenseResourceModel struct {
@@ -58,6 +58,7 @@ func (r *cloudHSMLicenseResource) Schema(ctx context.Context, _ resource.SchemaR
 			"name":        common.SchemaResourceName("CloudHSM License"),
 			"description": common.SchemaResourceDescription("CloudHSM License"),
 			"tags":        common.SchemaResourceTags("CloudHSM License"),
+			"zone":        schemaResourceZone("CloudHSM License"),
 			"created_at": schema.StringAttribute{
 				Computed:    true,
 				Description: "The creation date of the CloudHSM License",
@@ -88,7 +89,9 @@ func (r *cloudHSMLicenseResource) Create(ctx context.Context, req resource.Creat
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	licenseOp := cloudhsm.NewLicenseOp(r.client)
+	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	licenseOp := cloudhsm.NewLicenseOp(client)
 	created, err := licenseOp.Create(ctx, cloudhsm.CloudHSMSoftwareLicenseCreateParams{
 		Name:        plan.Name.ValueString(),
 		Description: common.Ptr(plan.Description.ValueString()),
@@ -99,12 +102,12 @@ func (r *cloudHSMLicenseResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	license := getCloudHSMLicense(ctx, r.client, created.ID, &resp.State, &resp.Diagnostics)
+	license := getCloudHSMLicense(ctx, client, created.ID, &resp.State, &resp.Diagnostics)
 	if license == nil {
 		return
 	}
 
-	plan.updateState(license)
+	plan.updateState(license, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -115,12 +118,14 @@ func (r *cloudHSMLicenseResource) Read(ctx context.Context, req resource.ReadReq
 		return
 	}
 
-	license := getCloudHSMLicense(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	license := getCloudHSMLicense(ctx, client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if license == nil {
 		return
 	}
 
-	state.updateState(license)
+	state.updateState(license, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -134,7 +139,9 @@ func (r *cloudHSMLicenseResource) Update(ctx context.Context, req resource.Updat
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	updated, err := cloudhsm.NewLicenseOp(r.client).Update(ctx, plan.ID.ValueString(), cloudhsm.CloudHSMSoftwareLicenseUpdateParams{
+	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	updated, err := cloudhsm.NewLicenseOp(client).Update(ctx, plan.ID.ValueString(), cloudhsm.CloudHSMSoftwareLicenseUpdateParams{
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
 		Tags:        common.TsetToStrings(plan.Tags),
@@ -144,7 +151,7 @@ func (r *cloudHSMLicenseResource) Update(ctx context.Context, req resource.Updat
 		return
 	}
 
-	plan.updateState(updated)
+	plan.updateState(updated, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -158,12 +165,14 @@ func (r *cloudHSMLicenseResource) Delete(ctx context.Context, req resource.Delet
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	license := getCloudHSMLicense(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	license := getCloudHSMLicense(ctx, client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if license == nil {
 		return
 	}
 
-	if err := cloudhsm.NewLicenseOp(r.client).Delete(ctx, license.ID); err != nil {
+	if err := cloudhsm.NewLicenseOp(client).Delete(ctx, license.ID); err != nil {
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete CloudHSM License[%s]: %s", license.ID, err.Error()))
 		return
 	}

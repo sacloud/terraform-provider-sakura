@@ -34,6 +34,7 @@ data "sakura_cloudhsm_peer" "foobar" {
 
 - `id` (String) The ID of the CloudHSM Client.
 - `name` (String) The name of the CloudHSM Client.
+- `zone` (String) The zone of the CloudHSM Client. This must be one of [`is1b`/`tk1a`]
 
 ### Read-Only
 

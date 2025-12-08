@@ -16,7 +16,7 @@ import (
 )
 
 type cloudHSMDataSource struct {
-	client *v1.Client
+	client *common.APIClient
 }
 
 var (
@@ -37,7 +37,7 @@ func (d *cloudHSMDataSource) Configure(ctx context.Context, req datasource.Confi
 	if apiclient == nil {
 		return
 	}
-	d.client = apiclient.CloudHSMClient
+	d.client = apiclient
 }
 
 type cloudHSMDataSourceModel struct {
@@ -51,6 +51,7 @@ func (d *cloudHSMDataSource) Schema(_ context.Context, req datasource.SchemaRequ
 			"description": common.SchemaDataSourceDescription("CloudHSM"),
 			"tags":        common.SchemaDataSourceTags("CloudHSM"),
 			"name":        common.SchemaDataSourceName("CloudHSM"),
+			"zone":        schemaDataSourceZone("CloudHSM"),
 			"created_at": schema.StringAttribute{
 				Computed:    true,
 				Description: "The creation date of the CloudHSM",
@@ -109,7 +110,9 @@ func (d *cloudHSMDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	cloudhsmOp := cloudhsm.NewCloudHSMOp(d.client)
+	zone := getZone(data.Zone, d.client, &resp.Diagnostics)
+	client := createClient(zone, d.client)
+	cloudhsmOp := cloudhsm.NewCloudHSMOp(client)
 	var cloudhsm *v1.CloudHSM
 	var err error
 	if len(name) > 0 {
@@ -131,7 +134,7 @@ func (d *cloudHSMDataSource) Read(ctx context.Context, req datasource.ReadReques
 		}
 	}
 
-	data.updateState(cloudhsm)
+	data.updateState(cloudhsm, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

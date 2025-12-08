@@ -23,7 +23,7 @@ import (
 )
 
 type cloudHSMPeerResource struct {
-	client *v1.Client
+	client *common.APIClient
 }
 
 var (
@@ -45,7 +45,7 @@ func (r *cloudHSMPeerResource) Configure(ctx context.Context, req resource.Confi
 	if apiclient == nil {
 		return
 	}
-	r.client = apiclient.CloudHSMClient
+	r.client = apiclient
 }
 
 type cloudHSMPeerResourceModel struct {
@@ -58,7 +58,8 @@ type cloudHSMPeerResourceModel struct {
 func (r *cloudHSMPeerResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Cloud HSM Peer"),
+			"id":   common.SchemaResourceId("CloudHSM Peer"),
+			"zone": schemaResourceZone("CloudHSM Peer"),
 			"cloudhsm_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the CloudHSM to associate with the peer",
@@ -110,12 +111,14 @@ func (r *cloudHSMPeerResource) Create(ctx context.Context, req resource.CreateRe
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout20min)
 	defer cancel()
 
-	chsm := getCloudHSM(ctx, r.client, plan.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	chsm := getCloudHSM(ctx, client, plan.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	peerOp, err := cloudhsm.NewPeerOp(r.client, chsm)
+	peerOp, err := cloudhsm.NewPeerOp(client, chsm)
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
 		return
@@ -131,11 +134,11 @@ func (r *cloudHSMPeerResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	// CloudHSM PeerのIDはRouterIDと同一
-	chsmPeer := getCloudHSMPeer(ctx, r.client, chsm, plan.RouterID.ValueString(), &resp.State, &resp.Diagnostics)
+	chsmPeer := getCloudHSMPeer(ctx, client, chsm, plan.RouterID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsmPeer == nil {
 		return
 	}
-	plan.updateState(chsmPeer, chsm.ID)
+	plan.updateState(chsmPeer, zone, chsm.ID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -146,17 +149,19 @@ func (r *cloudHSMPeerResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	chsm := getCloudHSM(ctx, r.client, state.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	chsm := getCloudHSM(ctx, client, state.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	chsmPeer := getCloudHSMPeer(ctx, r.client, chsm, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	chsmPeer := getCloudHSMPeer(ctx, client, chsm, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsmPeer == nil {
 		return
 	}
 
-	state.updateState(chsmPeer, chsm.ID)
+	state.updateState(chsmPeer, zone, chsm.ID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -174,17 +179,19 @@ func (r *cloudHSMPeerResource) Delete(ctx context.Context, req resource.DeleteRe
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	chsm := getCloudHSM(ctx, r.client, state.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	chsm := getCloudHSM(ctx, client, state.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	chsmPeer := getCloudHSMPeer(ctx, r.client, chsm, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	chsmPeer := getCloudHSMPeer(ctx, client, chsm, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsmPeer == nil {
 		return
 	}
 
-	peerOp, _ := cloudhsm.NewPeerOp(r.client, chsm)
+	peerOp, _ := cloudhsm.NewPeerOp(client, chsm)
 	if err := peerOp.Delete(ctx, chsmPeer.ID); err != nil {
 		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete CloudHSM Peer: %s", err))
 		return

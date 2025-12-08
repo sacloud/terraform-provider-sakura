@@ -18,7 +18,7 @@ import (
 )
 
 type cloudHSMClientDataSource struct {
-	client *v1.Client
+	client *common.APIClient
 }
 
 var (
@@ -39,7 +39,7 @@ func (d *cloudHSMClientDataSource) Configure(ctx context.Context, req datasource
 	if apiclient == nil {
 		return
 	}
-	d.client = apiclient.CloudHSMClient
+	d.client = apiclient
 }
 
 type cloudHSMClientDataSourceModel struct {
@@ -51,6 +51,7 @@ func (d *cloudHSMClientDataSource) Schema(_ context.Context, req datasource.Sche
 		Attributes: map[string]schema.Attribute{
 			"id":   common.SchemaDataSourceId("CloudHSM Client"),
 			"name": common.SchemaDataSourceName("CloudHSM Client"),
+			"zone": schemaDataSourceZone("CloudHSM Client"),
 			"cloudhsm_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the CloudHSM to associate with the client",
@@ -93,12 +94,14 @@ func (d *cloudHSMClientDataSource) Read(ctx context.Context, req datasource.Read
 		return
 	}
 
-	chsm := getCloudHSM(ctx, d.client, data.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(data.Zone, d.client, &resp.Diagnostics)
+	client := createClient(zone, d.client)
+	chsm := getCloudHSM(ctx, client, data.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	clientOp, err := cloudhsm.NewClientOp(d.client, chsm)
+	clientOp, err := cloudhsm.NewClientOp(client, chsm)
 	if err != nil {
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to create CloudHSM Client operation: %s", err))
 		return
@@ -124,7 +127,7 @@ func (d *cloudHSMClientDataSource) Read(ctx context.Context, req datasource.Read
 		}
 	}
 
-	data.updateState(chsmClient, chsm.ID)
+	data.updateState(chsmClient, zone, chsm.ID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
