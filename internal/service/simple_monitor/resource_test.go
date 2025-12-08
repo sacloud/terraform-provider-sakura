@@ -50,6 +50,7 @@ func TestAccSakuraSimpleMonitor_basic(t *testing.T) {
 						resourceName, "icon_id",
 						"sakura_icon.foobar", "id",
 					),
+					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
 				),
 			},
 			{
@@ -70,6 +71,7 @@ func TestAccSakuraSimpleMonitor_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "notify_email_html", "false"),
 					resource.TestCheckResourceAttr(resourceName, "notify_email_enabled", "false"),
 					resource.TestCheckNoResourceAttr(resourceName, "icon_id"),
+					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "false"),
 				),
 			},
 		},
@@ -200,6 +202,9 @@ resource "sakura_simple_monitor" "foobar" {
   notify_slack_enabled = true
   notify_slack_webhook = "{{ .arg1 }}"
   icon_id              = sakura_icon.foobar.id
+  monitoring_suite = {
+    enabled = true
+  }
 }
 
 resource "sakura_icon" "foobar" {
@@ -228,6 +233,9 @@ resource "sakura_simple_monitor" "foobar" {
   notify_email_enabled = false
   notify_slack_enabled = true
   notify_slack_webhook = "{{ .arg1 }}"
+  monitoring_suite = {
+    enabled = false
+  }
 }`
 
 var testAccSakuraSimpleMonitor_certMonitor = `

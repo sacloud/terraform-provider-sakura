@@ -60,6 +60,7 @@ func TestAccSakuraCloudDataSourceProxyLB_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.1.request_header_value", "2"),
 					resource.TestCheckResourceAttr(resourceName, "rule.1.request_header_value_ignore_case", "false"),
 					resource.TestCheckResourceAttr(resourceName, "rule.1.request_header_value_not_match", "false"),
+					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
 				),
 			},
 		},
@@ -109,6 +110,10 @@ resource "sakura_enhanced_lb" "foobar" {
     request_header_value_ignore_case = false
     request_header_value_not_match = false
   }]
+
+  monitoring_suite = {
+    enabled = true
+  }
 }
 
 data "sakura_enhanced_lb" "foobar" {

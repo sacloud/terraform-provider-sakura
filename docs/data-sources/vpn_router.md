@@ -38,6 +38,7 @@ data "sakura_vpn_router" "foobar" {
 - `icon_id` (String) The icon id attached to the VPN Router
 - `internet_connection` (Boolean) The flag to enable connecting to the Internet from the VPN Router
 - `l2tp` (Attributes) (see [below for nested schema](#nestedatt--l2tp))
+- `monitoring_suite` (Attributes) The monitoring suite settings of the VPN Router. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `plan` (String) The plan name of the VPN Router. This will be one of [`standard`/`premium`/`highspec`/`highspec4000`]
 - `port_forwarding` (Attributes List) A list of `port_forwarding` blocks as defined below. This represents a `Reverse NAT` (see [below for nested schema](#nestedatt--port_forwarding))
 - `pptp` (Attributes) (see [below for nested schema](#nestedatt--pptp))
@@ -117,6 +118,14 @@ Read-Only:
 - `pre_shared_secret` (String, Sensitive) The pre shared secret for L2TP/IPsec
 - `range_start` (String) The start value of IP address range to assign to L2TP/IPsec client
 - `range_stop` (String) The end value of IP address range to assign to L2TP/IPsec client
+
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Read-Only:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite
 
 
 <a id="nestedatt--port_forwarding"></a>

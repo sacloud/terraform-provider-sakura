@@ -27,6 +27,9 @@ resource "sakura_dns" "foobar" {
     type  = "A"
     value = "192.168.11.2"
   }]
+  monitoring_suite = {
+    enabled = true
+  }
 }
 ```
 
@@ -41,6 +44,7 @@ resource "sakura_dns" "foobar" {
 
 - `description` (String) The description of the DNS. The length of this value must be in the range [`1`-`512`]
 - `icon_id` (String) The icon id to attach to the DNS
+- `monitoring_suite` (Attributes) The monitoring suite settings of the DNS. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `record` (Attributes List) A list of DNS records. (see [below for nested schema](#nestedatt--record))
 - `tags` (Set of String) The tags of the DNS.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
@@ -49,6 +53,14 @@ resource "sakura_dns" "foobar" {
 
 - `dns_servers` (List of String) A list of IP address of DNS server that manage this zone
 - `id` (String) The ID of the DNS.
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Optional:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite
+
 
 <a id="nestedatt--record"></a>
 ### Nested Schema for `record`

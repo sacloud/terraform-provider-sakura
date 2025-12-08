@@ -34,6 +34,7 @@ type enhancedLBBaseModel struct {
 	FQDN                 types.String                `tfsdk:"fqdn"`
 	VIP                  types.String                `tfsdk:"vip"`
 	ProxyNetworks        types.List                  `tfsdk:"proxy_networks"`
+	MonitoringSuite      types.Object                `tfsdk:"monitoring_suite"`
 }
 
 type enhancedLBSyslogModel struct {
@@ -172,6 +173,7 @@ func (model *enhancedLBBaseModel) updateState(ctx context.Context, client *commo
 	model.Rule = flattenEnhancedLBRules(data)
 	model.LetsEncrypt = flattenEnhancedLBACMESetting(data)
 	model.Certificate = flattenEnhancedLBCerts(certs)
+	model.MonitoringSuite = common.FlattenMonitoringSuiteLog(data.MonitoringSuiteLog)
 
 	return nil
 }

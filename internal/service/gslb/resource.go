@@ -157,6 +157,7 @@ func (r *gslbResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 					},
 				},
 			},
+			"monitoring_suite": common.SchemaResourceMonitoringSuite("GSLB"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -273,6 +274,7 @@ func expandGSLBCreateRequest(model *gslbResourceModel) *iaas.GSLBCreateRequest {
 		Weighted:           iaastypes.StringFlag(model.Weighted.ValueBool()),
 		SorryServer:        model.SorryServer.ValueString(),
 		DestinationServers: expandGSLBServers(model),
+		MonitoringSuiteLog: common.ExpandMonitoringSuiteLog(model.MonitoringSuite),
 	}
 }
 
@@ -287,6 +289,7 @@ func expandGSLBUpdateRequest(model *gslbResourceModel, gslb *iaas.GSLB) *iaas.GS
 		Weighted:           iaastypes.StringFlag(model.Weighted.ValueBool()),
 		SorryServer:        model.SorryServer.ValueString(),
 		DestinationServers: expandGSLBServers(model),
+		MonitoringSuiteLog: common.ExpandMonitoringSuiteLog(model.MonitoringSuite),
 		SettingsHash:       gslb.SettingsHash,
 	}
 }

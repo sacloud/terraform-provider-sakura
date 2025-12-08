@@ -14,13 +14,14 @@ import (
 const defaultTTL = 3600
 
 type dnsBaseModel struct {
-	ID          types.String     `tfsdk:"id"`
-	Description types.String     `tfsdk:"description"`
-	IconID      types.String     `tfsdk:"icon_id"`
-	Tags        types.Set        `tfsdk:"tags"`
-	Zone        types.String     `tfsdk:"zone"`
-	DNSServers  types.List       `tfsdk:"dns_servers"`
-	Record      []dnsRecordModel `tfsdk:"record"`
+	ID              types.String     `tfsdk:"id"`
+	Description     types.String     `tfsdk:"description"`
+	IconID          types.String     `tfsdk:"icon_id"`
+	Tags            types.Set        `tfsdk:"tags"`
+	Zone            types.String     `tfsdk:"zone"`
+	DNSServers      types.List       `tfsdk:"dns_servers"`
+	Record          []dnsRecordModel `tfsdk:"record"`
+	MonitoringSuite types.Object     `tfsdk:"monitoring_suite"`
 }
 
 type dnsRecordModel struct {
@@ -40,6 +41,7 @@ func (model *dnsBaseModel) updateState(dns *iaas.DNS) {
 	model.Zone = types.StringValue(dns.DNSZone)
 	model.DNSServers = common.StringsToTlist(dns.DNSNameServers)
 	model.Record = flattenDNSRecords(dns)
+	model.MonitoringSuite = common.FlattenMonitoringSuiteLog(dns.MonitoringSuiteLog)
 	if dns.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
 	} else {
