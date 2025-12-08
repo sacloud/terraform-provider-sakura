@@ -15,6 +15,10 @@ Get information about an existing DNS.
 ```terraform
 data "sakura_dns" "foobar" {
   name = "foobar"
+  # or
+  # zone = "foobar"
+  # or
+  # id = "dns-resource-id"
 }
 ```
 
@@ -24,6 +28,7 @@ data "sakura_dns" "foobar" {
 ### Optional
 
 - `id` (String) The ID of the DNS.
+- `name` (String) The name of the DNS.
 - `tags` (Set of String) The tags of the DNS.
 - `zone` (String) The name of managed domain
 
@@ -32,7 +37,16 @@ data "sakura_dns" "foobar" {
 - `description` (String) The description of the DNS.
 - `dns_servers` (List of String) A list of IP address of DNS server that manage this zone
 - `icon_id` (String) The icon id attached to the DNS
+- `monitoring_suite` (Attributes) The monitoring suite settings of the DNS. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `record` (Attributes List) (see [below for nested schema](#nestedatt--record))
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Read-Only:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite
+
 
 <a id="nestedatt--record"></a>
 ### Nested Schema for `record`

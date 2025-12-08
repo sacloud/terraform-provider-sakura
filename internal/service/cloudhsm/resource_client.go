@@ -23,7 +23,7 @@ import (
 )
 
 type cloudHSMClientResource struct {
-	client *v1.Client
+	client *common.APIClient
 }
 
 var (
@@ -45,7 +45,7 @@ func (r *cloudHSMClientResource) Configure(ctx context.Context, req resource.Con
 	if apiclient == nil {
 		return
 	}
-	r.client = apiclient.CloudHSMClient
+	r.client = apiclient
 }
 
 type cloudHSMClientResourceModel struct {
@@ -58,6 +58,7 @@ func (r *cloudHSMClientResource) Schema(ctx context.Context, _ resource.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"id":   common.SchemaResourceId("CloudHSM Client"),
 			"name": common.SchemaResourceName("CloudHSM Client"),
+			"zone": schemaResourceZone("CloudHSM Client"),
 			"cloudhsm_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the CloudHSM to associate with the client",
@@ -103,12 +104,14 @@ func (r *cloudHSMClientResource) Create(ctx context.Context, req resource.Create
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout20min)
 	defer cancel()
 
-	chsm := getCloudHSM(ctx, r.client, plan.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	chsm := getCloudHSM(ctx, client, plan.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	clientOp, _ := cloudhsm.NewClientOp(r.client, chsm)
+	clientOp, _ := cloudhsm.NewClientOp(client, chsm)
 	created, err := clientOp.Create(ctx, cloudhsm.CloudHSMClientCreateParams{
 		Name:        plan.Name.ValueString(),
 		Certificate: plan.Certificate.ValueString(),
@@ -118,7 +121,7 @@ func (r *cloudHSMClientResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	plan.updateState(created, chsm.ID)
+	plan.updateState(created, zone, chsm.ID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -129,17 +132,19 @@ func (r *cloudHSMClientResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	chsm := getCloudHSM(ctx, r.client, state.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	chsm := getCloudHSM(ctx, client, state.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	chsmClient := getCloudHSMClient(ctx, r.client, chsm, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	chsmClient := getCloudHSMClient(ctx, client, chsm, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsmClient == nil {
 		return
 	}
 
-	state.updateState(chsmClient, chsm.ID)
+	state.updateState(chsmClient, zone, chsm.ID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -153,19 +158,21 @@ func (r *cloudHSMClientResource) Update(ctx context.Context, req resource.Update
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	chsm := getCloudHSM(ctx, r.client, plan.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	chsm := getCloudHSM(ctx, client, plan.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	clientOp, _ := cloudhsm.NewClientOp(r.client, chsm)
+	clientOp, _ := cloudhsm.NewClientOp(client, chsm)
 	updated, err := clientOp.Update(ctx, plan.ID.ValueString(), cloudhsm.CloudHSMClientUpdateParams{Name: plan.Name.ValueString()})
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
 		return
 	}
 
-	plan.updateState(updated, chsm.ID)
+	plan.updateState(updated, zone, chsm.ID)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -179,12 +186,14 @@ func (r *cloudHSMClientResource) Delete(ctx context.Context, req resource.Delete
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	chsm := getCloudHSM(ctx, r.client, state.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	chsm := getCloudHSM(ctx, client, state.CloudHSMID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	clientOp, err := cloudhsm.NewClientOp(r.client, chsm)
+	clientOp, err := cloudhsm.NewClientOp(client, chsm)
 	if err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
 		return

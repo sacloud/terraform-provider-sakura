@@ -35,6 +35,8 @@ func TestAccSakuraResourceKMS_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "key_origin", "generated"),
+					resource.TestCheckResourceAttr(resourceName, "latest_version", "0"),
+					resource.TestCheckResourceAttr(resourceName, "status", "active"),
 				),
 			},
 			{
@@ -46,6 +48,8 @@ func TestAccSakuraResourceKMS_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1-upd"),
 					resource.TestCheckResourceAttr(resourceName, "key_origin", "generated"),
+					resource.TestCheckResourceAttr(resourceName, "latest_version", "0"),
+					resource.TestCheckResourceAttr(resourceName, "status", "restricted"),
 				),
 			},
 		},
@@ -72,6 +76,8 @@ func TestAccSakuraResourceKMS_imported(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "key_origin", "imported"),
+					resource.TestCheckResourceAttr(resourceName, "latest_version", "0"),
+					resource.TestCheckResourceAttr(resourceName, "status", "active"),
 				),
 			},
 			{
@@ -83,6 +89,8 @@ func TestAccSakuraResourceKMS_imported(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "key_origin", "imported"),
+					resource.TestCheckResourceAttr(resourceName, "latest_version", "1"),
+					resource.TestCheckResourceAttr(resourceName, "status", "active"),
 				),
 			},
 		},
@@ -150,6 +158,7 @@ resource "sakura_kms" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description-updated"
   tags        = ["tag1-upd"]
+  status      = "restricted"
 }`
 
 var testAccSakuraKMS_imported = `
@@ -167,4 +176,5 @@ resource "sakura_kms" "foobar2" {
   description = "description with plain key updated"
   tags        = ["tag1"]
   key_origin  = "imported"
+  rotate_version = 1
 }`

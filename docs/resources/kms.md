@@ -34,12 +34,18 @@ resource "sakura_kms" "foobar" {
 - `description` (String) The description of the KMS key. The length of this value must be in the range [`1`-`512`]
 - `key_origin` (String) Key origin of the KMS key. 'generated' or 'imported'. Default is 'generated'.
 - `plain_key` (String, Sensitive) Plain key for imported KMS key. Required when `key_origin` is 'imported'.
+- `rotate_version` (Number) The rotateion version. This number is incremented when you want rotate KMS key.
+- `schedule_destruction_days` (Number) The number of days to schedule the destruction of the KMS key. If set, the KMS key will be scheduled for destruction after the specified number of days instead of immediate destruction in 'terraform destroy'.
+- `status` (String) The status of the KMS key.
 - `tags` (Set of String) The tags of the KMS key.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
+- `created_at` (String) The creation time of the KMS key.
 - `id` (String) The ID of the KMS key.
+- `latest_version` (Number) The latest material version of the KMS key.
+- `modified_at` (String) The last modification time of the KMS key.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

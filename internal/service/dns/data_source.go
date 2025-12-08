@@ -42,12 +42,14 @@ func (d *dnsDataSource) Configure(ctx context.Context, req datasource.ConfigureR
 
 type dnsDataSourceModel struct {
 	dnsBaseModel
+	Name types.String `tfsdk:"name"`
 }
 
 func (d *dnsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaDataSourceId("DNS"),
+			"name":        common.SchemaDataSourceName("DNS"),
 			"description": common.SchemaDataSourceDescription("DNS"),
 			"tags":        common.SchemaDataSourceTags("DNS"),
 			"icon_id":     common.SchemaDataSourceIconID("DNS"),
@@ -96,6 +98,7 @@ func (d *dnsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 					},
 				},
 			},
+			"monitoring_suite": common.SchemaDataSourceMonitoringSuite("DNS"),
 		},
 		MarkdownDescription: "Get information about an existing DNS.",
 	}
@@ -108,9 +111,17 @@ func (d *dnsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		return
 	}
 
+	if (data.Name.IsNull() && data.Name.IsUnknown()) && (data.Zone.IsNull() && data.Zone.IsUnknown()) {
+		resp.Diagnostics.AddError("Invalid Attribute", "Either name or zone must be specified.")
+		return
+	}
+	name := data.Name
+	if name.ValueString() == "" {
+		name = data.Zone
+	}
+
 	searcher := iaas.NewDNSOp(d.client)
-	// name attribute is needed?
-	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, types.StringNull(), data.Tags))
+	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, name, data.Tags))
 	if err != nil {
 		resp.Diagnostics.AddError("Search DNS Error", "could not find SakuraCloud DNS resource: "+err.Error())
 		return
@@ -121,5 +132,6 @@ func (d *dnsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	}
 
 	data.updateState(res.DNS[0])
+	data.Name = types.StringValue(res.DNS[0].Name)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

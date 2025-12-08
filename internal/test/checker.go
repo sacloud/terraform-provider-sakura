@@ -69,7 +69,7 @@ func CheckSakuraIconDestroy(s *terraform.State) error {
 	return nil
 }
 
-func CheckSakuraCloudServerDestroy(s *terraform.State) error {
+func CheckSakuraServerDestroy(s *terraform.State) error {
 	serverOp := iaas.NewServerOp(AccClientGetter())
 
 	for _, rs := range s.RootModule().Resources {

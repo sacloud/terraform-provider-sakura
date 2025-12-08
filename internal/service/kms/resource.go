@@ -9,15 +9,18 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 
 	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/kms-api-go"
@@ -52,10 +55,11 @@ func (r *kmsResource) Configure(ctx context.Context, req resource.ConfigureReque
 }
 
 type kmsResourceModel struct {
-	common.SakuraBaseModel
-	KeyOrigin types.String   `tfsdk:"key_origin"`
-	PlainKey  types.String   `tfsdk:"plain_key"`
-	Timeouts  timeouts.Value `tfsdk:"timeouts"`
+	kmsBaseModel
+	PlainKey                types.String   `tfsdk:"plain_key"`
+	ScheduleDestructionDays types.Int32    `tfsdk:"schedule_destruction_days"`
+	RotateVersion           types.Int64    `tfsdk:"rotate_version"`
+	Timeouts                timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -65,6 +69,16 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 			"name":        common.SchemaResourceName("KMS key"),
 			"description": common.SchemaResourceDescription("KMS key"),
 			"tags":        common.SchemaResourceTags("KMS key"),
+			"status": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The status of the KMS key.",
+				Default:     stringdefault.StaticString(string(v1.ChangeKeyStatusStatusActive)),
+				Validators: []validator.String{
+					//stringvalidator.OneOf(common.ToStrings(v1.ChangeKeyStatusStatusActive.AllValues())...),
+					stringvalidator.OneOf(common.MapTo(v1.ChangeKeyStatusStatusActive.AllValues(), common.ToString)...),
+				},
+			},
 			"key_origin": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
@@ -78,6 +92,31 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Sensitive:   true,
 				Description: "Plain key for imported KMS key. Required when `key_origin` is 'imported'.",
+			},
+			"schedule_destruction_days": schema.Int32Attribute{
+				Optional:    true,
+				Description: "The number of days to schedule the destruction of the KMS key. If set, the KMS key will be scheduled for destruction after the specified number of days instead of immediate destruction in 'terraform destroy'.",
+				Validators: []validator.Int32{
+					int32validator.Between(7, 90),
+				},
+			},
+			"rotate_version": schema.Int64Attribute{
+				Optional:    true,
+				Computed:    true,
+				Default:     int64default.StaticInt64(0),
+				Description: "The rotateion version. This number is incremented when you want rotate KMS key.",
+			},
+			"latest_version": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The latest material version of the KMS key.",
+			},
+			"created_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The creation time of the KMS key.",
+			},
+			"modified_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The last modification time of the KMS key.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
@@ -103,20 +142,29 @@ func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	keyReq, err := expandKMSCreateKey(&plan)
 	if err != nil {
-		resp.Diagnostics.AddError("KMS Create Key Expansion Error", err.Error())
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to expand create key request: %s", err.Error()))
 		return
 	}
 
 	keyOp := kms.NewKeyOp(r.client)
 	createdKey, err := keyOp.Create(ctx, keyReq)
 	if err != nil {
-		resp.Diagnostics.AddError("KMS Create Error", err.Error())
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create KMS key: %s", err.Error()))
 		return
 	}
 
-	plan.UpdateBaseState(createdKey.ID, createdKey.Name, createdKey.Description.Value, createdKey.Tags)
-	plan.KeyOrigin = types.StringValue(string(createdKey.KeyOrigin))
+	err = updateKMS(ctx, r.client, &plan, nil, createdKey.ID, "active")
+	if err != nil {
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update KMS key status: %s", err.Error()))
+		return
+	}
 
+	key := getKMS(ctx, r.client, createdKey.ID, &resp.State, &resp.Diagnostics)
+	if key == nil {
+		return
+	}
+
+	plan.updateState(key)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -132,14 +180,14 @@ func (r *kmsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	data.UpdateBaseState(key.ID, key.Name, key.Description.Value, key.Tags)
-	data.KeyOrigin = types.StringValue(string(key.KeyOrigin))
+	data.updateState(key)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
 func (r *kmsResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan kmsResourceModel
+	var plan, state kmsResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -155,7 +203,13 @@ func (r *kmsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	_, err := keyOp.Update(ctx, key.ID, expandKMSUpdateKey(&plan, key))
 	if err != nil {
-		resp.Diagnostics.AddError("KMS Update Error", err.Error())
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update KMS key: %s", err.Error()))
+		return
+	}
+
+	err = updateKMS(ctx, r.client, &plan, &state, key.ID, string(key.Status))
+	if err != nil {
+		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update KMS key status: %s", err.Error()))
 		return
 	}
 
@@ -164,8 +218,7 @@ func (r *kmsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	plan.UpdateBaseState(key.ID, key.Name, key.Description.Value, key.Tags)
-	plan.KeyOrigin = types.StringValue(string(key.KeyOrigin))
+	plan.updateState(key)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -185,9 +238,17 @@ func (r *kmsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	if err := keyOp.Delete(ctx, key.ID); err != nil {
-		resp.Diagnostics.AddError("KMS Delete Error", err.Error())
-		return
+	if !state.ScheduleDestructionDays.IsNull() {
+		err := keyOp.ScheduleDestruction(ctx, state.ID.ValueString(), int(state.ScheduleDestructionDays.ValueInt32()))
+		if err != nil {
+			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to set schedule destruction of KMS key[%s]: %s", state.ID.ValueString(), err.Error()))
+			return
+		}
+	} else {
+		if err := keyOp.Delete(ctx, key.ID); err != nil {
+			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete KMS key: %s", err.Error()))
+			return
+		}
 	}
 }
 
@@ -238,16 +299,47 @@ func expandKMSCreateKey(model *kmsResourceModel) (v1.CreateKey, error) {
 
 func expandKMSUpdateKey(model *kmsResourceModel, before *v1.Key) v1.Key {
 	req := v1.Key{
-		Name:      model.Name.ValueString(),
-		KeyOrigin: before.KeyOrigin,
+		Name:        model.Name.ValueString(),
+		Description: model.Description.ValueString(),
+		KeyOrigin:   before.KeyOrigin,
 	}
 
 	if !model.Tags.IsNull() {
 		req.Tags = common.TsetToStrings(model.Tags)
 	}
-	if !model.Description.IsNull() {
-		req.Description = v1.NewOptString(model.Description.ValueString())
-	}
 
 	return req
 }
+
+func updateKMS(ctx context.Context, client *v1.Client, model *kmsResourceModel, before *kmsResourceModel, id string, beforeStatus string) error {
+	keyOp := kms.NewKeyOp(client)
+
+	status := model.Status.ValueString()
+	if before != nil && status != beforeStatus {
+		err := keyOp.ChangeStatus(ctx, id, v1.ChangeKeyStatusStatus(status))
+		if err != nil {
+			return fmt.Errorf("failed to change status of KMS key[%s]: %s", id, err)
+		}
+	}
+
+	if before != nil && !model.RotateVersion.Equal(before.RotateVersion) {
+		if beforeStatus == string(v1.ChangeKeyStatusStatusActive) {
+			tflog.Info(ctx, fmt.Sprintf("Rotating KMS key[%s]", id))
+			_, err := keyOp.Rotate(ctx, id)
+			if err != nil {
+				return fmt.Errorf("failed to rotate KMS key[%s]: %s", id, err)
+			}
+		} else {
+			tflog.Warn(ctx, fmt.Sprintf("Can't rotate KMS key[%s] when status is not 'active'", id))
+		}
+	}
+
+	return nil
+}
+
+/*
+func updateResourceState(model *kmsResourceModel, key *v1.Key, rotateVer int64) {
+	model.updateState(key)
+	model.RotateVersion = types.Int64Value(rotateVer)
+}
+*/

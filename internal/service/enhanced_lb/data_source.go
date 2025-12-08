@@ -336,6 +336,7 @@ func (d *enhancedLBDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Computed:    true,
 				Description: "A list of CIDR block used by the Enhanced LB to access the server",
 			},
+			"monitoring_suite": common.SchemaDataSourceMonitoringSuite("Enhanced LB"),
 		},
 		MarkdownDescription: "Get information about an existing Enhanced Load Balancer(proxylb in v2).",
 	}

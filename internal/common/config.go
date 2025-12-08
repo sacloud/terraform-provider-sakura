@@ -29,8 +29,6 @@ import (
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 
-	"github.com/sacloud/cloudhsm-api-go"
-	cloudhsmapi "github.com/sacloud/cloudhsm-api-go/apis/v1"
 	kms "github.com/sacloud/kms-api-go"
 	kmsapi "github.com/sacloud/kms-api-go/apis/v1"
 	nosql "github.com/sacloud/nosql-api-go"
@@ -96,7 +94,6 @@ type APIClient struct {
 	SimpleMqClient                   *queue.Client
 	EventBusClient                   *eventbus_api.Client
 	ObjectStorageClient              *objectstorage.Client
-	CloudHSMClient                   *cloudhsmapi.Client
 	NosqlClient                      *nosqlapi.Client
 }
 
@@ -267,10 +264,6 @@ func (c *Config) NewClient() (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	cloudhsmClient, err := cloudhsm.NewClient(client.WithOptions(callerOptions))
-	if err != nil {
-		return nil, err
-	}
 	nosqlClient, err := nosql.NewClient(client.WithOptions(callerOptions))
 	if err != nil {
 		return nil, err
@@ -291,7 +284,6 @@ func (c *Config) NewClient() (*APIClient, error) {
 		EventBusClient:                   eventbusClient,
 		AppRunClient:                     &apprun.Client{Options: callerOptions},
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
-		CloudHSMClient:                   cloudhsmClient,
 		NosqlClient:                      nosqlClient,
 	}, nil
 }

@@ -12,4 +12,7 @@ resource "sakura_dns" "foobar" {
     type  = "A"
     value = "192.168.11.2"
   }]
+  monitoring_suite = {
+    enabled = true
+  }
 }

@@ -92,17 +92,17 @@ func (d *simpleMQDataSource) Read(ctx context.Context, req datasource.ReadReques
 		return
 	}
 
-	item, err := filterSimpleMQByNameOrTags(qs, name, tags)
+	item, err := FilterSimpleMQByNameOrTags(qs, name, tags)
 	if err != nil {
 		resp.Diagnostics.AddError("Not Found", err.Error())
 		return
 	}
-	data.updateState(item)
 
+	data.updateState(item)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func filterSimpleMQByNameOrTags(qs []queue.CommonServiceItem, name string, tags []string) (*queue.CommonServiceItem, error) {
+func FilterSimpleMQByNameOrTags(qs []queue.CommonServiceItem, name string, tags []string) (*queue.CommonServiceItem, error) {
 	var match []*queue.CommonServiceItem
 	for i, v := range qs {
 		if name != "" && name != simplemq.GetQueueName(&v) {

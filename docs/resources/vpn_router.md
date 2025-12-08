@@ -158,6 +158,10 @@ resource "sakura_vpn_router" "premium" {
     day_of_week = "tue"
     hour        = 1
   }
+
+  monitoring_suite = {
+    enabled = true
+  }
 }
 
 resource "sakura_internet" "foobar" {
@@ -186,6 +190,7 @@ resource "sakura_vswitch" "foobar" {
 - `icon_id` (String) The icon id to attach to the VPN Router
 - `internet_connection` (Boolean) The flag to enable connecting to the Internet from the VPN Router
 - `l2tp` (Attributes) (see [below for nested schema](#nestedatt--l2tp))
+- `monitoring_suite` (Attributes) The monitoring suite settings of the VPN Router. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `plan` (String) The plan name of the VPN Router. This must be one of [`standard`/`premium`/`highspec`/`highspec4000`]
 - `port_forwarding` (Attributes List) (see [below for nested schema](#nestedatt--port_forwarding))
 - `pptp` (Attributes) (see [below for nested schema](#nestedatt--pptp))
@@ -284,6 +289,14 @@ Required:
 - `pre_shared_secret` (String, Sensitive) The pre shared secret for L2TP/IPsec
 - `range_start` (String) The start value of IP address range to assign to L2TP/IPsec client
 - `range_stop` (String) The end value of IP address range to assign to L2TP/IPsec client
+
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Optional:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite
 
 
 <a id="nestedatt--port_forwarding"></a>

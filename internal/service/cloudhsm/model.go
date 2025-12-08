@@ -14,6 +14,7 @@ import (
 
 type cloudHSMBaseModel struct {
 	common.SakuraBaseModel
+	Zone               types.String `tfsdk:"zone"`
 	CreatedAt          types.String `tfsdk:"created_at"`
 	ModifiedAt         types.String `tfsdk:"modified_at"`
 	Availability       types.String `tfsdk:"availability"`
@@ -35,8 +36,9 @@ func (m cloudHSMLocalRouterModel) AttributeTypes() map[string]attr.Type {
 	}
 }
 
-func (model *cloudHSMBaseModel) updateState(cloudhsm *v1.CloudHSM) {
+func (model *cloudHSMBaseModel) updateState(cloudhsm *v1.CloudHSM, zone string) {
 	model.UpdateBaseState(cloudhsm.ID, cloudhsm.Name, cloudhsm.Description.Value, cloudhsm.Tags)
+	model.Zone = types.StringValue(zone)
 	model.CreatedAt = types.StringValue(string(cloudhsm.CreatedAt))
 	model.ModifiedAt = types.StringValue(string(cloudhsm.ModifiedAt))
 	model.Availability = types.StringValue(string(cloudhsm.Availability))
@@ -58,6 +60,7 @@ func (model *cloudHSMBaseModel) updateState(cloudhsm *v1.CloudHSM) {
 
 type cloudHSMClientBaseModel struct {
 	ID           types.String `tfsdk:"id"`
+	Zone         types.String `tfsdk:"zone"`
 	Name         types.String `tfsdk:"name"`
 	CloudHSMID   types.String `tfsdk:"cloudhsm_id"`
 	Certificate  types.String `tfsdk:"certificate"`
@@ -66,8 +69,9 @@ type cloudHSMClientBaseModel struct {
 	Availability types.String `tfsdk:"availability"`
 }
 
-func (model *cloudHSMClientBaseModel) updateState(cloudhsmClient *v1.CloudHSMClient, cloudhsmId string) {
+func (model *cloudHSMClientBaseModel) updateState(cloudhsmClient *v1.CloudHSMClient, zone, cloudhsmId string) {
 	model.ID = types.StringValue(cloudhsmClient.ID)
+	model.Zone = types.StringValue(zone)
 	model.Name = types.StringValue(cloudhsmClient.Name)
 	model.CloudHSMID = types.StringValue(cloudhsmId)
 	model.Certificate = types.StringValue(cloudhsmClient.Certificate)
@@ -79,13 +83,15 @@ func (model *cloudHSMClientBaseModel) updateState(cloudhsmClient *v1.CloudHSMCli
 type cloudHSMPeerBaseModel struct {
 	ID         types.String `tfsdk:"id"`
 	CloudHSMID types.String `tfsdk:"cloudhsm_id"`
+	Zone       types.String `tfsdk:"zone"`
 	Index      types.Int64  `tfsdk:"index"`
 	Status     types.String `tfsdk:"status"`
 	Routes     types.List   `tfsdk:"routes"`
 }
 
-func (model *cloudHSMPeerBaseModel) updateState(peer *v1.CloudHSMPeer, cloudhsmId string) {
+func (model *cloudHSMPeerBaseModel) updateState(peer *v1.CloudHSMPeer, zone, cloudhsmId string) {
 	model.ID = types.StringValue(peer.ID)
+	model.Zone = types.StringValue(zone)
 	model.Index = types.Int64Value(int64(peer.Index.Value))
 	model.Status = types.StringValue(string(peer.Status.Value))
 	model.Routes = common.StringsToTlist(peer.Routes)
@@ -94,12 +100,14 @@ func (model *cloudHSMPeerBaseModel) updateState(peer *v1.CloudHSMPeer, cloudhsmI
 
 type cloudHSMLicenseBaseModel struct {
 	common.SakuraBaseModel
+	Zone       types.String `tfsdk:"zone"`
 	CreatedAt  types.String `tfsdk:"created_at"`
 	ModifiedAt types.String `tfsdk:"modified_at"`
 }
 
-func (model *cloudHSMLicenseBaseModel) updateState(license *v1.CloudHSMSoftwareLicense) {
+func (model *cloudHSMLicenseBaseModel) updateState(license *v1.CloudHSMSoftwareLicense, zone string) {
 	model.UpdateBaseState(license.ID, license.Name, license.Description, license.Tags)
+	model.Zone = types.StringValue(zone)
 	model.CreatedAt = types.StringValue(string(license.CreatedAt))
 	model.ModifiedAt = types.StringValue(string(license.ModifiedAt))
 }

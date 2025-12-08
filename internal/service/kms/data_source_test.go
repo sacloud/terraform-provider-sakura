@@ -32,6 +32,8 @@ func TestAccSakuraDataSourceKMS_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "key_origin", "generated"),
+					resource.TestCheckResourceAttr(resourceName, "latest_version", "0"),
+					resource.TestCheckResourceAttr(resourceName, "status", "active"),
 				),
 			},
 			{
@@ -45,6 +47,8 @@ func TestAccSakuraDataSourceKMS_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "key_origin", "generated"),
+					resource.TestCheckResourceAttr(resourceName, "latest_version", "0"),
+					resource.TestCheckResourceAttr(resourceName, "status", "active"),
 				),
 			},
 		},

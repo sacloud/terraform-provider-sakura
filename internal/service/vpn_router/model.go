@@ -41,6 +41,7 @@ type vpnRouterBaseModel struct {
 	StaticRoute             []vpnRouterStaticRouteModel             `tfsdk:"static_route"`
 	ScheduledMaintenance    types.Object                            `tfsdk:"scheduled_maintenance"`
 	User                    []vpnRouterUserModel                    `tfsdk:"user"`
+	MonitoringSuite         types.Object                            `tfsdk:"monitoring_suite"`
 }
 
 type vpnRouterPublicNetworkInterfaceModel struct {
@@ -300,6 +301,7 @@ func (model *vpnRouterBaseModel) updateState(ctx context.Context, client *common
 	model.StaticRoute = flattenVPNRouterStaticRoutes(vpnRouter)
 	model.User = flattenVPNRouterUsers(vpnRouter)
 	model.ScheduledMaintenance = flattenVPNRouterScheduledMaintenance(vpnRouter)
+	model.MonitoringSuite = common.FlattenMonitoringSuite(vpnRouter.Settings.MonitoringSuite)
 
 	return false, nil
 }

@@ -28,6 +28,7 @@ data "sakura_cloudhsm" "foobar" {
 - `id` (String) The ID of the CloudHSM.
 - `name` (String) The name of the CloudHSM.
 - `tags` (Set of String) The tags of the CloudHSM.
+- `zone` (String) The zone of the CloudHSM. This must be one of [`is1b`/`tk1a`]
 
 ### Read-Only
 

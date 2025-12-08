@@ -32,6 +32,7 @@ resource "sakura_cloudhsm_license" "foobar" {
 - `description` (String) The description of the CloudHSM License. The length of this value must be in the range [`1`-`512`]
 - `tags` (Set of String) The tags of the CloudHSM License.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+- `zone` (String) The zone of the CloudHSM License. This must be one of [`is1b`/`tk1a`]
 
 ### Read-Only
 

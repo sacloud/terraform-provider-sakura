@@ -36,6 +36,7 @@ resource "sakura_cloudhsm_client" "foobar" {
 ### Optional
 
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+- `zone` (String) The zone of the CloudHSM Client. This must be one of [`is1b`/`tk1a`]
 
 ### Read-Only
 
