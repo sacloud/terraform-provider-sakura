@@ -37,10 +37,11 @@ resource "sakura_cloudhsm_peer" "foobar" {
 ### Optional
 
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+- `zone` (String) The zone of the CloudHSM Peer. This must be one of [`is1b`/`tk1a`]
 
 ### Read-Only
 
-- `id` (String) The ID of the Cloud HSM Peer.
+- `id` (String) The ID of the CloudHSM Peer.
 - `index` (Number) The index of the CloudHSM Peer
 - `routes` (List of String) The routes for the CloudHSM Peer
 - `status` (String) The status of the CloudHSM Peer

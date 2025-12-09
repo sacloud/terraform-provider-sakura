@@ -143,6 +143,10 @@ resource "sakura_vpn_router" "premium" {
     day_of_week = "tue"
     hour        = 1
   }
+
+  monitoring_suite = {
+    enabled = true
+  }
 }
 
 resource "sakura_internet" "foobar" {

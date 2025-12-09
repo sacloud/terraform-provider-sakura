@@ -236,6 +236,7 @@ func (r *simpleMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 				Default:     booldefault.StaticBool(true),
 				Description: "The flag to enable monitoring by the simple monitor",
 			},
+			"monitoring_suite": common.SchemaResourceMonitoringSuite("Simple Monitor"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -373,6 +374,7 @@ func expandSimpleMonitorCreateRequest(model *simpleMonitorResourceModel) *iaas.S
 		Description:        model.Description.ValueString(),
 		Tags:               common.TsetToStrings(model.Tags),
 		IconID:             common.ExpandSakuraCloudID(model.IconID),
+		MonitoringSuiteLog: common.ExpandMonitoringSuiteLog(model.MonitoringSuite),
 	}
 }
 
@@ -392,6 +394,7 @@ func expandSimpleMonitorUpdateRequest(model *simpleMonitorResourceModel) *iaas.S
 		Description:        model.Description.ValueString(),
 		Tags:               common.TsetToStrings(model.Tags),
 		IconID:             common.ExpandSakuraCloudID(model.IconID),
+		MonitoringSuiteLog: common.ExpandMonitoringSuiteLog(model.MonitoringSuite),
 	}
 }
 

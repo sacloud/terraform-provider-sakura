@@ -98,6 +98,7 @@ func (d *dnsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 					},
 				},
 			},
+			"monitoring_suite": common.SchemaDataSourceMonitoringSuite("DNS"),
 		},
 		MarkdownDescription: "Get information about an existing DNS.",
 	}

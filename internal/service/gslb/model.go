@@ -11,12 +11,13 @@ import (
 
 type gslbBaseModel struct {
 	common.SakuraBaseModel
-	IconID      types.String          `tfsdk:"icon_id"`
-	FQDN        types.String          `tfsdk:"fqdn"`
-	HealthCheck *gslbHealthCheckModel `tfsdk:"health_check"`
-	Weighted    types.Bool            `tfsdk:"weighted"`
-	SorryServer types.String          `tfsdk:"sorry_server"`
-	Server      []gslbServerModel     `tfsdk:"server"`
+	IconID          types.String          `tfsdk:"icon_id"`
+	FQDN            types.String          `tfsdk:"fqdn"`
+	HealthCheck     *gslbHealthCheckModel `tfsdk:"health_check"`
+	Weighted        types.Bool            `tfsdk:"weighted"`
+	SorryServer     types.String          `tfsdk:"sorry_server"`
+	Server          []gslbServerModel     `tfsdk:"server"`
+	MonitoringSuite types.Object          `tfsdk:"monitoring_suite"`
 }
 
 type gslbHealthCheckModel struct {
@@ -60,6 +61,7 @@ func (model *gslbBaseModel) updateState(data *iaas.GSLB) {
 		}
 		model.Server = servers
 	}
+	model.MonitoringSuite = common.FlattenMonitoringSuiteLog(data.MonitoringSuiteLog)
 	if data.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
 	} else {

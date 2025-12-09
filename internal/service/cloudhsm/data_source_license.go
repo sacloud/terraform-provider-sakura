@@ -16,7 +16,7 @@ import (
 )
 
 type cloudHSMLicenseDataSource struct {
-	client *v1.Client
+	client *common.APIClient
 }
 
 var (
@@ -37,7 +37,7 @@ func (d *cloudHSMLicenseDataSource) Configure(ctx context.Context, req datasourc
 	if apiclient == nil {
 		return
 	}
-	d.client = apiclient.CloudHSMClient
+	d.client = apiclient
 }
 
 type cloudHSMLicenseDataSourceModel struct {
@@ -51,6 +51,7 @@ func (d *cloudHSMLicenseDataSource) Schema(_ context.Context, req datasource.Sch
 			"name":        common.SchemaDataSourceName("CloudHSM License"),
 			"description": common.SchemaDataSourceDescription("CloudHSM License"),
 			"tags":        common.SchemaDataSourceTags("CloudHSM License"),
+			"zone":        schemaDataSourceZone("CloudHSM License"),
 			"created_at": schema.StringAttribute{
 				Computed:    true,
 				Description: "The creation date of the CloudHSM License",
@@ -78,7 +79,9 @@ func (d *cloudHSMLicenseDataSource) Read(ctx context.Context, req datasource.Rea
 		return
 	}
 
-	licenseOp := cloudhsm.NewLicenseOp(d.client)
+	zone := getZone(data.Zone, d.client, &resp.Diagnostics)
+	client := createClient(zone, d.client)
+	licenseOp := cloudhsm.NewLicenseOp(client)
 	var chsmLicense *v1.CloudHSMSoftwareLicense
 	var err error
 	if len(name) > 0 {
@@ -100,7 +103,7 @@ func (d *cloudHSMLicenseDataSource) Read(ctx context.Context, req datasource.Rea
 		}
 	}
 
-	data.updateState(chsmLicense)
+	data.updateState(chsmLicense, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

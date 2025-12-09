@@ -482,6 +482,7 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Computed:    true,
 				Description: "A list of CIDR block used by the Enhanced LB to access the server",
 			},
+			"monitoring_suite": common.SchemaResourceMonitoringSuite("Enhanced LB"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),

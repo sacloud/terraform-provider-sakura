@@ -111,6 +111,7 @@ func (d *gslbDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 					},
 				},
 			},
+			"monitoring_suite": common.SchemaDataSourceMonitoringSuite("GSLB"),
 		},
 		MarkdownDescription: "Get information about an existing GSLB.",
 	}

@@ -193,3 +193,18 @@ func SchemaPacketFilterExpression() schema.Attribute {
 		},
 	}
 }
+
+func SchemaResourceMonitoringSuite(name string) schema.Attribute {
+	return schema.SingleNestedAttribute{
+		Optional:    true,
+		Computed:    true,
+		Description: desc.Sprintf("The monitoring suite settings of the %s.", name),
+		Attributes: map[string]schema.Attribute{
+			"enabled": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "Enable sending signals to Monitoring Suite",
+			},
+		},
+	}
+}

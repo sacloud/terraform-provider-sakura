@@ -177,6 +177,7 @@ func (d *simpleMonitorDataSource) Schema(ctx context.Context, req datasource.Sch
 				Computed:    true,
 				Description: "The flag to enable monitoring by the simple monitor",
 			},
+			"monitoring_suite": common.SchemaDataSourceMonitoringSuite("Simple Monitor"),
 		},
 		MarkdownDescription: "Get information about an existing Simple Monitor.",
 	}

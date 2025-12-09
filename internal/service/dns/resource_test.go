@@ -48,6 +48,7 @@ func TestAccSakuraDNS_basic(t *testing.T) {
 						resourceName, "icon_id",
 						"sakura_icon.foobar", "id",
 					),
+					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
 				),
 			},
 			{
@@ -63,6 +64,7 @@ func TestAccSakuraDNS_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "record.0.type", "A"),
 					resource.TestCheckResourceAttr(resourceName, "record.0.value", "192.168.11.1"),
 					resource.TestCheckNoResourceAttr(resourceName, "icon_id"),
+					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "false"),
 				),
 			},
 		},
@@ -187,6 +189,9 @@ resource "sakura_dns" "foobar" {
     type  = "A"
     value = "192.168.11.2"
   }]
+  monitoring_suite = {
+    enabled = true
+  }
 }
 
 resource "sakura_icon" "foobar" {
@@ -205,4 +210,7 @@ resource "sakura_dns" "foobar" {
     type  = "A"
     value = "192.168.11.1"
   }]
+  monitoring_suite = {
+    enabled = false
+  }
 }`

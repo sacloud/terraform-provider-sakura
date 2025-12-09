@@ -129,6 +129,7 @@ func (r *dnsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 					},
 				},
 			},
+			"monitoring_suite": common.SchemaResourceMonitoringSuite("DNS"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -251,11 +252,12 @@ func getDNS(ctx context.Context, client *common.APIClient, id iaastypes.ID, stat
 
 func expandDNSCreateRequest(model *dnsResourceModel) *iaas.DNSCreateRequest {
 	return &iaas.DNSCreateRequest{
-		Name:        model.Zone.ValueString(),
-		Description: model.Description.ValueString(),
-		Tags:        common.TsetToStrings(model.Tags),
-		IconID:      common.ExpandSakuraCloudID(model.IconID),
-		Records:     expandDNSRecords(model),
+		Name:               model.Zone.ValueString(),
+		Description:        model.Description.ValueString(),
+		Tags:               common.TsetToStrings(model.Tags),
+		IconID:             common.ExpandSakuraCloudID(model.IconID),
+		Records:            expandDNSRecords(model),
+		MonitoringSuiteLog: common.ExpandMonitoringSuiteLog(model.MonitoringSuite),
 	}
 }
 
@@ -265,10 +267,11 @@ func expandDNSUpdateRequest(plan, state *dnsResourceModel, dns *iaas.DNS) *iaas.
 		records = expandDNSRecords(plan)
 	}
 	return &iaas.DNSUpdateRequest{
-		Description: plan.Description.ValueString(),
-		Tags:        common.TsetToStrings(plan.Tags),
-		IconID:      common.ExpandSakuraCloudID(plan.IconID),
-		Records:     records,
+		Description:        plan.Description.ValueString(),
+		Tags:               common.TsetToStrings(plan.Tags),
+		IconID:             common.ExpandSakuraCloudID(plan.IconID),
+		Records:            records,
+		MonitoringSuiteLog: common.ExpandMonitoringSuiteLog(plan.MonitoringSuite),
 	}
 }
 

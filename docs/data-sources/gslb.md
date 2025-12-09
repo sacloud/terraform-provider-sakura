@@ -35,6 +35,7 @@ data "sakura_gslb" "test" {
 - `fqdn` (String) The FQDN for accessing to the GSLB. This is typically used as value of CNAME record
 - `health_check` (Attributes) Health check configuration (see [below for nested schema](#nestedatt--health_check))
 - `icon_id` (String) The icon id attached to the GSLB
+- `monitoring_suite` (Attributes) The monitoring suite settings of the GSLB. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `server` (Attributes List) (see [below for nested schema](#nestedatt--server))
 - `sorry_server` (String) The IP address of the SorryServer. This will be used when all servers are down
 - `weighted` (Boolean) The flag to enable weighted load-balancing
@@ -50,6 +51,14 @@ Read-Only:
 - `port` (Number) The port number used when checking by TCP/HTTP/HTTPS
 - `protocol` (String) The protocol used for health checks. This will be one of [`http`/`https`/`tcp`/`ping`]
 - `status` (String) The response-code to expect when checking by HTTP/HTTPS
+
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Read-Only:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite
 
 
 <a id="nestedatt--server"></a>

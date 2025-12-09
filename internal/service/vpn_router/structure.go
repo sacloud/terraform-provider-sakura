@@ -141,6 +141,7 @@ func expandVPNRouterSettings(model *vpnRouterResourceModel) *builder.RouterSetti
 		StaticRoute:               expandVPNRouterStaticRouteList(model),
 		SyslogHost:                model.SyslogHost.ValueString(),
 		ScheduledMaintenance:      expandVPNRouterScheduledMaintenance(model),
+		MonitoringSuite:           common.ExpandMonitoringSuite(model.MonitoringSuite),
 	}
 }
 

@@ -637,6 +637,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					},
 				},
 			},
+			"monitoring_suite": common.SchemaResourceMonitoringSuite("VPN Router"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),

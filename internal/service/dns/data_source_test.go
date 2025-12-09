@@ -31,6 +31,7 @@ func TestAccSakuraDNSDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.2", "tag3"),
+					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
 				),
 			},
 		},
@@ -42,6 +43,9 @@ resource "sakura_dns" "foobar" {
   zone = "{{ .arg0 }}"
   description = "description"
   tags = ["tag1", "tag2", "tag3"]
+  monitoring_suite = {
+    enabled = true
+  }
 }
 
 data "sakura_dns" "foobar" {

@@ -37,6 +37,7 @@ func TestAccSakuraDataSourceSimpleMonitor_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "notify_email_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "notify_slack_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "notify_slack_webhook", testAccSlackWebhook),
+					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
 				),
 			},
 		},
@@ -58,6 +59,9 @@ resource "sakura_simple_monitor" "foobar" {
   notify_email_enabled = true
   notify_slack_enabled = true
   notify_slack_webhook = "{{ .arg1 }}"
+  monitoring_suite = {
+    enabled = true
+  }
 }
 
 data "sakura_simple_monitor" "foobar" {

@@ -40,6 +40,7 @@ data "sakura_simple_monitor" "test" {
 - `health_check` (Attributes) (see [below for nested schema](#nestedatt--health_check))
 - `icon_id` (String) The icon id attached to the Simple Monitor
 - `max_check_attempts` (Number) The number of retry
+- `monitoring_suite` (Attributes) The monitoring suite settings of the Simple Monitor. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `notify_email_enabled` (Boolean) The flag to enable notification by email
 - `notify_email_html` (Boolean) The flag to enable HTML format instead of text format
 - `notify_interval` (Number) The interval in hours between notification
@@ -71,3 +72,11 @@ Read-Only:
 - `status` (Number) The response-code to expect when checking by HTTP/HTTPS
 - `username` (String) The user name for basic auth used when checking by HTTP/HTTPS
 - `verify_sni` (Boolean) The flag to enable hostname verification for SNI
+
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Read-Only:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite

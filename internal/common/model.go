@@ -3,7 +3,10 @@
 
 package common
 
-import "github.com/hashicorp/terraform-plugin-framework/types"
+import (
+	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+)
 
 type SakuraBaseModel struct {
 	ID          types.String `tfsdk:"id"`
@@ -17,4 +20,14 @@ func (model *SakuraBaseModel) UpdateBaseState(id string, name string, desc strin
 	model.Name = types.StringValue(name)
 	model.Description = types.StringValue(desc)
 	model.Tags = FlattenTags(tags)
+}
+
+type SakuraMonitoringSuiteModel struct {
+	Enabled types.Bool `tfsdk:"enabled"`
+}
+
+func (m SakuraMonitoringSuiteModel) AttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"enabled": types.BoolType,
+	}
 }

@@ -21,7 +21,7 @@ import (
 )
 
 type cloudHSMResource struct {
-	client *v1.Client
+	client *common.APIClient
 }
 
 var (
@@ -43,7 +43,7 @@ func (r *cloudHSMResource) Configure(ctx context.Context, req resource.Configure
 	if apiclient == nil {
 		return
 	}
-	r.client = apiclient.CloudHSMClient
+	r.client = apiclient
 }
 
 type cloudHSMResourceModel struct {
@@ -58,6 +58,7 @@ func (r *cloudHSMResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"name":        common.SchemaResourceName("CloudHSM"),
 			"description": common.SchemaResourceDescription("CloudHSM"),
 			"tags":        common.SchemaResourceTags("CloudHSM"),
+			"zone":        schemaResourceZone("CloudHSM"),
 			"ipv4_network_address": schema.StringAttribute{
 				Required:    true,
 				Description: "The IPv4 network address of the CloudHSM",
@@ -119,7 +120,9 @@ func (r *cloudHSMResource) Create(ctx context.Context, req resource.CreateReques
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	cloudhsmOp := cloudhsm.NewCloudHSMOp(r.client)
+	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	cloudhsmOp := cloudhsm.NewCloudHSMOp(client)
 	created, err := cloudhsmOp.Create(ctx, expandCloudHSMCreateParams(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
@@ -138,7 +141,7 @@ func (r *cloudHSMResource) Create(ctx context.Context, req resource.CreateReques
 		ModifiedAt:         created.ModifiedAt,
 		Availability:       created.Availability,
 	}
-	plan.updateState(chsm)
+	plan.updateState(chsm, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -149,12 +152,14 @@ func (r *cloudHSMResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	chsm := getCloudHSM(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	chsm := getCloudHSM(ctx, client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	state.updateState(chsm)
+	state.updateState(chsm, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -168,18 +173,20 @@ func (r *cloudHSMResource) Update(ctx context.Context, req resource.UpdateReques
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	_, err := cloudhsm.NewCloudHSMOp(r.client).Update(ctx, plan.ID.ValueString(), expandCloudHSMUpdateParams(&plan))
+	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	_, err := cloudhsm.NewCloudHSMOp(client).Update(ctx, plan.ID.ValueString(), expandCloudHSMUpdateParams(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", err.Error())
 		return
 	}
 
-	chsm := getCloudHSM(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	chsm := getCloudHSM(ctx, client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	plan.updateState(chsm)
+	plan.updateState(chsm, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -193,12 +200,14 @@ func (r *cloudHSMResource) Delete(ctx context.Context, req resource.DeleteReques
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	chsm := getCloudHSM(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	zone := getZone(state.Zone, r.client, &resp.Diagnostics)
+	client := createClient(zone, r.client)
+	chsm := getCloudHSM(ctx, client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
 
-	if err := cloudhsm.NewCloudHSMOp(r.client).Delete(ctx, chsm.ID); err != nil {
+	if err := cloudhsm.NewCloudHSMOp(client).Delete(ctx, chsm.ID); err != nil {
 		resp.Diagnostics.AddError("Delete Error", err.Error())
 		return
 	}

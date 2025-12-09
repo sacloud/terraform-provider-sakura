@@ -27,6 +27,7 @@ type simpleMonitorBaseModel struct {
 	NotifySlackWebhook types.String                   `tfsdk:"notify_slack_webhook"`
 	NotifyInterval     types.Int32                    `tfsdk:"notify_interval"`
 	Enabled            types.Bool                     `tfsdk:"enabled"`
+	MonitoringSuite    types.Object                   `tfsdk:"monitoring_suite"`
 }
 
 type simpleMonitorHealthCheckModel struct {
@@ -66,6 +67,7 @@ func (m *simpleMonitorBaseModel) updateState(sm *iaas.SimpleMonitor) {
 	m.NotifySlackWebhook = types.StringValue(sm.SlackWebhooksURL)
 	m.NotifyInterval = types.Int32Value(int32(flattenSimpleMonitorNotifyInterval(sm)))
 	m.HealthCheck = flattenSimpleMonitorHealthCheck(sm)
+	m.MonitoringSuite = common.FlattenMonitoringSuiteLog(sm.MonitoringSuiteLog)
 	if sm.IconID.IsEmpty() {
 		m.IconID = types.StringNull()
 	} else {

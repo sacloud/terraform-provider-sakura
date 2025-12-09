@@ -80,6 +80,10 @@ resource "sakura_enhanced_lb" "foobar" {
     fixed_message_body   = "body"
   }]
 
+  monitoring_suite = {
+    enabled = true
+  }
+
   description = "description"
   tags        = ["tag1", "tag2"]
 }
@@ -108,6 +112,7 @@ resource "sakura_server" "foobar" {
 - `description` (String) The description of the Enhanced LB. The length of this value must be in the range [`1`-`512`]
 - `gzip` (Boolean) The flag to enable gzip compression
 - `icon_id` (String) The icon id to attach to the Enhanced LB
+- `monitoring_suite` (Attributes) The monitoring suite settings of the Enhanced LB. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `plan` (Number) The plan name of the Enhanced LB. This must be one of [`100`/`500`/`1000`/`5000`/`10000`/`50000`/`100000`/`400000`]
 - `proxy_protocol` (Boolean) The flag to enable proxy protocol v2
 - `region` (String) The name of region that the Enhanced LB is in. This must be one of [`tk1`/`is1`/`anycast`]
@@ -198,6 +203,14 @@ Optional:
 
 - `intermediate_cert` (String) The intermediate certificate for a server
 
+
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Optional:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite
 
 
 <a id="nestedatt--rule"></a>

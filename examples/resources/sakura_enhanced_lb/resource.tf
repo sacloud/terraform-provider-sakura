@@ -65,6 +65,10 @@ resource "sakura_enhanced_lb" "foobar" {
     fixed_message_body   = "body"
   }]
 
+  monitoring_suite = {
+    enabled = true
+  }
+
   description = "description"
   tags        = ["tag1", "tag2"]
 }

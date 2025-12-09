@@ -29,8 +29,6 @@ import (
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 
-	"github.com/sacloud/cloudhsm-api-go"
-	cloudhsmapi "github.com/sacloud/cloudhsm-api-go/apis/v1"
 	kms "github.com/sacloud/kms-api-go"
 	kmsapi "github.com/sacloud/kms-api-go/apis/v1"
 	sm "github.com/sacloud/secretmanager-api-go"
@@ -94,7 +92,6 @@ type APIClient struct {
 	SimpleMqClient                   *queue.Client
 	EventBusClient                   *eventbus_api.Client
 	ObjectStorageClient              *objectstorage.Client
-	CloudHSMClient                   *cloudhsmapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -264,10 +261,6 @@ func (c *Config) NewClient() (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	cloudhsmClient, err := cloudhsm.NewClient(client.WithOptions(callerOptions))
-	if err != nil {
-		return nil, err
-	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -284,7 +277,6 @@ func (c *Config) NewClient() (*APIClient, error) {
 		EventBusClient:                   eventbusClient,
 		AppRunClient:                     &apprun.Client{Options: callerOptions},
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
-		CloudHSMClient:                   cloudhsmClient,
 	}, nil
 }
 

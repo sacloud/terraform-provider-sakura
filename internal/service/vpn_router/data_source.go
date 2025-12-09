@@ -436,6 +436,7 @@ func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 					},
 				},
 			},
+			"monitoring_suite": common.SchemaDataSourceMonitoringSuite("VPN Router"),
 		},
 		MarkdownDescription: "Get information about an existing VPN Router(vpc_outer in v2).",
 	}

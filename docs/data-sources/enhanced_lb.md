@@ -38,6 +38,7 @@ data "sakura_enhanced_lb" "foobar" {
 - `health_check` (Attributes) (see [below for nested schema](#nestedatt--health_check))
 - `icon_id` (String) The icon id attached to the Enhanced LB
 - `letsencrypt` (Attributes) (see [below for nested schema](#nestedatt--letsencrypt))
+- `monitoring_suite` (Attributes) The monitoring suite settings of the Enhanced LB. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `plan` (Number) The plan of the Enhanced LB
 - `proxy_networks` (List of String) A list of CIDR block used by the Enhanced LB to access the server
 - `proxy_protocol` (Boolean) The flag to enable proxy protocol v2
@@ -115,6 +116,14 @@ Read-Only:
 - `common_name` (String) The common name of the certificate
 - `enabled` (Boolean) The flag to accept the current Let's Encrypt terms of service(see: https://letsencrypt.org/repository/). This must be set `true` explicitly
 - `subject_alt_names` (Set of String) The subject alternative names of the certificate
+
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Read-Only:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite
 
 
 <a id="nestedatt--rule"></a>

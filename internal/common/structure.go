@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/mitchellh/go-homedir"
+	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/plans"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 )
@@ -282,6 +283,64 @@ func FlattenTags(tags iaastypes.Tags) types.Set {
 		}
 	}
 	return StringsToTset(filtered)
+}
+
+// TODO: Interface/Genericsを使ってXXXMonitoringSuite/XXXMonitoringSuiteLogを一つにすることを検討する。
+// IaaS API側で統合される可能性もあるので、現状はとりあえず構造体ごとに処理を分けておく。
+func FlattenMonitoringSuiteLog(ms *iaas.MonitoringSuiteLog) types.Object {
+	enabled := false
+	if ms != nil {
+		enabled = ms.Enabled
+	}
+	model := SakuraMonitoringSuiteModel{
+		Enabled: types.BoolValue(enabled),
+	}
+	value, diags := types.ObjectValueFrom(context.Background(), model.AttributeTypes(), model)
+	if diags.HasError() {
+		return types.ObjectNull(SakuraMonitoringSuiteModel{}.AttributeTypes())
+	}
+	return value
+}
+
+func ExpandMonitoringSuiteLog(ms types.Object) *iaas.MonitoringSuiteLog {
+	enabled := false
+	if !ms.IsNull() && !ms.IsUnknown() {
+		var model SakuraMonitoringSuiteModel
+		diags := ms.As(context.Background(), &model, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			return nil
+		}
+		enabled = model.Enabled.ValueBool()
+	}
+	return &iaas.MonitoringSuiteLog{Enabled: enabled}
+}
+
+func FlattenMonitoringSuite(ms *iaas.MonitoringSuite) types.Object {
+	enabled := false
+	if ms != nil {
+		enabled = ms.Enabled
+	}
+	model := SakuraMonitoringSuiteModel{
+		Enabled: types.BoolValue(enabled),
+	}
+	value, diags := types.ObjectValueFrom(context.Background(), model.AttributeTypes(), model)
+	if diags.HasError() {
+		return types.ObjectNull(SakuraMonitoringSuiteModel{}.AttributeTypes())
+	}
+	return value
+}
+
+func ExpandMonitoringSuite(ms types.Object) *iaas.MonitoringSuite {
+	enabled := false
+	if !ms.IsNull() && !ms.IsUnknown() {
+		var model SakuraMonitoringSuiteModel
+		diags := ms.As(context.Background(), &model, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			return nil
+		}
+		enabled = model.Enabled.ValueBool()
+	}
+	return &iaas.MonitoringSuite{Enabled: enabled}
 }
 
 // Use saclient-go's version in the future
