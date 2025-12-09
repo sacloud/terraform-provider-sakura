@@ -25,19 +25,21 @@ data "sakura_nosql" "foobar" {
 
 ### Optional
 
-- `id` (String) The ID of the NoSQL.
-- `name` (String) The name of the NoSQL.
-- `tags` (Set of String) The tags of the NoSQL.
+- `id` (String) The ID of the NoSQL appliance.
+- `name` (String) The name of the NoSQL appliance.
+- `tags` (Set of String) The tags of the NoSQL appliance.
+- `zone` (String) The name of zone that the NoSQL appliance is in (e.g. `is1a`, `tk1a`)
 
 ### Read-Only
 
 - `availability` (String) Availability state. state is one of migrating / available / failed
 - `created_at` (String) Creation time
-- `description` (String) The description of the NoSQL.
+- `description` (String) The description of the NoSQL appliance.
 - `disk` (Attributes) Disk encryption information (see [below for nested schema](#nestedatt--disk))
 - `generation` (Number) Generation number
 - `instance` (Attributes) Instance and host information (see [below for nested schema](#nestedatt--instance))
 - `interfaces` (Attributes List) Network interfaces (see [below for nested schema](#nestedatt--interfaces))
+- `plan` (String) The plan name of the NoSQL appliance. This will be one of [`40GB`/`100GB`/`250GB`]
 - `remark` (Attributes) (see [below for nested schema](#nestedatt--remark))
 - `settings` (Attributes) Settings of the NoSQL appliance (see [below for nested schema](#nestedatt--settings))
 
@@ -94,22 +96,22 @@ Read-Only:
 
 - `hostname` (String) Hostname assigned to the interface
 - `ip_address` (String) IP Address assigned to the interface
-- `switch` (Attributes) (see [below for nested schema](#nestedatt--interfaces--switch))
 - `user_ip_address` (String) IP Address which connect to user's switch
+- `vswitch` (Attributes) (see [below for nested schema](#nestedatt--interfaces--vswitch))
 
-<a id="nestedatt--interfaces--switch"></a>
-### Nested Schema for `interfaces.switch`
+<a id="nestedatt--interfaces--vswitch"></a>
+### Nested Schema for `interfaces.vswitch`
 
 Read-Only:
 
-- `id` (String) The ID of the switch connected to the interface
-- `name` (String) The name of the switch connected to the interface
-- `scope` (String) The scope of the switch connected to the interface
-- `subnet` (Attributes) (see [below for nested schema](#nestedatt--interfaces--switch--subnet))
-- `user_subnet` (Attributes) (see [below for nested schema](#nestedatt--interfaces--switch--user_subnet))
+- `id` (String) The ID of the vSwitch connected to the interface
+- `name` (String) The name of the vSwitch connected to the interface
+- `scope` (String) The scope of the vSwitch connected to the interface
+- `subnet` (Attributes) (see [below for nested schema](#nestedatt--interfaces--vswitch--subnet))
+- `user_subnet` (Attributes) (see [below for nested schema](#nestedatt--interfaces--vswitch--user_subnet))
 
-<a id="nestedatt--interfaces--switch--subnet"></a>
-### Nested Schema for `interfaces.switch.subnet`
+<a id="nestedatt--interfaces--vswitch--subnet"></a>
+### Nested Schema for `interfaces.vswitch.subnet`
 
 Read-Only:
 
@@ -119,8 +121,8 @@ Read-Only:
 - `network_address` (String) The network address of the subnet connected to the interface
 
 
-<a id="nestedatt--interfaces--switch--user_subnet"></a>
-### Nested Schema for `interfaces.switch.user_subnet`
+<a id="nestedatt--interfaces--vswitch--user_subnet"></a>
+### Nested Schema for `interfaces.vswitch.user_subnet`
 
 Read-Only:
 

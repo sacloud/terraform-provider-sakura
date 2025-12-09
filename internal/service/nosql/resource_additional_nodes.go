@@ -21,7 +21,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/sacloud/nosql-api-go"
 	v1 "github.com/sacloud/nosql-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -56,8 +55,9 @@ func (d *nosqlAdditionalNodesResource) Configure(ctx context.Context, req resour
 
 type nosqlAdditionalNodesResourceModel struct {
 	nosqlBaseModel
-	SwitchID types.String   `tfsdk:"switch_id"`
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	PrimaryNodeID types.String   `tfsdk:"primary_node_id"`
+	VSwitchID     types.String   `tfsdk:"vswitch_id"`
+	Timeouts      timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -67,6 +67,10 @@ func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.Sc
 			"name":        common.SchemaResourceName("Additional nodes of NoSQL appliance"),
 			"description": common.SchemaResourceDescription("Additional nodes of NoSQL appliance"),
 			"tags":        common.SchemaResourceTags("Additional nodes of NoSQL appliance"),
+			"plan": schema.StringAttribute{
+				Computed:    true,
+				Description: "The Plan of NoSQL appliance",
+			},
 			"zone": schema.StringAttribute{
 				Required:    true,
 				Description: "Zone where the additional nodes of NoSQL appliance is located.",
@@ -74,9 +78,19 @@ func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.Sc
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"switch_id": schema.StringAttribute{
+			"primary_node_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the switch to connect to the Additional nodes of NoSQL appliance.",
+				Description: "The ID of the primary node of NoSQL appliance.",
+				Validators: []validator.String{
+					sacloudvalidator.SakuraIDValidator(),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"vswitch_id": schema.StringAttribute{
+				Required:    true,
+				Description: "The ID of the vSwitch to connect to the Additional nodes of NoSQL appliance.",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
@@ -179,31 +193,31 @@ func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.Sc
 				Required: true,
 				Attributes: map[string]schema.Attribute{
 					"nosql": schema.SingleNestedAttribute{
-						Required:    true,
+						Computed:    true,
 						Description: "NoSQL database information",
 						Attributes: map[string]schema.Attribute{
 							"primary_nodes": schema.SingleNestedAttribute{
-								Required:    true,
+								Computed:    true,
 								Description: "The primary node information for additional nodes",
 								Attributes: map[string]schema.Attribute{
 									"id": schema.StringAttribute{
-										Required:    true,
+										Computed:    true,
 										Description: "The resource ID of the primary NoSQL appliance",
 									},
 									"zone": schema.StringAttribute{
-										Required:    true,
+										Computed:    true,
 										Description: "Zone where the primary NoSQL appliance is located.",
 									},
 								},
-							},
-							"version": schema.StringAttribute{ // versionがないと400エラーになるため必須にする
-								Required:    true,
-								Description: "Version of database engine used by NoSQL appliance.",
 							},
 							// Use top-level zone attribute for resource creation
 							"zone": schema.StringAttribute{
 								Computed:    true,
 								Description: "Zone where the additional nodes of NoSQL appliance is located.",
+							},
+							"version": schema.StringAttribute{
+								Computed:    true,
+								Description: "Version of database engine used by NoSQL appliance.",
 							},
 							// これより下のフィールドはAdditional nodesでは設定不可。
 							"port": schema.Int32Attribute{
@@ -347,20 +361,20 @@ func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.Sc
 							Computed:    true,
 							Description: "Hostname assigned to the interface",
 						},
-						"switch": schema.SingleNestedAttribute{
+						"vswitch": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{
 								"id": schema.StringAttribute{
 									Computed:    true,
-									Description: "The ID of the switch connected to the interface",
+									Description: "The ID of the vSwitch connected to the interface",
 								},
 								"name": schema.StringAttribute{
 									Computed:    true,
-									Description: "The name of the switch connected to the interface",
+									Description: "The name of the vSwitch connected to the interface",
 								},
 								"scope": schema.StringAttribute{
 									Computed:    true,
-									Description: "The scope of the switch connected to the interface",
+									Description: "The scope of the vSwitch connected to the interface",
 								},
 								"subnet": schema.SingleNestedAttribute{
 									Computed: true,
@@ -435,28 +449,32 @@ func (r *nosqlAdditionalNodesResource) Create(ctx context.Context, req resource.
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout60min)
 	defer cancel()
 
-	pn := expandNosqlPrimaryNodes(&plan)
+	data := getNosql(ctx, r.client, plan.PrimaryNodeID.ValueString(), nil, &resp.Diagnostics)
+	if data == nil {
+		return
+	}
 
-	instanceOp := nosql.NewInstanceOpWithZone(r.client, pn.Appliance.ID, pn.Appliance.Zone.Name)
-	res, err := instanceOp.AddNodes(ctx, *expandNosqlAddNodesRequest(&plan))
+	instanceOp := nosql.NewInstanceOp(r.client, data.ID.Value, data.Remark.Value.Nosql.Value.Zone.Value)
+	nosqlPlan := nosql.GetPlanFromID(data.Plan.Value.ID.Value)
+	res, err := instanceOp.AddNodes(ctx, nosqlPlan, *expandNosqlAddNodesRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create NoSQL additional nodes: %s", err))
 		return
 	}
 
-	if err := waitNosqlReady(ctx, r.client, res.ID); err != nil {
+	id := res.ID.Value
+	if err := waitNosqlReady(ctx, r.client, id); err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
 		return
 	}
 
-	if err := waitNosqlProcessingDone(ctx, r.client, res.ID, "AddNode"); err != nil {
+	if err := waitNosqlProcessingDone(ctx, r.client, id, "AddNode"); err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
 		return
 	}
 
-	data, err := nosql.NewDatabaseOp(r.client).Read(ctx, res.ID)
-	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to read NoSQL additional nodes[%s] for state update: %s", res.ID, err))
+	data = getNosql(ctx, r.client, id, nil, &resp.Diagnostics)
+	if data == nil {
 		return
 	}
 
@@ -502,7 +520,7 @@ func (r *nosqlAdditionalNodesResource) Delete(ctx context.Context, req resource.
 	}
 
 	dbOp := nosql.NewDatabaseOp(r.client)
-	instanceOp := nosql.NewInstanceOp(r.client, data.ID.Value)
+	instanceOp := nosql.NewInstanceOp(r.client, data.ID.Value, state.Zone.ValueString())
 	if data.Instance.Value.Status.Value != "down" {
 		if err := instanceOp.Stop(ctx); err != nil {
 			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to stop NoSQL additional nodes[%s]: %s", sid, err))
@@ -526,14 +544,12 @@ func expandNosqlAddNodesRequest(model *nosqlAdditionalNodesResourceModel) *v1.No
 		Name:        model.Name.ValueString(),
 		Description: v1.NewOptString(model.Description.ValueString()),
 		Tags:        v1.NewOptNilTags(common.TsetToStrings(model.Tags)),
-		Settings: v1.NewOptNosqlCreateRequestApplianceSettings(v1.NosqlCreateRequestApplianceSettings{
+		Settings: v1.NosqlSettings{
 			ReserveIPAddress: v1.NewOptIPv4(netip.MustParseAddr(model.Settings.ReserveIPAddress.ValueString())),
-		}),
+		},
 		Remark: v1.NosqlRemark{
 			Nosql: v1.NosqlRemarkNosql{
-				DatabaseVersion: v1.NewOptString(model.Remark.Nosql.Version.ValueString()),
-				Nodes:           2,
-				Zone:            model.Zone.ValueString(),
+				Zone: model.Zone.ValueString(),
 			},
 			Servers: []v1.NosqlRemarkServersItem{
 				{UserIPAddress: netip.MustParseAddr(servers[0])},
@@ -546,28 +562,16 @@ func expandNosqlAddNodesRequest(model *nosqlAdditionalNodesResourceModel) *v1.No
 		},
 		UserInterfaces: []v1.NosqlCreateRequestApplianceUserInterfacesItem{
 			{
-				Switch:         v1.NosqlCreateRequestApplianceUserInterfacesItemSwitch{ID: model.SwitchID.ValueString()},
+				Switch:         v1.NosqlCreateRequestApplianceUserInterfacesItemSwitch{ID: model.VSwitchID.ValueString()},
 				UserIPAddress1: netip.MustParseAddr(servers[0]),
 				UserIPAddress2: v1.NewOptIPv4(netip.MustParseAddr(servers[1])),
-				UserSubnet: v1.NewOptNosqlCreateRequestApplianceUserInterfacesItemUserSubnet(
-					v1.NosqlCreateRequestApplianceUserInterfacesItemUserSubnet{
-						DefaultRoute:   model.Remark.Network.Gateway.ValueString(),
-						NetworkMaskLen: int(model.Remark.Network.Netmask.ValueInt32()),
-					}),
+				UserSubnet: v1.NosqlCreateRequestApplianceUserInterfacesItemUserSubnet{
+					DefaultRoute:   model.Remark.Network.Gateway.ValueString(),
+					NetworkMaskLen: int(model.Remark.Network.Netmask.ValueInt32()),
+				},
 			},
 		},
 	}
 
 	return appliance
-}
-
-func expandNosqlPrimaryNodes(model *nosqlAdditionalNodesResourceModel) v1.NosqlRemarkNosqlPrimaryNodes {
-	var primaryNodes nosqlRemarkNosqlPrimaryNodesModel
-	_ = model.Remark.Nosql.PrimaryNodes.As(context.Background(), &primaryNodes, basetypes.ObjectAsOptions{})
-
-	return v1.NosqlRemarkNosqlPrimaryNodes{
-		Appliance: v1.NosqlRemarkNosqlPrimaryNodesAppliance{ID: primaryNodes.ID.ValueString(),
-			Zone: v1.NosqlRemarkNosqlPrimaryNodesApplianceZone{Name: primaryNodes.Zone.ValueString()},
-		},
-	}
 }

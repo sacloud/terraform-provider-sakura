@@ -13,7 +13,7 @@ Manages a NoSQL appliance.
 ## Example Usage
 
 ```terraform
-data "sakura_switch" "foobar" {
+data "sakura_vswitch" "foobar" {
   name = "foobar"
 }
 
@@ -22,7 +22,7 @@ resource "sakura_nosql" "foobar" {
   tags        = ["nosql"]
   description = "KVS database"
   password    = "password-123456789"
-  switch_id   = data.sakura_switch.foobar.id
+  vswitch_id   = data.sakura_vswitch.foobar.id
   settings = {
     reserve_ip_address = "192.168.0.6"
     backup = {
@@ -74,15 +74,17 @@ resource "sakura_nosql" "foobar" {
 - `password` (String, Sensitive) Password for NoSQL appliance
 - `remark` (Attributes) (see [below for nested schema](#nestedatt--remark))
 - `settings` (Attributes) Settings of the NoSQL appliance (see [below for nested schema](#nestedatt--settings))
-- `switch_id` (String) The ID of the switch to connect to the NoSQL appliance.
+- `vswitch_id` (String) The ID of the vSwitch to connect to the NoSQL appliance.
 
 ### Optional
 
 - `description` (String) The description of the NoSQL appliance. The length of this value must be in the range [`1`-`512`]
 - `disk` (Attributes) Disk encryption information (see [below for nested schema](#nestedatt--disk))
 - `parameters` (Map of String) Parameters for the NoSQL appliance
+- `plan` (String) The plan name of the NoSQL appliance. This must be one of [`40GB`/`100GB`/`250GB`]
 - `tags` (Set of String) The tags of the NoSQL appliance.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+- `zone` (String) Zone where NoSQL appliance is located.
 
 ### Read-Only
 
@@ -121,7 +123,6 @@ Required:
 Required:
 
 - `default_user` (String) Default user for NoSQL appliance.
-- `zone` (String) Zone where NoSQL appliance is located.
 
 Optional:
 
@@ -136,6 +137,7 @@ Read-Only:
 - `nodes` (Number) Number of nodes. 3 for primary node, 2 for additional nodes
 - `primary_nodes` (Attributes) This is for additional nodes resource. Always null in this resource (see [below for nested schema](#nestedatt--remark--nosql--primary_nodes))
 - `virtualcore` (Number) Number of virtual cores used by NoSQL appliance.
+- `zone` (String) Zone where NoSQL appliance is located.
 
 <a id="nestedatt--remark--nosql--primary_nodes"></a>
 ### Nested Schema for `remark.nosql.primary_nodes`
@@ -167,11 +169,11 @@ Optional:
 Required:
 
 - `connect` (String) Backup destination by NFS URL format
+- `rotate` (Number) Number of backup rotations
 
 Optional:
 
 - `days_of_week` (Set of String) Backup schedule
-- `rotate` (Number) Number of backup rotations
 - `time` (String) Time for backup execution
 
 
@@ -270,22 +272,22 @@ Read-Only:
 
 - `hostname` (String) Hostname assigned to the interface
 - `ip_address` (String) IP Address assigned to the interface
-- `switch` (Attributes) (see [below for nested schema](#nestedatt--interfaces--switch))
 - `user_ip_address` (String) IP Address which connect to user's switch
+- `vswitch` (Attributes) (see [below for nested schema](#nestedatt--interfaces--vswitch))
 
-<a id="nestedatt--interfaces--switch"></a>
-### Nested Schema for `interfaces.switch`
+<a id="nestedatt--interfaces--vswitch"></a>
+### Nested Schema for `interfaces.vswitch`
 
 Read-Only:
 
-- `id` (String) The ID of the switch connected to the interface
-- `name` (String) The name of the switch connected to the interface
-- `scope` (String) The scope of the switch connected to the interface
-- `subnet` (Attributes) (see [below for nested schema](#nestedatt--interfaces--switch--subnet))
-- `user_subnet` (Attributes) (see [below for nested schema](#nestedatt--interfaces--switch--user_subnet))
+- `id` (String) The ID of the vSwitch connected to the interface
+- `name` (String) The name of the vSwitch connected to the interface
+- `scope` (String) The scope of the vSwitch connected to the interface
+- `subnet` (Attributes) (see [below for nested schema](#nestedatt--interfaces--vswitch--subnet))
+- `user_subnet` (Attributes) (see [below for nested schema](#nestedatt--interfaces--vswitch--user_subnet))
 
-<a id="nestedatt--interfaces--switch--subnet"></a>
-### Nested Schema for `interfaces.switch.subnet`
+<a id="nestedatt--interfaces--vswitch--subnet"></a>
+### Nested Schema for `interfaces.vswitch.subnet`
 
 Read-Only:
 
@@ -295,8 +297,8 @@ Read-Only:
 - `network_address` (String) The network address of the subnet connected to the interface
 
 
-<a id="nestedatt--interfaces--switch--user_subnet"></a>
-### Nested Schema for `interfaces.switch.user_subnet`
+<a id="nestedatt--interfaces--vswitch--user_subnet"></a>
+### Nested Schema for `interfaces.vswitch.user_subnet`
 
 Read-Only:
 

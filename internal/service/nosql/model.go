@@ -9,12 +9,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/sacloud/nosql-api-go"
 	v1 "github.com/sacloud/nosql-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
 type nosqlBaseModel struct {
 	common.SakuraBaseModel
+	Plan         types.String        `tfsdk:"plan"`
 	Zone         types.String        `tfsdk:"zone"`
 	Settings     *nosqlSettingsModel `tfsdk:"settings"`
 	Remark       *nosqlRemarkModel   `tfsdk:"remark"`
@@ -88,7 +90,7 @@ func (m nosqlRepairFullModel) AttributeTypes() map[string]attr.Type {
 }
 
 type nosqlRemarkModel struct {
-	Nosql   *nosqlRemarkNosqlModel   `tfsdk:"nosql"`
+	Nosql   types.Object             `tfsdk:"nosql"`
 	Servers types.List               `tfsdk:"servers"`
 	Network *nosqlRemarkNetworkModel `tfsdk:"network"`
 	ZoneID  types.String             `tfsdk:"zone_id"`
@@ -200,7 +202,7 @@ type nosqlInterfaceModel struct {
 	IPAddress     types.String               `tfsdk:"ip_address"`
 	UserIPAddress types.String               `tfsdk:"user_ip_address"`
 	HostName      types.String               `tfsdk:"hostname"`
-	Switch        *nosqlInterfaceSwitchModel `tfsdk:"switch"`
+	VSwitch       *nosqlInterfaceSwitchModel `tfsdk:"vswitch"`
 }
 
 func (m nosqlInterfaceModel) AttributeTypes() map[string]attr.Type {
@@ -208,7 +210,7 @@ func (m nosqlInterfaceModel) AttributeTypes() map[string]attr.Type {
 		"ip_address":      types.StringType,
 		"user_ip_address": types.StringType,
 		"hostname":        types.StringType,
-		"switch":          types.ObjectType{AttrTypes: nosqlInterfaceSwitchModel{}.AttributeTypes()},
+		"vswitch":         types.ObjectType{AttrTypes: nosqlInterfaceSwitchModel{}.AttributeTypes()},
 	}
 }
 
@@ -258,29 +260,25 @@ func (m nosqlInterfaceModelSwitchUserSubnetModel) AttributeTypes() map[string]at
 	}
 }
 
-func (m *nosqlBaseModel) updateState(nosql *v1.GetNosqlAppliance) {
-	m.UpdateBaseState(nosql.ID.Value, nosql.Name.Value, nosql.Description.Value, nosql.Tags.Value)
-	m.Settings = flattenSettings(nosql)
-	m.Remark = flattenRemark(nosql)
-	m.Instance = flattenInstance(nosql)
-	m.Disk = flattenDisk(nosql)
-	m.Interfaces = flattenInterfaces(nosql)
-	m.Availability = types.StringValue(string(nosql.Availability.Value))
-	m.Generation = types.Int32Value(int32(nosql.Generation.Value))
-	m.CreatedAt = types.StringValue(nosql.CreatedAt.Value.String())
-	if m.Remark != nil {
-		m.Zone = m.Remark.Nosql.Zone
-	} else {
-		// This case should not happen, but just in case...
-		m.Zone = types.StringValue("tk1b")
-	}
+func (m *nosqlBaseModel) updateState(data *v1.GetNosqlAppliance) {
+	m.UpdateBaseState(data.ID.Value, data.Name.Value, data.Description.Value, data.Tags.Value)
+	m.Plan = types.StringValue(string(nosql.GetPlanFromID(data.Plan.Value.ID.Value)))
+	m.Settings = flattenSettings(data)
+	m.Remark = flattenRemark(data)
+	m.Instance = flattenInstance(data)
+	m.Disk = flattenDisk(data)
+	m.Interfaces = flattenInterfaces(data)
+	m.Availability = types.StringValue(string(data.Availability.Value))
+	m.Generation = types.Int32Value(int32(data.Generation.Value))
+	m.CreatedAt = types.StringValue(data.CreatedAt.Value.String())
+	m.Zone = types.StringValue(data.Remark.Value.Nosql.Value.Zone.Value)
 }
 
-func flattenSettings(nosql *v1.GetNosqlAppliance) *nosqlSettingsModel {
-	if !nosql.Settings.IsSet() {
+func flattenSettings(data *v1.GetNosqlAppliance) *nosqlSettingsModel {
+	if !data.Settings.IsSet() {
 		return nil
 	}
-	settings := nosql.Settings.Value
+	settings := data.Settings.Value
 	model := &nosqlSettingsModel{
 		SourceNetwork:    common.StringsToTlist(settings.SourceNetwork),
 		ReserveIPAddress: types.StringValue(settings.ReserveIPAddress.Value.String()),
@@ -353,12 +351,12 @@ func toStrs[S ~string](s []S) []string {
 	return t
 }
 
-func flattenRemark(nosql *v1.GetNosqlAppliance) *nosqlRemarkModel {
-	if !nosql.Remark.IsSet() {
+func flattenRemark(data *v1.GetNosqlAppliance) *nosqlRemarkModel {
+	if !data.Remark.IsSet() {
 		return nil
 	}
 
-	remark := nosql.Remark.Value
+	remark := data.Remark.Value
 	servers := make([]string, len(remark.Servers))
 	for i, s := range remark.Servers {
 		servers[i] = s.UserIPAddress.Value.String()
@@ -366,13 +364,13 @@ func flattenRemark(nosql *v1.GetNosqlAppliance) *nosqlRemarkModel {
 	model := &nosqlRemarkModel{
 		Servers: common.StringsToTlist(servers),
 		Network: &nosqlRemarkNetworkModel{
-			Gateway: types.StringValue(nosql.Remark.Value.Network.Value.DefaultRoute.Value),
-			Netmask: types.Int32Value(int32(nosql.Remark.Value.Network.Value.NetworkMaskLen.Value)),
+			Gateway: types.StringValue(data.Remark.Value.Network.Value.DefaultRoute.Value),
+			Netmask: types.Int32Value(int32(data.Remark.Value.Network.Value.NetworkMaskLen.Value)),
 		},
 		ZoneID: types.StringValue(remark.Zone.Value.ID.Value),
 	}
 	database := remark.Nosql.Value
-	model.Nosql = &nosqlRemarkNosqlModel{
+	nosqlSettings := &nosqlRemarkNosqlModel{
 		Engine:      types.StringValue(string(database.DatabaseEngine.Value)),
 		Version:     types.StringValue(database.DatabaseVersion.Value),
 		DefaultUser: types.StringValue(database.DefaultUser.Value),
@@ -390,22 +388,26 @@ func flattenRemark(nosql *v1.GetNosqlAppliance) *nosqlRemarkModel {
 		}
 		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
 		if !diags.HasError() {
-			model.Nosql.PrimaryNodes = value
+			nosqlSettings.PrimaryNodes = value
 		}
 	} else {
-		model.Nosql.PrimaryNodes = types.ObjectNull(nosqlRemarkNosqlPrimaryNodesModel{}.AttributeTypes())
+		nosqlSettings.PrimaryNodes = types.ObjectNull(nosqlRemarkNosqlPrimaryNodesModel{}.AttributeTypes())
+	}
+	value, diags := types.ObjectValueFrom(context.Background(), nosqlSettings.AttributeTypes(), nosqlSettings)
+	if !diags.HasError() {
+		model.Nosql = value
 	}
 
 	return model
 }
 
-func flattenInstance(nosql *v1.GetNosqlAppliance) types.Object {
+func flattenInstance(data *v1.GetNosqlAppliance) types.Object {
 	v := types.ObjectNull(nosqlInstanceModel{}.AttributeTypes())
-	if !nosql.Instance.IsSet() {
+	if !data.Instance.IsSet() {
 		return v
 	}
 
-	instance := nosql.Instance.Value
+	instance := data.Instance.Value
 	model := &nosqlInstanceModel{
 		Status:         types.StringValue(string(instance.Status.Value)),
 		StatusChagedAt: types.StringValue(instance.StatusChangedAt.Value.String()),
@@ -435,9 +437,9 @@ func flattenInstance(nosql *v1.GetNosqlAppliance) types.Object {
 	return value
 }
 
-func flattenDisk(nosql *v1.GetNosqlAppliance) types.Object {
+func flattenDisk(data *v1.GetNosqlAppliance) types.Object {
 	v := types.ObjectNull(nosqlDiskModel{}.AttributeTypes())
-	if disk, ok := nosql.Disk.Get(); ok {
+	if disk, ok := data.Disk.Get(); ok {
 		m := &nosqlDiskModel{
 			EncryptionKey: &nosqlDiskEncryptionKeyModel{
 				KMSKeyID: types.StringValue(disk.EncryptionKey.Value.KMSKeyID.Value),
@@ -454,20 +456,20 @@ func flattenDisk(nosql *v1.GetNosqlAppliance) types.Object {
 	}
 }
 
-func flattenInterfaces(nosql *v1.GetNosqlAppliance) types.List {
+func flattenInterfaces(data *v1.GetNosqlAppliance) types.List {
 	v := types.ListNull(types.ObjectType{AttrTypes: nosqlInterfaceModel{}.AttributeTypes()})
-	if len(nosql.Interfaces) == 0 {
+	if len(data.Interfaces) == 0 {
 		return v
 	}
 
-	interfaces := make([]nosqlInterfaceModel, len(nosql.Interfaces))
-	for i, iface := range nosql.Interfaces {
+	interfaces := make([]nosqlInterfaceModel, len(data.Interfaces))
+	for i, iface := range data.Interfaces {
 		if v, ok := iface.Get(); ok {
 			interfaces[i] = nosqlInterfaceModel{
 				IPAddress:     types.StringValue(v.IPAddress.Value),
 				UserIPAddress: types.StringValue(v.UserIPAddress.Value),
 				HostName:      types.StringValue(v.HostName.Value),
-				Switch:        flattenSwitch(&v.Switch),
+				VSwitch:       flattenSwitch(&v.Switch),
 			}
 		}
 	}

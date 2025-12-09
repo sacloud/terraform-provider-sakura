@@ -62,7 +62,7 @@ func (d *nosqlResource) Configure(ctx context.Context, req resource.ConfigureReq
 type nosqlResourceModel struct {
 	nosqlBaseModel
 	Password   types.String   `tfsdk:"password"`
-	SwitchID   types.String   `tfsdk:"switch_id"`
+	VSwitchID  types.String   `tfsdk:"vswitch_id"`
 	Parameters types.Map      `tfsdk:"parameters"`
 	Timeouts   timeouts.Value `tfsdk:"timeouts"`
 }
@@ -74,11 +74,14 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 			"name":        common.SchemaResourceName("NoSQL appliance"),
 			"description": common.SchemaResourceDescription("NoSQL appliance"),
 			"tags":        common.SchemaResourceTags("NoSQL appliance"),
+			"plan":        common.SchemaResourcePlan("NoSQL appliance", "100GB", nosql.Plan100GB.AllValuesAsString()),
 			"zone": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString("tk1b"),
 				Description: "Zone where NoSQL appliance is located.",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"password": schema.StringAttribute{
@@ -90,9 +93,9 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 					stringvalidator.RegexMatches(regexp.MustCompile(`^[a-zA-Z0-9-._]+$`), "only alphanumeric characters and - . _ are allowed"),
 				},
 			},
-			"switch_id": schema.StringAttribute{
+			"vswitch_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the switch to connect to the NoSQL appliance.",
+				Description: "The ID of the vSwitch to connect to the NoSQL appliance.",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
@@ -148,8 +151,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 								},
 							},
 							"rotate": schema.Int32Attribute{
-								Optional:    true,
-								Computed:    true,
+								Required:    true,
 								Description: "Number of backup rotations",
 								Validators: []validator.Int32{
 									int32validator.Between(1, 8),
@@ -297,7 +299,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 						Description: "IP addresses which connect to user's switch",
 						Validators: []validator.List{
 							listvalidator.ValueStringsAre(sacloudvalidator.IPAddressValidator(sacloudvalidator.IPv4)),
-							listvalidator.SizeBetween(3, 3),
+							listvalidator.SizeBetween(1, 3),
 						},
 					},
 					"network": schema.SingleNestedAttribute{
@@ -404,20 +406,20 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 							Computed:    true,
 							Description: "Hostname assigned to the interface",
 						},
-						"switch": schema.SingleNestedAttribute{
+						"vswitch": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{
 								"id": schema.StringAttribute{
 									Computed:    true,
-									Description: "The ID of the switch connected to the interface",
+									Description: "The ID of the vSwitch connected to the interface",
 								},
 								"name": schema.StringAttribute{
 									Computed:    true,
-									Description: "The name of the switch connected to the interface",
+									Description: "The name of the vSwitch connected to the interface",
 								},
 								"scope": schema.StringAttribute{
 									Computed:    true,
-									Description: "The scope of the switch connected to the interface",
+									Description: "The scope of the vSwitch connected to the interface",
 								},
 								"subnet": schema.SingleNestedAttribute{
 									Computed: true,
@@ -493,27 +495,28 @@ func (r *nosqlResource) Create(ctx context.Context, req resource.CreateRequest, 
 	defer cancel()
 
 	dbOp := nosql.NewDatabaseOp(r.client)
-	res, err := dbOp.Create(ctx, *expandNosqlCreateRequest(&plan))
+	res, err := dbOp.Create(ctx, nosql.Plan(plan.Plan.ValueString()), *expandNosqlCreateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create SakuraCloud NoSQL: %s", err))
 		return
 	}
 
-	if err := waitNosqlReady(ctx, r.client, res.ID); err != nil {
+	id := res.ID.Value
+	if err := waitNosqlReady(ctx, r.client, id); err != nil {
 		resp.Diagnostics.AddError("Create Error", err.Error())
 		return
 	}
 
 	if len(plan.Parameters.Elements()) > 0 {
-		if err := updateParameters(ctx, r.client, res.ID, &plan); err != nil {
-			resp.Diagnostics.AddWarning("Create Warning", fmt.Sprintf("failed to update parameters for SakuraCloud NoSQL[%s]. Update via control panel: %s", res.ID, err))
+		if err := updateParameters(ctx, r.client, id, plan.Zone.ValueString(), &plan); err != nil {
+			resp.Diagnostics.AddWarning("Create Warning", fmt.Sprintf("failed to update parameters for SakuraCloud NoSQL[%s]. Update via control panel: %s", id, err))
 			return
 		}
 	}
 
-	data, err := dbOp.Read(ctx, res.ID)
+	data, err := dbOp.Read(ctx, id)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to read SakuraCloud NoSQL[%s] for state update: %s", res.ID, err))
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to read SakuraCloud NoSQL[%s] for state update: %s", id, err))
 		return
 	}
 
@@ -571,7 +574,7 @@ func (r *nosqlResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	if len(plan.Parameters.Elements()) > 0 && !plan.Parameters.Equal(state.Parameters) {
-		if err := updateParameters(ctx, r.client, sid, &plan); err != nil {
+		if err := updateParameters(ctx, r.client, sid, plan.Zone.ValueString(), &plan); err != nil {
 			resp.Diagnostics.AddWarning("Update Warning", fmt.Sprintf("failed to update parameters for NoSQL[%s]. Update via control panel: %s", sid, err))
 		} else {
 			if err := waitNosqlProcessingDone(ctx, r.client, sid, "SetParameter"); err != nil {
@@ -610,7 +613,7 @@ func (r *nosqlResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 
 	dbOp := nosql.NewDatabaseOp(r.client)
-	instanceOp := nosql.NewInstanceOp(r.client, data.ID.Value)
+	instanceOp := nosql.NewInstanceOp(r.client, sid, state.Zone.ValueString())
 	if data.Instance.Value.Status.Value != "down" {
 		if err := instanceOp.Stop(ctx); err != nil {
 			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to stop NoSQL[%s]: %s", sid, err))
@@ -630,21 +633,23 @@ func (r *nosqlResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 
 func getNosql(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.GetNosqlAppliance {
 	dbOp := nosql.NewDatabaseOp(client)
-	nosql, err := dbOp.Read(ctx, id)
+	res, err := dbOp.Read(ctx, id)
 	if err != nil {
 		if iaas.IsNotFoundError(err) {
-			state.RemoveResource(ctx)
+			if state != nil {
+				state.RemoveResource(ctx)
+			}
 			return nil
 		}
 		diags.AddError("Get NoSQL Error", fmt.Sprintf("failed to read NoSQL[%s]: %s", id, err))
 		return nil
 	}
-	return nosql
+	return res
 }
 
-func updateParameters(ctx context.Context, client *v1.Client, id string, model *nosqlResourceModel) error {
+func updateParameters(ctx context.Context, client *v1.Client, id, zone string, model *nosqlResourceModel) error {
 	params := common.TmapToStrMap(model.Parameters)
-	iOp := nosql.NewInstanceOp(client, id)
+	iOp := nosql.NewInstanceOp(client, id, zone)
 	nosqlParameters, err := iOp.GetParameters(ctx)
 	if err != nil {
 		return err
@@ -671,33 +676,25 @@ func updateParameters(ctx context.Context, client *v1.Client, id string, model *
 }
 
 func expandNosqlCreateRequest(model *nosqlResourceModel) *v1.NosqlCreateRequestAppliance {
-	servers := common.TlistToStrings(model.Remark.Servers)
+	var remarkNosql nosqlRemarkNosqlModel
+	_ = model.Remark.Nosql.As(context.Background(), &remarkNosql, basetypes.ObjectAsOptions{})
 	appliance := &v1.NosqlCreateRequestAppliance{
 		Name:        model.Name.ValueString(),
 		Description: v1.NewOptString(model.Description.ValueString()),
 		Tags:        v1.NewOptNilTags(common.TsetToStrings(model.Tags)),
-		Settings: v1.NewOptNosqlCreateRequestApplianceSettings(v1.NosqlCreateRequestApplianceSettings{
+		Settings: v1.NosqlSettings{
 			SourceNetwork:    common.TlistToStrings(model.Settings.SourceNetwork),
 			Password:         v1.NewOptPassword(v1.Password(model.Password.ValueString())),
 			ReserveIPAddress: v1.NewOptIPv4(netip.MustParseAddr(model.Settings.ReserveIPAddress.ValueString())),
-		}),
+		},
 		Remark: v1.NosqlRemark{
 			Nosql: v1.NosqlRemarkNosql{
-				DatabaseEngine:  v1.NewOptNosqlRemarkNosqlDatabaseEngine("Cassandra"),
-				DatabaseVersion: v1.NewOptString(model.Remark.Nosql.Version.ValueString()),
-				DefaultUser:     v1.NewOptString(model.Remark.Nosql.DefaultUser.ValueString()),
-				DiskSize:        v1.NewOptNosqlRemarkNosqlDiskSize(102400),
-				Memory:          v1.NewOptNosqlRemarkNosqlMemory(8192),
-				Nodes:           3,
-				Port:            v1.NewOptInt(int(model.Remark.Nosql.Port.ValueInt32())),
-				Storage:         v1.NewOptNosqlRemarkNosqlStorage("SSD"),
-				Virtualcore:     v1.NewOptNosqlRemarkNosqlVirtualcore(3),
+				DatabaseEngine:  v1.NewOptNilNosqlRemarkNosqlDatabaseEngine("Cassandra"),
+				DatabaseVersion: v1.NewOptNilString(remarkNosql.Version.ValueString()),
+				DefaultUser:     v1.NewOptNilString(remarkNosql.DefaultUser.ValueString()),
+				Port:            v1.NewOptNilInt(int(remarkNosql.Port.ValueInt32())),
+				Storage:         v1.NewOptNilNosqlRemarkNosqlStorage("SSD"),
 				Zone:            model.Zone.ValueString(),
-			},
-			Servers: []v1.NosqlRemarkServersItem{
-				{UserIPAddress: netip.MustParseAddr(servers[0])},
-				{UserIPAddress: netip.MustParseAddr(servers[1])},
-				{UserIPAddress: netip.MustParseAddr(servers[2])},
 			},
 			Network: v1.NosqlRemarkNetwork{
 				DefaultRoute:   model.Remark.Network.Gateway.ValueString(),
@@ -706,24 +703,22 @@ func expandNosqlCreateRequest(model *nosqlResourceModel) *v1.NosqlCreateRequestA
 		},
 		UserInterfaces: []v1.NosqlCreateRequestApplianceUserInterfacesItem{
 			{
-				Switch:         v1.NosqlCreateRequestApplianceUserInterfacesItemSwitch{ID: model.SwitchID.ValueString()},
-				UserIPAddress1: netip.MustParseAddr(servers[0]),
-				UserIPAddress2: v1.NewOptIPv4(netip.MustParseAddr(servers[1])),
-				UserIPAddress3: v1.NewOptIPv4(netip.MustParseAddr(servers[2])),
-				UserSubnet: v1.NewOptNosqlCreateRequestApplianceUserInterfacesItemUserSubnet(
-					v1.NosqlCreateRequestApplianceUserInterfacesItemUserSubnet{
-						DefaultRoute:   model.Remark.Network.Gateway.ValueString(),
-						NetworkMaskLen: int(model.Remark.Network.Netmask.ValueInt32()),
-					}),
+				Switch: v1.NosqlCreateRequestApplianceUserInterfacesItemSwitch{ID: model.VSwitchID.ValueString()},
+				UserSubnet: v1.NosqlCreateRequestApplianceUserInterfacesItemUserSubnet{
+					DefaultRoute:   model.Remark.Network.Gateway.ValueString(),
+					NetworkMaskLen: int(model.Remark.Network.Netmask.ValueInt32()),
+				},
 			},
 		},
 	}
 
+	setupServers(model, appliance)
+
 	if !model.Settings.Backup.IsNull() && !model.Settings.Backup.IsUnknown() {
-		appliance.Settings.Value.Backup = expandNosqlBackup(model)
+		appliance.Settings.Backup = expandNosqlBackup(model)
 	}
 	if !model.Settings.Repair.IsNull() && !model.Settings.Repair.IsUnknown() {
-		appliance.Settings.Value.Repair = expandNosqlRepair(model)
+		appliance.Settings.Repair = expandNosqlRepair(model)
 	}
 
 	if !model.Disk.IsNull() && !model.Disk.IsUnknown() {
@@ -732,11 +727,33 @@ func expandNosqlCreateRequest(model *nosqlResourceModel) *v1.NosqlCreateRequestA
 		appliance.Disk = v1.NewOptNilNosqlCreateRequestApplianceDisk(v1.NosqlCreateRequestApplianceDisk{
 			EncryptionAlgorithm: v1.NewOptString(disk.EncryptionAlgorithm.ValueString()),
 			EncryptionKey: v1.NewOptNilNosqlCreateRequestApplianceDiskEncryptionKey(
-				v1.NosqlCreateRequestApplianceDiskEncryptionKey{KMSKeyID: v1.NewOptString(disk.EncryptionKey.KMSKeyID.ValueString())}),
+				v1.NosqlCreateRequestApplianceDiskEncryptionKey{KMSKeyID: v1.NewOptNilString(disk.EncryptionKey.KMSKeyID.ValueString())}),
 		})
 	}
 
 	return appliance
+}
+
+func setupServers(model *nosqlResourceModel, req *v1.NosqlCreateRequestAppliance) {
+	plan := nosql.Plan(model.Plan.ValueString())
+	servers := common.TlistToStrings(model.Remark.Servers)
+
+	switch plan {
+	case nosql.Plan40GB:
+		req.Remark.Servers = []v1.NosqlRemarkServersItem{
+			{UserIPAddress: netip.MustParseAddr(servers[0])},
+		}
+		req.UserInterfaces[0].UserIPAddress1 = netip.MustParseAddr(servers[0])
+	case nosql.Plan100GB, nosql.Plan250GB:
+		req.Remark.Servers = []v1.NosqlRemarkServersItem{
+			{UserIPAddress: netip.MustParseAddr(servers[0])},
+			{UserIPAddress: netip.MustParseAddr(servers[1])},
+			{UserIPAddress: netip.MustParseAddr(servers[2])},
+		}
+		req.UserInterfaces[0].UserIPAddress1 = netip.MustParseAddr(servers[0])
+		req.UserInterfaces[0].UserIPAddress2 = v1.NewOptIPv4(netip.MustParseAddr(servers[1]))
+		req.UserInterfaces[0].UserIPAddress3 = v1.NewOptIPv4(netip.MustParseAddr(servers[2]))
+	}
 }
 
 func expandNosqlUpdateRequest(plan, state *nosqlResourceModel, id string) *v1.NosqlUpdateRequestAppliance {
@@ -745,7 +762,7 @@ func expandNosqlUpdateRequest(plan, state *nosqlResourceModel, id string) *v1.No
 		Name:        v1.NewOptString(plan.Name.ValueString()),
 		Description: v1.NewOptString(plan.Description.ValueString()),
 		Tags:        v1.NewOptNilTags(common.TsetToStrings(plan.Tags)),
-		Settings: v1.NosqlUpdateRequestApplianceSettings{
+		Settings: v1.NosqlSettings{
 			SourceNetwork:    common.TlistToStrings(plan.Settings.SourceNetwork),
 			Password:         v1.NewOptPassword(v1.Password(plan.Password.ValueString())),
 			ReserveIPAddress: v1.NewOptIPv4(netip.MustParseAddr(plan.Settings.ReserveIPAddress.ValueString())),
@@ -753,55 +770,54 @@ func expandNosqlUpdateRequest(plan, state *nosqlResourceModel, id string) *v1.No
 	}
 
 	if !plan.Settings.Backup.IsNull() && !plan.Settings.Backup.IsUnknown() {
-		appliance.Settings.Backup = expandUpdateNosqlBackup(plan)
+		//appliance.Settings.Backup = expandUpdateNosqlBackup(plan)
+		appliance.Settings.Backup = expandNosqlBackup(plan)
 	}
 	if !plan.Settings.Repair.IsNull() && !plan.Settings.Repair.IsUnknown() {
-		appliance.Settings.Repair = expandUpdateNosqlRepair(plan)
+		//appliance.Settings.Repair = expandUpdateNosqlRepair(plan)
+		appliance.Settings.Repair = expandNosqlRepair(plan)
 	}
 
 	return appliance
 }
 
-func expandNosqlBackup(model *nosqlResourceModel) v1.OptNilNosqlCreateRequestApplianceSettingsBackup {
+func expandNosqlBackup(model *nosqlResourceModel) v1.OptNilNosqlSettingsBackup {
 	var backup nosqlBackupModel
 	_ = model.Settings.Backup.As(context.Background(), &backup, basetypes.ObjectAsOptions{})
-
-	res := v1.NewOptNilNosqlCreateRequestApplianceSettingsBackup(v1.NosqlCreateRequestApplianceSettingsBackup{
+	res := v1.NewOptNilNosqlSettingsBackup(v1.NosqlSettingsBackup{
 		Connect: backup.Connect.ValueString(),
 	})
 	if !backup.DaysOfWeek.IsNull() && !backup.DaysOfWeek.IsUnknown() {
 		values := common.TsetToStrings(backup.DaysOfWeek)
-		settings := make([]v1.NosqlCreateRequestApplianceSettingsBackupDayOfWeekItem, len(values))
+		settings := make([]v1.NosqlSettingsBackupDayOfWeekItem, len(values))
 		for i, v := range values {
-			settings[i] = v1.NosqlCreateRequestApplianceSettingsBackupDayOfWeekItem(v)
+			settings[i] = v1.NosqlSettingsBackupDayOfWeekItem(v)
 		}
-		res.Value.DayOfWeek = v1.NewOptNilNosqlCreateRequestApplianceSettingsBackupDayOfWeekItemArray(settings)
+		res.Value.DayOfWeek = v1.NewOptNilNosqlSettingsBackupDayOfWeekItemArray(settings)
 	}
 	if !backup.Time.IsNull() && !backup.Time.IsUnknown() {
 		res.Value.Time = v1.NewOptNilString(backup.Time.ValueString())
 	}
-	if !backup.Rotate.IsNull() && !backup.Rotate.IsUnknown() {
-		res.Value.Rotate = v1.NewOptInt(int(backup.Rotate.ValueInt32()))
-	}
+	res.Value.Rotate = int(backup.Rotate.ValueInt32())
 
 	return res
 }
 
-func expandNosqlRepair(model *nosqlResourceModel) v1.OptNilNosqlCreateRequestApplianceSettingsRepair {
+func expandNosqlRepair(model *nosqlResourceModel) v1.OptNilNosqlSettingsRepair {
 	var repair nosqlRepairModel
 	_ = model.Settings.Repair.As(context.Background(), &repair, basetypes.ObjectAsOptions{})
 
-	res := v1.NewOptNilNosqlCreateRequestApplianceSettingsRepair(v1.NosqlCreateRequestApplianceSettingsRepair{})
+	res := v1.NewOptNilNosqlSettingsRepair(v1.NosqlSettingsRepair{})
 	if !repair.Incremental.IsNull() && !repair.Incremental.IsUnknown() {
 		var inc nosqlRepairIncrementalModel
 		_ = repair.Incremental.As(context.Background(), &inc, basetypes.ObjectAsOptions{})
 
 		values := common.TsetToStrings(inc.DaysOfWeek)
-		settings := make([]v1.NosqlCreateRequestApplianceSettingsRepairIncrementalDaysOfWeekItem, len(values))
+		settings := make([]v1.NosqlSettingsRepairIncrementalDaysOfWeekItem, len(values))
 		for i, v := range values {
-			settings[i] = v1.NosqlCreateRequestApplianceSettingsRepairIncrementalDaysOfWeekItem(v)
+			settings[i] = v1.NosqlSettingsRepairIncrementalDaysOfWeekItem(v)
 		}
-		res.Value.Incremental = v1.NewOptNosqlCreateRequestApplianceSettingsRepairIncremental(v1.NosqlCreateRequestApplianceSettingsRepairIncremental{
+		res.Value.Incremental = v1.NewOptNosqlSettingsRepairIncremental(v1.NosqlSettingsRepairIncremental{
 			DaysOfWeek: settings,
 			Time:       inc.Time.ValueString(),
 		})
@@ -809,9 +825,9 @@ func expandNosqlRepair(model *nosqlResourceModel) v1.OptNilNosqlCreateRequestApp
 	if !repair.Full.IsNull() && !repair.Full.IsUnknown() {
 		var full nosqlRepairFullModel
 		_ = repair.Full.As(context.Background(), &full, basetypes.ObjectAsOptions{})
-		res.Value.Full = v1.NewOptNosqlCreateRequestApplianceSettingsRepairFull(v1.NosqlCreateRequestApplianceSettingsRepairFull{
-			Interval:  v1.NosqlCreateRequestApplianceSettingsRepairFullInterval(int(full.Interval.ValueInt32())),
-			DayOfWeek: v1.NosqlCreateRequestApplianceSettingsRepairFullDayOfWeek(full.DayOfWeek.ValueString()),
+		res.Value.Full = v1.NewOptNosqlSettingsRepairFull(v1.NosqlSettingsRepairFull{
+			Interval:  v1.NosqlSettingsRepairFullInterval(int(full.Interval.ValueInt32())),
+			DayOfWeek: v1.NosqlSettingsRepairFullDayOfWeek(full.DayOfWeek.ValueString()),
 			Time:      full.Time.ValueString(),
 		})
 	}
@@ -819,45 +835,43 @@ func expandNosqlRepair(model *nosqlResourceModel) v1.OptNilNosqlCreateRequestApp
 	return res
 }
 
-func expandUpdateNosqlBackup(model *nosqlResourceModel) v1.OptNilNosqlUpdateRequestApplianceSettingsBackup {
+func expandUpdateNosqlBackup(model *nosqlResourceModel) v1.OptNilNosqlSettingsBackup {
 	var backup nosqlBackupModel
 	_ = model.Settings.Backup.As(context.Background(), &backup, basetypes.ObjectAsOptions{})
-	res := v1.NewOptNilNosqlUpdateRequestApplianceSettingsBackup(v1.NosqlUpdateRequestApplianceSettingsBackup{
+	res := v1.NewOptNilNosqlSettingsBackup(v1.NosqlSettingsBackup{
 		Connect: backup.Connect.ValueString(),
 	})
 	if !backup.DaysOfWeek.IsNull() && !backup.DaysOfWeek.IsUnknown() {
 		values := common.TsetToStrings(backup.DaysOfWeek)
-		settings := make([]v1.NosqlUpdateRequestApplianceSettingsBackupDayOfWeekItem, len(values))
+		settings := make([]v1.NosqlSettingsBackupDayOfWeekItem, len(values))
 		for i, v := range values {
-			settings[i] = v1.NosqlUpdateRequestApplianceSettingsBackupDayOfWeekItem(v)
+			settings[i] = v1.NosqlSettingsBackupDayOfWeekItem(v)
 		}
-		res.Value.DayOfWeek = v1.NewOptNilNosqlUpdateRequestApplianceSettingsBackupDayOfWeekItemArray(settings)
+		res.Value.DayOfWeek = v1.NewOptNilNosqlSettingsBackupDayOfWeekItemArray(settings)
 	}
 	if !backup.Time.IsNull() && !backup.Time.IsUnknown() {
 		res.Value.Time = v1.NewOptNilString(backup.Time.ValueString())
 	}
-	if !backup.Rotate.IsNull() && !backup.Rotate.IsUnknown() {
-		res.Value.Rotate = v1.NewOptInt(int(backup.Rotate.ValueInt32()))
-	}
+	res.Value.Rotate = int(backup.Rotate.ValueInt32())
 
 	return res
 }
 
-func expandUpdateNosqlRepair(model *nosqlResourceModel) v1.OptNilNosqlUpdateRequestApplianceSettingsRepair {
+func expandUpdateNosqlRepair(model *nosqlResourceModel) v1.OptNilNosqlSettingsRepair {
 	var repair nosqlRepairModel
 	_ = model.Settings.Repair.As(context.Background(), &repair, basetypes.ObjectAsOptions{})
 
-	res := v1.NewOptNilNosqlUpdateRequestApplianceSettingsRepair(v1.NosqlUpdateRequestApplianceSettingsRepair{})
+	res := v1.NewOptNilNosqlSettingsRepair(v1.NosqlSettingsRepair{})
 	if !repair.Incremental.IsNull() && !repair.Incremental.IsUnknown() {
 		var inc nosqlRepairIncrementalModel
 		_ = repair.Incremental.As(context.Background(), &inc, basetypes.ObjectAsOptions{})
 
 		values := common.TsetToStrings(inc.DaysOfWeek)
-		settings := make([]v1.NosqlUpdateRequestApplianceSettingsRepairIncrementalDaysOfWeekItem, len(values))
+		settings := make([]v1.NosqlSettingsRepairIncrementalDaysOfWeekItem, len(values))
 		for i, v := range values {
-			settings[i] = v1.NosqlUpdateRequestApplianceSettingsRepairIncrementalDaysOfWeekItem(v)
+			settings[i] = v1.NosqlSettingsRepairIncrementalDaysOfWeekItem(v)
 		}
-		res.Value.Incremental = v1.NewOptNosqlUpdateRequestApplianceSettingsRepairIncremental(v1.NosqlUpdateRequestApplianceSettingsRepairIncremental{
+		res.Value.Incremental = v1.NewOptNosqlSettingsRepairIncremental(v1.NosqlSettingsRepairIncremental{
 			DaysOfWeek: settings,
 			Time:       inc.Time.ValueString(),
 		})
@@ -865,9 +879,9 @@ func expandUpdateNosqlRepair(model *nosqlResourceModel) v1.OptNilNosqlUpdateRequ
 	if !repair.Full.IsNull() && !repair.Full.IsUnknown() {
 		var full nosqlRepairFullModel
 		_ = repair.Full.As(context.Background(), &full, basetypes.ObjectAsOptions{})
-		res.Value.Full = v1.NewOptNosqlUpdateRequestApplianceSettingsRepairFull(v1.NosqlUpdateRequestApplianceSettingsRepairFull{
-			Interval:  v1.NosqlUpdateRequestApplianceSettingsRepairFullInterval(int(full.Interval.ValueInt32())),
-			DayOfWeek: v1.NosqlUpdateRequestApplianceSettingsRepairFullDayOfWeek(full.DayOfWeek.ValueString()),
+		res.Value.Full = v1.NewOptNosqlSettingsRepairFull(v1.NosqlSettingsRepairFull{
+			Interval:  v1.NosqlSettingsRepairFullInterval(int(full.Interval.ValueInt32())),
+			DayOfWeek: v1.NosqlSettingsRepairFullDayOfWeek(full.DayOfWeek.ValueString()),
 			Time:      full.Time.ValueString(),
 		})
 	}

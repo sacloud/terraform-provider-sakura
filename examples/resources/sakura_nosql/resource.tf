@@ -1,4 +1,4 @@
-data "sakura_switch" "foobar" {
+data "sakura_vswitch" "foobar" {
   name = "foobar"
 }
 
@@ -7,7 +7,7 @@ resource "sakura_nosql" "foobar" {
   tags        = ["nosql"]
   description = "KVS database"
   password    = "password-123456789"
-  switch_id   = data.sakura_switch.foobar.id
+  vswitch_id   = data.sakura_vswitch.foobar.id
   settings = {
     reserve_ip_address = "192.168.0.6"
     backup = {

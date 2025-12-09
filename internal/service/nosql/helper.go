@@ -33,7 +33,7 @@ func waitNosqlReady(ctx context.Context, client *v1.Client, id string) error {
 				time.Sleep(10 * time.Second)
 				continue
 			}
-			health, err := nosql.NewInstanceOp(client, res.ID.Value).GetNodeHealth(ctx)
+			health, err := nosql.NewInstanceOp(client, res.ID.Value, res.Remark.Value.Nosql.Value.Zone.Value).GetNodeHealth(ctx)
 			if err != nil {
 				errCount += 1
 				if errCount > 5 {

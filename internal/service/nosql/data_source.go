@@ -53,6 +53,7 @@ func (d *nosqlDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 			"description": common.SchemaDataSourceDescription("NoSQL appliance"),
 			"tags":        common.SchemaDataSourceTags("NoSQL appliance"),
 			"zone":        common.SchemaDataSourceZone("NoSQL appliance"),
+			"plan":        common.SchemaDataSourcePlan("NoSQL appliance", nosql.Plan100GB.AllValuesAsString()),
 			"settings": schema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "Settings of the NoSQL appliance",
@@ -285,20 +286,20 @@ func (d *nosqlDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 							Computed:    true,
 							Description: "Hostname assigned to the interface",
 						},
-						"switch": schema.SingleNestedAttribute{
+						"vswitch": schema.SingleNestedAttribute{
 							Computed: true,
 							Attributes: map[string]schema.Attribute{
 								"id": schema.StringAttribute{
 									Computed:    true,
-									Description: "The ID of the switch connected to the interface",
+									Description: "The ID of the vSwitch connected to the interface",
 								},
 								"name": schema.StringAttribute{
 									Computed:    true,
-									Description: "The name of the switch connected to the interface",
+									Description: "The name of the vSwitch connected to the interface",
 								},
 								"scope": schema.StringAttribute{
 									Computed:    true,
-									Description: "The scope of the switch connected to the interface",
+									Description: "The scope of the vSwitch connected to the interface",
 								},
 								"subnet": schema.SingleNestedAttribute{
 									Computed: true,
@@ -364,7 +365,7 @@ func (d *nosqlDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 
 	databaseOp := nosql.NewDatabaseOp(d.client)
-	var nosql *v1.GetNosqlAppliance
+	var res *v1.GetNosqlAppliance
 	var err error
 	if !data.Name.IsNull() {
 		nosqls, err := databaseOp.List(ctx)
@@ -372,20 +373,20 @@ func (d *nosqlDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 			resp.Diagnostics.AddError("NoSQL List Error", fmt.Sprintf("could not find NoSQL resource: %s", err))
 			return
 		}
-		nosql, err = filterNosqlByName(nosqls, data.Name.ValueString())
+		res, err = filterNosqlByName(nosqls, data.Name.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("NoSQL Filter Error", err.Error())
 			return
 		}
 	} else {
-		nosql, err = databaseOp.Read(ctx, data.ID.ValueString())
+		res, err = databaseOp.Read(ctx, data.ID.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("NoSQL Read Error", "No result found")
 			return
 		}
 	}
 
-	data.updateState(nosql)
+	data.updateState(res)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

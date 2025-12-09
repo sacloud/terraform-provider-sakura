@@ -19,10 +19,10 @@ require (
 	github.com/sacloud/cloudhsm-api-go v0.2.0
 	github.com/sacloud/eventbus-api-go v0.5.2
 	github.com/sacloud/go-http v0.1.9
-	github.com/sacloud/nosql-api-go v0.1.1
 	github.com/sacloud/iaas-api-go v1.22.0
 	github.com/sacloud/iaas-service-go v1.19.0
 	github.com/sacloud/kms-api-go v0.3.0
+	github.com/sacloud/nosql-api-go v0.2.0
 	github.com/sacloud/object-storage-api-go v0.0.12
 	github.com/sacloud/packages-go v0.0.12
 	github.com/sacloud/secretmanager-api-go v0.2.1
@@ -79,7 +79,7 @@ require (
 	github.com/hashicorp/yamux v0.1.2 // indirect
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/imdario/mergo v0.3.15 // indirect
-	github.com/klauspost/compress v1.18.0 // indirect
+	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/klauspost/crc32 v1.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
@@ -93,7 +93,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/oapi-codegen/runtime v1.1.2 // indirect
-	github.com/ogen-go/ogen v1.16.0 // indirect
+	github.com/ogen-go/ogen v1.18.0 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -113,15 +113,15 @@ require (
 	go.abhg.dev/goldmark/frontmatter v0.2.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/ratelimit v0.3.1 // indirect
-	go.uber.org/zap v1.27.0 // indirect
+	go.uber.org/zap v1.27.1 // indirect
 	golang.org/x/crypto v0.44.0 // indirect
 	golang.org/x/exp v0.0.0-20251009144603-d2f985daa21b // indirect
-	golang.org/x/mod v0.29.0 // indirect
-	golang.org/x/net v0.46.0 // indirect
+	golang.org/x/mod v0.30.0 // indirect
+	golang.org/x/net v0.47.0 // indirect
 	golang.org/x/sync v0.18.0 // indirect
 	golang.org/x/sys v0.38.0 // indirect
 	golang.org/x/text v0.31.0 // indirect
-	golang.org/x/tools v0.38.0 // indirect
+	golang.org/x/tools v0.39.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250707201910-8d1bb00bc6a7 // indirect
 	google.golang.org/grpc v1.75.1 // indirect
