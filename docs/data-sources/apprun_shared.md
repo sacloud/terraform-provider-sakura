@@ -40,22 +40,38 @@ data "sakura_apprun_shared" "foobar" {
 <a id="nestedatt--components"></a>
 ### Nested Schema for `components`
 
-Optional:
-
-- `env` (Attributes Set) The environment variables passed to components (see [below for nested schema](#nestedatt--components--env))
-- `probe` (Attributes) The component probe settings (see [below for nested schema](#nestedatt--components--probe))
-
 Read-Only:
 
 - `deploy_source` (Attributes) The sources that make up the component (see [below for nested schema](#nestedatt--components--deploy_source))
-- `max_cpu` (String) The maximum number of CPUs for a component. The values in the list must be in [`0.1`/`0.2`/`0.3`/`0.4`/`0.5`/`0.6`/`0.7`/`0.8`/`0.9`/`1`]
-- `max_memory` (String) The maximum memory of component. The values in the list must be in [`256Mi`/`512Mi`/`1Gi`/`2Gi`]
+- `env` (Attributes Set) The environment variables passed to components (see [below for nested schema](#nestedatt--components--env))
+- `max_cpu` (String) The maximum number of CPUs for a component. The values in the list must be in [`0.5`/`1`/`2`]
+- `max_memory` (String) The maximum memory of component. The values in the list must be in [`1Gi`/`2Gi`/`4Gi`]
 - `name` (String) The component name
+- `probe` (Attributes) The component probe settings (see [below for nested schema](#nestedatt--components--probe))
+
+<a id="nestedatt--components--deploy_source"></a>
+### Nested Schema for `components.deploy_source`
+
+Read-Only:
+
+- `container_registry` (Attributes) Container registry settings (see [below for nested schema](#nestedatt--components--deploy_source--container_registry))
+
+<a id="nestedatt--components--deploy_source--container_registry"></a>
+### Nested Schema for `components.deploy_source.container_registry`
+
+Read-Only:
+
+- `image` (String) The container image name
+- `password` (String) The container registry credentials
+- `server` (String) The container registry server name
+- `username` (String) The container registry credentials
+
+
 
 <a id="nestedatt--components--env"></a>
 ### Nested Schema for `components.env`
 
-Optional:
+Read-Only:
 
 - `key` (String) The environment variable name
 - `value` (String, Sensitive) environment variable value
@@ -71,12 +87,9 @@ Read-Only:
 <a id="nestedatt--components--probe--http_get"></a>
 ### Nested Schema for `components.probe.http_get`
 
-Optional:
-
-- `headers` (Attributes Set) HTTP headers for probe (see [below for nested schema](#nestedatt--components--probe--http_get--headers))
-
 Read-Only:
 
+- `headers` (Attributes Set) HTTP headers for probe (see [below for nested schema](#nestedatt--components--probe--http_get--headers))
 - `path` (String) The path to access HTTP server to check probes
 - `port` (Number) The port number for accessing HTTP server and checking probes
 
@@ -88,28 +101,6 @@ Read-Only:
 - `name` (String) The header field name
 - `value` (String) The header field value
 
-
-
-
-<a id="nestedatt--components--deploy_source"></a>
-### Nested Schema for `components.deploy_source`
-
-Optional:
-
-- `container_registry` (Attributes) Container registry settings (see [below for nested schema](#nestedatt--components--deploy_source--container_registry))
-
-<a id="nestedatt--components--deploy_source--container_registry"></a>
-### Nested Schema for `components.deploy_source.container_registry`
-
-Optional:
-
-- `server` (String) The container registry server name
-- `username` (String) The container registry credentials
-
-Read-Only:
-
-- `image` (String) The container image name
-- `password` (String) The container registry credentials
 
 
 

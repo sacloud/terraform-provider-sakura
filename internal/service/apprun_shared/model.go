@@ -12,16 +12,16 @@ import (
 )
 
 type apprunSharedBaseModel struct {
-	ID             types.String                  `tfsdk:"id"`
-	Name           types.String                  `tfsdk:"name"`
-	TimeoutSeconds types.Int32                   `tfsdk:"timeout_seconds"`
-	Port           types.Int32                   `tfsdk:"port"`
-	MinScale       types.Int32                   `tfsdk:"min_scale"`
-	MaxScale       types.Int32                   `tfsdk:"max_scale"`
-	Components     []*apprunSharedComponentModel `tfsdk:"components"`
-	PacketFilter   types.Object                  `tfsdk:"packet_filter"`
-	Status         types.String                  `tfsdk:"status"`
-	PublicURL      types.String                  `tfsdk:"public_url"`
+	ID             types.String                   `tfsdk:"id"`
+	Name           types.String                   `tfsdk:"name"`
+	TimeoutSeconds types.Int32                    `tfsdk:"timeout_seconds"`
+	Port           types.Int32                    `tfsdk:"port"`
+	MinScale       types.Int32                    `tfsdk:"min_scale"`
+	MaxScale       types.Int32                    `tfsdk:"max_scale"`
+	Components     []*apprunSharedComponentModel  `tfsdk:"components"`
+	PacketFilter   *apprunSharedPacketFilterModel `tfsdk:"packet_filter"`
+	Status         types.String                   `tfsdk:"status"`
+	PublicURL      types.String                   `tfsdk:"public_url"`
 }
 
 type apprunSharedComponentModel struct {
@@ -223,49 +223,15 @@ func flattenApprunApplicationProbeHttpGetHeaders(component *v1.HandlerApplicatio
 	return toTSet(apprunSharedProbeHttpGetHeaderModel{}.AttributeTypes(), results)
 }
 
-func flattenApprunApplicationTraffics(traffics []v1.Traffic, versions []v1.Version) types.List {
-	if len(traffics) == 0 {
-		return types.ListNull(types.ObjectType{AttrTypes: apprunSharedTrafficsModel{}.AttributeTypes()})
+func flattenApprunPacketFilter(packetFilter *v1.HandlerGetPacketFilter) *apprunSharedPacketFilterModel {
+	if packetFilter == nil || (!packetFilter.IsEnabled && len(packetFilter.Settings) == 0) {
+		return nil
 	}
 
-	var results []apprunSharedTrafficsModel
-	for _, traffic := range traffics {
-		withVersion, err := traffic.AsTrafficWithVersionName()
-		if err != nil {
-			continue
-		}
-		for i, version := range versions {
-			if withVersion.VersionName == version.Name {
-				results = append(results, apprunSharedTrafficsModel{
-					VersionIndex: types.Int64Value(int64(i)),
-					Percent:      types.Int32Value(int32(withVersion.Percent)),
-				})
-				continue
-			}
-		}
+	return &apprunSharedPacketFilterModel{
+		Enabled:  types.BoolValue(packetFilter.IsEnabled),
+		Settings: flattenApprunPacketFilterSettings(packetFilter.Settings),
 	}
-	return toTList(apprunSharedTrafficsModel{}.AttributeTypes(), results)
-}
-
-func toTList(elemType map[string]attr.Type, elem any) types.List {
-	r, _ := types.ListValueFrom(context.Background(), types.ObjectType{AttrTypes: elemType}, elem)
-	return r
-}
-
-func flattenApprunPacketFilter(packetFilter *v1.HandlerGetPacketFilter) types.Object {
-	v := types.ObjectNull(apprunSharedPacketFilterModel{}.AttributeTypes())
-	if packetFilter != nil {
-		m := apprunSharedPacketFilterModel{
-			Enabled:  types.BoolValue(packetFilter.IsEnabled),
-			Settings: flattenApprunPacketFilterSettings(packetFilter.Settings),
-		}
-		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
-		if diags.HasError() {
-			return v
-		}
-		return value
-	}
-	return v
 }
 
 func flattenApprunPacketFilterSettings(settings []v1.PacketFilterSetting) []*apprunSharedPacketFilterSettingsModel {
