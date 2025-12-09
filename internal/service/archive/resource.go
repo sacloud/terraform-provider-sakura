@@ -301,6 +301,11 @@ func (model *archiveResourceModel) updateState(archive *iaas.Archive, zone strin
 	model.SourceArchiveID = types.StringValue(model.SourceArchiveID.ValueString())
 	model.SourceDiskID = types.StringValue(model.SourceDiskID.ValueString())
 	model.SourceSharedKey = types.StringValue(model.SourceSharedKey.ValueString())
+	if archive.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(archive.IconID.String())
+	}
 }
 
 func getArchive(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) *iaas.Archive {
