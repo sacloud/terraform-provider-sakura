@@ -33,8 +33,8 @@ func TestAccSakuraEnhancedLBACME_basic(t *testing.T) {
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			test.CheckSakuraCloudDiskDestroy,
-			test.CheckSakuraCloudDNSRecordDestroy,
+			test.CheckSakuraDiskDestroy,
+			test.CheckSakuraDNSRecordDestroy,
 			testCheckSakuraEnhancedLBDestroy,
 			test.CheckSakuraServerDestroy,
 		),

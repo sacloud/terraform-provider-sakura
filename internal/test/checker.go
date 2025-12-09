@@ -91,7 +91,7 @@ func CheckSakuraServerDestroy(s *terraform.State) error {
 	return nil
 }
 
-func CheckSakuraCloudDiskDestroy(s *terraform.State) error {
+func CheckSakuraDiskDestroy(s *terraform.State) error {
 	diskOp := iaas.NewDiskOp(AccClientGetter())
 
 	for _, rs := range s.RootModule().Resources {
@@ -113,7 +113,7 @@ func CheckSakuraCloudDiskDestroy(s *terraform.State) error {
 	return nil
 }
 
-func CheckSakuraCloudDNSRecordDestroy(s *terraform.State) error {
+func CheckSakuraDNSRecordDestroy(s *terraform.State) error {
 	dnsOp := iaas.NewDNSOp(AccClientGetter())
 
 	for _, rs := range s.RootModule().Resources {

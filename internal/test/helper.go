@@ -14,6 +14,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 )
 
+func SkipIfFakeModeEnabled(t *testing.T) {
+	if IsFakeModeEnabled() {
+		t.Skip("This test only run if FAKE_MODE environment variable is not set")
+	}
+}
+
+func IsFakeModeEnabled() bool {
+	fakeMode := os.Getenv("FAKE_MODE")
+	return fakeMode != ""
+}
+
 func SkipIfEnvIsNotSet(t *testing.T, key ...string) {
 	for _, k := range key {
 		if os.Getenv(k) == "" {
