@@ -5,6 +5,7 @@ package test
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -89,6 +90,54 @@ func CheckSakuraServerDestroy(s *terraform.State) error {
 	}
 
 	return nil
+}
+
+func CheckSakuraServerExists(n string, server *iaas.Server) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		if rs.Primary.ID == "" {
+			return errors.New("no Server ID is set")
+		}
+
+		client := AccClientGetter()
+		serverOp := iaas.NewServerOp(client)
+		zone := rs.Primary.Attributes["zone"]
+
+		foundServer, err := serverOp.Read(context.Background(), zone, common.SakuraCloudID(rs.Primary.ID))
+		if err != nil {
+			return err
+		}
+
+		if foundServer.ID.String() != rs.Primary.ID {
+			return fmt.Errorf("not found Server: %s", rs.Primary.ID)
+		}
+
+		*server = *foundServer
+		return nil
+	}
+}
+
+func CheckSakuraServerAttributes(server *iaas.Server) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		if !server.InstanceStatus.IsUp() {
+			return fmt.Errorf("unexpected server status: status=%v", server.InstanceStatus)
+		}
+
+		if len(server.Interfaces) == 0 {
+			return errors.New("unexpected server NIC status: interfaces is nil")
+		}
+
+		if server.Interfaces[0].SwitchID.IsEmpty() || server.Interfaces[0].SwitchScope != types.Scopes.Shared {
+			return fmt.Errorf("unexpected server NIC status: %#v", server.Interfaces[0])
+		}
+
+		return nil
+	}
 }
 
 func CheckSakuraDiskDestroy(s *terraform.State) error {

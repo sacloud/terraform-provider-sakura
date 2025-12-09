@@ -35,4 +35,9 @@ func (model *diskBaseModel) updateState(disk *iaas.Disk, zone string) {
 	model.SourceDiskID = types.StringValue(disk.SourceDiskID.String())
 	model.ServerID = types.StringValue(disk.ServerID.String())
 	model.KMSKeyID = types.StringValue(disk.KMSKeyID.String())
+	if disk.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(disk.IconID.String())
+	}
 }
