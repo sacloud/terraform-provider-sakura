@@ -409,7 +409,7 @@ func flattenInstance(data *v1.GetNosqlAppliance) types.Object {
 
 	instance := data.Instance.Value
 	model := &nosqlInstanceModel{
-		Status:         types.StringValue(string(instance.Status.Value)),
+		Status:         types.StringValue(instance.Status.Value),
 		StatusChagedAt: types.StringValue(instance.StatusChangedAt.Value.String()),
 	}
 
@@ -444,7 +444,7 @@ func flattenDisk(data *v1.GetNosqlAppliance) types.Object {
 			EncryptionKey: &nosqlDiskEncryptionKeyModel{
 				KMSKeyID: types.StringValue(disk.EncryptionKey.Value.KMSKeyID.Value),
 			},
-			EncryptionAlgorithm: types.StringValue(string(disk.EncryptionAlgorithm.Value)),
+			EncryptionAlgorithm: types.StringValue(disk.EncryptionAlgorithm.Value),
 		}
 		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
 		if diags.HasError() {
@@ -491,7 +491,7 @@ func flattenSwitch(switchInfo *v1.OptGetNosqlApplianceInterfacesItemSwitch) *nos
 	model := &nosqlInterfaceSwitchModel{
 		ID:    types.StringValue(sw.ID.Value),
 		Name:  types.StringValue(sw.Name.Value),
-		Scope: types.StringValue(string(sw.Scope.Value)),
+		Scope: types.StringValue(sw.Scope.Value),
 	}
 
 	if subnet, ok := sw.Subnet.Get(); ok {
