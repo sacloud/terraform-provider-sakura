@@ -278,7 +278,7 @@ func FlattenBackupWeekdays(weekdays []iaastypes.EDayOfTheWeek) types.Set {
 func FlattenTags(tags iaastypes.Tags) types.Set {
 	filtered := iaastypes.Tags{}
 	for _, t := range tags {
-		if !strings.HasPrefix(t, plans.PreviousIDTagName) {
+		if !strings.HasPrefix(t, plans.PreviousIDTagName) && !strings.HasPrefix(t, "@appliance-") {
 			filtered = append(filtered, t)
 		}
 	}

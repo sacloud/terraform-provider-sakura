@@ -37,6 +37,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/kms"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/local_router"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/nfs"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/nosql"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/object_storage"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/packet_filter"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/private_host"
@@ -291,6 +292,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		kms.NewKmsDataSource,
 		local_router.NewLocalRouterDataSource,
 		nfs.NewNFSDataSource,
+		nosql.NewNosqlDataSource,
 		object_storage.NewObjectStorageSiteDataSource,
 		object_storage.NewObjectStorageBucketDataSource,
 		object_storage.NewObjectStorageObjectDataSource,
@@ -337,6 +339,8 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		kms.NewKMSResource,
 		local_router.NewLocalRouterResource,
 		nfs.NewNFSResource,
+		nosql.NewNosqlResource,
+		nosql.NewNosqlAdditionalNodesResource,
 		object_storage.NewObjectStorageBucketResource,
 		object_storage.NewObjectStorageBucketCorsResource,
 		object_storage.NewObjectStorageBucketVersioningResource,
