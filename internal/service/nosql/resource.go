@@ -117,7 +117,8 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 						Description: "Source network address",
 					},
 					"reserve_ip_address": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
 						Description: "Reserved IP address. This address is used for dead node replacement",
 						Validators: []validator.String{
 							sacloudvalidator.IPAddressValidator(sacloudvalidator.IPv4),
@@ -683,9 +684,8 @@ func expandNosqlCreateRequest(model *nosqlResourceModel) *v1.NosqlCreateRequestA
 		Description: v1.NewOptString(model.Description.ValueString()),
 		Tags:        v1.NewOptNilTags(common.TsetToStrings(model.Tags)),
 		Settings: v1.NosqlSettings{
-			SourceNetwork:    common.TlistToStrings(model.Settings.SourceNetwork),
-			Password:         v1.NewOptPassword(v1.Password(model.Password.ValueString())),
-			ReserveIPAddress: v1.NewOptIPv4(netip.MustParseAddr(model.Settings.ReserveIPAddress.ValueString())),
+			SourceNetwork: common.TlistToStrings(model.Settings.SourceNetwork),
+			Password:      v1.NewOptPassword(v1.Password(model.Password.ValueString())),
 		},
 		Remark: v1.NosqlRemark{
 			Nosql: v1.NosqlRemarkNosql{
@@ -745,6 +745,7 @@ func setupServers(model *nosqlResourceModel, req *v1.NosqlCreateRequestAppliance
 		}
 		req.UserInterfaces[0].UserIPAddress1 = netip.MustParseAddr(servers[0])
 	case nosql.Plan100GB, nosql.Plan250GB:
+		req.Settings.ReserveIPAddress = v1.NewOptIPv4(netip.MustParseAddr(model.Settings.ReserveIPAddress.ValueString()))
 		req.Remark.Servers = []v1.NosqlRemarkServersItem{
 			{UserIPAddress: netip.MustParseAddr(servers[0])},
 			{UserIPAddress: netip.MustParseAddr(servers[1])},
@@ -770,11 +771,9 @@ func expandNosqlUpdateRequest(plan, state *nosqlResourceModel, id string) *v1.No
 	}
 
 	if !plan.Settings.Backup.IsNull() && !plan.Settings.Backup.IsUnknown() {
-		//appliance.Settings.Backup = expandUpdateNosqlBackup(plan)
 		appliance.Settings.Backup = expandNosqlBackup(plan)
 	}
 	if !plan.Settings.Repair.IsNull() && !plan.Settings.Repair.IsUnknown() {
-		//appliance.Settings.Repair = expandUpdateNosqlRepair(plan)
 		appliance.Settings.Repair = expandNosqlRepair(plan)
 	}
 

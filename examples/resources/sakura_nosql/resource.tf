@@ -5,9 +5,11 @@ data "sakura_vswitch" "foobar" {
 resource "sakura_nosql" "foobar" {
   name        = "foobar"
   tags        = ["nosql"]
-  description = "KVS database"
+  zone        = "tk1b"
+  plan        = "100GB" // or "250GB"
+  description = "NoSQL database"
   password    = "password-123456789"
-  vswitch_id   = data.sakura_vswitch.foobar.id
+  vswitch_id  = data.sakura_vswitch.foobar.id
   settings = {
     reserve_ip_address = "192.168.0.6"
     backup = {
@@ -30,8 +32,8 @@ resource "sakura_nosql" "foobar" {
   }
   remark = {
     nosql = {
-      zone = "tk1b"
       default_user = "testuser"
+      port = 9042
     }
     servers = [
       "192.168.0.3",
@@ -46,5 +48,35 @@ resource "sakura_nosql" "foobar" {
   parameters = {
     concurrent_writes = "16"
     cas_contention_timeout = "2000ms"
+  }
+}
+
+resource "sakura_nosql" "foobar40GB" {
+  name = "foobar-40GB"
+  tags = ["nosql"]
+  plan = "40GB"
+  description = "Test database"
+  password    = "sdktest-12345678"
+  vswitch_id  = data.sakura_vswitch.foobar.id
+  settings = {
+    backup = {
+      connect = "nfs://192.168.0.31/export"
+      days_of_week = ["sun"]
+      time = "00:30"
+      rotate = 2
+    }
+  }
+  remark = {
+    nosql = {
+      default_user = "testuser2"
+      port = 9042
+    }
+    servers = [
+      "192.168.0.7",
+    ]
+    network = {
+      gateway = "192.168.0.1"
+      netmask = 24
+    }
   }
 }

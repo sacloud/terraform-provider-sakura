@@ -100,6 +100,7 @@ func waitNosqlProcessingDone(ctx context.Context, client *v1.Client, id string, 
 				}
 				time.Sleep(10 * time.Second)
 			} else {
+				// TODO: Add more status check by using AddNodes's availability field
 				for _, job := range res.Jobs {
 					if job.JobType.Value == jobType {
 						if job.JobStatus.Value == "Done" {
