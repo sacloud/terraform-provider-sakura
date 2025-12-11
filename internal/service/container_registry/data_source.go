@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
@@ -111,6 +110,5 @@ func (d *containerRegistryDataSource) Read(ctx context.Context, req datasource.R
 
 	cr := res.ContainerRegistries[0]
 	data.updateState(ctx, d.client, cr, true, &resp.Diagnostics)
-	data.IconID = types.StringValue(cr.IconID.String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

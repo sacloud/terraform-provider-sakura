@@ -470,8 +470,5 @@ func (d *vpnRouterDataSource) Read(ctx context.Context, req datasource.ReadReque
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not update state for SakuraCloud VPCRouter resource: %s", err))
 		return
 	}
-
-	data.IconID = types.StringValue(vpnRouter.IconID.String())
-	data.SyslogHost = types.StringValue(vpnRouter.Settings.SyslogHost)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

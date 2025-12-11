@@ -156,6 +156,5 @@ func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadReques
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update SakuraCloud Database[%s] state: %s", db.ID.String(), err))
 		return
 	}
-	data.IconID = types.StringValue(db.IconID.String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

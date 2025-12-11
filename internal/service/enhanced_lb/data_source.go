@@ -365,6 +365,5 @@ func (d *enhancedLBDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		resp.Diagnostics.AddError("Read Error", "could not update SakuraCloud Enhanced LB state: "+err.Error())
 		return
 	}
-	data.IconID = types.StringValue(elb.IconID.String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

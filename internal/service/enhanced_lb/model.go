@@ -174,6 +174,11 @@ func (model *enhancedLBBaseModel) updateState(ctx context.Context, client *commo
 	model.LetsEncrypt = flattenEnhancedLBACMESetting(data)
 	model.Certificate = flattenEnhancedLBCerts(certs)
 	model.MonitoringSuite = common.FlattenMonitoringSuiteLog(data.MonitoringSuiteLog)
+	if data.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(data.IconID.String())
+	}
 
 	return nil
 }

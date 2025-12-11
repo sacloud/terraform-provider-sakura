@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 
 	iaas "github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
@@ -83,7 +82,5 @@ func (d *scriptDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	script := result.Notes[0]
 	data.updateState(script)
-	data.IconID = types.StringValue(script.IconID.String())
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

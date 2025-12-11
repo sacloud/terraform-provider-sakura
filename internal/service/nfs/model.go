@@ -37,6 +37,11 @@ func (model *nfsBaseModel) updateState(ctx context.Context, client *common.APICl
 
 	model.UpdateBaseState(nfs.ID.String(), nfs.Name, nfs.Description, nfs.Tags)
 	model.Zone = types.StringValue(zone)
+	if nfs.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(nfs.IconID.String())
+	}
 
 	plan, size, err := flattenNFSDiskPlan(ctx, client, nfs.PlanID)
 	if err != nil {

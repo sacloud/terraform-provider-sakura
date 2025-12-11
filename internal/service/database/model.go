@@ -79,6 +79,11 @@ func (model *databaseBaseModel) updateState(ctx context.Context, client *common.
 	model.NetworkInterface = flattenDatabaseNetworkInterface(db)
 	model.Backup = flattenDatabaseBackupSetting(db)
 	model.Parameters = convertDatabaseParametersToMap(parameters)
+	if db.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(db.IconID.String())
+	}
 
 	return false, nil
 }

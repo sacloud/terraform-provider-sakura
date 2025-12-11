@@ -26,4 +26,9 @@ func (model *privateHostBaseModel) updateState(ph *iaas.PrivateHost, zone string
 	model.Hostname = types.StringValue(ph.GetHostName())
 	model.AssignedCore = types.Int32Value(int32(ph.GetAssignedCPU()))
 	model.AssignedMemory = types.Int32Value(int32(ph.GetAssignedMemoryGB()))
+	if ph.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(ph.IconID.String())
+	}
 }

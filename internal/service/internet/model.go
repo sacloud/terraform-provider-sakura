@@ -78,6 +78,11 @@ func (model *internetBaseModel) updateState(ctx context.Context, client *common.
 	model.Zone = types.StringValue(zone)
 	model.IPAddresses = common.StringsToTlist(sw.Subnets[0].GetAssignedIPAddresses())
 	model.AssignedTags = common.StringsToTset(assigned)
+	if data.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(data.IconID.String())
+	}
 
 	return nil
 }

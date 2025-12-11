@@ -93,6 +93,5 @@ func (d *vSwitchDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		resp.Diagnostics.AddError("Read Error", err.Error())
 		return
 	}
-	data.IconID = types.StringValue(sw.IconID.String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

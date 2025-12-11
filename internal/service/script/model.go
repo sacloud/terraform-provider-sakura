@@ -21,4 +21,9 @@ func (model *scriptBaseModel) updateState(script *iaas.Note) {
 	model.UpdateBaseState(script.ID.String(), script.Name, script.Description, script.Tags)
 	model.Class = types.StringValue(script.Class)
 	model.Content = types.StringValue(script.Content)
+	if script.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(script.IconID.String())
+	}
 }

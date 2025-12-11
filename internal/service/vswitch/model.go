@@ -22,9 +22,13 @@ type vSwitchBaseModel struct {
 
 func (model *vSwitchBaseModel) updateState(ctx context.Context, client *common.APIClient, sw *iaas.Switch, zone string) error {
 	model.UpdateBaseState(sw.ID.String(), sw.Name, sw.Description, sw.Tags)
-
 	model.BridgeID = types.StringValue(sw.BridgeID.String())
 	model.Zone = types.StringValue(zone)
+	if sw.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(sw.IconID.String())
+	}
 
 	var serverIDs []string
 	if sw.ServerCount > 0 {

@@ -43,6 +43,11 @@ func (model *containerRegistryBaseModel) updateState(ctx context.Context, c *com
 	model.SubDomainLabel = types.StringValue(reg.SubDomainLabel)
 	model.FQDN = types.StringValue(reg.FQDN)
 	model.User = flattenContainerRegistryUsers(model.User, users, includePassword)
+	if reg.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(reg.IconID.String())
+	}
 }
 
 func getContainerRegistryUsers(ctx context.Context, client *common.APIClient, user *iaas.ContainerRegistry) []*iaas.ContainerRegistryUser {

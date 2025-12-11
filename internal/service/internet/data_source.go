@@ -137,7 +137,5 @@ func (d *internetDataSource) Read(ctx context.Context, req datasource.ReadReques
 		resp.Diagnostics.AddError("Read Error", err.Error())
 		return
 	}
-	data.IconID = types.StringValue(internet.IconID.String())
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

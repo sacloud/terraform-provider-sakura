@@ -9,7 +9,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -99,7 +98,5 @@ func (d *nfsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not update state for SakuraCloud NFS resource: %s", err))
 		return
 	}
-	data.IconID = types.StringValue(nfs.IconID.String())
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

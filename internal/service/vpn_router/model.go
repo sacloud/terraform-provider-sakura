@@ -282,6 +282,13 @@ func (model *vpnRouterBaseModel) updateState(ctx context.Context, client *common
 	model.PPTP = flattenVPNRouterPPTP(vpnRouter)
 	if vpnRouter.Settings.SyslogHost != "" {
 		model.SyslogHost = types.StringValue(vpnRouter.Settings.SyslogHost)
+	} else {
+		model.SyslogHost = types.StringNull()
+	}
+	if vpnRouter.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(vpnRouter.IconID.String())
 	}
 
 	// get public key from /:id/Status API
