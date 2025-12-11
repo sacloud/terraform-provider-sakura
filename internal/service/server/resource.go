@@ -733,7 +733,9 @@ func isDiskEditParameterChanged(plan, state *serverResourceModel) bool {
 		if common.HasChange(plan.NetworkInterface, state.NetworkInterface) && isUpstreamChanged(plan.NetworkInterface, state.NetworkInterface) {
 			return true
 		}
-		if !state.Disks.Equal(plan.Disks) {
+		newDisks := common.TlistToStrings(plan.Disks)
+		oldDisks := common.TlistToStrings(state.Disks)
+		if common.HasChange(newDisks, oldDisks) {
 			return true
 		}
 		if common.HasChange(plan.DiskEdit, state.DiskEdit) {

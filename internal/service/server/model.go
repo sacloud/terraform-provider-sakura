@@ -64,6 +64,21 @@ func (model *serverBaseModel) updateState(server *iaas.Server, zone string) {
 	model.Hostname = types.StringValue(server.HostName)
 	model.DNSServers = common.StringsToTlist(server.Zone.Region.NameServers)
 	model.Zone = types.StringValue(zone)
+	if server.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(server.IconID.String())
+	}
+	if server.CDROMID.IsEmpty() {
+		model.CDROMID = types.StringNull()
+	} else {
+		model.CDROMID = types.StringValue(server.CDROMID.String())
+	}
+	if server.PrivateHostID.IsEmpty() {
+		model.PrivateHostID = types.StringNull()
+	} else {
+		model.PrivateHostID = types.StringValue(server.PrivateHostID.String())
+	}
 }
 
 func flattenServerNICs(server *iaas.Server) []serverNetworkInterfaceModel {

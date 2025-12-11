@@ -175,10 +175,6 @@ func (d *serverDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	server := res.Servers[0]
-	data.updateState(server, zone)
-	data.IconID = types.StringValue(server.IconID.String())
-	data.CDROMID = types.StringValue(server.CDROMID.String())
-	data.PrivateHostID = types.StringValue(server.PrivateHostID.String())
+	data.updateState(res.Servers[0], zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
