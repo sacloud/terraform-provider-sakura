@@ -1,6 +1,6 @@
 module github.com/sacloud/terraform-provider-sakura
 
-go 1.25.3
+go 1.25.5
 
 require (
 	github.com/google/go-cmp v0.7.0
@@ -100,6 +100,7 @@ require (
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/sacloud/ftps v1.2.0 // indirect
+	github.com/sacloud/monitoring-suite-api-go v0.1.1 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect

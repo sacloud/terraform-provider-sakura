@@ -36,6 +36,8 @@ import (
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
+	monitoring "github.com/sacloud/monitoring-suite-api-go"
+    monitoringv1 "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 )
 
 const (
@@ -95,6 +97,7 @@ type APIClient struct {
 	EventBusClient                   *eventbus_api.Client
 	ObjectStorageClient              *objectstorage.Client
 	NosqlClient                      *nosqlapi.Client
+	MonitoringSuiteClient            *monitoringv1.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -269,6 +272,11 @@ func (c *Config) NewClient() (*APIClient, error) {
 		return nil, err
 	}
 
+	monitoringClient, err := monitoring.NewClient(client.WithOptions(callerOptions))
+    if err != nil {
+        return nil, err
+    }
+
 	return &APIClient{
 		APICaller:                        caller,
 		defaultZone:                      c.Zone,
@@ -285,6 +293,7 @@ func (c *Config) NewClient() (*APIClient, error) {
 		AppRunClient:                     &apprun.Client{Options: callerOptions},
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
 		NosqlClient:                      nosqlClient,
+		MonitoringSuiteClient:            monitoringClient,
 	}, nil
 }
 
