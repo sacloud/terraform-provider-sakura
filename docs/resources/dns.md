@@ -17,16 +17,6 @@ resource "sakura_dns" "foobar" {
   zone        = "example.com"
   description = "description"
   tags        = ["tag1", "tag2"]
-  record = [{
-    name  = "www"
-    type  = "A"
-    value = "192.168.11.1"
-  },
-  {
-    name  = "www"
-    type  = "A"
-    value = "192.168.11.2"
-  }]
   monitoring_suite = {
     enabled = true
   }
@@ -45,7 +35,6 @@ resource "sakura_dns" "foobar" {
 - `description` (String) The description of the DNS. The length of this value must be in the range [`1`-`512`]
 - `icon_id` (String) The icon id to attach to the DNS
 - `monitoring_suite` (Attributes) The monitoring suite settings of the DNS. (see [below for nested schema](#nestedatt--monitoring_suite))
-- `record` (Attributes List) A list of DNS records. (see [below for nested schema](#nestedatt--record))
 - `tags` (Set of String) The tags of the DNS.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
@@ -60,23 +49,6 @@ resource "sakura_dns" "foobar" {
 Optional:
 
 - `enabled` (Boolean) Enable sending signals to Monitoring Suite
-
-
-<a id="nestedatt--record"></a>
-### Nested Schema for `record`
-
-Required:
-
-- `name` (String) The name of the DNS.
-- `type` (String) The type of DNS Record. This must be one of [`A`/`AAAA`/`ALIAS`/`CNAME`/`NS`/`MX`/`TXT`/`SRV`/`CAA`/`HTTPS`/`SVCB`/`PTR`]
-- `value` (String) The value of the DNS Record.
-
-Optional:
-
-- `port` (Number) The number of port. This must be in the range [`1`-`65535`]
-- `priority` (Number) The priority of target DNS Record. This must be in the range [`0`-`65535`]
-- `ttl` (Number) The number of the TTL.
-- `weight` (Number) The weight of target DNS Record. This must be in the range [`0`-`65535`]
 
 
 <a id="nestedatt--timeouts"></a>

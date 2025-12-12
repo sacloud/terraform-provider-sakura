@@ -38,7 +38,7 @@ resource "sakura_dns_record" "record2" {
 ### Required
 
 - `dns_id` (String) The id of the DNS resource
-- `name` (String) The name of the DNS Record.
+- `name` (String) The name of the DNS Record resource
 - `type` (String) The type of DNS Record. This must be one of [`A`/`AAAA`/`ALIAS`/`CNAME`/`NS`/`MX`/`TXT`/`SRV`/`CAA`/`HTTPS`/`SVCB`/`PTR`]
 - `value` (String) The value of the DNS Record.
 
