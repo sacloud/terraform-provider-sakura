@@ -8,15 +8,23 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -47,11 +55,11 @@ func (r *packetFilterRulesResource) Configure(ctx context.Context, req resource.
 }
 
 type packetFilterRulesResourceModel struct {
-	ID             types.String                   `tfsdk:"id"`
-	Zone           types.String                   `tfsdk:"zone"`
-	PacketFilterID types.String                   `tfsdk:"packet_filter_id"`
-	Expression     []*packetFilterExpressionModel `tfsdk:"expression"`
-	Timeouts       timeouts.Value                 `tfsdk:"timeouts"`
+	ID             types.String                  `tfsdk:"id"`
+	Zone           types.String                  `tfsdk:"zone"`
+	PacketFilterID types.String                  `tfsdk:"packet_filter_id"`
+	Expressions    []packetFilterExpressionModel `tfsdk:"expression"`
+	Timeouts       timeouts.Value                `tfsdk:"timeouts"`
 }
 
 func (r *packetFilterRulesResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -65,8 +73,56 @@ func (r *packetFilterRulesResource) Schema(ctx context.Context, _ resource.Schem
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
-			"expression": schemaPacketFilterExpression(),
+			"expression": schema.ListNestedAttribute{
+				Required:    true,
+				Description: "List of packet filter expressions",
+				Validators: []validator.List{
+					listvalidator.SizeAtMost(30),
+				},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"protocol": schema.StringAttribute{
+							Required:    true,
+							Description: desc.Sprintf("The protocol used for filtering. This must be one of [%s]", iaastypes.PacketFilterProtocolStrings),
+							Validators: []validator.String{
+								stringvalidator.OneOf(iaastypes.PacketFilterProtocolStrings...),
+							},
+						},
+						"source_network": schema.StringAttribute{
+							Optional:    true,
+							Computed:    true,
+							Default:     stringdefault.StaticString(""),
+							Description: "A source IP address or CIDR block used for filtering (e.g. `192.0.2.1`, `192.0.2.0/24`)",
+						},
+						"source_port": schema.StringAttribute{
+							Optional:    true,
+							Computed:    true,
+							Default:     stringdefault.StaticString(""),
+							Description: "A source port number or port range used for filtering (e.g. `1024`, `1024-2048`)",
+						},
+						"destination_port": schema.StringAttribute{
+							Optional:    true,
+							Computed:    true,
+							Default:     stringdefault.StaticString(""),
+							Description: "A destination port number or port range used for filtering (e.g. `1024`, `1024-2048`)",
+						},
+						"allow": schema.BoolAttribute{
+							Optional:    true,
+							Computed:    true,
+							Default:     booldefault.StaticBool(true),
+							Description: "The flag to allow the packet through the filter",
+						},
+						"description": schema.StringAttribute{
+							Optional:    true,
+							Description: "The description of this packet filter expression",
+						},
+					},
+				},
+			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -166,7 +222,7 @@ func (model *packetFilterRulesResourceModel) updateState(pf *iaas.PacketFilter, 
 	model.ID = types.StringValue(pf.ID.String())
 	model.Zone = types.StringValue(zone)
 	model.PacketFilterID = types.StringValue(pf.ID.String())
-	model.Expression = flattenPacketFilterExpressions(pf)
+	model.Expressions = flattenPacketFilterExpressions(pf)
 }
 
 func callPacketFilterRulesUpdate(ctx context.Context, r *packetFilterRulesResource, plan *packetFilterRulesResourceModel, state *tfsdk.State, diags *diag.Diagnostics) {
@@ -189,7 +245,7 @@ func callPacketFilterRulesUpdate(ctx context.Context, r *packetFilterRulesResour
 	_, err = pfOp.Update(ctx, zone, pf.ID, &iaas.PacketFilterUpdateRequest{
 		Name:        pf.Name,
 		Description: pf.Description,
-		Expression:  expandPacketFilterExpressions(plan.Expression),
+		Expression:  expandPacketFilterExpressions(plan.Expressions),
 	}, pf.ExpressionHash)
 	if err != nil {
 		diags.AddError("Update Error", fmt.Sprintf("updating SakuraCloud PacketFilter[%s] is failed: %s", pfID, err))

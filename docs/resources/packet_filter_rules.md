@@ -64,11 +64,11 @@ resource "sakura_packet_filter_rules" "rules" {
 
 ### Required
 
+- `expression` (Attributes List) List of packet filter expressions (see [below for nested schema](#nestedatt--expression))
 - `packet_filter_id` (String) The id of the packet filter that set expressions to
 
 ### Optional
 
-- `expression` (Attributes List) List of packet filter expressions (see [below for nested schema](#nestedatt--expression))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `zone` (String) The name of zone that the Packet Filter Rules will be created (e.g. `is1a`, `tk1a`)
 
@@ -86,7 +86,7 @@ Required:
 Optional:
 
 - `allow` (Boolean) The flag to allow the packet through the filter
-- `description` (String) The description of the Packet Filter Expression. The length of this value must be in the range [`1`-`512`]
+- `description` (String) The description of this packet filter expression
 - `destination_port` (String) A destination port number or port range used for filtering (e.g. `1024`, `1024-2048`)
 - `source_network` (String) A source IP address or CIDR block used for filtering (e.g. `192.0.2.1`, `192.0.2.0/24`)
 - `source_port` (String) A source port number or port range used for filtering (e.g. `1024`, `1024-2048`)

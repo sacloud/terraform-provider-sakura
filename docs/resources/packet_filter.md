@@ -16,42 +16,6 @@ Manages a Packet Filter.
 resource "sakura_packet_filter" "foobar" {
   name        = "foobar"
   description = "description"
-
-  expression = [{
-    protocol         = "tcp"
-    destination_port = "22"
-  },
-  {
-    protocol         = "tcp"
-    destination_port = "80"
-  },
-  {
-    protocol         = "tcp"
-    destination_port = "443"
-  },
-  {
-    protocol = "icmp"
-  },
-  {
-    protocol = "fragment"
-  },
-  {
-    protocol    = "udp"
-    source_port = "123"
-  },
-  {
-    protocol         = "tcp"
-    destination_port = "32768-61000"
-  },
-  {
-    protocol         = "udp"
-    destination_port = "32768-61000"
-  },
-  {
-    protocol    = "ip"
-    allow       = false
-    description = "Deny ALL"
-  }]
 }
 ```
 
@@ -65,29 +29,12 @@ resource "sakura_packet_filter" "foobar" {
 ### Optional
 
 - `description` (String) The description of the Packet Filter. The length of this value must be in the range [`1`-`512`]
-- `expression` (Attributes List) List of packet filter expressions (see [below for nested schema](#nestedatt--expression))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `zone` (String) The name of zone that the Packet Filter will be created (e.g. `is1a`, `tk1a`)
 
 ### Read-Only
 
 - `id` (String) The ID of the Packet Filter.
-
-<a id="nestedatt--expression"></a>
-### Nested Schema for `expression`
-
-Required:
-
-- `protocol` (String) The protocol used for filtering. This must be one of [`http`/`https`/`tcp`/`udp`/`icmp`/`fragment`/`ip`]
-
-Optional:
-
-- `allow` (Boolean) The flag to allow the packet through the filter
-- `description` (String) The description of the Packet Filter Expression. The length of this value must be in the range [`1`-`512`]
-- `destination_port` (String) A destination port number or port range used for filtering (e.g. `1024`, `1024-2048`)
-- `source_network` (String) A source IP address or CIDR block used for filtering (e.g. `192.0.2.1`, `192.0.2.0/24`)
-- `source_port` (String) A source port number or port range used for filtering (e.g. `1024`, `1024-2048`)
-
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

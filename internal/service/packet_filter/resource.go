@@ -57,7 +57,6 @@ func (r *packetFilterResource) Schema(ctx context.Context, _ resource.SchemaRequ
 			"name":        common.SchemaResourceName("Packet Filter"),
 			"description": common.SchemaResourceDescription("Packet Filter"),
 			"zone":        common.SchemaResourceZone("Packet Filter"),
-			"expression":  schemaPacketFilterExpression(),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -89,7 +88,7 @@ func (r *packetFilterResource) Create(ctx context.Context, req resource.CreateRe
 	pf, err := pfOp.Create(ctx, zone, &iaas.PacketFilterCreateRequest{
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
-		Expression:  expandPacketFilterExpressions(plan.Expression),
+		//Expression:  expandPacketFilterExpressionsFromList(plan.Expressions),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud PacketFilter is failed: %s", err))
@@ -122,9 +121,8 @@ func (r *packetFilterResource) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *packetFilterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, state packetFilterResourceModel
+	var plan packetFilterResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -144,7 +142,7 @@ func (r *packetFilterResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	_, err = pfOp.Update(ctx, zone, pf.ID, expandPacketFilterUpdateRequest(&plan, &state, pf), pf.ExpressionHash)
+	_, err = pfOp.Update(ctx, zone, pf.ID, expandPacketFilterUpdateRequest(&plan, pf), pf.ExpressionHash)
 	if err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud PacketFilter[%s] is failed: %s", plan.ID.ValueString(), err))
 		return
@@ -200,15 +198,10 @@ func getPacketFilter(ctx context.Context, client *common.APIClient, id iaastypes
 	return pf
 }
 
-func expandPacketFilterUpdateRequest(plan *packetFilterResourceModel, state *packetFilterResourceModel, pf *iaas.PacketFilter) *iaas.PacketFilterUpdateRequest {
-	expressions := pf.Expression
-	if common.HasChange(plan.Expression, state.Expression) {
-		expressions = expandPacketFilterExpressions(plan.Expression)
-	}
-
+func expandPacketFilterUpdateRequest(plan *packetFilterResourceModel, pf *iaas.PacketFilter) *iaas.PacketFilterUpdateRequest {
 	return &iaas.PacketFilterUpdateRequest{
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
-		Expression:  expressions,
+		Expression:  pf.Expression,
 	}
 }

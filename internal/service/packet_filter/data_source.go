@@ -44,6 +44,7 @@ func (d *packetFilterDataSource) Configure(ctx context.Context, req datasource.C
 
 type packetFilterDataSourceModel struct {
 	packetFilterBaseModel
+	Expressions []packetFilterExpressionModel `tfsdk:"expression"`
 }
 
 func (d *packetFilterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -110,5 +111,6 @@ func (d *packetFilterDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	data.updateState(res.PacketFilters[0], zone)
+	data.Expressions = flattenPacketFilterExpressions(res.PacketFilters[0])
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
