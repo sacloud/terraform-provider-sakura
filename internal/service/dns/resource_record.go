@@ -78,12 +78,22 @@ func (r *dnsRecordResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"name": common.SchemaResourceName("DNS Record"),
+			//"name": common.SchemaResourceName("DNS Record"),
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the DNS Record resource",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
+			},
 			"type": schema.StringAttribute{
 				Required:    true,
 				Description: desc.Sprintf("The type of DNS Record. This must be one of [%s]", iaastypes.DNSRecordTypeStrings),
 				Validators: []validator.String{
 					stringvalidator.OneOf(iaastypes.DNSRecordTypeStrings...),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"value": schema.StringAttribute{
@@ -104,7 +114,6 @@ func (r *dnsRecordResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"priority": schema.Int32Attribute{
 				Optional:    true,
-				Computed:    true,
 				Description: desc.Sprintf("The priority of target DNS Record. %s", desc.Range(0, 65535)),
 				Validators: []validator.Int32{
 					int32validator.Between(0, 65535),
@@ -262,7 +271,7 @@ func expandDNSRecordDeleteRequest(model *dnsRecordResourceModel, dns *iaas.DNS) 
 	var records []*iaas.DNSRecord
 
 	for _, r := range dns.Records {
-		if !isSameDNSRecord(r, record) {
+		if !IsSameDNSRecord(r, record) {
 			records = append(records, r)
 		}
 	}
@@ -287,14 +296,14 @@ func convertToDNSRecordModel(model *dnsRecordResourceModel) *dnsRecordModel {
 
 func findRecordMatch(records []*iaas.DNSRecord, record *iaas.DNSRecord) *iaas.DNSRecord {
 	for _, r := range records {
-		if isSameDNSRecord(r, record) {
+		if IsSameDNSRecord(r, record) {
 			return record
 		}
 	}
 	return nil
 }
 
-func isSameDNSRecord(r1, r2 *iaas.DNSRecord) bool {
+func IsSameDNSRecord(r1, r2 *iaas.DNSRecord) bool {
 	return r1.Name == r2.Name && r1.RData == r2.RData && r1.TTL == r2.TTL && r1.Type == r2.Type
 }
 

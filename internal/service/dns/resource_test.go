@@ -25,7 +25,7 @@ func TestAccSakuraDNS_basic(t *testing.T) {
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testCheckSakuraDNSDestroy,
+			test.CheckSakuraDNSDestroy,
 			test.CheckSakuraIconDestroy,
 		),
 		Steps: []resource.TestStep{
@@ -102,27 +102,6 @@ func testCheckSakuraDNSExists(n string, dns *iaas.DNS) resource.TestCheckFunc {
 	}
 }
 
-func testCheckSakuraDNSDestroy(s *terraform.State) error {
-	client := test.AccClientGetter()
-	dnsOp := iaas.NewDNSOp(client)
-
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_dns" {
-			continue
-		}
-		if rs.Primary.ID == "" {
-			continue
-		}
-
-		_, err := dnsOp.Read(context.Background(), common.SakuraCloudID(rs.Primary.ID))
-		if err == nil {
-			return fmt.Errorf("resource still exists: DNS: %s", rs.Primary.ID)
-		}
-	}
-
-	return nil
-}
-
 func TestAccImportSakuraDNS_basic(t *testing.T) {
 	zone := fmt.Sprintf("%s.com", test.RandomName())
 
@@ -156,7 +135,7 @@ func TestAccImportSakuraDNS_basic(t *testing.T) {
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
-			testCheckSakuraDNSDestroy,
+			test.CheckSakuraDNSDestroy,
 			test.CheckSakuraIconDestroy,
 		),
 		Steps: []resource.TestStep{

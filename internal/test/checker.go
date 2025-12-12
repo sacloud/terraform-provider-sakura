@@ -162,6 +162,26 @@ func CheckSakuraDiskDestroy(s *terraform.State) error {
 	return nil
 }
 
+func CheckSakuraDNSDestroy(s *terraform.State) error {
+	dnsOp := iaas.NewDNSOp(AccClientGetter())
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "sakura_dns" {
+			continue
+		}
+		if rs.Primary.ID == "" {
+			continue
+		}
+
+		_, err := dnsOp.Read(context.Background(), common.SakuraCloudID(rs.Primary.ID))
+		if err == nil {
+			return fmt.Errorf("resource still exists: DNS: %s", rs.Primary.ID)
+		}
+	}
+
+	return nil
+}
+
 func CheckSakuraDNSRecordDestroy(s *terraform.State) error {
 	dnsOp := iaas.NewDNSOp(AccClientGetter())
 

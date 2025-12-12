@@ -80,6 +80,7 @@ func (r *dnsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 			},
 			"record": schema.ListNestedAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "A list of DNS records.",
 				Validators: []validator.List{
 					listvalidator.SizeAtMost(2000),
@@ -106,7 +107,6 @@ func (r *dnsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 						},
 						"priority": schema.Int32Attribute{
 							Optional:    true,
-							Computed:    true,
 							Description: desc.Sprintf("The priority of target DNS Record. %s", desc.Range(0, 65535)),
 							Validators: []validator.Int32{
 								int32validator.Between(0, 65535),
@@ -263,7 +263,7 @@ func expandDNSCreateRequest(model *dnsResourceModel) *iaas.DNSCreateRequest {
 
 func expandDNSUpdateRequest(plan, state *dnsResourceModel, dns *iaas.DNS) *iaas.DNSUpdateRequest {
 	records := dns.Records
-	if common.HasChange(plan.Record, state.Record) {
+	if !plan.Records.Equal(state.Records) {
 		records = expandDNSRecords(plan)
 	}
 	return &iaas.DNSUpdateRequest{
@@ -276,8 +276,11 @@ func expandDNSUpdateRequest(plan, state *dnsResourceModel, dns *iaas.DNS) *iaas.
 }
 
 func expandDNSRecords(model *dnsResourceModel) []*iaas.DNSRecord {
+	modelRecords := make([]dnsRecordModel, 0, len(model.Records.Elements()))
+	_ = model.Records.ElementsAs(context.Background(), &modelRecords, false)
+
 	var records []*iaas.DNSRecord
-	for _, rawRecord := range model.Record {
+	for _, rawRecord := range modelRecords {
 		records = append(records, expandDNSRecord(&rawRecord))
 	}
 	return records
