@@ -42,7 +42,8 @@ func (d *dnsDataSource) Configure(ctx context.Context, req datasource.ConfigureR
 
 type dnsDataSourceModel struct {
 	dnsBaseModel
-	Name types.String `tfsdk:"name"`
+	Name    types.String     `tfsdk:"name"`
+	Records []dnsRecordModel `tfsdk:"record"`
 }
 
 func (d *dnsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -133,5 +134,6 @@ func (d *dnsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 
 	data.updateState(res.DNS[0])
 	data.Name = types.StringValue(res.DNS[0].Name)
+	data.Records = flattenDNSRecords(res.DNS[0])
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

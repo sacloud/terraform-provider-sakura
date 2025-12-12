@@ -4,7 +4,6 @@
 package dns
 
 import (
-	"context"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -22,7 +21,6 @@ type dnsBaseModel struct {
 	Tags            types.Set    `tfsdk:"tags"`
 	Zone            types.String `tfsdk:"zone"`
 	DNSServers      types.List   `tfsdk:"dns_servers"`
-	Records         types.List   `tfsdk:"record"`
 	MonitoringSuite types.Object `tfsdk:"monitoring_suite"`
 }
 
@@ -54,7 +52,6 @@ func (model *dnsBaseModel) updateState(dns *iaas.DNS) {
 	model.Tags = common.StringsToTset(dns.Tags)
 	model.Zone = types.StringValue(dns.DNSZone)
 	model.DNSServers = common.StringsToTlist(dns.DNSNameServers)
-	model.Records = flattenDNSRecords(dns)
 	model.MonitoringSuite = common.FlattenMonitoringSuiteLog(dns.MonitoringSuiteLog)
 	if dns.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
@@ -63,21 +60,12 @@ func (model *dnsBaseModel) updateState(dns *iaas.DNS) {
 	}
 }
 
-func flattenDNSRecords(dns *iaas.DNS) types.List {
-	nullValue := types.ListNull(types.ObjectType{AttrTypes: dnsRecordModel{}.AttributeTypes()})
-	if len(dns.Records) == 0 {
-		return nullValue
-	}
-
+func flattenDNSRecords(dns *iaas.DNS) []dnsRecordModel {
 	var records []dnsRecordModel
 	for _, record := range dns.Records {
 		records = append(records, flattenDNSRecord(record))
 	}
-	value, diags := types.ListValueFrom(context.Background(), types.ObjectType{AttrTypes: dnsRecordModel{}.AttributeTypes()}, records)
-	if diags.HasError() {
-		return nullValue
-	}
-	return value
+	return records
 }
 
 func flattenDNSRecord(record *iaas.DNSRecord) dnsRecordModel {

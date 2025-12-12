@@ -31,7 +31,12 @@ func TestAccSakuraDNSDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.2", "tag3"),
-					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "record.0.name", "www"),
+					resource.TestCheckResourceAttr(resourceName, "record.0.type", "A"),
+					resource.TestCheckResourceAttr(resourceName, "record.0.value", "192.168.11.1"),
+					resource.TestCheckResourceAttr(resourceName, "record.1.name", "www2"),
+					resource.TestCheckResourceAttr(resourceName, "record.1.type", "A"),
+					resource.TestCheckResourceAttr(resourceName, "record.1.value", "192.168.11.2"),
 				),
 			},
 		},
@@ -43,11 +48,24 @@ resource "sakura_dns" "foobar" {
   zone = "{{ .arg0 }}"
   description = "description"
   tags = ["tag1", "tag2", "tag3"]
-  monitoring_suite = {
-    enabled = true
-  }
+}
+resource "sakura_dns_record" "foobar1" {
+  dns_id = sakura_dns.foobar.id
+  name  = "www"
+  type  = "A"
+  value = "192.168.11.1"
+}
+resource "sakura_dns_record" "foobar2" {
+  dns_id = sakura_dns.foobar.id
+  name  = "www2"
+  type  = "A"
+  value = "192.168.11.2"
+
+  depends_on = [sakura_dns_record.foobar1] # to ensure creation order
 }
 
 data "sakura_dns" "foobar" {
-  name = sakura_dns.foobar.zone
+  zone = sakura_dns.foobar.zone
+
+  depends_on = [sakura_dns_record.foobar2]
 }`

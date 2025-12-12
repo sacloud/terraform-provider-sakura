@@ -32,8 +32,7 @@ func TestAccSakuraDNSRecord_basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config:             test.BuildConfigWithArgs(testAccSakuraDNSRecord_basic, zone),
-				ExpectNonEmptyPlan: true,
+				Config: test.BuildConfigWithArgs(testAccSakuraDNSRecord_basic, zone),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName1, "name", "www"),
 					resource.TestCheckResourceAttr(resourceName1, "type", "A"),
@@ -47,8 +46,7 @@ func TestAccSakuraDNSRecord_basic(t *testing.T) {
 				),
 			},
 			{
-				Config:             test.BuildConfigWithArgs(testAccSakuraDNSRecord_update, zone),
-				ExpectNonEmptyPlan: true,
+				Config: test.BuildConfigWithArgs(testAccSakuraDNSRecord_update, zone),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName1, "name", "www2"),
 					resource.TestCheckResourceAttr(resourceName1, "type", "A"),
@@ -128,10 +126,6 @@ var testAccSakuraDNSRecord_basic = `
 resource "sakura_dns" "foobar" {
   zone = "{{ .arg0 }}"
   description = "description"
-  tags        = ["tag1", "tag2"]
-  monitoring_suite = {
-	enabled = false
-  }
 }
 
 resource "sakura_dns_record" "foobar1" {
@@ -156,10 +150,6 @@ var testAccSakuraDNSRecord_update = `
 resource "sakura_dns" "foobar" {
   zone = "{{ .arg0 }}"
   description = "description"
-  tags        = ["tag1", "tag2"]
-  monitoring_suite = {
-	enabled = false
-  }
 }
 
 resource "sakura_dns_record" "foobar1" {

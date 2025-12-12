@@ -38,12 +38,6 @@ func TestAccSakuraDNS_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
-					resource.TestCheckResourceAttr(resourceName, "record.0.name", "www"),
-					resource.TestCheckResourceAttr(resourceName, "record.0.type", "A"),
-					resource.TestCheckResourceAttr(resourceName, "record.0.value", "192.168.11.1"),
-					resource.TestCheckResourceAttr(resourceName, "record.1.name", "www2"),
-					resource.TestCheckResourceAttr(resourceName, "record.1.type", "A"),
-					resource.TestCheckResourceAttr(resourceName, "record.1.value", "192.168.11.2"),
 					resource.TestCheckResourceAttrPair(
 						resourceName, "icon_id",
 						"sakura_icon.foobar", "id",
@@ -60,9 +54,6 @@ func TestAccSakuraDNS_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1-upd"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2-upd"),
-					resource.TestCheckResourceAttr(resourceName, "record.0.name", "www"),
-					resource.TestCheckResourceAttr(resourceName, "record.0.type", "A"),
-					resource.TestCheckResourceAttr(resourceName, "record.0.value", "192.168.11.1"),
 					resource.TestCheckNoResourceAttr(resourceName, "icon_id"),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "false"),
 				),
@@ -110,23 +101,16 @@ func TestAccImportSakuraDNS_basic(t *testing.T) {
 			return fmt.Errorf("expected 1 state: %#v", s)
 		}
 		expects := map[string]string{
-			"zone":           zone,
-			"description":    "description",
-			"tags.0":         "tag1",
-			"tags.1":         "tag2",
-			"record.0.name":  "www",
-			"record.0.type":  "A",
-			"record.0.value": "192.168.11.1",
-			"record.1.name":  "www2",
-			"record.1.type":  "A",
-			"record.1.value": "192.168.11.2",
+			"zone":        zone,
+			"description": "description",
+			"tags.0":      "tag1",
+			"tags.1":      "tag2",
 		}
 
 		if err := test.CompareStateMulti(s[0], expects); err != nil {
 			return err
 		}
-		//return test.StateNotEmptyMulti(s[0], "dns_servers.0", "icon_id")
-		return test.StateNotEmptyMulti(s[0], "dns_servers.0")
+		return test.StateNotEmptyMulti(s[0], "dns_servers.0", "icon_id")
 	}
 
 	resourceName := "sakura_dns.foobar"
@@ -158,16 +142,6 @@ resource "sakura_dns" "foobar" {
   description = "description"
   tags        = ["tag1", "tag2"]
   icon_id     = sakura_icon.foobar.id
-  record = [{
-    name  = "www"
-    type  = "A"
-    value = "192.168.11.1"
-  },
-  {
-    name  = "www2"
-    type  = "A"
-    value = "192.168.11.2"
-  }]
   monitoring_suite = {
     enabled = true
   }
@@ -184,11 +158,6 @@ resource "sakura_dns" "foobar" {
   zone        = "{{ .arg0 }}"
   description = "description-upd"
   tags        = ["tag1-upd", "tag2-upd"]
-  record = [{
-    name  = "www"
-    type  = "A"
-    value = "192.168.11.1"
-  }]
   monitoring_suite = {
     enabled = false
   }
