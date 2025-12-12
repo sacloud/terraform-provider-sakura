@@ -246,6 +246,8 @@ github.com/sacloud/iaas-service-go v1.19.0 h1:5YRdezCu2FhU1mhRNk9j8Pa0qnJz2e1muN
 github.com/sacloud/iaas-service-go v1.19.0/go.mod h1:yplnBDrMI1/fMTXhaLlZsBrvAZXuG72y6nk/KjdwkPs=
 github.com/sacloud/kms-api-go v0.3.0 h1:p/fOoHCmE42po/ge900viniSkGVq1/YdyOvZYaBARm4=
 github.com/sacloud/kms-api-go v0.3.0/go.mod h1:7abgwUSKqVNYuky2Sw/wo83KArJ8Qnini0NNyaQH31E=
+github.com/sacloud/monitoring-suite-api-go v0.1.1 h1:Xs0VCwa0VZVjoU2kTC6LEniFyWh0wx3wy2Byd/e9prY=
+github.com/sacloud/monitoring-suite-api-go v0.1.1/go.mod h1:qMhWzUAJPL3yI9fPDu/VXDUj2HMmCOBp7uYfjuveweg=
 github.com/sacloud/nosql-api-go v0.2.0 h1:zIQT3P66cnX2y86/1lQAznx1PlgPY4Y0IIRdzuqBtzE=
 github.com/sacloud/nosql-api-go v0.2.0/go.mod h1:YGHrq+t7CrxChQZeqUK6cVCMZHNEB5UsMa7qpctyuSQ=
 github.com/sacloud/object-storage-api-go v0.0.12 h1:sIjUrMSlxT5OPYuDv9tXF0NM1FJ81GgyCofhdisikUc=
