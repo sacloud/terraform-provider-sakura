@@ -9,6 +9,13 @@ import (
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 )
 
+type packetFilterBaseModel struct {
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+	Zone        types.String `tfsdk:"zone"`
+}
+
 type packetFilterExpressionModel struct {
 	Protocol        types.String `tfsdk:"protocol"`
 	SourceNetwork   types.String `tfsdk:"source_network"`
@@ -18,35 +25,30 @@ type packetFilterExpressionModel struct {
 	Description     types.String `tfsdk:"description"`
 }
 
-type packetFilterBaseModel struct {
-	ID          types.String                   `tfsdk:"id"`
-	Name        types.String                   `tfsdk:"name"`
-	Description types.String                   `tfsdk:"description"`
-	Zone        types.String                   `tfsdk:"zone"`
-	Expression  []*packetFilterExpressionModel `tfsdk:"expression"`
-}
-
 func (model *packetFilterBaseModel) updateState(pf *iaas.PacketFilter, zone string) {
 	model.ID = types.StringValue(pf.ID.String())
 	model.Name = types.StringValue(pf.Name)
 	model.Description = types.StringValue(pf.Description)
 	model.Zone = types.StringValue(zone)
-	model.Expression = flattenPacketFilterExpressions(pf)
 }
 
-func flattenPacketFilterExpressions(pf *iaas.PacketFilter) []*packetFilterExpressionModel {
-	var result []*packetFilterExpressionModel
+func flattenPacketFilterExpressions(pf *iaas.PacketFilter) []packetFilterExpressionModel {
+	var result []packetFilterExpressionModel
 	for _, e := range pf.Expression {
 		result = append(result, flattenPacketFilterExpression(e))
 	}
 	return result
 }
 
-func flattenPacketFilterExpression(exp *iaas.PacketFilterExpression) *packetFilterExpressionModel {
-	expression := &packetFilterExpressionModel{
-		Protocol:    types.StringValue(string(exp.Protocol)),
-		Allow:       types.BoolValue(exp.Action.IsAllow()),
-		Description: types.StringValue(exp.Description),
+func flattenPacketFilterExpression(exp *iaas.PacketFilterExpression) packetFilterExpressionModel {
+	expression := packetFilterExpressionModel{
+		Protocol: types.StringValue(string(exp.Protocol)),
+		Allow:    types.BoolValue(exp.Action.IsAllow()),
+	}
+	if exp.Description == "" {
+		expression.Description = types.StringNull()
+	} else {
+		expression.Description = types.StringValue(exp.Description)
 	}
 	switch exp.Protocol {
 	case iaastypes.Protocols.TCP, iaastypes.Protocols.UDP:
