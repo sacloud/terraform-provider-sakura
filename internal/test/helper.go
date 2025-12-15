@@ -12,6 +12,7 @@ import (
 	"text/template"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	envvar "github.com/sacloud/packages-go/envvar"
 )
 
 func SkipIfFakeModeEnabled(t *testing.T) {
@@ -30,6 +31,12 @@ func SkipIfEnvIsNotSet(t *testing.T, key ...string) {
 		if os.Getenv(k) == "" {
 			t.Skipf("Environment valiable %q is not set", k)
 		}
+	}
+}
+
+func SkipIfZoneIsDummy(t *testing.T) {
+	if zone := envvar.StringFromEnvMulti([]string{"SAKURA_ZONE", "SAKURACLOUD_ZONE"}, ""); zone == "tk1v" {
+		t.Skip("This test runs only on non-dummy zone")
 	}
 }
 
