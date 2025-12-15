@@ -8,6 +8,7 @@ import (
 	"context"
 	"fmt"
 	"hash/crc32"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -78,7 +79,6 @@ func (r *dnsRecordResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			//"name": common.SchemaResourceName("DNS Record"),
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The name of the DNS Record resource",
@@ -279,6 +279,61 @@ func expandDNSRecordDeleteRequest(model *dnsRecordResourceModel, dns *iaas.DNS) 
 	return &iaas.DNSUpdateSettingsRequest{
 		Records:      records,
 		SettingsHash: dns.SettingsHash,
+	}
+}
+
+func expandDNSRecord(model *dnsRecordModel) *iaas.DNSRecord {
+	ttl := model.TTL.ValueInt64()
+	name := model.Name.ValueString()
+	value := model.Value.ValueString()
+	recordType := model.Type.ValueString()
+
+	switch recordType {
+	case "MX":
+		pr := 10
+		if !model.Priority.IsNull() && !model.Priority.IsUnknown() {
+			pr = int(model.Priority.ValueInt32())
+		}
+		rdata := value
+		if rdata != "" && !strings.HasSuffix(rdata, ".") {
+			rdata += "."
+		}
+		return &iaas.DNSRecord{
+			Name:  name,
+			Type:  iaastypes.EDNSRecordType(recordType),
+			RData: fmt.Sprintf("%d %s", pr, rdata),
+			TTL:   int(ttl),
+		}
+	case "SRV":
+		pr := 0
+		if !model.Priority.IsNull() && !model.Priority.IsUnknown() {
+			pr = int(model.Priority.ValueInt32())
+		}
+		weight := 0
+		if !model.Weight.IsNull() && !model.Weight.IsUnknown() {
+			weight = int(model.Weight.ValueInt32())
+		}
+		port := 1
+		if !model.Port.IsNull() && !model.Port.IsUnknown() {
+			port = int(model.Port.ValueInt32())
+		}
+		rdata := value
+		if rdata != "" && !strings.HasSuffix(rdata, ".") {
+			rdata += "."
+		}
+		return &iaas.DNSRecord{
+			Name:  name,
+			Type:  iaastypes.EDNSRecordType(recordType),
+			RData: fmt.Sprintf("%d %d %d %s", pr, weight, port, rdata),
+			TTL:   int(ttl),
+		}
+	default:
+		return &iaas.DNSRecord{
+			Name:  name,
+			Type:  iaastypes.EDNSRecordType(recordType),
+			RData: value,
+			TTL:   int(ttl),
+		}
 	}
 }
 
