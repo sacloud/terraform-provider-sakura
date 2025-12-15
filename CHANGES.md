@@ -1,11 +1,11 @@
-## v3での変更点
+# v3での変更点
 
-### terraform-plugin-frameworkによる書き換え
+## terraform-plugin-frameworkによる書き換え
 
 現在リリースされているv2はSDK v2を利用していますが、v3はFrameworkを利用しています。
-muxなども使っておらず、完全移行となります。
+muxなどの互換レイヤーも使っておらず、完全移行となります。
 
-### 命名の変更
+## 命名の変更
 
 - `sakuracloud_`プレフィックスは`sakura_`となります。環境変数などを設定することで過去のプレフィックスもサポートする予定です。
 - 必要なものはリソース名が適切なものに変更される可能性があります。以下は予定のものになり、他にも増える可能性があります
@@ -15,9 +15,9 @@ muxなども使っておらず、完全移行となります。
   - `note` -> `script`
   - `internet` -> `???` (より良い名前を模索中)
 
-### 使われてない機能の削除
+## 使われてない機能の削除
 
-#### データソースのfilter
+### データソースのfilter
 
 データソースの`filter`ブロックによって実装されていた検索機能は、通常のフィールドでの検索で置き換えられました。例えば以下のようになります。
 
@@ -43,7 +43,7 @@ data "sakura_xxx" "foobar" {
 }
 ```
 
-### 変更されたリソース
+## 変更されたリソース
 
 Frameworkでは既存のBlock構文は非推奨になっており、Attribute構文を推奨しています。v3からは過去Block構文を利用していたフィールド群は書き換える必要があります。
 
@@ -69,7 +69,7 @@ user {
 
 また、Frameworkはより厳密に型や値をチェックするようになったため、SDK v2でチェックされない挙動に依存してたリソースも一部挙動が変更されています。
 
-#### プロバイダの設定
+### プロバイダの設定
 
 `sakuracloud`を`sakura`に書き換えてください。
 
@@ -105,7 +105,7 @@ provider "sakura" {
 }
 ```
 
-#### タイムアウト設定
+### タイムアウト設定
 
 BlockからAttributeに変更されたため、以下のように書き換える必要があります
 
@@ -125,7 +125,115 @@ timeouts = {
 }
 ```
 
-#### container_registry
+### apprun_shared
+
+`components`フィールドがBlockからList型Attribute、内部で設定可能なパラメータもAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+  components {
+    name = "foobar"
+    // ...
+    deploy_source {
+      container_registry {
+        image = "foorbar.sakuracr.jp/foorbar:latest"
+        // ...
+      }
+    }
+    env {
+      key   = "key"
+      value = "value"
+    }
+    probe {
+      http_get {
+        path = "/"
+        // ...
+        headers {
+          name  = "name"
+          value = "value"
+        }
+      }
+    }
+  }
+```
+
+- v3
+
+```hcl
+  components =[{
+    name = "foobar"
+    // ...
+    deploy_source = {
+      container_registry = {
+        image    = "foobar.sakuracr.jp/my-app:latest"
+        // ...
+      }
+    }
+    env = [{
+      key   = "key"
+      value = "value"
+    }]
+    probe = {
+      http_get = {
+        path = "/"
+        // ...
+        headers = [{
+          name  = "name"
+          value = "value"
+        }]
+      }
+    }
+  }]
+```
+
+`traffics`フィールドがBlockからList型Attributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+  traffics {
+    version_index = 0
+    percent       = 100
+  }
+```
+
+- v3
+
+```hcl
+  traffics = [{
+    version_index = 0
+    percent       = 100
+  }]
+```
+
+`packet_filter`フィールドがBlockからSingle型Attributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+  packet_filter = {
+    enabled = true
+    settings = [{
+      from_ip               = "192.0.2.0"
+      from_ip_prefix_length = "24"
+    }]
+  }
+```
+
+- v3
+
+```hcl
+  packet_filter {
+    enabled = true
+    settings {
+      from_ip               = "192.0.2.0"
+      from_ip_prefix_length = "24"
+    }
+  }
+```
+
+### container_registry
 
 `user`フィールドがBlockからSet型のAttributeに変更されたため、下記のように書き換える必要があります。
 
@@ -161,67 +269,340 @@ user = [
 ]
 ```
 
-#### dns
+### database
 
-`record`フィールドがBlockからLst型のAttributeに変更されたため、下記のように書き換える必要があります。
+`switch_id`フィールドは`vswitch_id`に変更されました。
+
+`network_interface`フィールドがBlockからSingle型Attributeに変更されたため、下記のように書き換える必要があります。
 
 - v2
 
+```hcl
+  network_interface {
+    switch_id  = sakuracloud_switch.foobar.id
+    ip_address = "192.168.11.11"
+    // ...
+  }
 ```
-record {
+
+- v3
+
+```hcl
+  network_interface = {
+    vswitch_id = sakura_vswitch.foobar.id
+    ip_address = "192.168.11.11"
+    // ...
+  }
+```
+
+`backup`フィールドがBlockからSingle型Attributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+ backup {
+    time     = "00:00"
+    weekdays = ["mon", "tue"]
+  }
+```
+
+- v3
+
+```hcl
+  backup = {
+    time     = "00:00"
+    weekdays = ["mon", "tue"]
+  }
+```
+
+### database_read_replica
+
+`switch_id`フィールドは`vswitch_id`に変更されました。
+
+`network_interface`フィールドがBlockからSingle型Attributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+  network_interface {
+    ip_address = "192.168.11.111"
+    // ...
+  }
+```
+
+- v3
+
+```hcl
+  network_interface = {
+    ip_address = "192.168.11.111"
+    // ...
+  }
+```
+
+### dns
+
+`record`フィールドは削除されました。レコードを設定するには`dns_record`リソースを利用してください。
+
+- v2
+
+```hcl
+# dnsリソースでもレコードを設定可能だった
+resource "sakura_dns" "foobar" {
+  zone = "foobar.example.com"
+  record = [{
+    name  = "www"
+    type  = "A"
+    value = "192.168.11.1"
+  }]
+}
+
+resource "sakura_dns_record" "record" {
+  dns_id = sakura_dns.foobar.id
+  name  = "www"
+  type  = "A"
+  value = "192.168.11.2"
+}
+
+```
+
+- v3
+
+```hcl
+# dnsリソースではレコードは設定不可
+resource "sakura_dns" "foobar" {
+  zone = "foobar.example.com"
+}
+
+resource "sakura_dns_record" "record1" {
+  dns_id = sakura_dns.foobar.id
   name  = "www"
   type  = "A"
   value = "192.168.11.1"
 }
-record {
-  name  = "foobar-dev"
-  type  = "CNAME"
-  value = "dev.foobar.org"
+
+resource "sakura_dns_record" "record2" {
+  dns_id = sakura_dns.foobar.id
+  name  = "www"
+  type  = "A"
+  value = "192.168.11.2"
 }
 ```
 
-- v3
+これは複数のリソースから同一のデータを更新することによるトラブルを避けるための変更となります。
 
-```
-record = [
-  {
-    name  = "www"
-    type  = "A"
-    value = "192.168.11.1"
-  },
-  {
-    name  = "foobar-dev"
-    type  = "CNAME"
-    value = "dev.foobar.org"
-  }
-]
-```
+### enhanced_lb(proxylb in v2)
 
-#### internet
-
-`assigned_tags`というフィールドが増えています。これは`band_width`の変更によって`id`が変更された場合に自動で付与される`@previous-id`というタグが格納されるフィールドです。v2では`tags`に格納されていましたが、厳格にチェックされるFrameworkによるv3では実現が不可能なため、分離されました。
+`health_check` / `sorry_server` / `syslog`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
 
 - v2
 
-```
-tags = [
-	"tag1",
-	"@previous-id=123456789012",
-]
+```hcl
+  health_check {
+    protocol    = "http"
+    // ...
+  }
+  sorry_server {
+    ip_address = "192.0.2.1"
+    port       = 80
+  }
+  syslog {
+    server = "192.0.2.1"
+    port   = 514
+  }
 ```
 
 - v3
 
-```
-tags = [
-	"tag1",
-]
-assigned_tags = [
-	"@previous-id=123456789012",
-]
+```hcl
+  health_check = {
+    protocol    = "http"
+    // ...
+  }
+  sorry_server = {
+    ip_address = "192.0.2.1"
+    port       = 80
+  }
+  syslog = {
+    server = "192.0.2.1"
+    port   = 514
+  }
 ```
 
-#### nfs
+`bind_port` / `server` / `rule`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+  bind_port {
+    proxy_mode = "http"
+    port       = 80
+    response_header {
+      // ...
+    }
+  }
+
+  server = {
+    ip_address = sakuracloud_server.foobar.ip_address
+    // ...
+  }
+
+  rule {
+    action = "forward"
+    // ...
+  }
+  rule {
+    action = "redirect"
+    // ...
+  }
+```
+
+- v3
+
+```hcl
+  bind_port = [{
+    proxy_mode = "http"
+    port       = 80
+    response_header = [{
+      // ...
+    }]
+  }]
+
+  server = [{
+    ip_address = sakura_server.foobar.ip_address
+    // ...
+  }]
+
+  rule = [{
+    action = "forward"
+    // ...
+  },
+  {
+    action = "redirect"
+    // ...
+  }]
+```
+
+### gslb
+
+`health_check`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+  health_check {
+    protocol = "http"
+    // ...
+  }
+```
+
+- v3
+
+```hcl
+  health_check = {
+    protocol = "http"
+    // ...
+  }
+```
+
+`server`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+  server {
+    ip_address = "192.2.0.11"
+    weight     = 1
+    enabled    = true
+  }
+```
+
+- v3
+
+```hcl
+  server = [{
+    ip_address = "192.2.0.11"
+    weight     = 1
+    enabled    = true
+  }]
+```
+
+### internet
+
+`switch_id`フィールドは`vswitch_id`に変更されました。
+
+### local_router
+
+`switch` / `network_interface`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+  switch {
+    code = sakuracloud_switch.foobar.id
+    // ....
+  }
+
+  network_interface {
+    vip = "192.168.11.1"
+    // ...
+  }
+```
+
+- v3
+
+```hcl
+  switch = {
+    code = sakura_vswitch.foobar.id
+    // ....
+  }
+
+  network_interface = {
+    vip = "192.168.11.1"
+    // ...
+  }
+```
+
+
+`static_route` / `peer`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+  static_route {
+    prefix   = "10.0.0.0/24"
+    next_hop = "192.168.11.2"
+  }
+  static_route {
+    prefix   = "172.16.0.0/16"
+    next_hop = "192.168.11.3"
+  }
+
+  peer {
+    peer_id = data.sakuracloud_local_router.peer.id
+    // ...
+  }
+```
+
+- v3
+
+```hcl
+  static_route = [{
+    prefix   = "10.0.0.0/24"
+    next_hop = "192.168.11.2"
+  },
+  {
+    prefix   = "172.16.0.0/16"
+    next_hop = "192.168.11.3"
+  }]
+
+  peer = [{
+    peer_id = data.sakura_local_router.peer.id
+  }]
+```
+
+### nfs
+
+`switch_id`フィールドは`vswitch_id`に変更されました。
 
 `network_interface`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
 
@@ -240,20 +621,55 @@ network_interface {
 
 ```
 network_interface = {
-  switch_id  = sakura_switch.foobar.id
+  vswitch_id = sakura_vswitch.foobar.id
   ip_address = "192.168.11.101"
   netmask    = 24
   gateway    = "192.168.11.1"
 }
 ```
 
-#### packet_filter / packet_filter_rules
+### packet_filter / 
+
+`expression`フィールドが削除されました。ルールを設定するには`packet_filter_rules`リソースを利用してください。
+
+- v2
+
+```hcl
+resource "sakura_packet_filter" "foobar" {
+  name        = "foobar"
+  description = "description"
+  expression {
+    protocol         = "tcp"
+    destination_port = "22"
+  }
+}
+```
+
+- v3
+
+```hcl
+resource "sakura_packet_filter" "foobar" {
+  name        = "foobar"
+  description = "description"
+}
+
+resource "sakura_packet_filter_rules" "rules" {
+  packet_filter_id = sakura_packet_filter.foobar.id
+
+  expression = [{
+    protocol         = "tcp"
+    destination_port = "22"
+  }]
+}
+```
+
+### packet_filter_rules
 
 `expression`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
 
 - v2
 
-```
+```hcl
 expression {
   protocol         = "tcp"
   destination_port = "22"
@@ -266,7 +682,7 @@ expression {
 
 - v3
 
-```
+```hcl
 expression = [
   {
     protocol         = "tcp"
@@ -279,7 +695,7 @@ expression = [
 ]
 ```
 
-#### server
+### server
 
 `disk_edit_parameter`内の`note_ids`フィールドが削除されました。代わりに`disk_edit_parameter`内のList型の`script`フィールドを利用してください。
 
@@ -335,13 +751,41 @@ disk_edit_parameter = {
 }
 ```
 
-#### vpn_router
+### simple_monitor
+
+`health_check`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+health_check {
+  protocol = "https"
+  // ...
+}
+```
+
+- v3
+
+```hcl
+health_check = {
+  protocol = "https"
+  // ...
+}
+```
+
+### subnet
+
+`switch_id`フィールドは`vswitch_id`に変更されました。
+
+### vpn_router
+
+`switch_id`フィールドは`vswitch_id`に変更されました。
 
 `public_network_interface`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
 
 - v2
 
-```
+```hcl
 public_network_interface {
   switch_id = sakura_internet.foobar.switch_id
   // ...
@@ -350,9 +794,9 @@ public_network_interface {
 
 - v3
 
-```
+```hcl
 public_network_interface = {
-  switch_id = sakura_internet.foobar.switch_id
+  vswitch_id = sakura_internet.foobar.vswitch_id
   // ...
 }
 ```
@@ -361,7 +805,7 @@ public_network_interface = {
 
 - v2
 
-```
+```hcl
 private_network_interface {
   index = 1
   // ...
@@ -370,7 +814,7 @@ private_network_interface {
 
 - v3
 
-```
+```hcl
 private_network_interface = [{
   index = 1
   // ...
@@ -381,7 +825,7 @@ private_network_interface = [{
 
 - v2
 
-```
+```hcl
 dhcp_server {
   interface_index = 1
   // ...
@@ -390,7 +834,7 @@ dhcp_server {
 
 - v3
 
-```
+```hcl
 dhcp_server = [{
   interface_index = 1
   // ...
@@ -401,7 +845,7 @@ dhcp_server = [{
 
 - v2
 
-```
+```hcl
 dhcp_static_mapping {
   ip_address = "192.168.11.10"
   // ...
@@ -410,7 +854,7 @@ dhcp_static_mapping {
 
 - v3
 
-```
+```hcl
 dhcp_static_mapping = [{
   ip_address = "192.168.11.10"
   // ...
@@ -421,7 +865,7 @@ dhcp_static_mapping = [{
 
 - v2
 
-```
+```hcl
 dns_forwarding {
   interface_index = 1
   // ...
@@ -430,7 +874,7 @@ dns_forwarding {
 
 - v3
 
-```
+```hcl
 dns_forwarding = {
   interface_index = 1
   // ...
@@ -441,7 +885,7 @@ dns_forwarding = {
 
 - v2
 
-```
+```hcl
 firewall {
   interface_index = 1
   direction = "send"
@@ -455,7 +899,7 @@ firewall {
 
 - v3
 
-```
+```hcl
 firewall = [{
   interface_index = 1
   direction = "send"
@@ -473,7 +917,7 @@ firewall = [{
 
 - v2
 
-```
+```hcl
 l2tp {
   pre_shared_secret = "example"
   // ...
@@ -482,7 +926,7 @@ l2tp {
 
 - v3
 
-```
+```hcl
 l2tp = {
   pre_shared_secret = "example"
   // ...
@@ -493,7 +937,7 @@ l2tp = {
 
 - v2
 
-```
+```hcl
 pptp {
   range_start = "192.168.11.31"
   // ...
@@ -502,7 +946,7 @@ pptp {
 
 - v3
 
-```
+```hcl
 pptp = {
   range_start = "192.168.11.31"
   // ...
@@ -513,7 +957,7 @@ pptp = {
 
 - v2
 
-```
+```hcl
 port_forwarding {
   protocol = "udp"
   // ...
@@ -522,7 +966,7 @@ port_forwarding {
 
 - v3
 
-```
+```hcl
 port_forwarding = [{
   protocol = "udp"
   // ...
@@ -533,7 +977,7 @@ port_forwarding = [{
 
 - v2
 
-```
+```hcl
 wire_guard {
   ip_address = "192.168.31.1/24"
   peer {
@@ -545,7 +989,7 @@ wire_guard {
 
 - v3
 
-```
+```hcl
 wire_guard = {
   ip_address = "192.168.31.1/24"
   peer = [{
@@ -559,7 +1003,7 @@ wire_guard = {
 
 - v2
 
-```
+```hcl
 site_to_site_vpn {
   peer = "10.0.0.1"
   // ...
@@ -568,7 +1012,7 @@ site_to_site_vpn {
 
 - v3
 
-```
+```hcl
 site_to_site_vpn = [{
   peer = "10.0.0.1"
   // ...
@@ -579,7 +1023,7 @@ site_to_site_vpn = [{
 
 - v2
 
-```
+```hcl
 site_to_site_vpn_parameter {
   ike {
     lifetime = 28800
@@ -598,7 +1042,7 @@ site_to_site_vpn_parameter {
 
 - v3
 
-```
+```hcl
 site_to_site_vpn_parameter = {
   ike = {
     lifetime = 28800
@@ -619,7 +1063,7 @@ site_to_site_vpn_parameter = {
 
 - v2
 
-```
+```hcl
 static_nat {
   public_ip = sakura_internet.foobar.ip_addresses[3]
   // ...
@@ -628,7 +1072,7 @@ static_nat {
 
 - v3
 
-```
+```hcl
 static_nat = [{
   public_ip = sakura_internet.foobar.ip_addresses[3]
   // ...
@@ -639,7 +1083,7 @@ static_nat = [{
 
 - v2
 
-```
+```hcl
 static_route {
   prefix = "172.16.0.0/16"
   // ...
@@ -648,7 +1092,7 @@ static_route {
 
 - v3
 
-```
+```hcl
 static_route = [{
   prefix = "172.16.0.0/16"
   // ...
@@ -659,7 +1103,7 @@ user`フィールドがBlockからList型のAttributeに変更されたため、
 
 - v2
 
-```
+```hcl
 user {
   name = "username"
   // ...
@@ -668,7 +1112,7 @@ user {
 
 - v3
 
-```
+```hcl
 user = [{
   name = "username"
   // ...
@@ -679,7 +1123,7 @@ user = [{
 
 - v2
 
-```
+```hcl
 scheduled_maintenance {
   day_of_week = "tue"
   // ...
@@ -688,7 +1132,7 @@ scheduled_maintenance {
 
 - v3
 
-```
+```hcl
 scheduled_maintenance = {
   day_of_week = "tue"
   // ...
