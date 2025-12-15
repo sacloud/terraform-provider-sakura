@@ -45,7 +45,7 @@ type internetDataSourceModel struct {
 }
 
 func (d *internetDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resourceName := "Switch+Router"
+	resourceName := "Internet(switch+router)"
 
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -62,10 +62,10 @@ func (d *internetDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Computed:    true,
 				Description: "The bandwidth of the network connected to the Internet in Mbps",
 			},
-			"server_ids": schema.SetAttribute{
+			"server_ids": schema.ListAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
-				Description: desc.Sprintf("A set of the ID of Servers connected to the %s", resourceName),
+				Description: desc.Sprintf("A list of the ID of Servers connected to the %s", resourceName),
 			},
 			"network_address": schema.StringAttribute{
 				Computed:    true,
@@ -100,13 +100,8 @@ func (d *internetDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Computed:    true,
 				Description: desc.Sprintf("The IPv6 network address assigned to the %s", resourceName),
 			},
-			"assigned_tags": schema.SetAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-				Description: desc.Sprintf("The auto assigned tags of the %s when band_width is changed", resourceName),
-			},
 		},
-		MarkdownDescription: "Get information about an existing Internet(Router + Switch).",
+		MarkdownDescription: "Get information about an existing Internet(Switch + Router).",
 	}
 }
 

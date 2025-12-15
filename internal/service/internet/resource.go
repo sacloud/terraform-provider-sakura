@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -61,7 +62,7 @@ type internetResourceModel struct {
 }
 
 func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resourceName := "Switch+Router"
+	resourceName := "Internet(switch+router)"
 
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -95,13 +96,14 @@ func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"enable_ipv6": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "The flag to enable IPv6",
 			},
 			"vswitch_id": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The id of the vSwitch"),
 			},
-			"server_ids": schema.SetAttribute{
+			"server_ids": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: desc.Sprintf("A set of the ID of Servers connected to the %s", resourceName),
@@ -139,18 +141,11 @@ func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Computed:    true,
 				Description: desc.Sprintf("The IPv6 network address assigned to the %s", resourceName),
 			},
-			// Optional/Computedなtagsが設定されている場合、Update時に自動で値が変更されると"Provider produced inconsistent result after apply"エラーが発生する
-			// SDK v2では許されていたが厳格になったFrameworkでは許されないため、APIが自動で設定する"@previous-id"タグをassigned_tagsに分離する
-			"assigned_tags": schema.SetAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-				Description: desc.Sprintf("The auto assigned tags of the %s when band_width is changed", resourceName),
-			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages an Internet(Router + Switch).",
+		MarkdownDescription: "Manages an Internet(Switch + Router).",
 	}
 }
 

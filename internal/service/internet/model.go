@@ -6,7 +6,6 @@ package internet
 import (
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
@@ -21,7 +20,7 @@ type internetBaseModel struct {
 	BandWidth          types.Int32  `tfsdk:"band_width"`
 	EnableIPv6         types.Bool   `tfsdk:"enable_ipv6"`
 	VSwitchID          types.String `tfsdk:"vswitch_id"`
-	ServerIDs          types.Set    `tfsdk:"server_ids"`
+	ServerIDs          types.List   `tfsdk:"server_ids"`
 	NetworkAddress     types.String `tfsdk:"network_address"`
 	Gateway            types.String `tfsdk:"gateway"`
 	MinIPAddress       types.String `tfsdk:"min_ip_address"`
@@ -30,7 +29,6 @@ type internetBaseModel struct {
 	IPv6Prefix         types.String `tfsdk:"ipv6_prefix"`
 	IPv6PrefixLen      types.Int32  `tfsdk:"ipv6_prefix_len"`
 	IPv6NetworkAddress types.String `tfsdk:"ipv6_network_address"`
-	AssignedTags       types.Set    `tfsdk:"assigned_tags"`
 }
 
 func (model *internetBaseModel) updateState(ctx context.Context, client *common.APIClient, zone string, data *iaas.Internet) error {
@@ -60,13 +58,11 @@ func (model *internetBaseModel) updateState(ctx context.Context, client *common.
 		ipv6PrefixLen = data.Switch.IPv6Nets[0].IPv6PrefixLen
 		ipv6NetworkAddress = fmt.Sprintf("%s/%d", ipv6Prefix, ipv6PrefixLen)
 	}
-	assigned, unassigned := partitionInternetTags(data.Tags)
-
-	model.UpdateBaseState(data.ID.String(), data.Name, data.Description, unassigned)
+	model.UpdateBaseState(data.ID.String(), data.Name, data.Description, data.Tags)
 	model.Netmask = types.Int32Value(int32(data.NetworkMaskLen))
 	model.BandWidth = types.Int32Value(int32(data.BandWidthMbps))
 	model.VSwitchID = types.StringValue(sw.ID.String())
-	model.ServerIDs = common.StringsToTset(serverIDs)
+	model.ServerIDs = common.StringsToTlist(serverIDs)
 	model.NetworkAddress = types.StringValue(sw.Subnets[0].NetworkAddress)
 	model.Gateway = types.StringValue(sw.Subnets[0].DefaultRoute)
 	model.MinIPAddress = types.StringValue(sw.Subnets[0].AssignedIPAddressMin)
@@ -77,7 +73,6 @@ func (model *internetBaseModel) updateState(ctx context.Context, client *common.
 	model.IPv6NetworkAddress = types.StringValue(ipv6NetworkAddress)
 	model.Zone = types.StringValue(zone)
 	model.IPAddresses = common.StringsToTlist(sw.Subnets[0].GetAssignedIPAddresses())
-	model.AssignedTags = common.StringsToTset(assigned)
 	if data.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
 	} else {
@@ -85,15 +80,4 @@ func (model *internetBaseModel) updateState(ctx context.Context, client *common.
 	}
 
 	return nil
-}
-
-func partitionInternetTags(tags []string) (assigned, unassigned []string) {
-	for _, tag := range tags {
-		if strings.HasPrefix(tag, "@previous-id") {
-			assigned = append(assigned, tag)
-		} else {
-			unassigned = append(unassigned, tag)
-		}
-	}
-	return
 }
