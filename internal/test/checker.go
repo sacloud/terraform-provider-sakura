@@ -29,6 +29,16 @@ func CheckSakuraDataSourceExists(n string) resource.TestCheckFunc {
 	}
 }
 
+func CheckSakuraDataSourceNotExists(n string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if ok && rs.Primary.ID != "" {
+			return fmt.Errorf("resource still exists: %s", n)
+		}
+		return nil
+	}
+}
+
 func CheckSakuravSwitchDestroy(s *terraform.State) error {
 	swOp := iaas.NewSwitchOp(AccClientGetter())
 
@@ -44,6 +54,27 @@ func CheckSakuravSwitchDestroy(s *terraform.State) error {
 		_, err := swOp.Read(context.Background(), zone, common.SakuraCloudID(rs.Primary.ID))
 		if err == nil {
 			return fmt.Errorf("resource vSwitch[%s] still exists", rs.Primary.ID)
+		}
+	}
+
+	return nil
+}
+
+func CheckSakuraInternetDestroy(s *terraform.State) error {
+	internetOp := iaas.NewInternetOp(AccClientGetter())
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "sakura_internet" {
+			continue
+		}
+		if rs.Primary.ID == "" {
+			continue
+		}
+
+		zone := rs.Primary.Attributes["zone"]
+		_, err := internetOp.Read(context.Background(), zone, common.SakuraCloudID(rs.Primary.ID))
+		if err == nil {
+			return fmt.Errorf("resource Internet(switch+router)[%s] still exists:", rs.Primary.ID)
 		}
 	}
 

@@ -77,7 +77,7 @@ func SchemaDataSourceServerID(name string) schema.Attribute {
 	}
 }
 
-func SchemaDataSourceSwitchID(name string) schema.Attribute {
+func SchemaDataSourceVSwitchID(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Computed:    true,
 		Description: desc.Sprintf("The id of the vSwitch connected from the %s", name),

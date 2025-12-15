@@ -55,7 +55,7 @@ func (d *internetDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 			"tags":        common.SchemaDataSourceTags(resourceName),
 			"icon_id":     common.SchemaDataSourceIconID(resourceName),
 			"zone":        common.SchemaDataSourceZone(resourceName),
-			"vswitch_id":  common.SchemaDataSourceSwitchID(resourceName),
+			"vswitch_id":  common.SchemaDataSourceVSwitchID(resourceName),
 			"netmask":     common.SchemaDataSourceNetMask(resourceName),
 			"gateway":     common.SchemaDataSourceGateway(resourceName),
 			"band_width": schema.Int32Attribute{

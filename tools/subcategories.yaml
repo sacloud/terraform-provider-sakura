@@ -30,6 +30,7 @@ Networking:
   - packet_filter
   - packet_filter_rules
   - switch
+  - subnet
   - vswitch
   - vpn_router
 Application Integration:

@@ -63,7 +63,7 @@ func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				Computed:    true,
 				Description: "A list of additional network interface setting. This doesn't include primary network interface setting",
 				Attributes: map[string]schema.Attribute{
-					"vswitch_id": common.SchemaDataSourceSwitchID("VPNRouter"),
+					"vswitch_id": common.SchemaDataSourceVSwitchID("VPN Router"),
 					"vip": schema.StringAttribute{
 						Computed:    true,
 						Description: "The virtual IP address of the VPN Router. This is only used when `plan` is not `standard`",
@@ -109,7 +109,7 @@ func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 							Computed:    true,
 							Description: "The index of the network interface. This will be between `1`-`7`",
 						},
-						"vswitch_id": common.SchemaDataSourceSwitchID("VPNRouter"),
+						"vswitch_id": common.SchemaDataSourceVSwitchID("VPN Router"),
 						"vip": schema.StringAttribute{
 							Computed:    true,
 							Description: "The virtual IP address assigned to the network interface. This is only used when `plan` is not `standard`",

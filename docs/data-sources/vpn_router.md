@@ -158,7 +158,7 @@ Read-Only:
 - `ip_addresses` (List of String) A list of ip address assigned to the network interface. This will be only one value when `plan` is `standard`, two values otherwise
 - `netmask` (Number) The bit length of the subnet assigned to the network interface
 - `vip` (String) The virtual IP address assigned to the network interface. This is only used when `plan` is not `standard`
-- `vswitch_id` (String) The id of the vSwitch connected from the VPNRouter
+- `vswitch_id` (String) The id of the vSwitch connected from the VPN Router
 
 
 <a id="nestedatt--public_network_interface"></a>
@@ -170,7 +170,7 @@ Read-Only:
 - `ip_addresses` (List of String) The list of the IP address assigned to the VPN Router. This will be only one value when `plan` is `standard`, two values otherwise
 - `vip` (String) The virtual IP address of the VPN Router. This is only used when `plan` is not `standard`
 - `vrid` (Number) The Virtual Router Identifier. This is only used when `plan` is not `standard`
-- `vswitch_id` (String) The id of the vSwitch connected from the VPNRouter
+- `vswitch_id` (String) The id of the vSwitch connected from the VPN Router
 
 
 <a id="nestedatt--scheduled_maintenance"></a>

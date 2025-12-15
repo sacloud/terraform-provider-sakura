@@ -85,7 +85,7 @@ func (d *databaseDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Computed:    true,
 				Description: "Network interfaces (simplified map form)",
 				Attributes: map[string]schema.Attribute{
-					"vswitch_id": common.SchemaDataSourceSwitchID("Database"),
+					"vswitch_id": common.SchemaDataSourceVSwitchID("Database"),
 					"ip_address": common.SchemaDataSourceIPAddress("Database"),
 					"netmask":    common.SchemaDataSourceNetMask("Database"),
 					"gateway":    common.SchemaDataSourceGateway("Database"),
