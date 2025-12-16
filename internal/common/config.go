@@ -148,7 +148,7 @@ func (c *Config) FillWith(other *Config) {
 	}
 }
 
-func (c *Config) loadFromProfile() (*Config, error) {
+func (c *Config) LoadFromProfile() (*Config, error) {
 	if c.Profile == "" {
 		if name, err := profile.CurrentName(); err != nil {
 			c.Profile = profile.DefaultProfileName
@@ -193,7 +193,7 @@ func (c *Config) validate() error {
 }
 
 func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
-	if cfg, err := c.loadFromProfile(); err != nil {
+	if cfg, err := c.LoadFromProfile(); err != nil {
 		return nil, err
 	} else {
 		c.FillWith(cfg)
