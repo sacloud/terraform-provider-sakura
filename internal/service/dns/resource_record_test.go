@@ -70,8 +70,7 @@ func TestAccSakuraDNSRecord_withCount(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config:             test.BuildConfigWithArgs(testAccSakuraDNSRecord_withCount, zone),
-				ExpectNonEmptyPlan: true,
+				Config: test.BuildConfigWithArgs(testAccSakuraDNSRecord_withCount, zone),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName+".0", "name", "www"),
 					resource.TestCheckResourceAttr(resourceName+".0", "type", "A"),
