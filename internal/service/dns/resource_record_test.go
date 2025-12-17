@@ -9,6 +9,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/types"
@@ -79,6 +81,47 @@ func TestAccSakuraDNSRecord_withCount(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName+".1", "type", "A"),
 					resource.TestCheckResourceAttr(resourceName+".1", "value", "192.168.0.2"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraDNSRecord_ImportWithIdentity(t *testing.T) {
+	resourceName := "sakura_dns_record.foobar1"
+	zone := fmt.Sprintf("%s.com", test.RandomName())
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			test.CheckSakuraDNSDestroy,
+			testCheckSakuraDNSRecordDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraDNSRecord_update, zone),
+				Check: resource.ComposeAggregateTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", "www2"),
+					resource.TestCheckResourceAttr(resourceName, "type", "A"),
+					resource.TestCheckResourceAttr(resourceName, "value", "192.168.0.2"),
+				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectIdentity(resourceName, map[string]knownvalue.Check{
+						"dns_id":   knownvalue.NotNull(),
+						"name":     knownvalue.StringExact("www2"),
+						"type":     knownvalue.StringExact("A"),
+						"value":    knownvalue.StringExact("192.168.0.2"),
+						"ttl":      knownvalue.NotNull(),
+						"priority": knownvalue.Null(),
+						"weight":   knownvalue.Null(),
+						"port":     knownvalue.Null(),
+					}),
+				},
+			},
+			{
+				ResourceName:    resourceName,
+				ImportState:     true,
+				ImportStateKind: resource.ImportBlockWithResourceIdentity,
 			},
 		},
 	})
