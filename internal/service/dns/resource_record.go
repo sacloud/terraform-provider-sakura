@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
@@ -37,6 +38,7 @@ var (
 	_ resource.Resource                = &dnsRecordResource{}
 	_ resource.ResourceWithConfigure   = &dnsRecordResource{}
 	_ resource.ResourceWithImportState = &dnsRecordResource{}
+	_ resource.ResourceWithIdentity    = &dnsRecordResource{}
 )
 
 func NewDNSRecordResource() resource.Resource {
@@ -150,8 +152,64 @@ func (r *dnsRecordResource) Schema(ctx context.Context, _ resource.SchemaRequest
 	}
 }
 
+type dnsRecordResourceIdentityModel struct {
+	DNSID    types.String `tfsdk:"dns_id"`
+	Name     types.String `tfsdk:"name"`
+	Type     types.String `tfsdk:"type"`
+	Value    types.String `tfsdk:"value"`
+	TTL      types.Int64  `tfsdk:"ttl"`
+	Priority types.Int32  `tfsdk:"priority"`
+	Weight   types.Int32  `tfsdk:"weight"`
+	Port     types.Int32  `tfsdk:"port"`
+}
+
+func (r dnsRecordResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"dns_id": identityschema.StringAttribute{
+				RequiredForImport: true,
+			},
+			"name": identityschema.StringAttribute{
+				RequiredForImport: true,
+			},
+			"type": identityschema.StringAttribute{
+				RequiredForImport: true,
+			},
+			"value": identityschema.StringAttribute{
+				OptionalForImport: true,
+			},
+			"ttl": identityschema.Int64Attribute{
+				OptionalForImport: true,
+			},
+			"priority": identityschema.Int32Attribute{
+				OptionalForImport: true,
+			},
+			"weight": identityschema.Int32Attribute{
+				OptionalForImport: true,
+			},
+			"port": identityschema.Int32Attribute{
+				OptionalForImport: true,
+			},
+		},
+	}
+}
+
 func (r *dnsRecordResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	var identityData dnsRecordResourceIdentityModel
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identityData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// To avoide timeouts related error, set each attribute directly. Don't use 'resp.State.Set'.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("dns_id"), identityData.DNSID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), identityData.Name)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("type"), identityData.Type)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("value"), identityData.Value)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("ttl"), identityData.TTL)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("priority"), identityData.Priority)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("weight"), identityData.Weight)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("port"), identityData.Port)...)
 }
 
 func (r *dnsRecordResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -186,6 +244,18 @@ func (r *dnsRecordResource) Create(ctx context.Context, req resource.CreateReque
 	model := flattenDNSRecord(record)
 	plan.updateState(dnsRecordIDHash(dnsID, record), dnsID, &model)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
+
+	identity := dnsRecordResourceIdentityModel{
+		DNSID:    plan.DNSID,
+		Name:     plan.Name,
+		Type:     plan.Type,
+		Value:    plan.Value,
+		TTL:      plan.TTL,
+		Priority: plan.Priority,
+		Weight:   plan.Weight,
+		Port:     plan.Port,
+	}
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identity)...)
 }
 
 func (r *dnsRecordResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -201,15 +271,27 @@ func (r *dnsRecordResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	record := expandDNSRecord(convertToDNSRecordModel(&state))
+	record := convertToDNSRecordModel(&state)
 	if r := findRecordMatch(dns.Records, record); r == nil {
 		resp.State.RemoveResource(ctx)
 		return
-	}
+	} else {
+		model := flattenDNSRecord(r)
+		state.updateState(dnsRecordIDHash(dnsID, r), dnsID, &model)
+		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 
-	model := flattenDNSRecord(record)
-	state.updateState(state.ID.ValueString(), dnsID, &model)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+		identity := dnsRecordResourceIdentityModel{
+			DNSID:    state.DNSID,
+			Name:     state.Name,
+			Type:     state.Type,
+			Value:    state.Value,
+			TTL:      state.TTL,
+			Priority: state.Priority,
+			Weight:   state.Weight,
+			Port:     state.Port,
+		}
+		resp.Diagnostics.Append(resp.Identity.Set(ctx, identity)...)
+	}
 }
 
 func (r *dnsRecordResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -349,10 +431,32 @@ func convertToDNSRecordModel(model *dnsRecordResourceModel) *dnsRecordModel {
 	}
 }
 
-func findRecordMatch(records []*iaas.DNSRecord, record *iaas.DNSRecord) *iaas.DNSRecord {
+func findRecordMatch(records []*iaas.DNSRecord, target *dnsRecordModel) *iaas.DNSRecord {
+	// TTLを指定してのImportは稀なので一番優先度を落とす。設定ファイル経由では値が指定されているのでちゃんと比較される
 	for _, r := range records {
-		if IsSameDNSRecord(r, record) {
-			return record
+		record := expandDNSRecord(target)
+		if r.Name == record.Name && r.Type == record.Type {
+			switch record.Type {
+			case "MX", "SRV":
+				// MX, SRVはRData内にValue以外の必要なフィールドが含まれるため、変換後の値を直接比較
+				if r.RData == record.RData {
+					if target.TTL.IsNull() {
+						return r
+					} else if r.TTL == record.TTL {
+						return r
+					}
+				}
+			default:
+				if target.Value.IsNull() {
+					return r
+				} else if r.RData == record.RData {
+					if target.TTL.IsNull() {
+						return r
+					} else if r.TTL == record.TTL {
+						return r
+					}
+				}
+			}
 		}
 	}
 	return nil
