@@ -31,10 +31,13 @@ data "sakura_database" "foobar" {
 ### Read-Only
 
 - `backup` (Attributes) Backup settings (simplified) (see [below for nested schema](#nestedatt--backup))
+- `continuous_backup` (Attributes) (see [below for nested schema](#nestedatt--continuous_backup))
 - `database_type` (String) The type of the database. This will be one of [`mariadb`/`postgres`]
 - `database_version` (String) The version of the database
 - `description` (String) The description of the Database.
+- `disk` (Attributes) (see [below for nested schema](#nestedatt--disk))
 - `icon_id` (String) The icon id attached to the Database
+- `monitoring_suite` (Attributes) The monitoring suite settings of the Database. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `network_interface` (Attributes) Network interfaces (simplified map form) (see [below for nested schema](#nestedatt--network_interface))
 - `parameters` (Map of String) The map for setting RDBMS-specific parameters. Valid keys can be found with the `usacloud database list-parameters` command
 - `password` (String, Sensitive) The password of default user on the database
@@ -48,8 +51,35 @@ data "sakura_database" "foobar" {
 
 Read-Only:
 
+- `days_of_week` (Set of String) The list of name of days of week that doing backup. This will be in [`sun`/`mon`/`tue`/`wed`/`thu`/`fri`/`sat`]
 - `time` (String) The time to take backup. This will be formatted with `HH:mm`
-- `weekdays` (Set of String) The list of name of weekday that doing backup. This will be in [`sun`/`mon`/`tue`/`wed`/`thu`/`fri`/`sat`]
+
+
+<a id="nestedatt--continuous_backup"></a>
+### Nested Schema for `continuous_backup`
+
+Read-Only:
+
+- `connect` (String) NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`)
+- `days_of_week` (Set of String) A list of days of week to backed up. The values in the list must be in [`sun`/`mon`/`tue`/`wed`/`thu`/`fri`/`sat`]
+- `time` (String) The time to take backup. This must be formatted with `HH:mm`
+
+
+<a id="nestedatt--disk"></a>
+### Nested Schema for `disk`
+
+Read-Only:
+
+- `encryption_algorithm` (String) The disk encryption algorithm. This must be one of [`none`/`aes256_xts`]
+- `kms_key_id` (String) ID of the KMS key for encryption
+
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Read-Only:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite
 
 
 <a id="nestedatt--network_interface"></a>

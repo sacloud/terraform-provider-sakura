@@ -31,3 +31,15 @@ func (m SakuraMonitoringSuiteModel) AttributeTypes() map[string]attr.Type {
 		"enabled": types.BoolType,
 	}
 }
+
+type SakuraEncryptionDiskModel struct {
+	EncryptionAlgorithm types.String `tfsdk:"encryption_algorithm"`
+	KMSKeyID            types.String `tfsdk:"kms_key_id"`
+}
+
+func (m SakuraEncryptionDiskModel) AttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"encryption_algorithm": types.StringType,
+		"kms_key_id":           types.StringType,
+	}
+}

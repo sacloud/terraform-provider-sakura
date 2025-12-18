@@ -60,6 +60,7 @@ type databaseReadReplicaResourceModel struct {
 	Zone             types.String                   `tfsdk:"zone"`
 	MasterID         types.String                   `tfsdk:"master_id"`
 	NetworkInterface *databaseNetworkInterfaceModel `tfsdk:"network_interface"`
+	Disk             types.Object                   `tfsdk:"disk"`
 	Timeouts         timeouts.Value                 `tfsdk:"timeouts"`
 }
 
@@ -134,6 +135,7 @@ func (r *databaseReadReplicaResource) Schema(ctx context.Context, _ resource.Sch
 					},
 				},
 			},
+			"disk": common.SchemaResourceEncryptionDisk("Database"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -153,7 +155,7 @@ func (r *databaseReadReplicaResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, 60*time.Minute)
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout60min)
 	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
@@ -211,7 +213,7 @@ func (r *databaseReadReplicaResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, 60*time.Minute)
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout60min)
 	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
@@ -249,7 +251,7 @@ func (r *databaseReadReplicaResource) Delete(ctx context.Context, req resource.D
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutCreate(ctx, state.Timeouts, 20*time.Minute)
+	ctx, cancel := common.SetupTimeoutCreate(ctx, state.Timeouts, common.Timeout20min)
 	defer cancel()
 
 	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)
@@ -282,6 +284,12 @@ func (model *databaseReadReplicaResourceModel) updateState(zone string, db *iaas
 	model.Zone = types.StringValue(zone)
 	model.MasterID = types.StringValue(db.ReplicationSetting.ApplianceID.String())
 	model.NetworkInterface = flattenDatabaseReadReplicaNetworkInterface(db)
+	model.Disk = flattenDatabaseDisk(db)
+	if db.IconID.IsEmpty() {
+		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(db.IconID.String())
+	}
 
 	return nil
 }
@@ -349,6 +357,7 @@ func expandDatabaseReadReplicaBuilder(ctx context.Context, model *databaseReadRe
 			Password:    masterDB.ReplicationSetting.Password,
 			ApplianceID: masterDB.ID,
 		},
+		Disk:   expandDatabaseDisk(model.Disk),
 		Client: databaseBuilder.NewAPIClient(client),
 	}, nil
 }

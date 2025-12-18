@@ -31,7 +31,10 @@ type databaseBaseModel struct {
 	ReplicaPassword  types.String                   `tfsdk:"replica_password"`
 	NetworkInterface *databaseNetworkInterfaceModel `tfsdk:"network_interface"`
 	Backup           types.Object                   `tfsdk:"backup"`
+	ContinuousBackup *databaseContinuousBackupModel `tfsdk:"continuous_backup"`
 	Parameters       types.Map                      `tfsdk:"parameters"`
+	Disk             types.Object                   `tfsdk:"disk"`
+	MonitoringSuite  types.Object                   `tfsdk:"monitoring_suite"`
 }
 
 type databaseNetworkInterfaceModel struct {
@@ -44,24 +47,26 @@ type databaseNetworkInterfaceModel struct {
 }
 
 type databaseBackupModel struct {
-	Weekdays types.Set    `tfsdk:"weekdays"`
-	Time     types.String `tfsdk:"time"`
+	DaysOfWeek types.Set    `tfsdk:"days_of_week"`
+	Time       types.String `tfsdk:"time"`
 }
 
 func (m databaseBackupModel) AttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"weekdays": types.SetType{ElemType: types.StringType},
-		"time":     types.StringType,
+		"days_of_week": types.SetType{ElemType: types.StringType},
+		"time":         types.StringType,
 	}
+}
+
+type databaseContinuousBackupModel struct {
+	DaysOfWeek types.Set    `tfsdk:"days_of_week"`
+	Time       types.String `tfsdk:"time"`
+	Connect    types.String `tfsdk:"connect"`
 }
 
 func (model *databaseBaseModel) updateState(ctx context.Context, client *common.APIClient, zone string, db *iaas.Database) (bool, error) {
 	if db.Availability.IsFailed() {
 		return true, fmt.Errorf("got unexpected state: Database[%d].Availability is failed", db.ID)
-	}
-	parameters, err := iaas.NewDatabaseOp(client).GetParameter(ctx, zone, db.ID)
-	if err != nil {
-		return false, err
 	}
 
 	model.UpdateBaseState(db.ID.String(), db.Name, db.Description, db.Tags)
@@ -78,12 +83,20 @@ func (model *databaseBaseModel) updateState(ctx context.Context, client *common.
 	}
 	model.NetworkInterface = flattenDatabaseNetworkInterface(db)
 	model.Backup = flattenDatabaseBackupSetting(db)
-	model.Parameters = convertDatabaseParametersToMap(parameters)
+	model.ContinuousBackup = flattenDatabaseContinuousBackup(db)
+	model.Disk = flattenDatabaseDisk(db)
+	model.MonitoringSuite = common.FlattenMonitoringSuite(db.MonitoringSuite)
 	if db.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
 	} else {
 		model.IconID = types.StringValue(db.IconID.String())
 	}
+
+	parameters, err := iaas.NewDatabaseOp(client).GetParameter(ctx, zone, db.ID)
+	if err != nil {
+		return false, err
+	}
+	model.Parameters = convertDatabaseParametersToMap(parameters)
 
 	return false, nil
 }
@@ -117,9 +130,37 @@ func flattenDatabaseBackupSetting(db *iaas.Database) types.Object {
 	v := types.ObjectNull(databaseBackupModel{}.AttributeTypes())
 	if db.BackupSetting != nil {
 		m := databaseBackupModel{
-			Time:     types.StringValue(db.BackupSetting.Time),
-			Weekdays: common.FlattenBackupWeekdays(db.BackupSetting.DayOfWeek),
+			Time:       types.StringValue(db.BackupSetting.Time),
+			DaysOfWeek: common.FlattenBackupWeekdays(db.BackupSetting.DayOfWeek),
 		}
+		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
+		if diags.HasError() {
+			return v
+		}
+		return value
+	}
+	return v
+}
+
+func flattenDatabaseContinuousBackup(db *iaas.Database) *databaseContinuousBackupModel {
+	if db.Backupv2Setting != nil {
+		return &databaseContinuousBackupModel{
+			DaysOfWeek: common.FlattenBackupWeekdays(db.Backupv2Setting.DayOfWeek),
+			Time:       types.StringValue(db.Backupv2Setting.Time),
+			Connect:    types.StringValue(db.Backupv2Setting.Connect),
+		}
+	}
+	return nil
+}
+
+func flattenDatabaseDisk(db *iaas.Database) types.Object {
+	v := types.ObjectNull(common.SakuraEncryptionDiskModel{}.AttributeTypes())
+	if db.Disk != nil {
+		m := common.SakuraEncryptionDiskModel{
+			EncryptionAlgorithm: types.StringValue(string(db.Disk.EncryptionAlgorithm)),
+			KMSKeyID:            types.StringValue(db.Disk.EncryptionKeyID.String()),
+		}
+
 		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
 		if diags.HasError() {
 			return v

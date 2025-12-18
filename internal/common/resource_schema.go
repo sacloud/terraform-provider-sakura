@@ -6,14 +6,17 @@ package common
 import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int64validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
@@ -155,6 +158,42 @@ func SchemaResourceMonitoringSuite(name string) schema.Attribute {
 				Optional:    true,
 				Computed:    true,
 				Description: "Enable sending signals to Monitoring Suite",
+			},
+		},
+	}
+}
+
+func SchemaResourceEncryptionDisk(name string) schema.Attribute {
+	return schema.SingleNestedAttribute{
+		Optional: true,
+		Computed: true,
+		PlanModifiers: []planmodifier.Object{
+			objectplanmodifier.RequiresReplaceIfConfigured(),
+		},
+		Attributes: map[string]schema.Attribute{
+			"encryption_algorithm": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(iaastypes.DiskEncryptionAlgorithms.None.String()),
+				Description: desc.Sprintf("The disk encryption algorithm. This must be one of [%s]", iaastypes.DiskEncryptionAlgorithmStrings),
+				Validators: []validator.String{
+					stringvalidator.OneOf(iaastypes.DiskEncryptionAlgorithmStrings...),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
+			"kms_key_id": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "ID of the KMS key for encryption",
+				Validators: []validator.String{
+					sacloudvalidator.SakuraIDValidator(),
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("encryption_algorithm")),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
 			},
 		},
 	}

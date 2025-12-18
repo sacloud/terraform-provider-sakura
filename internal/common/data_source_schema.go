@@ -6,6 +6,7 @@ package common
 import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
@@ -120,6 +121,22 @@ func SchemaDataSourceMonitoringSuite(name string) schema.Attribute {
 			"enabled": schema.BoolAttribute{
 				Computed:    true,
 				Description: "Enable sending signals to Monitoring Suite",
+			},
+		},
+	}
+}
+
+func SchemaDataSourceEncryptionDisk(name string) schema.Attribute {
+	return schema.SingleNestedAttribute{
+		Computed: true,
+		Attributes: map[string]schema.Attribute{
+			"encryption_algorithm": schema.StringAttribute{
+				Computed:    true,
+				Description: desc.Sprintf("The disk encryption algorithm. This must be one of [%s]", iaastypes.DiskEncryptionAlgorithmStrings),
+			},
+			"kms_key_id": schema.StringAttribute{
+				Computed:    true,
+				Description: "ID of the KMS key for encryption",
 			},
 		},
 	}

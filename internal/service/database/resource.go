@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -31,6 +32,7 @@ import (
 	databaseBuilder "github.com/sacloud/iaas-service-go/database/builder"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
 type databaseResource struct {
@@ -82,6 +84,9 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Validators: []validator.String{
 					stringvalidator.OneOf(iaastypes.RDBMSTypeStrings...),
 				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
 			},
 			"database_version": schema.StringAttribute{
 				Optional:    true,
@@ -105,9 +110,6 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Required:    true,
 				Sensitive:   true,
 				Description: "The password of default user on the database",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"replica_user": schema.StringAttribute{
 				Optional:    true,
@@ -168,15 +170,45 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			},
 			"backup": schema.SingleNestedAttribute{
 				Optional: true,
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("continuous_backup")),
+				},
 				Attributes: map[string]schema.Attribute{
-					"weekdays": schema.SetAttribute{
+					"days_of_week": schema.SetAttribute{
 						ElementType: types.StringType,
-						Optional:    true,
-						Description: desc.Sprintf("A list of weekdays to backed up. The values in the list must be in [%s]", iaastypes.DaysOfTheWeekStrings),
+						Required:    true,
+						Description: desc.Sprintf("A list of days of week to backed up. The values in the list must be in [%s]", iaastypes.DaysOfTheWeekStrings),
 					},
 					"time": schema.StringAttribute{
-						Optional:    true,
+						Required:    true,
 						Description: "The time to take backup. This must be formatted with `HH:mm`",
+						Validators: []validator.String{
+							sacloudvalidator.BackupTimeValidator(),
+						},
+					},
+				},
+			},
+			"continuous_backup": schema.SingleNestedAttribute{
+				Optional: true,
+				Validators: []validator.Object{
+					objectvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("backup")),
+				},
+				Attributes: map[string]schema.Attribute{
+					"days_of_week": schema.SetAttribute{
+						ElementType: types.StringType,
+						Required:    true,
+						Description: desc.Sprintf("A list of days of week to backed up. The values in the list must be in [%s]", iaastypes.DaysOfTheWeekStrings),
+					},
+					"time": schema.StringAttribute{
+						Required:    true,
+						Description: "The time to take backup. This must be formatted with `HH:mm`",
+						Validators: []validator.String{
+							sacloudvalidator.BackupTimeValidator(),
+						},
+					},
+					"connect": schema.StringAttribute{
+						Required:    true,
+						Description: "NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`)",
 					},
 				},
 			},
@@ -186,6 +218,8 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Computed:    true,
 				Description: "The map for setting RDBMS-specific parameters. Valid keys can be found with the `usacloud database list-parameters` command",
 			},
+			"disk":             common.SchemaResourceEncryptionDisk("Database"),
+			"monitoring_suite": common.SchemaResourceMonitoringSuite("Database"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -205,7 +239,7 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout60min)
 	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
@@ -240,7 +274,11 @@ func (r *databaseResource) Read(ctx context.Context, req resource.ReadRequest, r
 		return
 	}
 
-	zone := state.Zone.ValueString()
+	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
 	dbID := common.ExpandSakuraCloudID(state.ID)
 	db := getDatabase(ctx, r.client, dbID, zone, &resp.State, &resp.Diagnostics)
 	if db == nil {
@@ -264,7 +302,7 @@ func (r *databaseResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout60min)
 	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
@@ -302,6 +340,9 @@ func (r *databaseResource) Delete(ctx context.Context, req resource.DeleteReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout20min)
+	defer cancel()
 
 	zone := state.Zone.ValueString()
 	dbOp := iaas.NewDatabaseOp(r.client)
@@ -370,8 +411,11 @@ func expandDatabaseBuilder(model *databaseResourceModel, client *common.APIClien
 		IconID:             common.ExpandSakuraCloudID(model.IconID),
 		Client:             databaseBuilder.NewAPIClient(client),
 		BackupSetting:      expandDatabaseBackupSetting(model),
+		Backupv2Setting:    expandDatabaseContinuousBackup(model),
 		Parameters:         expandParameters(model.Parameters),
 		ReplicationSetting: &iaas.DatabaseReplicationSetting{},
+		Disk:               expandDatabaseDisk(model.Disk),
+		MonitoringSuite:    common.ExpandMonitoringSuite(model.MonitoringSuite),
 	}
 	if replicaUser != "" && replicaPassword != "" {
 		req.ReplicationSetting = &iaas.DatabaseReplicationSetting{
@@ -410,13 +454,40 @@ func expandDatabaseBackupSetting(model *databaseResourceModel) *iaas.DatabaseSet
 	}
 
 	backupTime := backup.Time.ValueString()
-	backupWeekdays := common.ExpandBackupWeekdays(backup.Weekdays)
-	if backupTime != "" && len(backupWeekdays) > 0 {
-		return &iaas.DatabaseSettingBackup{
-			Time:      backupTime,
-			DayOfWeek: backupWeekdays,
-		}
+	backupDaysOfWeek := common.ExpandBackupWeekdays(backup.DaysOfWeek)
+	return &iaas.DatabaseSettingBackup{
+		Time:      backupTime,
+		DayOfWeek: backupDaysOfWeek,
+		Rotate:    8,
+	}
+}
+
+func expandDatabaseContinuousBackup(model *databaseResourceModel) *iaas.DatabaseSettingBackupv2 {
+	if model.ContinuousBackup == nil {
+		return nil
 	}
 
-	return nil
+	return &iaas.DatabaseSettingBackupv2{
+		Time:      model.ContinuousBackup.Time.ValueString(),
+		DayOfWeek: common.ExpandBackupWeekdays(model.ContinuousBackup.DaysOfWeek),
+		Connect:   model.ContinuousBackup.Connect.ValueString(),
+		Rotate:    8,
+	}
+}
+
+func expandDatabaseDisk(disk types.Object) *iaas.DatabaseDisk {
+	if disk.IsNull() || disk.IsUnknown() {
+		return nil
+	}
+
+	var diskModel common.SakuraEncryptionDiskModel
+	diags := disk.As(context.Background(), &diskModel, basetypes.ObjectAsOptions{})
+	if diags.HasError() {
+		return nil
+	}
+
+	return &iaas.DatabaseDisk{
+		EncryptionAlgorithm: iaastypes.EDiskEncryptionAlgorithm(diskModel.EncryptionAlgorithm.ValueString()),
+		EncryptionKeyID:     iaastypes.StringID(diskModel.KMSKeyID.ValueString()),
+	}
 }

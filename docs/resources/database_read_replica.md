@@ -13,18 +13,28 @@ Manages a Database Appliance's read replica
 ## Example Usage
 
 ```terraform
+data "sakura_database" "master" {
+  name = "master-database-name"
+}
+
+resource "sakura_kms" "foobar" {
+  name = "foobar"
+}
+
 resource "sakura_database_read_replica" "foobar" {
   master_id   = data.sakura_database.master.id
   network_interface = {
-    ip_address  = "192.168.11.111"
+    ip_address = "192.168.11.111"
   }
+
+  disk = {
+    encryption_algorithm = "aes256_xts"
+    kms_key_id           = sakura_kms.foobar.id
+  }
+
   name        = "foobar"
   description = "description"
   tags        = ["tag1", "tag2"]
-}
-
-data "sakura_database" "master" {
-  name = "master-database-name"
 }
 ```
 
@@ -40,6 +50,7 @@ data "sakura_database" "master" {
 ### Optional
 
 - `description` (String) The description of the Database Read Replica. The length of this value must be in the range [`1`-`512`]
+- `disk` (Attributes) (see [below for nested schema](#nestedatt--disk))
 - `icon_id` (String) The icon id to attach to the Database Read Replica
 - `tags` (Set of String) The tags of the Database Read Replica.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
@@ -66,6 +77,15 @@ Optional:
 Read-Only:
 
 - `port` (Number) Placeholder for same code. Always 0
+
+
+<a id="nestedatt--disk"></a>
+### Nested Schema for `disk`
+
+Optional:
+
+- `encryption_algorithm` (String) The disk encryption algorithm. This must be one of [`none`/`aes256_xts`]
+- `kms_key_id` (String) ID of the KMS key for encryption
 
 
 <a id="nestedatt--timeouts"></a>

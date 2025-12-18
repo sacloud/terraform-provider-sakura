@@ -19,7 +19,7 @@ variable replica_password {}
 
 resource "sakura_database" "foobar" {
   database_type    = "mariadb"
-  # database_version = "13" // optional
+  database_version = "10.11" // optional
   plan             = "30g"
 
   username = var.username
@@ -37,12 +37,28 @@ resource "sakura_database" "foobar" {
   }
 
   backup = {
-    time     = "00:00"
-    weekdays = ["mon", "tue"]
+    days_of_week = ["mon", "tue"]
+    time         = "00:00"
   }
+
+  # continuous_backupを指定するときはdatabase_versionが必須
+  # continuous_backup = {
+  #   days_of_week = ["mon", "tue"]
+  #   time         = "01:30"
+  #   connect      = "nfs://${sakura_nfs.foobar.network_interface.ip_address}/export"
+  # }
 
   parameters = {
     max_connections = 100
+  }
+
+  monitoring_suite = {
+    enabled = true
+  }
+
+  disk = {
+    encryption_algorithm = "aes256_xts"
+    kms_key_id           = sakura_kms.foobar.id
   }
 
   name        = "foobar"
@@ -51,6 +67,23 @@ resource "sakura_database" "foobar" {
 }
 
 resource "sakura_vswitch" "foobar" {
+  name = "foobar"
+}
+
+resource "sakura_nfs" "foobar" {
+  name = "foobar"
+  plan = "ssd"
+  size = "100"
+
+  network_interface = {
+    vswitch_id = sakura_vswitch.foobar.id
+    ip_address = "192.168.11.111"
+    netmask    = 24
+    gateway    = "192.168.11.1"
+  }
+}
+
+resource "sakura_kms" "foobar" {
   name = "foobar"
 }
 ```
@@ -68,10 +101,13 @@ resource "sakura_vswitch" "foobar" {
 ### Optional
 
 - `backup` (Attributes) (see [below for nested schema](#nestedatt--backup))
+- `continuous_backup` (Attributes) (see [below for nested schema](#nestedatt--continuous_backup))
 - `database_type` (String) The type of the database. This must be one of [`mariadb`/`postgres`]
 - `database_version` (String) The version of the database
 - `description` (String) The description of the Database. The length of this value must be in the range [`1`-`512`]
+- `disk` (Attributes) (see [below for nested schema](#nestedatt--disk))
 - `icon_id` (String) The icon id to attach to the Database
+- `monitoring_suite` (Attributes) The monitoring suite settings of the Database. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `parameters` (Map of String) The map for setting RDBMS-specific parameters. Valid keys can be found with the `usacloud database list-parameters` command
 - `plan` (String) The plan name of the Database. This must be one of [`10g`/`30g`/`90g`/`240g`/`500g`/`1t`]
 - `replica_password` (String, Sensitive) The password of user that processing a replication
@@ -103,10 +139,37 @@ Optional:
 <a id="nestedatt--backup"></a>
 ### Nested Schema for `backup`
 
+Required:
+
+- `days_of_week` (Set of String) A list of days of week to backed up. The values in the list must be in [`sun`/`mon`/`tue`/`wed`/`thu`/`fri`/`sat`]
+- `time` (String) The time to take backup. This must be formatted with `HH:mm`
+
+
+<a id="nestedatt--continuous_backup"></a>
+### Nested Schema for `continuous_backup`
+
+Required:
+
+- `connect` (String) NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`)
+- `days_of_week` (Set of String) A list of days of week to backed up. The values in the list must be in [`sun`/`mon`/`tue`/`wed`/`thu`/`fri`/`sat`]
+- `time` (String) The time to take backup. This must be formatted with `HH:mm`
+
+
+<a id="nestedatt--disk"></a>
+### Nested Schema for `disk`
+
 Optional:
 
-- `time` (String) The time to take backup. This must be formatted with `HH:mm`
-- `weekdays` (Set of String) A list of weekdays to backed up. The values in the list must be in [`sun`/`mon`/`tue`/`wed`/`thu`/`fri`/`sat`]
+- `encryption_algorithm` (String) The disk encryption algorithm. This must be one of [`none`/`aes256_xts`]
+- `kms_key_id` (String) ID of the KMS key for encryption
+
+
+<a id="nestedatt--monitoring_suite"></a>
+### Nested Schema for `monitoring_suite`
+
+Optional:
+
+- `enabled` (Boolean) Enable sending signals to Monitoring Suite
 
 
 <a id="nestedatt--timeouts"></a>

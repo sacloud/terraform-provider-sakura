@@ -104,14 +104,32 @@ func (d *databaseDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Computed:    true,
 				Description: "Backup settings (simplified)",
 				Attributes: map[string]schema.Attribute{
-					"weekdays": schema.SetAttribute{
+					"days_of_week": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
-						Description: desc.Sprintf("The list of name of weekday that doing backup. This will be in [%s]", iaastypes.DaysOfTheWeekStrings),
+						Description: desc.Sprintf("The list of name of days of week that doing backup. This will be in [%s]", iaastypes.DaysOfTheWeekStrings),
 					},
 					"time": schema.StringAttribute{
 						Computed:    true,
 						Description: "The time to take backup. This will be formatted with `HH:mm`",
+					},
+				},
+			},
+			"continuous_backup": schema.SingleNestedAttribute{
+				Computed: true,
+				Attributes: map[string]schema.Attribute{
+					"days_of_week": schema.SetAttribute{
+						ElementType: types.StringType,
+						Computed:    true,
+						Description: desc.Sprintf("A list of days of week to backed up. The values in the list must be in [%s]", iaastypes.DaysOfTheWeekStrings),
+					},
+					"time": schema.StringAttribute{
+						Computed:    true,
+						Description: "The time to take backup. This must be formatted with `HH:mm`",
+					},
+					"connect": schema.StringAttribute{
+						Computed:    true,
+						Description: "NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`)",
 					},
 				},
 			},
@@ -120,6 +138,8 @@ func (d *databaseDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Computed:    true,
 				Description: "The map for setting RDBMS-specific parameters. Valid keys can be found with the `usacloud database list-parameters` command",
 			},
+			"disk":             common.SchemaDataSourceEncryptionDisk("Database"),
+			"monitoring_suite": common.SchemaDataSourceMonitoringSuite("Database"),
 		},
 		MarkdownDescription: "Get information about an existing Database Appliance.",
 	}

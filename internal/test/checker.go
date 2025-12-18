@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/types"
+	"github.com/sacloud/kms-api-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -37,6 +38,46 @@ func CheckSakuraDataSourceNotExists(n string) resource.TestCheckFunc {
 		}
 		return nil
 	}
+}
+
+func CheckSakuraKMSDestroy(s *terraform.State) error {
+	keyOp := kms.NewKeyOp(AccClientGetter().KmsClient)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "sakura_kms" {
+			continue
+		}
+		if rs.Primary.ID == "" {
+			continue
+		}
+
+		_, err := keyOp.Read(context.Background(), rs.Primary.ID)
+		if err == nil {
+			return fmt.Errorf("still exists KMS: %s", rs.Primary.ID)
+		}
+	}
+	return nil
+}
+
+func CheckSakuraNFSDestroy(s *terraform.State) error {
+	nfsOp := iaas.NewNFSOp(AccClientGetter())
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "sakura_nfs" {
+			continue
+		}
+		if rs.Primary.ID == "" {
+			continue
+		}
+
+		zone := rs.Primary.Attributes["zone"]
+		_, err := nfsOp.Read(context.Background(), zone, common.SakuraCloudID(rs.Primary.ID))
+		if err == nil {
+			return fmt.Errorf("still exists NFS: %s", rs.Primary.ID)
+		}
+	}
+
+	return nil
 }
 
 func CheckSakuravSwitchDestroy(s *terraform.State) error {
