@@ -26,7 +26,7 @@ data "sakura_archive" "foobar" {
 - `id` (String) The ID of the Archive.
 - `name` (String) The name of the Archive.
 - `os_type` (String) The criteria used to filter SakuraCloud archives. This must be one of following: 
-`almalinux`/`almalinux10`/`almalinux9`/`rockylinux`/`rockylinux10`/`rockylinux9`/`miracle`/`miraclelinux`/`miracle8`/`miraclelinux8`/`miracle9`/`miraclelinux9`/`ubuntu`/`ubuntu2404`/`ubuntu2204`/`debian`/`debian11`/`debian12`/`kusanagi`
+`almalinux`/`almalinux10`/`almalinux9`/`almalinux8`/`rockylinux`/`rockylinux10`/`rockylinux9`/`rockylinux8`/`miracle`/`miraclelinux`/`miracle9`/`miraclelinux9`/`miracle8`/`miraclelinux8`/`ubuntu`/`ubuntu2404`/`ubuntu2204`/`debian`/`debian12`/`debian11`/`kusanagi`
 - `tags` (Set of String) The tags of the Archive.
 - `zone` (String) The name of zone that the Archive is in (e.g. `is1a`, `tk1a`)
 
