@@ -30,6 +30,7 @@ import (
 	archiveUtil "github.com/sacloud/iaas-service-go/archive/builder"
 
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
@@ -340,7 +341,7 @@ func expandArchiveBuilder(d *archiveResourceModel, zone string, client *common.A
 
 	sourceArchiveZone := d.SourceArchiveZone.ValueString()
 	if sourceArchiveZone != "" {
-		if err := common.StringInSlice(client.GetZones(), "source_archive_zone", sourceArchiveZone, false); err != nil {
+		if err := utils.StringInSlice(client.GetZones(), "source_archive_zone", sourceArchiveZone, false); err != nil {
 			return nil, nil, err
 		}
 		if zone == sourceArchiveZone {

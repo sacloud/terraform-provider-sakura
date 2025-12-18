@@ -23,6 +23,7 @@ import (
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/plans"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 func SakuraCloudID(id string) iaastypes.ID {
@@ -77,7 +78,7 @@ func GetZone(zone basetypes.StringValue, client *APIClient, diags *diag.Diagnost
 	}
 
 	z := zone.ValueString()
-	if err := StringInSlice(client.zones, "zone", z, false); err != nil {
+	if err := utils.StringInSlice(client.zones, "zone", z, false); err != nil {
 		diags.AddError("Get zone error", err.Error())
 		return ""
 	}
@@ -196,19 +197,6 @@ func MapTo[S any, T any](s []S, cast func(S) T) []T {
 		t = append(t, cast(v))
 	}
 	return t
-}
-
-func StringInSlice(validList []string, k string, v string, ignoreCase bool) error {
-	for _, valid := range validList {
-		if v == valid {
-			return nil
-		}
-		if ignoreCase && strings.EqualFold(v, valid) {
-			return nil
-		}
-	}
-
-	return fmt.Errorf("invalid %s value: %s. valid values are %s", k, v, validList)
 }
 
 func MustAtoI(target string) int {

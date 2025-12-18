@@ -10,6 +10,7 @@ import (
 	"github.com/sacloud/cloudhsm-api-go"
 	v1 "github.com/sacloud/cloudhsm-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	dschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -28,7 +29,7 @@ var (
 
 func getZone(zone types.String, client *common.APIClient, diags *diag.Diagnostics) string {
 	z := common.GetZone(zone, client, diags)
-	if err := common.StringInSlice(supportedZones, "zone", z, false); err != nil {
+	if err := utils.StringInSlice(supportedZones, "zone", z, false); err != nil {
 		diags.AddWarning("Zone Validation Warning", fmt.Sprintf("Default zone is not valid with CloudHSM. Use is1b instead: err = %s", err))
 		z = defaultZone
 	}
