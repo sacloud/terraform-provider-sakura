@@ -6,6 +6,7 @@ package object_storage
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -78,7 +79,16 @@ func (r *objectStorageBucketResource) Schema(ctx context.Context, _ resource.Sch
 }
 
 func (r *objectStorageBucketResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	parts := strings.SplitN(req.ID, "_", 2)
+
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError("Import Error",
+			fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {site_id}_{name}: %s", req.ID))
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("site_id"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), parts[1])...)
 }
 
 func (r *objectStorageBucketResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -91,14 +101,15 @@ func (r *objectStorageBucketResource) Create(ctx context.Context, req resource.C
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
+	siteId := plan.SiteID.ValueString()
 	bucketAPI := objectstorage.NewBucketOp(r.client)
-	bucket, err := bucketAPI.Create(ctx, plan.SiteID.ValueString(), plan.Name.ValueString())
+	bucket, err := bucketAPI.Create(ctx, siteId, plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create Object Storage Bucket: %s", err.Error()))
 		return
 	}
 
-	plan.ID = types.StringValue(bucket.Name)
+	plan.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, bucket.Name))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -109,7 +120,13 @@ func (r *objectStorageBucketResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
+	name := state.Name.ValueString()
+	siteId := state.SiteID.ValueString()
+
 	// 将来的にはBucketの情報をAPIから取得して状態に反映
+	state.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, name))
+	state.Name = types.StringValue(name)
+	state.SiteID = types.StringValue(siteId)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
