@@ -27,6 +27,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/sacloud/iaas-api-go"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/nosql-api-go"
 	v1 "github.com/sacloud/nosql-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -148,7 +149,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 								Computed:    true,
 								Description: "Time for backup execution",
 								Validators: []validator.String{
-									stringvalidator.RegexMatches(regexp.MustCompile(`^(([0-1][0-9]|2[0-3]):(00|15|30|45))$`), "invalid time format (HH:MM)"),
+									sacloudvalidator.BackupTimeValidator(),
 								},
 							},
 							"rotate": schema.Int32Attribute{
@@ -182,7 +183,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 										Required:    true,
 										Description: "Time for incremental repair execution",
 										Validators: []validator.String{
-											stringvalidator.RegexMatches(regexp.MustCompile(`^(([0-1][0-9]|2[0-3]):(00|15|30|45))$`), "invalid time format (HH:MM)"),
+											sacloudvalidator.BackupTimeValidator(),
 										},
 									},
 								},
@@ -210,7 +211,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 										Required:    true,
 										Description: "Time for full repair execution",
 										Validators: []validator.String{
-											stringvalidator.RegexMatches(regexp.MustCompile(`^(([0-1][0-9]|2[0-3]):(00|15|30|45))$`), "invalid time format (HH:MM)"),
+											sacloudvalidator.BackupTimeValidator(),
 										},
 									},
 								},
@@ -368,28 +369,24 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 					},
 				},
 			},
-			"disk": schema.SingleNestedAttribute{
-				Optional:    true,
-				Computed:    true,
-				Description: "Disk encryption information",
-				Attributes: map[string]schema.Attribute{
-					"encryption_key": schema.SingleNestedAttribute{
-						Optional:    true,
-						Computed:    true,
-						Description: "Encryption key setting. Specify KMS key ID.",
-						Attributes: map[string]schema.Attribute{
-							"kms_key_id": schema.StringAttribute{
-								Required:    true,
-								Description: "KMS key ID for Disk encryption",
-							},
+			/*
+				"disk": schema.SingleNestedAttribute{
+					Optional:    true,
+					Computed:    true,
+					Description: "Disk encryption information",
+					Attributes: map[string]schema.Attribute{
+						"kms_key_id": schema.StringAttribute{
+							Required:    true,
+							Description: "KMS key ID for Disk encryption",
+						},
+						"encryption_algorithm": schema.StringAttribute{
+							Required:    true,
+							Description: "Encryption algorithm for Disk encryption",
 						},
 					},
-					"encryption_algorithm": schema.StringAttribute{
-						Required:    true,
-						Description: "Encryption algorithm for Disk encryption",
-					},
 				},
-			},
+			*/
+			"disk": common.SchemaResourceEncryptionDisk("NoSQL appliance"),
 			"interfaces": schema.ListNestedAttribute{
 				Computed:    true,
 				Description: "Network interfaces",
@@ -559,7 +556,7 @@ func (r *nosqlResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	sid := plan.ID.ValueString()
 	dbOp := nosql.NewDatabaseOp(r.client)
 
-	if err := dbOp.Update(ctx, sid, *expandNosqlUpdateRequest(&plan, &state, sid)); err != nil {
+	if err := dbOp.Update(ctx, sid, *expandNosqlUpdateRequest(&plan, sid)); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update NoSQL[%s]: %s", sid, err))
 		return
 	}
@@ -722,13 +719,15 @@ func expandNosqlCreateRequest(model *nosqlResourceModel) *v1.NosqlCreateRequestA
 	}
 
 	if !model.Disk.IsNull() && !model.Disk.IsUnknown() {
-		var disk nosqlDiskModel
+		var disk common.SakuraEncryptionDiskModel
 		_ = model.Disk.As(context.Background(), &disk, basetypes.ObjectAsOptions{})
-		appliance.Disk = v1.NewOptNilNosqlCreateRequestApplianceDisk(v1.NosqlCreateRequestApplianceDisk{
-			EncryptionAlgorithm: v1.NewOptString(disk.EncryptionAlgorithm.ValueString()),
-			EncryptionKey: v1.NewOptNilNosqlCreateRequestApplianceDiskEncryptionKey(
-				v1.NosqlCreateRequestApplianceDiskEncryptionKey{KMSKeyID: v1.NewOptNilString(disk.EncryptionKey.KMSKeyID.ValueString())}),
-		})
+		if disk.EncryptionAlgorithm.ValueString() != iaastypes.DiskEncryptionAlgorithms.None.String() {
+			appliance.Disk = v1.NewOptNilNosqlCreateRequestApplianceDisk(v1.NosqlCreateRequestApplianceDisk{
+				EncryptionAlgorithm: v1.NewOptString(disk.EncryptionAlgorithm.ValueString()),
+				EncryptionKey: v1.NewOptNilNosqlCreateRequestApplianceDiskEncryptionKey(
+					v1.NosqlCreateRequestApplianceDiskEncryptionKey{KMSKeyID: v1.NewOptNilString(disk.KMSKeyID.ValueString())}),
+			})
+		}
 	}
 
 	return appliance
@@ -757,7 +756,7 @@ func setupServers(model *nosqlResourceModel, req *v1.NosqlCreateRequestAppliance
 	}
 }
 
-func expandNosqlUpdateRequest(plan, state *nosqlResourceModel, id string) *v1.NosqlUpdateRequestAppliance {
+func expandNosqlUpdateRequest(plan *nosqlResourceModel, id string) *v1.NosqlUpdateRequestAppliance {
 	appliance := &v1.NosqlUpdateRequestAppliance{
 		ID:          id,
 		Name:        v1.NewOptString(plan.Name.ValueString()),

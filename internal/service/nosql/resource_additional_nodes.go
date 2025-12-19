@@ -7,13 +7,9 @@ import (
 	"context"
 	"fmt"
 	"net/netip"
-	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
-	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -145,16 +141,10 @@ func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.Sc
 										ElementType: types.StringType,
 										Computed:    true,
 										Description: "Repair schedule",
-										Validators: []validator.Set{
-											setvalidator.ValueStringsAre(stringvalidator.OneOf(toStrs(v1.GetNosqlSettingsRepairIncrementalDaysOfWeekItemSun.AllValues())...)),
-										},
 									},
 									"time": schema.StringAttribute{
 										Computed:    true,
 										Description: "Time for incremental repair execution",
-										Validators: []validator.String{
-											stringvalidator.RegexMatches(regexp.MustCompile(`^(([0-1][0-9]|2[0-3]):(00|15|30|45))$`), "invalid time format (HH:MM)"),
-										},
 									},
 								},
 							},
@@ -165,23 +155,14 @@ func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.Sc
 									"interval": schema.Int32Attribute{
 										Computed:    true,
 										Description: "Execution interval of 7 days. Supported values are 7 / 14 / 21 / 28",
-										Validators: []validator.Int32{
-											int32validator.OneOf(7, 14, 21, 28),
-										},
 									},
 									"day_of_week": schema.StringAttribute{
 										Computed:    true,
 										Description: "Repair schedule",
-										Validators: []validator.String{
-											stringvalidator.OneOf(toStrs(v1.GetNosqlSettingsRepairFullDayOfWeekSun.AllValues())...),
-										},
 									},
 									"time": schema.StringAttribute{
 										Computed:    true,
 										Description: "Time for full repair execution",
-										Validators: []validator.String{
-											stringvalidator.RegexMatches(regexp.MustCompile(`^(([0-1][0-9]|2[0-3]):(00|15|30|45))$`), "invalid time format (HH:MM)"),
-										},
 									},
 								},
 							},
@@ -328,15 +309,9 @@ func (d *nosqlAdditionalNodesResource) Schema(ctx context.Context, _ resource.Sc
 				Computed:    true,
 				Description: "Disk encryption information",
 				Attributes: map[string]schema.Attribute{
-					"encryption_key": schema.SingleNestedAttribute{
+					"kms_key_id": schema.StringAttribute{
 						Computed:    true,
-						Description: "Encryption key setting. Specify KMS key ID.",
-						Attributes: map[string]schema.Attribute{
-							"kms_key_id": schema.StringAttribute{
-								Required:    true,
-								Description: "KMS key ID for Disk encryption",
-							},
-						},
+						Description: "KMS key ID for Disk encryption",
 					},
 					"encryption_algorithm": schema.StringAttribute{
 						Computed:    true,

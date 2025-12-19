@@ -33,6 +33,10 @@ func waitNosqlReady(ctx context.Context, client *v1.Client, id string) error {
 				time.Sleep(10 * time.Second)
 				continue
 			}
+			if res.Availability.Value == "failed" {
+				return fmt.Errorf("NoSQL[%s] becomes failed status during ready check", id)
+			}
+
 			health, err := nosql.NewInstanceOp(client, res.ID.Value, res.Remark.Value.Nosql.Value.Zone.Value).GetNodeHealth(ctx)
 			if err != nil {
 				errCount += 1
@@ -55,7 +59,7 @@ func waitNosqlDown(ctx context.Context, client *v1.Client, id string) error {
 	dbOp := nosql.NewDatabaseOp(client)
 	errCount := 0
 
-	waitCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
+	waitCtx, cancel := context.WithTimeout(ctx, 15*time.Minute)
 	defer cancel()
 
 	for {
@@ -84,7 +88,7 @@ func waitNosqlProcessingDone(ctx context.Context, client *v1.Client, id string, 
 	dbOp := nosql.NewDatabaseOp(client)
 	errCount := 0
 
-	waitCtx, cancel := context.WithTimeout(ctx, 20*time.Minute)
+	waitCtx, cancel := context.WithTimeout(ctx, 30*time.Minute)
 	defer cancel()
 
 	for {
@@ -100,7 +104,21 @@ func waitNosqlProcessingDone(ctx context.Context, client *v1.Client, id string, 
 				}
 				time.Sleep(10 * time.Second)
 			} else {
-				// TODO: Add more status check by using AddNodes's availability field
+				if len(res.AddNodes) > 0 {
+					for _, node := range res.AddNodes {
+						if node.Appliance.ID != id {
+							continue
+						}
+						if string(node.Appliance.Availability) == "failed" {
+							errCount += 1
+							if errCount > 5 {
+								return fmt.Errorf("node become failed status in %s processing: id = %s, %w", jobType, node.Appliance.ID, err)
+							}
+							time.Sleep(10 * time.Second)
+						}
+					}
+				}
+
 				for _, job := range res.Jobs {
 					if job.JobType.Value == jobType {
 						if job.JobStatus.Value == "Done" {

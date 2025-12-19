@@ -60,6 +60,12 @@ resource "sakura_nosql" "foobar" {
       netmask = 24
     }
   }
+  /* sakura_kms based disk encryption
+  disk = {
+    encryption_algorithm = "aes256_xts"
+    kms_key_id           = data.sakura_kms.foobar.id
+  }
+   */
   parameters = {
     concurrent_writes = "16"
     cas_contention_timeout = "2000ms"
@@ -111,7 +117,7 @@ resource "sakura_nosql" "foobar40GB" {
 ### Optional
 
 - `description` (String) The description of the NoSQL appliance. The length of this value must be in the range [`1`-`512`]
-- `disk` (Attributes) Disk encryption information (see [below for nested schema](#nestedatt--disk))
+- `disk` (Attributes) (see [below for nested schema](#nestedatt--disk))
 - `parameters` (Map of String) Parameters for the NoSQL appliance
 - `plan` (String) The plan name of the NoSQL appliance. This must be one of [`40GB`/`100GB`/`250GB`]
 - `tags` (Set of String) The tags of the NoSQL appliance.
@@ -238,21 +244,10 @@ Required:
 <a id="nestedatt--disk"></a>
 ### Nested Schema for `disk`
 
-Required:
-
-- `encryption_algorithm` (String) Encryption algorithm for Disk encryption
-
 Optional:
 
-- `encryption_key` (Attributes) Encryption key setting. Specify KMS key ID. (see [below for nested schema](#nestedatt--disk--encryption_key))
-
-<a id="nestedatt--disk--encryption_key"></a>
-### Nested Schema for `disk.encryption_key`
-
-Required:
-
-- `kms_key_id` (String) KMS key ID for Disk encryption
-
+- `encryption_algorithm` (String) The disk encryption algorithm. This must be one of [`none`/`aes256_xts`]
+- `kms_key_id` (String) ID of the KMS key for encryption
 
 
 <a id="nestedatt--timeouts"></a>

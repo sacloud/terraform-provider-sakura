@@ -253,15 +253,9 @@ func (d *nosqlDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 				Computed:    true,
 				Description: "Disk encryption information",
 				Attributes: map[string]schema.Attribute{
-					"encryption_key": schema.SingleNestedAttribute{
+					"kms_key_id": schema.StringAttribute{
 						Computed:    true,
-						Description: "Encryption key setting. Specify KMS key ID.",
-						Attributes: map[string]schema.Attribute{
-							"kms_key_id": schema.StringAttribute{
-								Computed:    true,
-								Description: "KMS key ID for disk encryption",
-							},
-						},
+						Description: "KMS key ID for disk encryption",
 					},
 					"encryption_algorithm": schema.StringAttribute{
 						Computed:    true,

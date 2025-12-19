@@ -190,15 +190,7 @@ Optional:
 Read-Only:
 
 - `encryption_algorithm` (String) Encryption algorithm for Disk encryption
-- `encryption_key` (Attributes) Encryption key setting. Specify KMS key ID. (see [below for nested schema](#nestedatt--disk--encryption_key))
-
-<a id="nestedatt--disk--encryption_key"></a>
-### Nested Schema for `disk.encryption_key`
-
-Required:
-
 - `kms_key_id` (String) KMS key ID for Disk encryption
-
 
 
 <a id="nestedatt--instance"></a>

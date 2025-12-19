@@ -176,28 +176,6 @@ func (m nosqlInstanceHostModel) AttributeTypes() map[string]attr.Type {
 	}
 }
 
-type nosqlDiskModel struct {
-	EncryptionKey       *nosqlDiskEncryptionKeyModel `tfsdk:"encryption_key"`
-	EncryptionAlgorithm types.String                 `tfsdk:"encryption_algorithm"`
-}
-
-func (m nosqlDiskModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"encryption_algorithm": types.StringType,
-		"encryption_key":       types.ObjectType{AttrTypes: nosqlDiskEncryptionKeyModel{}.AttributeTypes()},
-	}
-}
-
-type nosqlDiskEncryptionKeyModel struct {
-	KMSKeyID types.String `tfsdk:"kms_key_id"`
-}
-
-func (m nosqlDiskEncryptionKeyModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"kms_key_id": types.StringType,
-	}
-}
-
 type nosqlInterfaceModel struct {
 	IPAddress     types.String               `tfsdk:"ip_address"`
 	UserIPAddress types.String               `tfsdk:"user_ip_address"`
@@ -438,12 +416,10 @@ func flattenInstance(data *v1.GetNosqlAppliance) types.Object {
 }
 
 func flattenDisk(data *v1.GetNosqlAppliance) types.Object {
-	v := types.ObjectNull(nosqlDiskModel{}.AttributeTypes())
+	v := types.ObjectNull(common.SakuraEncryptionDiskModel{}.AttributeTypes())
 	if disk, ok := data.Disk.Get(); ok {
-		m := &nosqlDiskModel{
-			EncryptionKey: &nosqlDiskEncryptionKeyModel{
-				KMSKeyID: types.StringValue(disk.EncryptionKey.Value.KMSKeyID.Value),
-			},
+		m := &common.SakuraEncryptionDiskModel{
+			KMSKeyID:            types.StringValue(disk.EncryptionKey.Value.KMSKeyID.Value),
 			EncryptionAlgorithm: types.StringValue(disk.EncryptionAlgorithm.Value),
 		}
 		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)

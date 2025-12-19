@@ -45,6 +45,12 @@ resource "sakura_nosql" "foobar" {
       netmask = 24
     }
   }
+  /* sakura_kms based disk encryption
+  disk = {
+    encryption_algorithm = "aes256_xts"
+    kms_key_id           = data.sakura_kms.foobar.id
+  }
+   */
   parameters = {
     concurrent_writes = "16"
     cas_contention_timeout = "2000ms"
