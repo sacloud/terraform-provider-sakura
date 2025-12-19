@@ -9,8 +9,6 @@ import (
 	"log"
 	"net/http"
 	"os"
-	"reflect"
-	"sort"
 	"strings"
 	"time"
 
@@ -35,6 +33,7 @@ import (
 	nosqlapi "github.com/sacloud/nosql-api-go/apis/v1"
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
+	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
 )
 
@@ -108,9 +107,73 @@ func (c *APIClient) GetZones() []string {
 	return c.zones
 }
 
-func (c *Config) loadFromProfile() error {
+func (c *Config) FillWith(other *Config) {
+	if c.AccessToken == "" {
+		c.AccessToken = other.AccessToken
+	}
+	if c.AccessTokenSecret == "" {
+		c.AccessTokenSecret = other.AccessTokenSecret
+	}
+	if c.Zone == "" {
+		c.Zone = other.Zone
+	}
+	if c.DefaultZone == "" {
+		c.DefaultZone = other.DefaultZone
+	}
+	if len(c.Zones) == 0 {
+		c.Zones = other.Zones
+	}
+	if c.APIRootURL == "" {
+		c.APIRootURL = other.APIRootURL
+	}
+	if c.TraceMode == "" {
+		c.TraceMode = other.TraceMode
+	}
+	if c.AcceptLanguage == "" {
+		c.AcceptLanguage = other.AcceptLanguage
+	}
+	if c.RetryMax == 0 && other.RetryMax > 0 {
+		c.RetryMax = other.RetryMax
+	}
+	if c.RetryWaitMax == 0 {
+		c.RetryWaitMax = other.RetryWaitMax
+	}
+	if c.RetryWaitMin == 0 {
+		c.RetryWaitMin = other.RetryWaitMin
+	}
+	if c.APIRequestTimeout == 0 && other.APIRequestTimeout > 0 {
+		c.APIRequestTimeout = other.APIRequestTimeout
+	}
+	if c.APIRequestRateLimit == 0 && other.APIRequestRateLimit > 0 {
+		c.APIRequestRateLimit = other.APIRequestRateLimit
+	}
+}
+
+func (c *Config) FillWithDefault() {
+	if c.Zone == "" {
+		c.Zone = defaults.Zone
+	}
+	if len(c.Zones) == 0 {
+		c.Zones = iaas.SakuraCloudZones
+	}
+	if c.RetryMax == 0 {
+		c.RetryMax = defaults.RetryMax
+	}
+	if c.APIRequestTimeout == 0 {
+		c.APIRequestTimeout = defaults.APIRequestTimeout
+	}
+	if c.APIRequestRateLimit == 0 {
+		c.APIRequestRateLimit = defaults.APIRequestRateLimit
+	}
+}
+
+func (c *Config) LoadFromProfile() (*Config, error) {
 	if c.Profile == "" {
-		c.Profile = profile.DefaultProfileName
+		if name, err := profile.CurrentName(); err != nil {
+			c.Profile = profile.DefaultProfileName
+		} else {
+			c.Profile = name
+		}
 	}
 	if c.Profile != profile.DefaultProfileName {
 		log.Printf("[DEBUG] using profile %q", c.Profile)
@@ -118,50 +181,23 @@ func (c *Config) loadFromProfile() error {
 
 	pcv := &profile.ConfigValue{}
 	if err := profile.Load(c.Profile, pcv); err != nil {
-		return fmt.Errorf("loading profile %q is failed: %s", c.Profile, err)
+		return nil, fmt.Errorf("loading profile %q is failed: %s", c.Profile, err)
 	}
 
-	if c.AccessToken == "" {
-		c.AccessToken = pcv.AccessToken
-	}
-	if c.AccessTokenSecret == "" {
-		c.AccessTokenSecret = pcv.AccessTokenSecret
-	}
-	if (c.Zone == "" || c.Zone == Zone) && pcv.Zone != "" {
-		c.Zone = pcv.Zone
-	}
-
-	defaultZones := iaas.SakuraCloudZones
-	sort.Strings(c.Zones)
-	sort.Strings(defaultZones)
-	if (len(c.Zones) == 0 || reflect.DeepEqual(defaultZones, c.Zones)) && len(pcv.Zones) > 0 {
-		c.Zones = pcv.Zones
-	}
-	if c.TraceMode == "" {
-		c.TraceMode = pcv.TraceMode
-	}
-	if c.AcceptLanguage == "" {
-		c.AcceptLanguage = pcv.AcceptLanguage
-	}
-	if c.APIRootURL == "" {
-		c.APIRootURL = pcv.APIRootURL
-	}
-	if (c.RetryMax == 0 || c.RetryMax == RetryMax) && pcv.RetryMax > 0 {
-		c.RetryMax = pcv.RetryMax
-	}
-	if c.RetryWaitMax == 0 {
-		c.RetryWaitMax = pcv.RetryWaitMax
-	}
-	if c.RetryWaitMin == 0 {
-		c.RetryWaitMin = pcv.RetryWaitMin
-	}
-	if (c.APIRequestTimeout == 0 || c.APIRequestTimeout == APIRequestTimeout) && pcv.HTTPRequestTimeout > 0 {
-		c.APIRequestTimeout = pcv.HTTPRequestTimeout
-	}
-	if (c.APIRequestRateLimit == 0 || c.APIRequestRateLimit == APIRequestRateLimit) && pcv.HTTPRequestRateLimit > 0 {
-		c.APIRequestRateLimit = pcv.HTTPRequestRateLimit
-	}
-	return nil
+	return &Config{
+		AccessToken:         pcv.AccessToken,
+		AccessTokenSecret:   pcv.AccessTokenSecret,
+		Zone:                pcv.Zone,
+		Zones:               pcv.Zones,
+		TraceMode:           pcv.TraceMode,
+		AcceptLanguage:      pcv.AcceptLanguage,
+		APIRootURL:          pcv.APIRootURL,
+		RetryMax:            pcv.RetryMax,
+		RetryWaitMin:        pcv.RetryWaitMin,
+		RetryWaitMax:        pcv.RetryWaitMax,
+		APIRequestTimeout:   pcv.HTTPRequestTimeout,
+		APIRequestRateLimit: pcv.HTTPRequestRateLimit,
+	}, nil
 }
 
 func (c *Config) validate() error {
@@ -175,10 +211,15 @@ func (c *Config) validate() error {
 	return err
 }
 
-// NewClient returns new API Client for SakuraCloud
-func (c *Config) NewClient() (*APIClient, error) {
-	if err := c.loadFromProfile(); err != nil {
+func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
+	if profileConf, err := c.LoadFromProfile(); err != nil {
 		return nil, err
+	} else {
+		// 設定の優先度: tfファイル > 環境変数 > profile > プロバイダのデフォルト
+		// ref: https://docs.usacloud.jp/terraform/provider/#api
+		c.FillWith(envConf)
+		c.FillWith(profileConf)
+		c.FillWithDefault()
 	}
 	if err := c.validate(); err != nil {
 		return nil, err
