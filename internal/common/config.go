@@ -33,6 +33,7 @@ import (
 	nosqlapi "github.com/sacloud/nosql-api-go/apis/v1"
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
+	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
 )
 
@@ -148,6 +149,24 @@ func (c *Config) FillWith(other *Config) {
 	}
 }
 
+func (c *Config) FillWithDefault() {
+	if c.Zone == "" {
+		c.Zone = defaults.Zone
+	}
+	if len(c.Zones) == 0 {
+		c.Zones = iaas.SakuraCloudZones
+	}
+	if c.RetryMax == 0 {
+		c.RetryMax = defaults.RetryMax
+	}
+	if c.APIRequestTimeout == 0 {
+		c.APIRequestTimeout = defaults.APIRequestTimeout
+	}
+	if c.APIRequestRateLimit == 0 {
+		c.APIRequestRateLimit = defaults.APIRequestRateLimit
+	}
+}
+
 func (c *Config) LoadFromProfile() (*Config, error) {
 	if c.Profile == "" {
 		if name, err := profile.CurrentName(); err != nil {
@@ -193,11 +212,14 @@ func (c *Config) validate() error {
 }
 
 func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
-	if cfg, err := c.LoadFromProfile(); err != nil {
+	if profileConf, err := c.LoadFromProfile(); err != nil {
 		return nil, err
 	} else {
-		c.FillWith(cfg)
+		// 設定の優先度: tfファイル > 環境変数 > profile > プロバイダのデフォルト
+		// ref: https://docs.usacloud.jp/terraform/provider/#api
 		c.FillWith(envConf)
+		c.FillWith(profileConf)
+		c.FillWithDefault()
 	}
 	if err := c.validate(); err != nil {
 		return nil, err
