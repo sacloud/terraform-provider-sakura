@@ -126,11 +126,12 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Optional:    true,
 				Computed:    true,
 				Description: desc.Sprintf("The name of region that the Enhanced LB is in. This must be one of [%s]", iaastypes.ProxyLBRegionStrings),
+				Default:     stringdefault.StaticString(iaastypes.ProxyLBRegions.IS1.String()),
 				Validators: []validator.String{
 					stringvalidator.OneOf(iaastypes.ProxyLBRegionStrings...),
 				},
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"syslog": schema.SingleNestedAttribute{

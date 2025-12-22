@@ -11,7 +11,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraCloudDataSourceProxyLB_basic(t *testing.T) {
+func TestAccSakuraDataSourceEnhancedLB_basic(t *testing.T) {
 	test.SkipIfEnvIsNotSet(t, envEnhancedLBRealServerIP0, envEnhancedLBRealServerIP1)
 
 	resourceName := "data.sakura_enhanced_lb.foobar"
@@ -24,7 +24,8 @@ func TestAccSakuraCloudDataSourceProxyLB_basic(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceEnhancedLB_basic, rand, ip0, ip1),
+				Config:             test.BuildConfigWithArgs(testAccSakuraDataSourceEnhancedLB_basic, rand, ip0, ip1),
+				ExpectNonEmptyPlan: true,
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),

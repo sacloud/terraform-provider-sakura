@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	envEnhancedLBACMEDomain = "SAKURACLOUD_ENHANCED_LB_ACME_DOMAIN"
+	envEnhancedLBACMEDomain = "SAKURA_ENHANCED_LB_ACME_DOMAIN"
 )
 
 var elbDomain string

@@ -19,8 +19,8 @@ import (
 )
 
 const (
-	envEnhancedLBRealServerIP0 = "SAKURACLOUD_ENHANCED_LB_SERVER0"
-	envEnhancedLBRealServerIP1 = "SAKURACLOUD_ENHANCED_LB_SERVER1"
+	envEnhancedLBRealServerIP0 = "SAKURA_ENHANCED_LB_SERVER0"
+	envEnhancedLBRealServerIP1 = "SAKURA_ENHANCED_LB_SERVER1"
 )
 
 func TestAccSakuraEnhancedLB_basic(t *testing.T) {
@@ -388,11 +388,11 @@ resource "sakura_enhanced_lb" "foobar" {
     delay_loop = 20
   }
 
-  bind_port = {
+  bind_port = [{
     proxy_mode = "https"
     port       = 443
     ssl_policy = "TLS-1-3-2021-06"
-  }
+  }]
 
   server = [{
     ip_address = sakura_server.foobar.ip_address
@@ -438,10 +438,10 @@ resource "sakura_enhanced_lb" "foobar" {
     protocol   = "tcp"
     delay_loop = 20
   }
-  bind_port = {
+  bind_port = [{
     proxy_mode = "https"
     port       = 443
-  }
+  }]
   server = [{
     ip_address = "{{ .arg1 }}"
     port       = 80
