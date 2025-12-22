@@ -88,7 +88,6 @@ func (r *packetFilterResource) Create(ctx context.Context, req resource.CreateRe
 	pf, err := pfOp.Create(ctx, zone, &iaas.PacketFilterCreateRequest{
 		Name:        plan.Name.ValueString(),
 		Description: plan.Description.ValueString(),
-		//Expression:  expandPacketFilterExpressionsFromList(plan.Expressions),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud PacketFilter is failed: %s", err))

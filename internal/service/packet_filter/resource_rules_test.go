@@ -4,9 +4,11 @@
 package packet_filter_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
@@ -73,6 +75,56 @@ func TestAccSakuraPacketFilterRules_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "expression.3.destination_port", ""),
 					resource.TestCheckResourceAttr(resourceName, "expression.3.allow", "false"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccImportSakuraPacketFilterRules_basic(t *testing.T) {
+	rand := test.RandomName()
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"expression.0.protocol":         "tcp",
+			"expression.0.source_network":   "192.168.2.0",
+			"expression.0.source_port":      "80",
+			"expression.0.destination_port": "80",
+			"expression.0.allow":            "true",
+			"expression.0.description":      "description",
+			"expression.1.protocol":         "tcp",
+			"expression.1.source_network":   "192.168.2.0",
+			"expression.1.source_port":      "443",
+			"expression.1.destination_port": "443",
+			"expression.1.allow":            "true",
+			"expression.2.protocol":         "ip",
+			"expression.2.source_network":   "",
+			"expression.2.source_port":      "",
+			"expression.2.destination_port": "",
+			"expression.2.allow":            "false",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0], "packet_filter_id")
+	}
+
+	resourceName := "sakura_packet_filter_rules.rules"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraPacketFilterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraPacketFilterRules_basic, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateCheck:  checkFn,
+				ImportStateVerify: true,
 			},
 		},
 	})

@@ -97,6 +97,42 @@ func testCheckSakuraPacketFilterDestroy(s *terraform.State) error {
 	return nil
 }
 
+func TestAccImportSakuraPacketFilter_basic(t *testing.T) {
+	rand := test.RandomName()
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"name":        rand,
+			"description": "description",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0])
+	}
+
+	resourceName := "sakura_packet_filter.foobar"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraPacketFilterDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraPacketFilter_basic, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateCheck:  checkFn,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 var testAccSakuraPacketFilter_basic = `
 resource "sakura_packet_filter" "foobar" {
   name        = "{{ .arg0 }}"
