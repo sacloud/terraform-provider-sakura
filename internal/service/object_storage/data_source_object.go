@@ -48,97 +48,102 @@ type objectStorageObjectDataSourceModel struct {
 func (d *objectStorageObjectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaDataSourceId("ObjectStorage Object"),
+			"id": common.SchemaDataSourceId("Object Storage Object"),
+			"region": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The region of the Object Storage Site",
+			},
 			"endpoint": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The endpoint of the object storage site",
+				Description: "The endpoint of the Object Storage Site",
 			},
 			"access_key": schema.StringAttribute{
 				Required:    true,
 				Sensitive:   true,
-				Description: "The access key for the object storage site",
+				Description: "The access key for the Object Storage",
 			},
 			"secret_key": schema.StringAttribute{
 				Required:    true,
 				Sensitive:   true,
-				Description: "The secret key for the object storage site",
+				Description: "The secret key for the Object Storage",
 			},
 			"bucket": schema.StringAttribute{
 				Required:    true,
-				Description: "The name of the ObjectStorage Bucket",
+				Description: "The name of the Object Storage Bucket",
 			},
 			"key": schema.StringAttribute{
 				Required:    true,
-				Description: "The key of the ObjectStorage Object",
+				Description: "The key of the Object Storage Object",
 			},
 			"body": schema.StringAttribute{
 				Computed:    true,
-				Description: "The content of the ObjectStorage Object",
+				Description: "The content of the Object Storage Object",
 			},
 			"etag": schema.StringAttribute{
 				Computed:    true,
-				Description: "The ETag of the ObjectStorage Object",
+				Description: "The ETag of the Object Storage Object",
 			},
 			"size": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The content size of the ObjectStorage Object",
+				Description: "The content size of the Object Storage Object",
 			},
 			"acl": schema.StringAttribute{
 				Computed:    true,
-				Description: "The ACL of the ObjectStorage Object",
+				Description: "The ACL of the Object Storage Object",
 			},
 			"last_modified": schema.StringAttribute{
 				Computed:    true,
-				Description: "The last modified time of the ObjectStorage Object",
+				Description: "The last modified time of the Object Storage Object",
 			},
 			"expires": schema.StringAttribute{
 				Computed:    true,
-				Description: "The expiration time of the ObjectStorage Object cache",
+				Description: "The expiration time of the Object Storage Object cache",
 			},
 			"content_type": schema.StringAttribute{
 				Computed:    true,
-				Description: "The content type of the ObjectStorage Object",
+				Description: "The content type of the Object Storage Object",
 			},
 			"storage_class": schema.StringAttribute{
 				Computed:    true,
-				Description: "The storage class of the ObjectStorage Object",
+				Description: "The storage class of the Object Storage Object",
 			},
 			"metadata": schema.MapAttribute{
 				Computed:    true,
 				ElementType: types.ListType{ElemType: types.StringType},
-				Description: "A metadata of the ObjectStorage Object",
+				Description: "A metadata of the Object Storage Object",
 			},
 			"user_metadata": schema.MapAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
-				Description: "User-defined metadata for the ObjectStorage Object",
+				Description: "User-defined metadata for the Object Storage Object",
 			},
 			"user_tags": schema.MapAttribute{
 				Computed:    true,
 				ElementType: types.StringType,
-				Description: "User-defined tags for the ObjectStorage Object",
+				Description: "User-defined tags for the Object Storage Object",
 			},
 			"user_tag_count": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The number of user-defined tags for the ObjectStorage Object",
+				Description: "The number of user-defined tags for the Object Storage Object",
 			},
 			"version_id": schema.StringAttribute{
 				Computed:    true,
 				Optional:    true,
-				Description: "The version ID of the ObjectStorage Object",
+				Description: "The version ID of the Object Storage Object",
 			},
 			"num_versions": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The number of versions of the ObjectStorage Object",
+				Description: "The number of versions of the Object Storage Object",
 			},
 			"is_latest": schema.BoolAttribute{
 				Computed:    true,
-				Description: "Whether the ObjectStorage Object is the latest version",
+				Description: "Whether the Object Storage Object is the latest version",
 			},
 			"is_delete_marker": schema.BoolAttribute{
 				Computed:    true,
-				Description: "Whether the ObjectStorage Object is a delete marker",
+				Description: "Whether the Object Storage Object is a delete marker",
 			},
 		},
 		MarkdownDescription: "Get information about an existing Object Storage's Object\n\nThis data source needs object_storage_permission's access_key/secret_key for the S3-compatible API.",

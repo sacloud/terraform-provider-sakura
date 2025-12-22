@@ -34,6 +34,17 @@ func SchemaResourceEndpoint(name string) schema.Attribute {
 	}
 }
 
+func SchemaResourceRegion(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Optional:    true,
+		Computed:    true,
+		Description: desc.Sprintf("The region for the %s. Currently, only `jp-north-1` and `jp-east-1` are supported as the region.", name),
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.RequiresReplaceIfConfigured(),
+		},
+	}
+}
+
 func SchemaResourceAccessKey(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Required:    true,

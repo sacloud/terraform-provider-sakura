@@ -48,6 +48,7 @@ func (r *objectStorageBucketVersioningResource) Schema(ctx context.Context, _ re
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":         common.SchemaResourceId("ObjectStorage Bucket Versioning"),
+			"region":     SchemaResourceRegion("Object Storage Bucket Versioning"),
 			"endpoint":   SchemaResourceEndpoint("Object Storage Bucket Versioning"),
 			"access_key": SchemaResourceAccessKey("Object Storage Bucket Versioning"),
 			"secret_key": SchemaResourceSecretKey("Object Storage Bucket Versioning"),

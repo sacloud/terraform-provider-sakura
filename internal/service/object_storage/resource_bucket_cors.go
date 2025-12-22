@@ -52,6 +52,7 @@ func (r *objectStorageBucketCorsResource) Schema(ctx context.Context, _ resource
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":         common.SchemaResourceId("Object Storage Bucket CORS"),
+			"region":     SchemaResourceRegion("Object Storage Bucket CORS"),
 			"endpoint":   SchemaResourceEndpoint("Object Storage Bucket CORS"),
 			"access_key": SchemaResourceAccessKey("Object Storage Bucket CORS"),
 			"secret_key": SchemaResourceSecretKey("Object Storage Bucket CORS"),

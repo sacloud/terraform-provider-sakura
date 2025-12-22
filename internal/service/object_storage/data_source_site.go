@@ -45,6 +45,7 @@ type objectStorageSiteDataSourceModel struct {
 	ID           types.String                  `tfsdk:"id"`
 	DisplayName  types.String                  `tfsdk:"display_name"`
 	DisplayOrder types.Int32                   `tfsdk:"display_order"`
+	Region       types.String                  `tfsdk:"region"`
 	Endpoint     types.String                  `tfsdk:"endpoint"`
 	IamEndpoint  types.String                  `tfsdk:"iam_endpoint"`
 	S3Endpoint   types.String                  `tfsdk:"s3_endpoint"`
@@ -73,6 +74,10 @@ func (d *objectStorageSiteDataSource) Schema(_ context.Context, _ datasource.Sch
 			"display_order": schema.Int32Attribute{
 				Computed:    true,
 				Description: "The display order of the Object Storage Site.",
+			},
+			"region": schema.StringAttribute{
+				Computed:    true,
+				Description: "The region of the Object Storage Site.",
 			},
 			"endpoint": schema.StringAttribute{
 				Computed:    true,
@@ -165,6 +170,12 @@ func (d *objectStorageSiteDataSource) Read(ctx context.Context, req datasource.R
 		StartedAt: types.StringValue(status.StartedAt.String()),
 		Code:      types.Int64Value(int64(status.StatusCode.Id)),
 		Status:    types.StringValue(status.StatusCode.Status),
+	}
+	// After update object-storage-api-go, it will be set properly from API.
+	if site.Id == "isk01" {
+		data.Region = types.StringValue("jp-north-1")
+	} else {
+		data.Region = types.StringValue("jp-east-1")
 	}
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

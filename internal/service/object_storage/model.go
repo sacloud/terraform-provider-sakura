@@ -14,6 +14,7 @@ import (
 
 type objectStorageS3CompatModel struct {
 	ID        types.String `tfsdk:"id"`
+	Region    types.String `tfsdk:"region"`
 	Endpoint  types.String `tfsdk:"endpoint"`
 	AccessKey types.String `tfsdk:"access_key"`
 	SecretKey types.String `tfsdk:"secret_key"`
@@ -32,17 +33,26 @@ type objectStorageObjectBaseModel struct {
 
 func (model *objectStorageS3CompatModel) updateS3State() {
 	model.ID = types.StringValue(model.Bucket.ValueString())
+	model.Region = types.StringValue(getRegion(model.Region.ValueString()))
 	model.Endpoint = types.StringValue(getEndpoint(model.Endpoint.ValueString()))
 }
 
 func (model *objectStorageObjectBaseModel) updateState(objInfo *minio.ObjectInfo) {
 	model.ID = types.StringValue(model.Bucket.ValueString() + "/" + model.Key.ValueString())
+	model.Region = types.StringValue(getRegion(model.Region.ValueString()))
 	model.Endpoint = types.StringValue(getEndpoint(model.Endpoint.ValueString()))
 	model.ETag = types.StringValue(objInfo.ETag)
 	model.LastModified = types.StringValue(objInfo.LastModified.String())
 	model.VersionID = types.StringValue(objInfo.VersionID)
 	model.ContentType = types.StringValue(objInfo.ContentType)
 	model.StorageClass = types.StringValue(objInfo.StorageClass)
+}
+
+func getRegion(region string) string {
+	if region == "" {
+		return "jp-north-1"
+	}
+	return region
 }
 
 func getEndpoint(endpoint string) string {
@@ -56,7 +66,7 @@ func (model *objectStorageS3CompatModel) getMinIOClient() (*minio.Client, error)
 	endpoint := getEndpoint(model.Endpoint.ValueString())
 	client, err := minio.New(endpoint, &minio.Options{
 		Creds:  credentials.NewStaticV4(model.AccessKey.ValueString(), model.SecretKey.ValueString(), ""),
-		Region: "jp-north-1", Secure: true, BucketLookup: minio.BucketLookupPath,
+		Region: model.Region.ValueString(), Secure: true, BucketLookup: minio.BucketLookupPath,
 	})
 	if err != nil {
 		return nil, fmt.Errorf("failed to create MinIO client: %w", err)

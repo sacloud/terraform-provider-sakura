@@ -62,6 +62,7 @@ func (r *objectStorageObjectResource) Schema(ctx context.Context, _ resource.Sch
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":         common.SchemaResourceId("Object Storage Object"),
+			"region":     SchemaResourceRegion("Object Storage Object"),
 			"endpoint":   SchemaResourceEndpoint("Object Storage Object"),
 			"access_key": SchemaResourceAccessKey("Object Storage Object"),
 			"secret_key": SchemaResourceSecretKey("Object Storage Object"),
