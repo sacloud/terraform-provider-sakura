@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"net/netip"
 	"regexp"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -19,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -303,6 +305,9 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 							listvalidator.ValueStringsAre(sacloudvalidator.IPAddressValidator(sacloudvalidator.IPv4)),
 							listvalidator.SizeBetween(1, 3),
 						},
+						PlanModifiers: []planmodifier.List{
+							listplanmodifier.RequiresReplace(),
+						},
 					},
 					"network": schema.SingleNestedAttribute{
 						Required:    true,
@@ -369,23 +374,6 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 					},
 				},
 			},
-			/*
-				"disk": schema.SingleNestedAttribute{
-					Optional:    true,
-					Computed:    true,
-					Description: "Disk encryption information",
-					Attributes: map[string]schema.Attribute{
-						"kms_key_id": schema.StringAttribute{
-							Required:    true,
-							Description: "KMS key ID for Disk encryption",
-						},
-						"encryption_algorithm": schema.StringAttribute{
-							Required:    true,
-							Description: "Encryption algorithm for Disk encryption",
-						},
-					},
-				},
-			*/
 			"disk": common.SchemaResourceEncryptionDisk("NoSQL appliance"),
 			"interfaces": schema.ListNestedAttribute{
 				Computed:    true,
@@ -495,7 +483,7 @@ func (r *nosqlResource) Create(ctx context.Context, req resource.CreateRequest, 
 	dbOp := nosql.NewDatabaseOp(r.client)
 	res, err := dbOp.Create(ctx, nosql.Plan(plan.Plan.ValueString()), *expandNosqlCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create SakuraCloud NoSQL: %s", err))
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create NoSQL: %s", err))
 		return
 	}
 
@@ -507,14 +495,19 @@ func (r *nosqlResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	if len(plan.Parameters.Elements()) > 0 {
 		if err := updateParameters(ctx, r.client, id, plan.Zone.ValueString(), &plan); err != nil {
-			resp.Diagnostics.AddWarning("Create Warning", fmt.Sprintf("failed to update parameters for SakuraCloud NoSQL[%s]. Update via control panel: %s", id, err))
+			resp.Diagnostics.AddWarning("Create Warning", fmt.Sprintf("failed to update parameters for NoSQL[%s]. Update via control panel: %s", id, err))
 			return
+		} else {
+			if err := waitNosqlProcessingDone(ctx, r.client, id, "SetParameter"); err != nil {
+				resp.Diagnostics.AddError("Create Error", err.Error())
+				return
+			}
 		}
 	}
 
 	data, err := dbOp.Read(ctx, id)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to read SakuraCloud NoSQL[%s] for state update: %s", id, err))
+		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to read NoSQL[%s] for state update: %s", id, err))
 		return
 	}
 
@@ -523,6 +516,8 @@ func (r *nosqlResource) Create(ctx context.Context, req resource.CreateRequest, 
 		plan.Parameters = types.MapNull(types.StringType)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
+	time.Sleep(10 * time.Second)
 }
 
 func (r *nosqlResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -555,7 +550,6 @@ func (r *nosqlResource) Update(ctx context.Context, req resource.UpdateRequest, 
 
 	sid := plan.ID.ValueString()
 	dbOp := nosql.NewDatabaseOp(r.client)
-
 	if err := dbOp.Update(ctx, sid, *expandNosqlUpdateRequest(&plan, sid)); err != nil {
 		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update NoSQL[%s]: %s", sid, err))
 		return
@@ -592,6 +586,8 @@ func (r *nosqlResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		plan.Parameters = types.MapNull(types.StringType)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
+	time.Sleep(10 * time.Second)
 }
 
 func (r *nosqlResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
