@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 const defaultTTL = 3600
@@ -81,13 +82,13 @@ func flattenDNSRecord(record *iaas.DNSRecord) dnsRecordModel {
 		// ex. record.RData = "10 example.com."
 		values := strings.SplitN(record.RData, " ", 2)
 		r.Value = types.StringValue(values[1])
-		r.Priority = types.Int32Value(int32(common.MustAtoI(values[0])))
+		r.Priority = types.Int32Value(int32(utils.MustAtoI(values[0])))
 	case "SRV":
 		values := strings.SplitN(record.RData, " ", 4)
 		r.Value = types.StringValue(values[3])
-		r.Priority = types.Int32Value(int32(common.MustAtoI(values[0])))
-		r.Weight = types.Int32Value(int32(common.MustAtoI(values[1])))
-		r.Port = types.Int32Value(int32(common.MustAtoI(values[2])))
+		r.Priority = types.Int32Value(int32(utils.MustAtoI(values[0])))
+		r.Weight = types.Int32Value(int32(utils.MustAtoI(values[1])))
+		r.Port = types.Int32Value(int32(utils.MustAtoI(values[2])))
 	}
 
 	return r

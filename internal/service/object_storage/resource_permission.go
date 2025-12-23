@@ -18,6 +18,7 @@ import (
 	objectstorage "github.com/sacloud/object-storage-api-go"
 	v1 "github.com/sacloud/object-storage-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type objectStoragePermissionResource struct {
@@ -159,7 +160,7 @@ func (r *objectStoragePermissionResource) Read(ctx context.Context, req resource
 	}
 
 	permissionOp := objectstorage.NewPermissionOp(r.client)
-	permission, err := permissionOp.Read(ctx, state.SiteID.ValueString(), common.MustAtoInt64(state.ID.ValueString()))
+	permission, err := permissionOp.Read(ctx, state.SiteID.ValueString(), utils.MustAtoInt64(state.ID.ValueString()))
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Object Storage Permission: %s", err.Error()))
 		return
@@ -189,7 +190,7 @@ func (r *objectStoragePermissionResource) Update(ctx context.Context, req resour
 	defer cancel()
 
 	permissionOp := objectstorage.NewPermissionOp(r.client)
-	_, err := permissionOp.Update(ctx, plan.SiteID.ValueString(), common.MustAtoInt64(plan.ID.ValueString()), &v1.UpdatePermissionParams{
+	_, err := permissionOp.Update(ctx, plan.SiteID.ValueString(), utils.MustAtoInt64(plan.ID.ValueString()), &v1.UpdatePermissionParams{
 		BucketControls: getBucketControls(&plan),
 		DisplayName:    v1.DisplayName(plan.Name.ValueString()),
 	})
@@ -214,7 +215,7 @@ func (r *objectStoragePermissionResource) Delete(ctx context.Context, req resour
 	defer cancel()
 
 	permissionOp := objectstorage.NewPermissionOp(r.client)
-	if err := permissionOp.Delete(ctx, state.SiteID.ValueString(), common.MustAtoInt64(state.ID.ValueString())); err != nil {
+	if err := permissionOp.Delete(ctx, state.SiteID.ValueString(), utils.MustAtoInt64(state.ID.ValueString())); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Object Storage Permission: %s", err.Error()))
 		return
 	}

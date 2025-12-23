@@ -10,6 +10,7 @@ import (
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 func expandEnhancedLBCreateRequest(model *enhancedLBResourceModel) *iaas.ProxyLBCreateRequest {
@@ -194,8 +195,8 @@ func expandEnhancedLBRules(model *enhancedLBResourceModel) []*iaas.ProxyLBRule {
 				ServerGroup:                  rule.Group.ValueString(),
 				Action:                       types.EProxyLBRuleAction(rule.Action.ValueString()),
 				RedirectLocation:             rule.RedirectLocation.ValueString(),
-				RedirectStatusCode:           types.EProxyLBRedirectStatusCode(common.MustAtoI(rule.RedirectStatusCode.ValueString())),
-				FixedStatusCode:              types.EProxyLBFixedStatusCode(common.MustAtoI(rule.FixedStatusCode.ValueString())),
+				RedirectStatusCode:           types.EProxyLBRedirectStatusCode(utils.MustAtoI(rule.RedirectStatusCode.ValueString())),
+				FixedStatusCode:              types.EProxyLBFixedStatusCode(utils.MustAtoI(rule.FixedStatusCode.ValueString())),
 				FixedContentType:             types.EProxyLBFixedContentType(rule.FixedContentType.ValueString()),
 				FixedMessageBody:             rule.FixedMessageBody.ValueString(),
 			})

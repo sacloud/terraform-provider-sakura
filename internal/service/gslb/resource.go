@@ -24,6 +24,7 @@ import (
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
@@ -303,7 +304,7 @@ func expandGSLBHealthCheck(model *gslbResourceModel) *iaas.GSLBHealthCheck {
 			HostHeader:   model.HealthCheck.HostHeader.ValueString(),
 			Port:         iaastypes.StringNumber(int(model.HealthCheck.Port.ValueInt32())),
 			Path:         model.HealthCheck.Path.ValueString(),
-			ResponseCode: iaastypes.StringNumber(common.MustAtoI(model.HealthCheck.Status.ValueString())),
+			ResponseCode: iaastypes.StringNumber(utils.MustAtoI(model.HealthCheck.Status.ValueString())),
 		}
 	case "tcp":
 		return &iaas.GSLBHealthCheck{

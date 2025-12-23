@@ -13,7 +13,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -197,16 +196,6 @@ func MapTo[S any, T any](s []S, cast func(S) T) []T {
 		t = append(t, cast(v))
 	}
 	return t
-}
-
-func MustAtoI(target string) int {
-	v, _ := strconv.Atoi(target)
-	return v
-}
-
-func MustAtoInt64(target string) int64 {
-	v, _ := strconv.ParseInt(target, 10, 64)
-	return v
 }
 
 func ExpandHomeDir(path string) (string, error) {

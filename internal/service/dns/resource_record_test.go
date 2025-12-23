@@ -15,6 +15,7 @@ import (
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dns"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
@@ -149,7 +150,7 @@ func testCheckSakuraDNSRecordDestroy(s *terraform.State) error {
 					Name:  rs.Primary.Attributes["name"],
 					Type:  types.EDNSRecordType(rs.Primary.Attributes["type"]),
 					RData: rs.Primary.Attributes["value"],
-					TTL:   common.MustAtoI(rs.Primary.Attributes["ttl"]),
+					TTL:   utils.MustAtoI(rs.Primary.Attributes["ttl"]),
 				}
 
 				for _, r := range d.Records {

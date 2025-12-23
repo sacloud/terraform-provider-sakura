@@ -5,6 +5,7 @@ package utils
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -19,4 +20,14 @@ func StringInSlice(validList []string, k string, v string, ignoreCase bool) erro
 	}
 
 	return fmt.Errorf("invalid %s value: %s. valid values are %s", k, v, validList)
+}
+
+func MustAtoI(target string) int {
+	v, _ := strconv.Atoi(target)
+	return v
+}
+
+func MustAtoInt64(target string) int64 {
+	v, _ := strconv.ParseInt(target, 10, 64)
+	return v
 }
