@@ -1,14 +1,42 @@
 # Terraform Provider for さくらのクラウド v3
 
 さくら向けTerraform Providerの次期メジャーバージョンとなるv3のリポジトリです。
-レジストリ: https://registry.terraform.io/providers/sacloud/sakura
 
+レジストリ: https://registry.terraform.io/providers/sacloud/sakura
 
 v2: https://github.com/sacloud/terraform-provider-sakuracloud
 
 ## v3での変更点
 
 変更点は[CHANGES](CHANGES.md)を参照してください。
+
+設定例に関しては[examples](./examples/)にあるtfファイル群を参考にしてください。
+
+## TODO
+
+### v2からの移植
+
+v2からまだ移植できていないリソースのリストになります。これらを利用したい場合にはv2と併用してください。
+
+- archive_share
+- auto_backup
+- auto_scale
+- cdrom
+- certificate_authority
+- enhanced_db
+- esme
+- ipv4_ptr
+- load_balancer
+- mobile_gateway
+- sim
+- webaccel
+- webaccel_activation
+- webaccel_acl
+- webaccel_certificate
+
+### 新規サービス群の実装
+
+APIGW、IAM、セキュリティコントロール等のリソースの実装。
 
 ## 実装詳細 (開発者向け)
 

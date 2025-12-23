@@ -8,12 +8,16 @@ muxなどの互換レイヤーも使っておらず、完全移行となりま�
 ## 命名の変更
 
 - `sakuracloud_`プレフィックスは`sakura_`となります。環境変数などを設定することで過去のプレフィックスもサポートする予定です。
-- 必要なものはリソース名が適切なものに変更される可能性があります。以下は予定のものになり、他にも増える可能性があります
+- 必要なものはリソース名が適切なものに変更される可能性があります。以下は予定のものになり、他にも増える可能性があります。
   - `switch` -> `vswitch`
   - `vpc_router` -> `vpn_router`
   - `proxylb` -> `enhanced_lb`
   - `note` -> `script`
   - `internet` -> `???` (より良い名前を模索中)
+- フィールド名も適切なものに変更されています。
+  - `switch_id` -> `vswitch_id` (`local_router`リソースに関してはvswitch以外も対象となるためswitchのまま)
+  - `weekdays` -> `days_of_week`
+
 
 ## 使われてない機能の削除
 
@@ -45,7 +49,7 @@ data "sakura_xxx" "foobar" {
 
 ## 変更されたリソース
 
-Frameworkでは既存のBlock構文は非推奨になっており、Attribute構文を推奨しています。v3からは過去Block構文を利用していたフィールド群は書き換える必要があります。
+Frameworkではフィールドを指定するためにBlock構文を使用することは非推奨になっており、Attribute構文を推奨しています。v3からは過去Block構文を利用していたフィールド群は書き換える必要があります。
 
 ```
 # Attribute構文。リストやブロックでもこちらで書くのを推奨されている
@@ -161,12 +165,12 @@ timeouts = {
 - v3
 
 ```hcl
-  components =[{
+  components = [{
     name = "foobar"
     // ...
     deploy_source = {
       container_registry = {
-        image    = "foobar.sakuracr.jp/my-app:latest"
+        image = "foobar.sakuracr.jp/my-app:latest"
         // ...
       }
     }
@@ -212,24 +216,25 @@ timeouts = {
 - v2
 
 ```hcl
-  packet_filter = {
-    enabled = true
-    settings = [{
-      from_ip               = "192.0.2.0"
-      from_ip_prefix_length = "24"
-    }]
-  }
-```
-
-- v3
-
-```hcl
   packet_filter {
     enabled = true
     settings {
       from_ip               = "192.0.2.0"
       from_ip_prefix_length = "24"
     }
+  }
+```
+
+
+- v3
+
+```hcl
+  packet_filter = {
+    enabled = true
+    settings = [{
+      from_ip               = "192.0.2.0"
+      from_ip_prefix_length = "24"
+    }]
   }
 ```
 
@@ -272,6 +277,7 @@ user = [
 ### database
 
 `switch_id`フィールドは`vswitch_id`に変更されました。
+`weekdays`フィールドは`days_of_week`に変更されました。
 
 `network_interface`フィールドがBlockからSingle型Attributeに変更されたため、下記のように書き換える必要があります。
 
@@ -347,7 +353,7 @@ user = [
 
 ```hcl
 # dnsリソースでもレコードを設定可能だった
-resource "sakura_dns" "foobar" {
+resource "sakuracloud_dns" "foobar" {
   zone = "foobar.example.com"
   record = [{
     name  = "www"
@@ -356,7 +362,7 @@ resource "sakura_dns" "foobar" {
   }]
 }
 
-resource "sakura_dns_record" "record" {
+resource "sakuracloud_dns_record" "record" {
   dns_id = sakura_dns.foobar.id
   name  = "www"
   type  = "A"
@@ -635,7 +641,7 @@ network_interface = {
 - v2
 
 ```hcl
-resource "sakura_packet_filter" "foobar" {
+resource "sakuracloud_packet_filter" "foobar" {
   name        = "foobar"
   description = "description"
   expression {
