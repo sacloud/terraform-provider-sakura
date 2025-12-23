@@ -18,13 +18,13 @@ func TestAccSakuraObjectStorageObject_basic(t *testing.T) {
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy:             resource.ComposeTestCheckFunc(
-		//testCheckSakuraObjectStorageObjectDestroy,
+		// testCheckSakuraObjectStorageObjectDestroy,
 		),
 		Steps: []resource.TestStep{
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraObjectStorageObject_basic, rand),
 				Check: resource.ComposeTestCheckFunc(
-					//testCheckSakuraObjectStorageObjectExists(resourceName),
+					// testCheckSakuraObjectStorageObjectExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "key", rand+"-object"),
 					resource.TestCheckResourceAttr(resourceName, "content", "Hello"),
 					resource.TestCheckResourceAttr(resourceName, "content_type", "text/plain"),
@@ -33,7 +33,7 @@ func TestAccSakuraObjectStorageObject_basic(t *testing.T) {
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraObjectStorageObject_update, rand),
 				Check: resource.ComposeTestCheckFunc(
-					//testCheckSakuraObjectStorageObjectExists(resourceName),
+					// testCheckSakuraObjectStorageObjectExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "key", rand+"-object"),
 					resource.TestCheckResourceAttr(resourceName, "content", "Hello World"),
 					resource.TestCheckResourceAttr(resourceName, "content_type", "text/plain"),

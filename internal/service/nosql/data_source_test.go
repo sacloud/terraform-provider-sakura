@@ -12,7 +12,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-const envNosqlPassword = "SAKURA_NOSQL_PASSWORD"
+const envNosqlPassword = "SAKURA_NOSQL_PASSWORD" //nolint:gosec
 
 func TestAccSakuraDataSourceNosql_basic(t *testing.T) {
 	test.SkipIfEnvIsNotSet(t, envNosqlPassword)

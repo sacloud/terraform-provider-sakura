@@ -140,7 +140,7 @@ func TestAccSakuraDisk_with_Server(t *testing.T) {
 					resource.TestCheckResourceAttr(diskResourceName, "tags.0", "tag1-upd"),
 					resource.TestCheckResourceAttr(diskResourceName, "tags.1", "tag2-upd"),
 					test.CheckSakuraServerExists(serverResourceName, &server),
-					//test.CheckSakuraServerAttributes(&server), 状態が変わる影響かテストが失敗するようになるのでコメントアウト
+					// test.CheckSakuraServerAttributes(&server), 状態が変わる影響かテストが失敗するようになるのでコメントアウト
 					resource.TestCheckResourceAttr(serverResourceName, "name", rand+"-upd"),
 					resource.TestCheckResourceAttr(serverResourceName, "core", "2"),
 					resource.TestCheckResourceAttr(serverResourceName, "memory", "4"),

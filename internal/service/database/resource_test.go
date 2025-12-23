@@ -48,7 +48,7 @@ func TestAccSakuraDatabase_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "username", "defuser"),
 					resource.TestCheckResourceAttr(resourceName, "password", password),
 					resource.TestCheckResourceAttr(resourceName, "replica_password", password),
-					//resource.TestCheckResourceAttr(resourceName, "network_interface.#", "1"),
+					// resource.TestCheckResourceAttr(resourceName, "network_interface.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.ip_address", "192.168.110.101"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.netmask", "24"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.gateway", "192.168.110.1"),

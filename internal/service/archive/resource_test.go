@@ -217,7 +217,7 @@ func TestAccImportSakuraArchive_basic(t *testing.T) {
 		expects := map[string]string{
 			"name": rand,
 			"size": "20",
-			//"icon_id":      "",
+			// "icon_id":      "",
 			"archive_file": "",
 			"description":  "description",
 			"tags.0":       "tag1",
