@@ -45,6 +45,7 @@ resource "sakura_object_storage_object" "foobar" {
 - `content_language` (String) The content language of the Object Storage Object.
 - `content_type` (String) The content type of the Object Storage Object.
 - `endpoint` (String) The endpoint for the Object Storage Object. Currently, only `s3.isk01.sakurastorage.jp` is supported as the endpoint.
+- `region` (String) The region for the Object Storage Object. Currently, only `jp-north-1` and `jp-east-1` are supported as the region.
 - `server_side_encryption` (String) The server-side encryption algorithm to use for the Object Storage Object. Supported value is now `AES256(S3)`.
 - `source` (String) The path to a file that will be uploaded as the Object Storage Object. Conflicts with `content` and `content_base64`.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

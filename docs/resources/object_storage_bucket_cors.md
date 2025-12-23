@@ -41,6 +41,7 @@ resource "sakura_object_storage_bucket_cors" "foobar" {
 ### Optional
 
 - `endpoint` (String) The endpoint for the Object Storage Bucket CORS. Currently, only `s3.isk01.sakurastorage.jp` is supported as the endpoint.
+- `region` (String) The region for the Object Storage Bucket CORS. Currently, only `jp-north-1` and `jp-east-1` are supported as the region.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

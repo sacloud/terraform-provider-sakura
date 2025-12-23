@@ -29,31 +29,32 @@ data "sakura_object_storage_object" "foobar" {
 
 ### Required
 
-- `access_key` (String, Sensitive) The access key for the object storage site
-- `bucket` (String) The name of the ObjectStorage Bucket
-- `key` (String) The key of the ObjectStorage Object
-- `secret_key` (String, Sensitive) The secret key for the object storage site
+- `access_key` (String, Sensitive) The access key for the Object Storage
+- `bucket` (String) The name of the Object Storage Bucket
+- `key` (String) The key of the Object Storage Object
+- `secret_key` (String, Sensitive) The secret key for the Object Storage
 
 ### Optional
 
-- `endpoint` (String) The endpoint of the object storage site
-- `id` (String) The ID of the ObjectStorage Object.
-- `version_id` (String) The version ID of the ObjectStorage Object
+- `endpoint` (String) The endpoint of the Object Storage Site
+- `id` (String) The ID of the Object Storage Object.
+- `region` (String) The region of the Object Storage Site
+- `version_id` (String) The version ID of the Object Storage Object
 
 ### Read-Only
 
-- `acl` (String) The ACL of the ObjectStorage Object
-- `body` (String) The content of the ObjectStorage Object
-- `content_type` (String) The content type of the ObjectStorage Object
-- `etag` (String) The ETag of the ObjectStorage Object
-- `expires` (String) The expiration time of the ObjectStorage Object cache
-- `is_delete_marker` (Boolean) Whether the ObjectStorage Object is a delete marker
-- `is_latest` (Boolean) Whether the ObjectStorage Object is the latest version
-- `last_modified` (String) The last modified time of the ObjectStorage Object
-- `metadata` (Map of List of String) A metadata of the ObjectStorage Object
-- `num_versions` (Number) The number of versions of the ObjectStorage Object
-- `size` (Number) The content size of the ObjectStorage Object
-- `storage_class` (String) The storage class of the ObjectStorage Object
-- `user_metadata` (Map of String) User-defined metadata for the ObjectStorage Object
-- `user_tag_count` (Number) The number of user-defined tags for the ObjectStorage Object
-- `user_tags` (Map of String) User-defined tags for the ObjectStorage Object
+- `acl` (String) The ACL of the Object Storage Object
+- `body` (String) The content of the Object Storage Object
+- `content_type` (String) The content type of the Object Storage Object
+- `etag` (String) The ETag of the Object Storage Object
+- `expires` (String) The expiration time of the Object Storage Object cache
+- `is_delete_marker` (Boolean) Whether the Object Storage Object is a delete marker
+- `is_latest` (Boolean) Whether the Object Storage Object is the latest version
+- `last_modified` (String) The last modified time of the Object Storage Object
+- `metadata` (Map of List of String) A metadata of the Object Storage Object
+- `num_versions` (Number) The number of versions of the Object Storage Object
+- `size` (Number) The content size of the Object Storage Object
+- `storage_class` (String) The storage class of the Object Storage Object
+- `user_metadata` (Map of String) User-defined metadata for the Object Storage Object
+- `user_tag_count` (Number) The number of user-defined tags for the Object Storage Object
+- `user_tags` (Map of String) User-defined tags for the Object Storage Object

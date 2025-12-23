@@ -67,8 +67,8 @@ resource "sakura_container_registry" "foobar" {
 - `icon_id` (String) The icon id to attach to the Container Registry
 - `tags` (Set of String) The tags of the Container Registry.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `user` (Attributes Set) User accounts for accessing the container registry (see [below for nested schema](#nestedatt--user))
-- `virtual_domain` (String) The alias for accessing the container registry
+- `user` (Attributes Set) User accounts for accessing the Container Registry (see [below for nested schema](#nestedatt--user))
+- `virtual_domain` (String) The alias for accessing the Container Registry
 
 ### Read-Only
 

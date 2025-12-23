@@ -23,19 +23,19 @@ data "sakura_container_registry" "foobar" {
 
 ### Optional
 
-- `id` (String) The ID of the ContainerRegistry.
-- `name` (String) The name of the ContainerRegistry.
-- `tags` (Set of String) The tags of the ContainerRegistry.
+- `id` (String) The ID of the Container Registry.
+- `name` (String) The name of the Container Registry.
+- `tags` (Set of String) The tags of the Container Registry.
 
 ### Read-Only
 
 - `access_level` (String) The level of access that allow to users. This will be one of [read, write, admin]
-- `description` (String) The description of the ContainerRegistry.
-- `fqdn` (String) The FQDN for accessing the container registry. FQDN is built from `subdomain_label` + `.sakuracr.jp`
-- `icon_id` (String) The icon id attached to the ContainerRegistry
+- `description` (String) The description of the Container Registry.
+- `fqdn` (String) The FQDN for accessing the Container Registry. FQDN is built from `subdomain_label` + `.sakuracr.jp`
+- `icon_id` (String) The icon id attached to the Container Registry
 - `subdomain_label` (String) The label at the lowest of the FQDN used when be accessed from users
 - `user` (Attributes Set) (see [below for nested schema](#nestedatt--user))
-- `virtual_domain` (String) The alias for accessing the container registry
+- `virtual_domain` (String) The alias for accessing the Container Registry
 
 <a id="nestedatt--user"></a>
 ### Nested Schema for `user`

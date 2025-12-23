@@ -30,6 +30,7 @@ data "sakura_object_storage_site" "foobar" {}
 - `display_order` (Number) The display order of the Object Storage Site.
 - `endpoint` (String) The API endpoint URL for the Object Storage Site.
 - `iam_endpoint` (String) The IAM endpoint URL for the Object Storage Site.
+- `region` (String) The region of the Object Storage Site.
 - `s3_endpoint` (String) The S3 endpoint URL for the Object Storage Site.
 - `status` (Attributes) (see [below for nested schema](#nestedatt--status))
 - `storage_zone` (Set of String) A set of storage zone
