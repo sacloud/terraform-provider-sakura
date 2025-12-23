@@ -108,12 +108,12 @@ func (r *iconResource) Create(ctx context.Context, req resource.CreateRequest, r
 	iconOp := iaas.NewIconOp(r.client)
 	createReq, err := expandIconCreateRequest(&plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Icon Create Request Error", err.Error())
+		resp.Diagnostics.AddError("Create: Expand Request Error", err.Error())
 		return
 	}
 	icon, err := iconOp.Create(ctx, createReq)
 	if err != nil {
-		resp.Diagnostics.AddError("Icon Create API Error", err.Error())
+		resp.Diagnostics.AddError("Create: API Error", err.Error())
 		return
 	}
 
@@ -150,7 +150,7 @@ func (r *iconResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	iconOp := iaas.NewIconOp(r.client)
 	_, err := iconOp.Update(ctx, common.ExpandSakuraCloudID(plan.ID), expandIconUpdateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Icon Update API Error", err.Error())
+		resp.Diagnostics.AddError("Update: API Error", err.Error())
 		return
 	}
 
@@ -179,7 +179,7 @@ func (r *iconResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		return
 	}
 	if err := iconOp.Delete(ctx, icon.ID); err != nil {
-		resp.Diagnostics.AddError("Icon Delete API Error", err.Error())
+		resp.Diagnostics.AddError("Delete: API Error", err.Error())
 		return
 	}
 }
@@ -192,7 +192,7 @@ func getIcon(ctx context.Context, client *common.APIClient, id iaastypes.ID, sta
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Icon Read API Error", err.Error())
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Icon[%s]: %s", id, err.Error()))
 		return nil
 	}
 	return icon
@@ -204,15 +204,15 @@ func expandIconBody(d *iconResourceModel) (string, error) {
 		source := d.Source.ValueString()
 		path, err := homedir.Expand(source)
 		if err != nil {
-			return "", fmt.Errorf("expanding homedir in source (%s) is failed: %s", source, err)
+			return "", fmt.Errorf("failed to expand homedir in source (%s): %s", source, err)
 		}
 		file, err := os.Open(filepath.Clean(path))
 		if err != nil {
-			return "", fmt.Errorf("opening SakuraCloud Icon source(%s) is failed: %s", source, err)
+			return "", fmt.Errorf("failed to open Icon source (%s): %s", source, err)
 		}
 		data, err := io.ReadAll(file)
 		if err != nil {
-			return "", fmt.Errorf("reading SakuraCloud Icon source file is failed: %s", err)
+			return "", fmt.Errorf("failed to read Icon source file: %s", err)
 		}
 		body = base64.StdEncoding.EncodeToString(data)
 	} else if !d.Base64Content.IsNull() {
@@ -226,7 +226,7 @@ func expandIconBody(d *iconResourceModel) (string, error) {
 func expandIconCreateRequest(d *iconResourceModel) (*iaas.IconCreateRequest, error) {
 	body, err := expandIconBody(d)
 	if err != nil {
-		return nil, fmt.Errorf("creating SakuraCloud Icon is failed: %s", err)
+		return nil, fmt.Errorf("failed to create Icon: %s", err)
 	}
 	return &iaas.IconCreateRequest{
 		Name:  d.Name.ValueString(),

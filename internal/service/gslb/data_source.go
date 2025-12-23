@@ -127,7 +127,7 @@ func (d *gslbDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	searcher := iaas.NewGSLBOp(d.client)
 	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Search Error", "failed to find SakuraCloud GSLB resource: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find SakuraCloud GSLB resource: "+err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.GSLBs) == 0 {

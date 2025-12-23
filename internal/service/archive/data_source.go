@@ -97,14 +97,14 @@ func (d *archiveDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		strOSType := data.OSType.ValueString()
 		res, err := query.FindArchiveByOSType(ctx, searcher, zone, ostype.StrToOSType(strOSType))
 		if err != nil {
-			resp.Diagnostics.AddError("Archive Search Error", err.Error())
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find Archive by OS type: %s", err))
 			return
 		}
 		archive = res
 	} else {
 		res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 		if err != nil {
-			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Archive: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find Archive: %s", err))
 			return
 		}
 		if res == nil || len(res.Archives) == 0 {

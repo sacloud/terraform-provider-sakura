@@ -90,7 +90,7 @@ func (r *packetFilterResource) Create(ctx context.Context, req resource.CreateRe
 		Description: plan.Description.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud PacketFilter is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create PacketFilter: %s", err))
 		return
 	}
 
@@ -137,13 +137,13 @@ func (r *packetFilterResource) Update(ctx context.Context, req resource.UpdateRe
 	pfOp := iaas.NewPacketFilterOp(r.client)
 	pf, err := pfOp.Read(ctx, zone, common.ExpandSakuraCloudID(plan.ID))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read SakuraCloud PacketFilter[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read PacketFilter[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
 	_, err = pfOp.Update(ctx, zone, pf.ID, expandPacketFilterUpdateRequest(&plan, pf), pf.ExpressionHash)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud PacketFilter[%s] is failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update PacketFilter[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -177,7 +177,7 @@ func (r *packetFilterResource) Delete(ctx context.Context, req resource.DeleteRe
 	}
 
 	if err := cleanup.DeletePacketFilter(ctx, r.client, zone, pf.ID, r.client.CheckReferencedOption()); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud PacketFilter[%s] is failed: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete PacketFilter[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -190,7 +190,7 @@ func getPacketFilter(ctx context.Context, client *common.APIClient, id iaastypes
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diag.AddError("Get PacketFilter Error", fmt.Sprintf("could not read SakuraCloud PacketFilter[%s]: %s", id, err))
+		diag.AddError("API Read Error", fmt.Sprintf("failed to read PacketFilter[%s]: %s", id, err))
 		return nil
 	}
 

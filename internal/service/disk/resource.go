@@ -195,13 +195,13 @@ func (r *diskResource) Create(ctx context.Context, req resource.CreateRequest, r
 
 	res, err := diskBuilder.Setup(ctx, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud Disk is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Disk: %s", err))
 		return
 	}
 
 	disk, ok := res.(*iaas.Disk)
 	if !ok {
-		resp.Diagnostics.AddError("Create Error", "creating SakuraCloud Disk is failed: created resource is not a *iaas.Disk")
+		resp.Diagnostics.AddError("Create: API Error", "failed to create Disk: created resource is not a *iaas.Disk")
 		return
 	}
 
@@ -248,7 +248,7 @@ func (r *diskResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	diskOp := iaas.NewDiskOp(r.client)
 	_, err := diskOp.Update(ctx, zone, common.ExpandSakuraCloudID(plan.ID), expandDiskUpdateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Disk[%s] is failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Disk[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -287,29 +287,29 @@ func (r *diskResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		serverOp := iaas.NewServerOp(r.client)
 		server, err := serverOp.Read(ctx, zone, serverID)
 		if err != nil {
-			resp.Diagnostics.AddError("Delete Error",
-				fmt.Sprintf("could not read SakuraCloud Server[%s] of Disk[%s]: %s", serverID.String(), disk.ID.String(), err))
+			resp.Diagnostics.AddError("Delete: API Error",
+				fmt.Sprintf("failed to read Server[%s] of Disk[%s]: %s", serverID.String(), disk.ID.String(), err))
 			return
 		}
 
 		if server.InstanceStatus.IsUp() {
 			if err := power.ShutdownServer(ctx, serverOp, zone, server.ID, true); err != nil {
-				resp.Diagnostics.AddError("Delete Error",
-					fmt.Sprintf("stopping SakuraCloud Server[%s] of Disk[%s] is failed: %s", server.ID.String(), disk.ID.String(), err))
+				resp.Diagnostics.AddError("Delete: API Error",
+					fmt.Sprintf("failed to stop Server[%s] of Disk[%s]: %s", server.ID.String(), disk.ID.String(), err))
 				return
 			}
 		}
 
 		if err := diskOp.DisconnectFromServer(ctx, zone, disk.ID); err != nil {
-			resp.Diagnostics.AddError("Delete Error",
-				fmt.Sprintf("disconnect from SakuraCloud Server[%s] of Disk[%s] is failed: %s", server.ID.String(), disk.ID.String(), err))
+			resp.Diagnostics.AddError("Delete: API Error",
+				fmt.Sprintf("failed to disconnect from Server[%s] of Disk[%s]: %s", server.ID.String(), disk.ID.String(), err))
 			return
 		}
 	}
 
 	if err := cleanup.DeleteDisk(ctx, r.client, zone, disk.ID, r.client.CheckReferencedOption()); err != nil {
-		resp.Diagnostics.AddError("Delete Error",
-			fmt.Sprintf("deleting SakuraCloud Disk[%s] is failed: %s", disk.ID.String(), err))
+		resp.Diagnostics.AddError("Delete: API Error",
+			fmt.Sprintf("failed to delete Disk[%s]: %s", disk.ID.String(), err))
 		return
 	}
 }
@@ -322,7 +322,7 @@ func getDisk(ctx context.Context, client *common.APIClient, id iaastypes.ID, zon
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get Disk Error", fmt.Sprintf("could not read SakuraCloud Disk[%s]: %s", id.String(), err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Disk[%s]: %s", id.String(), err))
 		return nil
 	}
 

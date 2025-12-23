@@ -90,7 +90,7 @@ func (r *bridgeResource) Create(ctx context.Context, req resource.CreateRequest,
 		Description: plan.Description.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("Could not create Bridge: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Bridge: %s", err))
 		return
 	}
 
@@ -140,7 +140,7 @@ func (r *bridgeResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Description: plan.Description.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("Could not update Bridge: %s", err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Bridge[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -169,7 +169,7 @@ func (r *bridgeResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	if err := cleanup.DeleteBridge(ctx, r.client, zone, r.client.GetZones(), bridge.ID, r.client.CheckReferencedOption()); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("Could not delete Bridge[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Bridge[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -182,7 +182,7 @@ func getBridge(ctx context.Context, client *common.APIClient, zone string, id ia
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("Could not read SakuraCloud Bridge[%s]: %s", id.String(), err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Bridge[%s]: %s", id.String(), err))
 		return nil
 	}
 	return bridge

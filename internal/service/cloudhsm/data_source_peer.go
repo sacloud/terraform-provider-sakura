@@ -82,7 +82,7 @@ func (d *cloudHSMPeerDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	id := data.ID.ValueString()
 	if len(id) == 0 {
-		resp.Diagnostics.AddError("Missing Attribute", "'id' must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "'id' must be specified.")
 		return
 	}
 

@@ -121,7 +121,7 @@ func (r *simpleMQResource) Create(ctx context.Context, req resource.CreateReques
 	queueOp := simplemq.NewQueueOp(r.client)
 	mq, err := queueOp.Create(ctx, expandSimpleMQCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create SimpleMQ queue failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create SimpleMQ queue: %s", err))
 		return
 	}
 	qid := simplemq.GetQueueID(mq)
@@ -129,7 +129,7 @@ func (r *simpleMQResource) Create(ctx context.Context, req resource.CreateReques
 	// SDK v2ではUpdateを呼び出して更新していたが、Frameworkではアクション間での状態の共有が難しいためメソッドに括り出して処理を共通化
 	err = r.callUpdateRequest(ctx, qid, &plan, mq)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: API Error", err.Error())
 		return
 	}
 
@@ -170,7 +170,7 @@ func (r *simpleMQResource) Update(ctx context.Context, req resource.UpdateReques
 
 	err := r.callUpdateRequest(ctx, plan.ID.ValueString(), &plan, nil)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", err.Error())
+		resp.Diagnostics.AddError("Update: API Error", err.Error())
 		return
 	}
 
@@ -200,7 +200,7 @@ func (r *simpleMQResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	if err := queueOp.Delete(ctx, simplemq.GetQueueID(mq)); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("delete SimpleMQ[%s] queue failed: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete SimpleMQ[%s] queue: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -212,13 +212,13 @@ func (r *simpleMQResource) callUpdateRequest(ctx context.Context, id string, pla
 	if mq == nil {
 		mq, err = queueOp.Read(ctx, id)
 		if err != nil {
-			return fmt.Errorf("could not read SimpleMQ[%s] queue: %w", id, err)
+			return fmt.Errorf("failed to read SimpleMQ[%s] queue: %w", id, err)
 		}
 	}
 
 	_, err = queueOp.Config(ctx, simplemq.GetQueueID(mq), expandSimpleMQUpdateRequest(plan, mq))
 	if err != nil {
-		return fmt.Errorf("update SimpleMQ[%s] queue config failed: %w", id, err)
+		return fmt.Errorf("failed to update SimpleMQ[%s] queue config: %w", id, err)
 	}
 
 	return nil
@@ -232,7 +232,7 @@ func getMessageQueue(ctx context.Context, client *queue.Client, id string, state
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get Queue Error", fmt.Sprintf("could not read SimpleMQ[%s] queue: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read SimpleMQ[%s] queue: %s", id, err))
 		return nil
 	}
 

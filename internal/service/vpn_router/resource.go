@@ -588,7 +588,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					},
 				},
 			},
-			"scheduled_maintenance": schema.SingleNestedAttribute{ // TODO: Use SingleNestedAttribute
+			"scheduled_maintenance": schema.SingleNestedAttribute{
 				Optional: true,
 				Computed: true,
 				Attributes: map[string]schema.Attribute{
@@ -667,13 +667,13 @@ func (r *vpnRouterResource) Create(ctx context.Context, req resource.CreateReque
 
 	builder := expandVPNRouterBuilder(&plan, r.client, zone)
 	if err := builder.Validate(ctx, zone); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("validating parameter for SakuraCloud VPCRouter is failed: %s", err))
+		resp.Diagnostics.AddError("Create: Validation Error", fmt.Sprintf("failed to validate parameter for VPNRouter: %s", err))
 		return
 	}
 
 	vpnRouter, err := builder.Build(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud VPCRouter is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create VPNRouter: %s", err))
 		return
 	}
 
@@ -684,7 +684,7 @@ func (r *vpnRouterResource) Create(ctx context.Context, req resource.CreateReque
 		if rmResource {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("could not update state for SakuraCloud VPCRouter[%s] resource: %s", vpnRouter.ID.String(), err))
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update state for VPNRouter[%s] resource: %s", vpnRouter.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -709,7 +709,7 @@ func (r *vpnRouterResource) Read(ctx context.Context, req resource.ReadRequest, 
 		if rmResource {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not update state for SakuraCloud VPCRouter[%s] resource: %s", sid, err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for VPNRouter[%s] resource: %s", sid, err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -738,14 +738,14 @@ func (r *vpnRouterResource) Update(ctx context.Context, req resource.UpdateReque
 
 	builder := expandVPNRouterBuilder(&plan, r.client, zone)
 	if err := builder.Validate(ctx, zone); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("validating parameter for SakuraCloud VPCRouter[%s] is failed: %s", sid, err))
+		resp.Diagnostics.AddError("Update: Validation Error", fmt.Sprintf("failed to validate parameter for VPNRouter[%s]: %s", sid, err))
 		return
 	}
 	builder.ID = common.SakuraCloudID(sid)
 
 	_, err := builder.Build(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud VPCRouter[%s] is failed: %s", sid, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update VPNRouter[%s]: %s", sid, err))
 		return
 	}
 
@@ -754,7 +754,7 @@ func (r *vpnRouterResource) Update(ctx context.Context, req resource.UpdateReque
 
 	vpnRouter, err := vrOp.Read(ctx, zone, common.SakuraCloudID(sid))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not read SakuraCloud VPCRouter[%s]: %s", sid, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read VPNRouter[%s]: %s", sid, err))
 		return
 	}
 
@@ -762,7 +762,7 @@ func (r *vpnRouterResource) Update(ctx context.Context, req resource.UpdateReque
 		if rmResource {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not update state for SakuraCloud VPCRouter[%s] resource: %s", sid, err))
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update state for VPNRouter[%s] resource: %s", sid, err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -796,13 +796,13 @@ func (r *vpnRouterResource) Delete(ctx context.Context, req resource.DeleteReque
 
 	if vpnRouter.InstanceStatus.IsUp() {
 		if err := power.ShutdownVPCRouter(ctx, vrOp, zone, vpnRouter.ID, true); err != nil {
-			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("stopping VPCRouter[%s] is failed: %s", sid, err))
+			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to stop VPNRouter[%s]: %s", sid, err))
 			return
 		}
 	}
 
 	if err := vrOp.Delete(ctx, zone, vpnRouter.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud VPCRouter[%s] is failed: %s", sid, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete VPNRouter[%s]: %s", sid, err))
 		return
 	}
 }
@@ -815,7 +815,7 @@ func getRouter(ctx context.Context, client *common.APIClient, zone string, id ia
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get VPNRouter Error", fmt.Sprintf("could not read SakuraCloud VPCRouter[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read VPNRouter[%s]: %s", id, err))
 		return nil
 	}
 	return vpnRouter

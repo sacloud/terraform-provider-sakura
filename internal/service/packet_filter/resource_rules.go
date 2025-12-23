@@ -213,7 +213,7 @@ func (r *packetFilterRulesResource) Delete(ctx context.Context, req resource.Del
 		Expression:  []*iaas.PacketFilterExpression{}, // Set empty expressions to delete all rules
 	}, pf.ExpressionHash)
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("updating SakuraCloud PacketFilter[%s] is failed: %s", pfID, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to update SakuraCloud PacketFilter[%s]: %s", pfID, err))
 		return
 	}
 }
@@ -238,7 +238,7 @@ func callPacketFilterRulesUpdate(ctx context.Context, r *packetFilterRulesResour
 	pfOp := iaas.NewPacketFilterOp(r.client)
 	pf, err := pfOp.Read(ctx, zone, common.SakuraCloudID(pfID))
 	if err != nil {
-		diags.AddError("Update Error", fmt.Sprintf("could not read SakuraCloud PacketFilter[%s]: %s", pfID, err))
+		diags.AddError("Update: API Error", fmt.Sprintf("failed to read PacketFilter[%s]: %s", pfID, err))
 		return
 	}
 
@@ -248,7 +248,7 @@ func callPacketFilterRulesUpdate(ctx context.Context, r *packetFilterRulesResour
 		Expression:  expandPacketFilterExpressions(plan.Expressions),
 	}, pf.ExpressionHash)
 	if err != nil {
-		diags.AddError("Update Error", fmt.Sprintf("updating SakuraCloud PacketFilter[%s] is failed: %s", pfID, err))
+		diags.AddError("Update: API Error", fmt.Sprintf("failed to update PacketFilter[%s]: %s", pfID, err))
 		return
 	}
 

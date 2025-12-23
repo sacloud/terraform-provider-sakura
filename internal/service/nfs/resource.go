@@ -132,7 +132,7 @@ func (r *nfsResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	planID, err := expandNFSDiskPlanID(ctx, r.client, &plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: Expand Error", err.Error())
 		return
 	}
 
@@ -156,13 +156,13 @@ func (r *nfsResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	res, err := builder.Setup(ctx, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud NFS is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create NFS: %s", err))
 		return
 	}
 
 	nfs, ok := res.(*iaas.NFS)
 	if !ok {
-		resp.Diagnostics.AddError("Create Error", "creating SakuraCloud NFS is failed: created resource is not *iaas.NFS")
+		resp.Diagnostics.AddError("Create: API Error", "failed to create NFS: created resource is not *iaas.NFS")
 		return
 	}
 
@@ -170,7 +170,7 @@ func (r *nfsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		if rmResource {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("could not update state for SakuraCloud NFS resource: %s", err))
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update state for NFS resource: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -197,7 +197,7 @@ func (r *nfsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		if rmResource {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not update state for SakuraCloud NFS resource: %s", err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for NFS resource: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -221,7 +221,7 @@ func (r *nfsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	nfsOp := iaas.NewNFSOp(r.client)
 	_, err := nfsOp.Update(ctx, zone, common.ExpandSakuraCloudID(plan.ID), expandNFSUpdateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud NFS[%s] is failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update NFS[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -234,7 +234,7 @@ func (r *nfsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		if rmResource {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("could not update state for SakuraCloud NFS resource: %s", err))
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update state for NFS resource: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -262,12 +262,12 @@ func (r *nfsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 	nfsOp := iaas.NewNFSOp(r.client)
 	if err := power.ShutdownNFS(ctx, nfsOp, zone, nfs.ID, true); err != nil {
-		resp.Diagnostics.AddError("Delete Error", err.Error())
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to shutdown NFS[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 
 	if err := nfsOp.Delete(ctx, zone, nfs.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud NFS[%s] is failed: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete NFS[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -280,7 +280,7 @@ func getNFS(ctx context.Context, client *common.APIClient, zone string, id iaast
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get NFS Error", fmt.Sprintf("could not read SakuraCloud NFS[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read NFS[%s]: %s", id, err))
 		return nil
 	}
 

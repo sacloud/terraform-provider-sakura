@@ -109,7 +109,7 @@ func (r *scriptResource) Create(ctx context.Context, req resource.CreateRequest,
 		Class:   plan.Class.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud Script is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create SakuraCloud Script: %s", err))
 		return
 	}
 
@@ -152,7 +152,7 @@ func (r *scriptResource) Update(ctx context.Context, req resource.UpdateRequest,
 		Class:   plan.Class.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Script[%s] is failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update SakuraCloud Script[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -177,7 +177,7 @@ func (r *scriptResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	scriptOp := iaas.NewNoteOp(r.client)
 	if err := scriptOp.Delete(ctx, script.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not delete SakuraCloud Script[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete SakuraCloud Script[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -190,7 +190,7 @@ func getScript(ctx context.Context, client *common.APIClient, id iaastypes.ID, s
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("could not read SakuraCloud Script[%s]: %s", id.String(), err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read SakuraCloud Script[%s]: %s", id.String(), err))
 		return nil
 	}
 

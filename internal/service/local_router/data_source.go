@@ -146,7 +146,7 @@ func (d *localRouterDataSource) Read(ctx context.Context, req datasource.ReadReq
 	searcher := iaas.NewLocalRouterOp(d.client)
 	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", "failed to find SakuraCloud LocalRouter resource: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find SakuraCloud LocalRouter resource: "+err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.LocalRouters) == 0 {

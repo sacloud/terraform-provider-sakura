@@ -121,7 +121,7 @@ func (r *objectStorageBucketCorsResource) Create(ctx context.Context, req resour
 
 	corsConf, err := setBucketCorsConfiguration(ctx, &plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: API Error", err.Error())
 		return
 	}
 
@@ -139,13 +139,13 @@ func (r *objectStorageBucketCorsResource) Read(ctx context.Context, req resource
 
 	client, err := state.getMinIOClient()
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Errorf("failed to create MinIO client: %w", err).Error())
+		resp.Diagnostics.AddError("Read: Client Error", fmt.Sprintf("failed to create MinIO client: %s", err))
 		return
 	}
 
 	corsConf, err := client.GetBucketCors(ctx, state.Bucket.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to get bucket CORS configuration: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object storage bucket CORS configuration: %s", err.Error()))
 		return
 	}
 
@@ -166,7 +166,7 @@ func (r *objectStorageBucketCorsResource) Update(ctx context.Context, req resour
 
 	corsConf, err := setBucketCorsConfiguration(ctx, &plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", err.Error())
+		resp.Diagnostics.AddError("Update: API Error", err.Error())
 		return
 	}
 
@@ -184,13 +184,13 @@ func (r *objectStorageBucketCorsResource) Delete(ctx context.Context, req resour
 
 	client, err := state.getMinIOClient()
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Errorf("failed to create MinIO client: %w", err).Error())
+		resp.Diagnostics.AddError("Delete: Client Error", fmt.Sprintf("failed to create MinIO client: %s", err))
 		return
 	}
 
 	err = client.SetBucketCors(ctx, state.Bucket.ValueString(), nil)
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete bucket CORS configuration: %s", err.Error()))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete object storage bucket CORS configuration: %s", err))
 		return
 	}
 }
@@ -203,12 +203,12 @@ func setBucketCorsConfiguration(ctx context.Context, model *objectStorageBucketC
 
 	err = client.SetBucketCors(ctx, model.Bucket.ValueString(), expandCorsConfiguration(model))
 	if err != nil {
-		return nil, fmt.Errorf("failed to set bucket CORS configuration: %w", err)
+		return nil, fmt.Errorf("failed to set object storage bucket CORS configuration: %w", err)
 	}
 
 	corsConf, err := client.GetBucketCors(ctx, model.Bucket.ValueString())
 	if err != nil {
-		return nil, fmt.Errorf("failed to get bucket CORS configuration: %w", err)
+		return nil, fmt.Errorf("failed to get object storage bucket CORS configuration: %w", err)
 	}
 
 	return corsConf, nil

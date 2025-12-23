@@ -110,7 +110,7 @@ func (r *objectStorageBucketResource) Create(ctx context.Context, req resource.C
 	bucketAPI := objectstorage.NewBucketOp(r.client)
 	bucket, err := bucketAPI.Create(ctx, siteId, plan.Name.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create Object Storage Bucket: %s", err.Error()))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Object Storage Bucket: %s", err))
 		return
 	}
 
@@ -163,7 +163,7 @@ func (r *objectStorageBucketResource) Delete(ctx context.Context, req resource.D
 
 	bucketAPI := objectstorage.NewBucketOp(r.client)
 	if err := bucketAPI.Delete(ctx, state.SiteID.ValueString(), state.Name.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete Object Storage Bucket: %s", err.Error()))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Object Storage Bucket: %s", err))
 		return
 	}
 }

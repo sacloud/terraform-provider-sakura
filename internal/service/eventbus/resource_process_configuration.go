@@ -178,7 +178,7 @@ func (r *processConfigurationResource) Create(ctx context.Context, req resource.
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 	pc, err := processConfigurationOp.Create(ctx, expandProcessConfigurationCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus ProcessConfiguration failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create EventBus ProcessConfiguration: %s", err))
 		return
 	}
 	pcID := pc.ID
@@ -186,7 +186,7 @@ func (r *processConfigurationResource) Create(ctx context.Context, req resource.
 	// SDK v2ではUpdateを呼び出して更新していたが、Frameworkではアクション間での状態の共有が難しいためメソッドに括り出して処理を共通化
 	err = r.callProcessConfigurationUpdateSecretRequest(ctx, pcID, &config, pc)
 	if err != nil {
-		resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
+		resp.Diagnostics.AddError("Create: API Error", err.Error())
 		return
 	}
 
@@ -196,7 +196,7 @@ func (r *processConfigurationResource) Create(ctx context.Context, req resource.
 	}
 
 	if err := plan.updateState(gotPC); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", plan.ID.String(), err))
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", plan.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -215,7 +215,7 @@ func (r *processConfigurationResource) Read(ctx context.Context, req resource.Re
 	}
 
 	if err := state.updateState(pc); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", state.ID.String(), err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", state.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -236,14 +236,14 @@ func (r *processConfigurationResource) Update(ctx context.Context, req resource.
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(r.client)
 
 	if _, err := processConfigurationOp.Update(ctx, plan.ID.ValueString(), expandProcessConfigurationUpdateRequest(&plan)); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus ProcessConfiguration[%s] failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
 	if !plan.CredentialsVersion.Equal(state.CredentialsVersion) {
 		// credentialsの更新があるときだけ実行
 		if err := r.callProcessConfigurationUpdateSecretRequest(ctx, plan.ID.ValueString(), &config, nil); err != nil {
-			resp.Diagnostics.AddError("UpdateSecret Error", err.Error())
+			resp.Diagnostics.AddError("Update: API Error", err.Error())
 			return
 		}
 	}
@@ -254,7 +254,7 @@ func (r *processConfigurationResource) Update(ctx context.Context, req resource.
 	}
 
 	if err := plan.updateState(pc); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", plan.ID.String(), err))
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update EventBus ProcessConfiguration[%s] state: %s", plan.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -277,7 +277,7 @@ func (r *processConfigurationResource) Delete(ctx context.Context, req resource.
 	}
 
 	if err := processConfigurationOp.Delete(ctx, state.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("delete EventBus ProcessConfiguration[%s] failed: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete EventBus ProcessConfiguration[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -289,13 +289,13 @@ func (r *processConfigurationResource) callProcessConfigurationUpdateSecretReque
 	if pc == nil {
 		_, err = processConfigurationOp.Read(ctx, id)
 		if err != nil {
-			return fmt.Errorf("could not read EventBus ProcessConfiguration[%s]: %w", id, err)
+			return fmt.Errorf("failed to read EventBus ProcessConfiguration[%s]: %w", id, err)
 		}
 	}
 
 	err = processConfigurationOp.UpdateSecret(ctx, id, expandProcessConfigurationUpdateSecretRequest(config))
 	if err != nil {
-		return fmt.Errorf("update secret on EventBus ProcessConfiguration[%s] failed: %w", id, err)
+		return fmt.Errorf("failed to update secret on EventBus ProcessConfiguration[%s]: %w", id, err)
 	}
 
 	return nil
@@ -309,7 +309,7 @@ func getProcessConfiguration(ctx context.Context, client *v1.Client, id string, 
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get ProcessConfiguration Error", fmt.Sprintf("could not read EventBus ProcessConfiguration[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read EventBus ProcessConfiguration[%s]: %s", id, err))
 		return nil
 	}
 

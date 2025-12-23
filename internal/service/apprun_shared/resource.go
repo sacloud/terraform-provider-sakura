@@ -289,7 +289,7 @@ func (r *apprunSharedResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	if err := createUserIfNotExist(ctx, r.client); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create AppRun Shared user: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Shared user: %s", err))
 		return
 	}
 
@@ -304,38 +304,38 @@ func (r *apprunSharedResource) Create(ctx context.Context, req resource.CreateRe
 	}
 	result, err := appOp.Create(ctx, &params)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create AppRun Shared application: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Shared application: %s", err))
 		return
 	}
 
 	pfOp := apprun.NewPacketFilterOp(r.client)
 	if _, err := pfOp.Update(ctx, result.Id, expandApprunPacketFilter(&plan)); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update AppRun Shared's packet filter: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to update AppRun Shared's packet filter: %s", err))
 		return
 	}
 
 	// 内部的にVersions/Traffics APIを利用してトラフィック分散の状態も変更する
 	versions, err := getVersions(ctx, r.client, result.Id)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to get AppRun Shared's versions: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to get AppRun Shared's versions: %s", err))
 		return
 	}
 
 	trafficOp := apprun.NewTrafficOp(r.client)
 	traffics, err := expandApprunApplicationTraffics(&plan, versions)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to expand AppRun Shared's traffics: %s", err))
+		resp.Diagnostics.AddError("Create: Expand Traffics Error", fmt.Sprintf("failed to expand AppRun Shared's traffics: %s", err))
 		return
 	}
 
 	_, err = trafficOp.Update(ctx, result.Id, traffics)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update AppRun Shared's traffics: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to update AppRun Shared's traffics: %s", err))
 		return
 	}
 
 	if _, err := updateModel(ctx, &plan, r.client, result.Id); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update AppRun Shared's state: %s", err))
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update AppRun Shared state: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -349,7 +349,7 @@ func (r *apprunSharedResource) Read(ctx context.Context, req resource.ReadReques
 	}
 
 	if err := createUserIfNotExist(ctx, r.client); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to create AppRun Shared user: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to create AppRun Shared user: %s", err))
 		return
 	}
 
@@ -357,7 +357,7 @@ func (r *apprunSharedResource) Read(ctx context.Context, req resource.ReadReques
 		if removeResource {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update AppRun Shared's state: %s", err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update AppRun Shared state: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -373,7 +373,7 @@ func (r *apprunSharedResource) Update(ctx context.Context, req resource.UpdateRe
 	appOp := apprun.NewApplicationOp(r.client)
 	application, err := appOp.Read(ctx, plan.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("read error", fmt.Errorf("failed to read AppRun Shared application: %s", err).Error())
+		resp.Diagnostics.AddError("Update: API Error", fmt.Errorf("failed to read AppRun Shared application: %s", err).Error())
 		return
 	}
 
@@ -390,32 +390,32 @@ func (r *apprunSharedResource) Update(ctx context.Context, req resource.UpdateRe
 	}
 	result, err := appOp.Update(ctx, application.Id, &params)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update AppRun Shared application: %s", err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update AppRun Shared application: %s", err))
 		return
 	}
 
 	pfOp := apprun.NewPacketFilterOp(r.client)
 	if _, err := pfOp.Update(ctx, result.Id, expandApprunPacketFilter(&plan)); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update AppRun Shared's packet filter: %s", err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update AppRun Shared's packet filter: %s", err))
 		return
 	}
 
 	versions, err := getVersions(ctx, r.client, plan.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to get AppRun Shared's versions: %s", err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to get AppRun Shared's versions: %s", err))
 		return
 	}
 
 	trafficOp := apprun.NewTrafficOp(r.client)
 	traffics, err := expandApprunApplicationTraffics(&plan, versions)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to expand AppRun Shared's traffics: %s", err))
+		resp.Diagnostics.AddError("Update: Expand Traffics Error", fmt.Sprintf("failed to expand AppRun Shared's traffics: %s", err))
 		return
 	}
 
 	_, err = trafficOp.Update(ctx, plan.ID.ValueString(), traffics)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update AppRun Shared's traffics: %s", err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update AppRun Shared's traffics: %s", err))
 		return
 	}
 
@@ -423,7 +423,7 @@ func (r *apprunSharedResource) Update(ctx context.Context, req resource.UpdateRe
 		if removeResource {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update AppRun Shared's state: %s", err))
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update AppRun Shared's state: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -439,12 +439,12 @@ func (r *apprunSharedResource) Delete(ctx context.Context, req resource.DeleteRe
 	appOp := apprun.NewApplicationOp(r.client)
 	application, err := appOp.Read(ctx, state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to read AppRun Shared application: %s", err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to read AppRun Shared application: %s", err))
 		return
 	}
 
 	if err := appOp.Delete(ctx, application.Id); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete AppRun Shared application: %s", err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete AppRun Shared application: %s", err))
 		return
 	}
 }

@@ -119,13 +119,13 @@ func (r *privateHostResource) Create(ctx context.Context, req resource.CreateReq
 	phOp := iaas.NewPrivateHostOp(r.client)
 	planID, err := expandPrivateHostPlanID(ctx, &plan, r.client, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: Expand Error", err.Error())
 		return
 	}
 
 	ph, err := phOp.Create(ctx, zone, expandPrivateHostCreateRequest(&plan, planID))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud PrivateHost is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create PrivateHost: %s", err))
 		return
 	}
 
@@ -172,7 +172,7 @@ func (r *privateHostResource) Update(ctx context.Context, req resource.UpdateReq
 	phOp := iaas.NewPrivateHostOp(r.client)
 	_, err := phOp.Update(ctx, zone, common.ExpandSakuraCloudID(plan.ID), expandPrivateHostUpdateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud PrivateHost[%s] is failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update PrivateHost[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -206,7 +206,7 @@ func (r *privateHostResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	if err := cleanup.DeletePrivateHost(ctx, r.client, zone, ph.ID, r.client.CheckReferencedOption()); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud PrivateHost[%s] is failed: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete PrivateHost[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -219,7 +219,7 @@ func getPrivateHost(ctx context.Context, client *common.APIClient, zone string, 
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get PrivateHost Error", fmt.Sprintf("could not read SakuraCloud PrivateHost[%s]: %s", id.String(), err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read PrivateHost[%s]: %s", id.String(), err))
 		return nil
 	}
 
@@ -235,7 +235,7 @@ func expandPrivateHostPlanID(ctx context.Context, d *privateHostResourceModel, c
 		return iaastypes.ID(0), err
 	}
 	if searched.Count == 0 {
-		return iaastypes.ID(0), errors.New("finding PrivateHostPlan is failed: plan is not found")
+		return iaastypes.ID(0), errors.New("failed to find PrivateHostPlan: plan is not found")
 	}
 
 	return searched.PrivateHostPlans[0].ID, nil

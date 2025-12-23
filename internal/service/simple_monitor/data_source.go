@@ -191,7 +191,7 @@ func (d *simpleMonitorDataSource) Read(ctx context.Context, req datasource.ReadR
 	}
 
 	if (data.Name.IsNull() && data.Name.IsUnknown()) && (data.Target.IsNull() && data.Target.IsUnknown()) {
-		resp.Diagnostics.AddError("Invalid Attribute", "Either name or target must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'name' or 'target' must be specified.")
 		return
 	}
 	name := data.Name
@@ -202,7 +202,7 @@ func (d *simpleMonitorDataSource) Read(ctx context.Context, req datasource.ReadR
 	smOp := iaas.NewSimpleMonitorOp(d.client)
 	res, err := smOp.Find(ctx, common.CreateFindCondition(data.ID, name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Find Error", "failed to find SakuraCloud SimpleMonitor resource: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find SimpleMonitor resource: "+err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.SimpleMonitors) == 0 {

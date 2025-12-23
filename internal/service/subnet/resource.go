@@ -142,7 +142,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	internetOp := iaas.NewInternetOp(r.client)
 	internet, err := internetOp.Read(ctx, zone, internetID)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to read Internet(switch+router)[%s]: %s", internetID, err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to read Internet(switch+router)[%s] for Subnet: %s", internetID, err))
 		return
 	}
 
@@ -151,7 +151,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		NextHop:        plan.NextHop.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to add Subnet to Internet[%s]: %s", internet.ID, err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to add Subnet to Internet[%s]: %s", internet.ID, err))
 		return
 	}
 
@@ -161,7 +161,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	if err := plan.updateState(zone, subnet); err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update Subnet state: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -185,7 +185,7 @@ func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, res
 	}
 
 	if err := state.updateState(zone, subnet); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update state: %s", err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update Subnet state: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -219,7 +219,7 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 	if _, err := internetOp.UpdateSubnet(ctx, zone, internetID, subnet.ID, &iaas.InternetUpdateSubnetRequest{
 		NextHop: plan.NextHop.ValueString(),
 	}); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update Subnet[%s]: %s", subnet.ID, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Subnet[%s]: %s", subnet.ID, err))
 		return
 	}
 
@@ -229,7 +229,7 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	if err := plan.updateState(zone, subnet); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update state: %s", err))
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update Subnet state: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -262,7 +262,7 @@ func (r *subnetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	}
 
 	if err := internetOp.DeleteSubnet(ctx, zone, internetID, subnet.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete Subnet[%s] from Internet[%s]: %s", subnet.ID, internetID, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Subnet[%s] from Internet[%s]: %s", subnet.ID, internetID, err))
 		return
 	}
 }
@@ -277,7 +277,7 @@ func getSubnet(ctx context.Context, client *common.APIClient, zone string, id ia
 			}
 			return nil
 		}
-		diags.AddError("Get Subnet Error", fmt.Sprintf("failed to read Subnet[%s]: %s", id.String(), err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Subnet[%s]: %s", id.String(), err))
 		return nil
 	}
 	return subnet

@@ -437,18 +437,18 @@ func (r *nosqlAdditionalNodesResource) Create(ctx context.Context, req resource.
 	nosqlPlan := nosql.GetPlanFromID(data.Plan.Value.ID.Value)
 	res, err := instanceOp.AddNodes(ctx, nosqlPlan, *expandNosqlAddNodesRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create NoSQL additional nodes: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create NoSQL additional nodes: %s", err))
 		return
 	}
 
 	id := res.ID.Value
 	if err := waitNosqlReady(ctx, r.client, id); err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: Resource Error", err.Error())
 		return
 	}
 
 	if err := waitNosqlProcessingDone(ctx, r.client, id, "AddNode"); err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: Resource Error", err.Error())
 		return
 	}
 
@@ -502,17 +502,17 @@ func (r *nosqlAdditionalNodesResource) Delete(ctx context.Context, req resource.
 	instanceOp := nosql.NewInstanceOp(r.client, data.ID.Value, state.Zone.ValueString())
 	if data.Instance.Value.Status.Value != "down" {
 		if err := instanceOp.Stop(ctx); err != nil {
-			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to stop NoSQL additional nodes[%s]: %s", sid, err))
+			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to stop NoSQL additional nodes[%s]: %s", sid, err))
 			return
 		}
 		if err := waitNosqlDown(ctx, r.client, data.ID.Value); err != nil {
-			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to wait for NoSQL additional nodes[%s] stop: %s", sid, err))
+			resp.Diagnostics.AddError("Delete: Resource Error", fmt.Sprintf("failed to wait for NoSQL additional nodes[%s] stop: %s", sid, err))
 			return
 		}
 	}
 
 	if err := dbOp.Delete(ctx, data.ID.Value); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete NoSQL additional nodes[%s]: %s", sid, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete NoSQL additional nodes[%s]: %s", sid, err))
 		return
 	}
 }

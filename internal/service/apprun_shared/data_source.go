@@ -220,7 +220,7 @@ func (d *apprunSharedDataSource) Read(ctx context.Context, req datasource.ReadRe
 	appOp := apprun.NewApplicationOp(d.client)
 	apps, err := appOp.List(ctx, &v1.ListApplicationsParams{})
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to list SakuraCloud AppRun Shared resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list AppRun Shared resource: %s", err))
 		return
 	}
 	if apps == nil || len(apps.Data) == 0 {
@@ -234,7 +234,7 @@ func (d *apprunSharedDataSource) Read(ctx context.Context, req datasource.ReadRe
 		if d.Name == name {
 			a, err := appOp.Read(ctx, d.Id)
 			if err != nil {
-				resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to read AppRun Shared resource: %s", err))
+				resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Shared resource: %s", err))
 				return
 			}
 			app = a
@@ -249,7 +249,7 @@ func (d *apprunSharedDataSource) Read(ctx context.Context, req datasource.ReadRe
 	pfOp := apprun.NewPacketFilterOp(d.client)
 	pf, err := pfOp.Read(ctx, app.Id)
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to read AppRun Shared's PacketFilter resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Shared's PacketFilter resource: %s", err))
 		return
 	}
 

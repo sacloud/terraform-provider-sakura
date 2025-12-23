@@ -120,7 +120,7 @@ func (r *cloudHSMPeerResource) Create(ctx context.Context, req resource.CreateRe
 
 	peerOp, err := cloudhsm.NewPeerOp(client, chsm)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: Client Error", err.Error())
 		return
 	}
 
@@ -129,7 +129,7 @@ func (r *cloudHSMPeerResource) Create(ctx context.Context, req resource.CreateRe
 		SecretKey: plan.SecretKey.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create CloudHSM Peer: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create CloudHSM Peer: %s", err))
 		return
 	}
 
@@ -193,7 +193,7 @@ func (r *cloudHSMPeerResource) Delete(ctx context.Context, req resource.DeleteRe
 
 	peerOp, _ := cloudhsm.NewPeerOp(client, chsm)
 	if err := peerOp.Delete(ctx, chsmPeer.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete CloudHSM Peer: %s", err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete CloudHSM Peer[%s]: %s", chsmPeer.ID, err))
 		return
 	}
 }
@@ -201,13 +201,13 @@ func (r *cloudHSMPeerResource) Delete(ctx context.Context, req resource.DeleteRe
 func getCloudHSMPeer(ctx context.Context, client *v1.Client, chsm *v1.CloudHSM, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.CloudHSMPeer {
 	peerOp, err := cloudhsm.NewPeerOp(client, chsm)
 	if err != nil {
-		diags.AddError("Get CloudHSM Peer Error", fmt.Sprintf("failed to create CloudHSM Peer operation: %s", err))
+		diags.AddError("Client Error", fmt.Sprintf("failed to create CloudHSM Peer operation: %s", err))
 		return nil
 	}
 
 	peers, err := peerOp.List(ctx)
 	if err != nil {
-		diags.AddError("Get CloudHSM Peer Error", fmt.Sprintf("failed to list CloudHSM Peers for CloudHSM[%s]: %s", chsm.ID, err))
+		diags.AddError("API List Error", fmt.Sprintf("failed to list CloudHSM Peers for CloudHSM[%s]: %s", chsm.ID, err))
 		return nil
 	}
 

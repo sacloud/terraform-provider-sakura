@@ -167,7 +167,7 @@ func (d *serverDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	searcher := iaas.NewServerOp(d.client)
 	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Search Error", "cloud not find SakuraCloud Server: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find SakuraCloud Server: "+err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.Servers) == 0 {

@@ -90,14 +90,14 @@ func (d *scheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 	name := data.Name.ValueString()
 	tags := common.TsetToStrings(data.Tags)
 	if name == "" && len(tags) == 0 {
-		resp.Diagnostics.AddError("Invalid Attribute", "Either name or tags must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'name' or 'tags' must be specified.")
 		return
 	}
 
 	scheduleOp := eventbus.NewScheduleOp(d.client)
 	schedules, err := scheduleOp.List(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find SakuraCloud EventBus Schedule resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list EventBus Schedule resources: %s", err))
 		return
 	}
 
@@ -119,12 +119,12 @@ func (d *scheduleDataSource) Read(ctx context.Context, req datasource.ReadReques
 		}
 
 		if err := data.updateState(&s); err != nil {
-			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", data.ID.String(), err))
+			resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", data.ID.String(), err))
 			return
 		}
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 		return
 	}
 
-	resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus Schedule resources with  name=%q and tags=%v", name, tags))
+	resp.Diagnostics.AddError("Read: Search Error", fmt.Sprintf("failed to find any EventBus Schedule resources with  name=%q and tags=%v", name, tags))
 }

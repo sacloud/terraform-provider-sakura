@@ -5,6 +5,7 @@ package vswitch
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -80,17 +81,17 @@ func (d *vSwitchDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	searcher := iaas.NewSwitchOp(d.client)
 	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", err.Error())
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read vSwitch: %s", err))
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.Switches) == 0 {
-		resp.Diagnostics.AddError("Read Error", "No vSwitch resource matched the filter.")
+		resp.Diagnostics.AddError("Read: Search Error", "No vSwitch resource matched the filter.")
 		return
 	}
 
 	sw := res.Switches[0]
 	if err := data.updateState(ctx, d.client, sw, zone); err != nil {
-		resp.Diagnostics.AddError("Read Error", err.Error())
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for vSwitch[%s]: %s", sw.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

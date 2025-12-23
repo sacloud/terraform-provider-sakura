@@ -70,7 +70,7 @@ func (d *bridgeDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	bridgeOp := iaas.NewBridgeOp(d.client)
 	res, err := bridgeOp.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, types.SetNull(types.StringType)))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Bridge : %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find Bridge: %s", err))
 		return
 	}
 	if res == nil || len(res.Bridges) == 0 {

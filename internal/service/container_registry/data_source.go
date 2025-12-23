@@ -44,18 +44,18 @@ type containerRegistryDataSourceModel struct {
 func (d *containerRegistryDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("ContainerRegistry"),
-			"name":        common.SchemaDataSourceName("ContainerRegistry"),
-			"description": common.SchemaDataSourceDescription("ContainerRegistry"),
-			"tags":        common.SchemaDataSourceTags("ContainerRegistry"),
-			"icon_id":     common.SchemaDataSourceIconID("ContainerRegistry"),
+			"id":          common.SchemaDataSourceId("Container Registry"),
+			"name":        common.SchemaDataSourceName("Container Registry"),
+			"description": common.SchemaDataSourceDescription("Container Registry"),
+			"tags":        common.SchemaDataSourceTags("Container Registry"),
+			"icon_id":     common.SchemaDataSourceIconID("Container Registry"),
 			"access_level": schema.StringAttribute{
 				Computed:    true,
 				Description: "The level of access that allow to users. This will be one of [read, write, admin]",
 			},
 			"virtual_domain": schema.StringAttribute{
 				Computed:    true,
-				Description: "The alias for accessing the container registry",
+				Description: "The alias for accessing the Container Registry",
 			},
 			"subdomain_label": schema.StringAttribute{
 				Computed:    true,
@@ -63,7 +63,7 @@ func (d *containerRegistryDataSource) Schema(_ context.Context, _ datasource.Sch
 			},
 			"fqdn": schema.StringAttribute{
 				Computed:    true,
-				Description: "The FQDN for accessing the container registry. FQDN is built from `subdomain_label` + `.sakuracr.jp`",
+				Description: "The FQDN for accessing the Container Registry. FQDN is built from `subdomain_label` + `.sakuracr.jp`",
 			},
 			"user": schema.SetNestedAttribute{
 				Computed: true,
@@ -100,7 +100,7 @@ func (d *containerRegistryDataSource) Read(ctx context.Context, req datasource.R
 	searcher := iaas.NewContainerRegistryOp(d.client)
 	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", "could not find SakuraCloud ContainerRegistry")
+		resp.Diagnostics.AddError("Read: API Error", "failed to find SakuraCloud ContainerRegistry")
 		return
 	}
 	if res.Count == 0 || len(res.ContainerRegistries) == 0 {

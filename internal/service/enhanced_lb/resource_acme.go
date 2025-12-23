@@ -228,21 +228,21 @@ func (r *enhancedLBACMEResource) Create(ctx context.Context, req resource.Create
 		SettingsHash:         elb.SettingsHash,
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("setting Enchanced LB[%s] ACME is failed: %s", elbID, err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to update setting Enhanced LB[%s] ACME: %s", elbID, err))
 		return
 	}
 	if err := elbOp.RenewLetsEncryptCert(ctx, elb.ID); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("renewing ACME Certificates at Enchanced LB[%s] is failed: %s", elb.ID, err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to renew ACME Certificates at Enhanced LB[%s]: %s", elb.ID, err))
 		return
 	}
 
 	if err := waitForProxyLBCertAcquisitionFW(ctx, r.client, elb.ID.String(), plan.GetCertificatesTimeoutSec.ValueInt32()); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("waiting for ACME certificate acquisition of Enchanced LB[%s] is failed: %s", elb.ID, err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to wait for ACME certificate acquisition of Enhanced LB[%s]: %s", elb.ID, err))
 		return
 	}
 
 	if err := plan.updateState(ctx, r.client, elb); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update state for Enhanced LB[%s] ACME: %s", elb.ID, err))
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update state for Enhanced LB[%s] ACME: %s", elb.ID, err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -261,14 +261,14 @@ func (r *enhancedLBACMEResource) Read(ctx context.Context, req resource.ReadRequ
 	}
 
 	if err := state.updateState(ctx, r.client, elb); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update state for Enhanced LB[%s] ACME: %s", elb.ID, err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for Enhanced LB[%s] ACME: %s", elb.ID, err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *enhancedLBACMEResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// Update is not supported
+	resp.Diagnostics.AddError("Update Error", "updating Enhanced LB ACME is not supported. To change the attributes, please delete and recreate the resource.")
 }
 
 func (r *enhancedLBACMEResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -308,7 +308,7 @@ func (r *enhancedLBACMEResource) Delete(ctx context.Context, req resource.Delete
 		SettingsHash:         elb.SettingsHash,
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("clearing ACME Setting of Enhanced LB[%s] is failed: %s", elb.ID, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to clear ACME Setting of Enhanced LB[%s]: %s", elb.ID, err))
 		return
 	}
 }
@@ -336,7 +336,7 @@ func waitForProxyLBCertAcquisitionFW(ctx context.Context, client *common.APIClie
 	for {
 		select {
 		case <-waitCtx.Done():
-			return fmt.Errorf("waiting for certificate acquisition failed: %s", waitCtx.Err())
+			return fmt.Errorf("failed to wait for certificate acquisition: %s", waitCtx.Err())
 		default:
 			cert, err := elbOp.GetCertificates(ctx, common.SakuraCloudID(elbID))
 			if err != nil {

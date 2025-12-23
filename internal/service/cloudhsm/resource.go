@@ -125,7 +125,7 @@ func (r *cloudHSMResource) Create(ctx context.Context, req resource.CreateReques
 	cloudhsmOp := cloudhsm.NewCloudHSMOp(client)
 	created, err := cloudhsmOp.Create(ctx, expandCloudHSMCreateParams(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create CloudHSM: %s", err))
 		return
 	}
 
@@ -175,13 +175,14 @@ func (r *cloudHSMResource) Update(ctx context.Context, req resource.UpdateReques
 
 	zone := getZone(plan.Zone, r.client, &resp.Diagnostics)
 	client := createClient(zone, r.client)
-	_, err := cloudhsm.NewCloudHSMOp(client).Update(ctx, plan.ID.ValueString(), expandCloudHSMUpdateParams(&plan))
+	id := plan.ID.ValueString()
+	_, err := cloudhsm.NewCloudHSMOp(client).Update(ctx, id, expandCloudHSMUpdateParams(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", err.Error())
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update CloudHSM[%s]: %s", id, err))
 		return
 	}
 
-	chsm := getCloudHSM(ctx, client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	chsm := getCloudHSM(ctx, client, id, &resp.State, &resp.Diagnostics)
 	if chsm == nil {
 		return
 	}
@@ -208,7 +209,7 @@ func (r *cloudHSMResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	if err := cloudhsm.NewCloudHSMOp(client).Delete(ctx, chsm.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", err.Error())
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete CloudHSM[%s]: %s", chsm.ID, err))
 		return
 	}
 }
@@ -220,7 +221,7 @@ func getCloudHSM(ctx context.Context, client *v1.Client, id string, state *tfsdk
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get CloudHSM Error", fmt.Sprintf("failed to read CloudHSM[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read CloudHSM[%s]: %s", id, err))
 		return nil
 	}
 	return chsm

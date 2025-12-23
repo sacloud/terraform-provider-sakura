@@ -146,13 +146,13 @@ func (d *objectStorageSiteDataSource) Read(ctx context.Context, req datasource.R
 		site, err = getSite(d.client, ctx, data.ID.ValueString(), data.DisplayName.ValueString())
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to get site: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object storage site: %s", err.Error()))
 		return
 	}
 	statusOp := objectstorage.NewSiteStatusOp(d.client)
 	status, err := statusOp.Read(ctx, site.Id)
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to get site status: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object storage site status: %s", err.Error()))
 		return
 	}
 

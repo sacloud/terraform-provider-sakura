@@ -230,14 +230,14 @@ func (r *dnsRecordResource) Create(ctx context.Context, req resource.CreateReque
 	dnsOp := iaas.NewDNSOp(r.client)
 	dns, err := dnsOp.Read(ctx, common.SakuraCloudID(dnsID))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("could not read SakuraCloud DNS[%s]: %s", dnsID, err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to read DNS[%s]: %s", dnsID, err))
 		return
 	}
 
 	record, reqSetting := expandDNSRecordCreateRequest(&plan, dns)
 	_, err = dnsOp.UpdateSettings(ctx, dns.ID, reqSetting)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating Record for SakuraCloud DNS[%s] is failed: %s", dnsID, err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Record for DNS[%s]: %s", dnsID, err))
 		return
 	}
 
@@ -321,7 +321,7 @@ func (r *dnsRecordResource) Delete(ctx context.Context, req resource.DeleteReque
 
 	_, err := dnsOp.UpdateSettings(ctx, common.SakuraCloudID(dnsID), expandDNSRecordDeleteRequest(&state, dns))
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud DNSRecord[%s] is failed: %s", dnsID, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete DNSRecord[%s]: %s", dnsID, err))
 		return
 	}
 }

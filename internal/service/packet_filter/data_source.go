@@ -102,7 +102,7 @@ func (d *packetFilterDataSource) Read(ctx context.Context, req datasource.ReadRe
 	searcher := iaas.NewPacketFilterOp(d.client)
 	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, types.SetNull(types.StringType)))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud PacketFilter resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find PacketFilter resource: %s", err))
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.PacketFilters) == 0 {

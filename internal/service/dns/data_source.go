@@ -113,7 +113,7 @@ func (d *dnsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	}
 
 	if (data.Name.IsNull() && data.Name.IsUnknown()) && (data.Zone.IsNull() && data.Zone.IsUnknown()) {
-		resp.Diagnostics.AddError("Invalid Attribute", "Either name or zone must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'name' or 'zone' must be specified.")
 		return
 	}
 	name := data.Name
@@ -124,7 +124,7 @@ func (d *dnsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	searcher := iaas.NewDNSOp(d.client)
 	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Search DNS Error", "could not find SakuraCloud DNS resource: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find DNS resource: "+err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.DNS) == 0 {

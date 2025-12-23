@@ -98,7 +98,7 @@ func (r *objectStorageBucketVersioningResource) Create(ctx context.Context, req 
 	defer cancel()
 
 	if err := setBucketVersioningConfiguration(ctx, &plan); err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: API Error", err.Error())
 		return
 	}
 
@@ -115,13 +115,13 @@ func (r *objectStorageBucketVersioningResource) Read(ctx context.Context, req re
 
 	client, err := state.getMinIOClient()
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Errorf("failed to create MinIO client: %w", err).Error())
+		resp.Diagnostics.AddError("Read: Client Error", fmt.Sprintf("failed to create MinIO client: %s", err))
 		return
 	}
 
 	versioningConfig, err := client.GetBucketVersioning(ctx, state.Bucket.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Errorf("failed to get bucket versioning: %w", err).Error())
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object storage bucket versioning: %s", err))
 		return
 	}
 
@@ -141,7 +141,7 @@ func (r *objectStorageBucketVersioningResource) Update(ctx context.Context, req 
 	defer cancel()
 
 	if err := setBucketVersioningConfiguration(ctx, &plan); err != nil {
-		resp.Diagnostics.AddError("Update Error", err.Error())
+		resp.Diagnostics.AddError("Update: API Error", err.Error())
 		return
 	}
 
@@ -158,13 +158,13 @@ func (r *objectStorageBucketVersioningResource) Delete(ctx context.Context, req 
 
 	client, err := state.getMinIOClient()
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Errorf("failed to create MinIO client: %w", err).Error())
+		resp.Diagnostics.AddError("Delete: Client Error", fmt.Errorf("failed to create MinIO client: %w", err).Error())
 		return
 	}
 
 	err = client.SuspendVersioning(ctx, state.Bucket.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to suspend bucket versioning: %s", err.Error()))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to suspend object storage bucket versioning: %s", err.Error()))
 		return
 	}
 }
@@ -181,7 +181,7 @@ func setBucketVersioningConfiguration(ctx context.Context, model *objectStorageB
 		err = client.SuspendVersioning(ctx, model.Bucket.ValueString())
 	}
 	if err != nil {
-		return fmt.Errorf("failed to set bucket versioning: %w", err)
+		return fmt.Errorf("failed to set object storage bucket versioning: %w", err)
 	}
 
 	return nil

@@ -90,7 +90,7 @@ func (d *cloudHSMClientDataSource) Read(ctx context.Context, req datasource.Read
 	id := data.ID.ValueString()
 	name := data.Name.ValueString()
 	if len(name) == 0 && len(id) == 0 {
-		resp.Diagnostics.AddError("Missing Attribute", "either 'id' or 'name' must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id' or 'name' must be specified.")
 		return
 	}
 
@@ -103,7 +103,7 @@ func (d *cloudHSMClientDataSource) Read(ctx context.Context, req datasource.Read
 
 	clientOp, err := cloudhsm.NewClientOp(client, chsm)
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to create CloudHSM Client operation: %s", err))
+		resp.Diagnostics.AddError("Read: Client Error", fmt.Sprintf("failed to create CloudHSM Client operation: %s", err))
 		return
 	}
 
@@ -111,18 +111,18 @@ func (d *cloudHSMClientDataSource) Read(ctx context.Context, req datasource.Read
 	if len(name) > 0 {
 		chsmClients, err := clientOp.List(ctx)
 		if err != nil {
-			resp.Diagnostics.AddError("List Error", fmt.Sprintf("failed to list CloudHSM Client resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list CloudHSM Client resource: %s", err))
 			return
 		}
 		chsmClient, err = FilterCloudHsmClientByName(chsmClients, name)
 		if err != nil {
-			resp.Diagnostics.AddError("Filter Error", err.Error())
+			resp.Diagnostics.AddError("Read: Search Error", fmt.Sprintf("failed to filter CloudHSM Client resource by name: %s", err.Error()))
 			return
 		}
 	} else {
 		chsmClient, err = clientOp.Read(ctx, id)
 		if err != nil {
-			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to find CloudHSM Client resource[%s]: %s", id, err.Error()))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find CloudHSM Client resource[%s]: %s", id, err.Error()))
 			return
 		}
 	}

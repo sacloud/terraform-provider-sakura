@@ -131,7 +131,7 @@ func (r *scheduleResource) Create(ctx context.Context, req resource.CreateReques
 	scheduleOp := eventbus.NewScheduleOp(r.client)
 	schedule, err := scheduleOp.Create(ctx, expandScheduleCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus Schedule failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create EventBus Schedule: %s", err))
 		return
 	}
 	scheduleID := schedule.ID
@@ -142,7 +142,7 @@ func (r *scheduleResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	if err := plan.updateState(gotSchedule); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", plan.ID.String(), err))
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", plan.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -161,7 +161,7 @@ func (r *scheduleResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	if err := state.updateState(schedule); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", state.ID.String(), err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", state.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -180,7 +180,7 @@ func (r *scheduleResource) Update(ctx context.Context, req resource.UpdateReques
 	scheduleOp := eventbus.NewScheduleOp(r.client)
 
 	if _, err := scheduleOp.Update(ctx, plan.ID.ValueString(), expandScheduleUpdateRequest(&plan)); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus Schedule[%s] failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update EventBus Schedule[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -190,7 +190,7 @@ func (r *scheduleResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	if err := plan.updateState(schedule); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", plan.ID.String(), err))
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update EventBus Schedule[%s] state: %s", plan.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -213,7 +213,7 @@ func (r *scheduleResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 
 	if err := scheduleOp.Delete(ctx, state.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("delete EventBus Schedule[%s] failed: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete EventBus Schedule[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -226,7 +226,7 @@ func getSchedule(ctx context.Context, client *v1.Client, id string, state *tfsdk
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get Schedule Error", fmt.Sprintf("could not read EventBus Schedule[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read EventBus Schedule[%s]: %s", id, err))
 		return nil
 	}
 

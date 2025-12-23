@@ -199,7 +199,7 @@ func (r *archiveResource) Create(ctx context.Context, req resource.CreateRequest
 
 	builder, cleanup, err := expandArchiveBuilder(&plan, zone, r.client)
 	if err != nil {
-		resp.Diagnostics.AddError("Expand Archive Builder Error", err.Error())
+		resp.Diagnostics.AddError("Create: Expand Builder Error", err.Error())
 		return
 	}
 	if cleanup != nil {
@@ -208,7 +208,7 @@ func (r *archiveResource) Create(ctx context.Context, req resource.CreateRequest
 
 	archive, err := builder.Build(ctx, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Archive Error", fmt.Sprintf("creating SakuraCloud Archive is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Archive: %s", err))
 		return
 	}
 
@@ -254,7 +254,7 @@ func (r *archiveResource) Update(ctx context.Context, req resource.UpdateRequest
 
 	archiveOp := iaas.NewArchiveOp(r.client)
 	if _, err := archiveOp.Update(ctx, zone, common.ExpandSakuraCloudID(plan.ID), expandArchiveUpdateRequest(&plan)); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Archive[%s] is failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Archive[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -289,7 +289,7 @@ func (r *archiveResource) Delete(ctx context.Context, req resource.DeleteRequest
 
 	archiveOp := iaas.NewArchiveOp(r.client)
 	if err := archiveOp.Delete(ctx, zone, archive.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud Archive[%s] is failed: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Archive[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -317,7 +317,7 @@ func getArchive(ctx context.Context, client *common.APIClient, id iaastypes.ID, 
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("could not read SakuraCloud Archive[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Archive[%s]: %s", id, err))
 		return nil
 	}
 

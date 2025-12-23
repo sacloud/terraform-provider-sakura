@@ -75,7 +75,6 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Description: "The status of the KMS key.",
 				Default:     stringdefault.StaticString(string(v1.ChangeKeyStatusStatusActive)),
 				Validators: []validator.String{
-					//stringvalidator.OneOf(common.ToStrings(v1.ChangeKeyStatusStatusActive.AllValues())...),
 					stringvalidator.OneOf(common.MapTo(v1.ChangeKeyStatusStatusActive.AllValues(), common.ToString)...),
 				},
 			},
@@ -142,20 +141,20 @@ func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	keyReq, err := expandKMSCreateKey(&plan)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to expand create key request: %s", err.Error()))
+		resp.Diagnostics.AddError("Create: Expand Error", fmt.Sprintf("failed to expand create key request: %s", err))
 		return
 	}
 
 	keyOp := kms.NewKeyOp(r.client)
 	createdKey, err := keyOp.Create(ctx, keyReq)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create KMS key: %s", err.Error()))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create KMS key: %s", err))
 		return
 	}
 
 	err = updateKMS(ctx, r.client, &plan, nil, createdKey.ID, "active")
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update KMS key status: %s", err.Error()))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to update KMS key status: %s", err))
 		return
 	}
 
@@ -203,13 +202,13 @@ func (r *kmsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	_, err := keyOp.Update(ctx, key.ID, expandKMSUpdateKey(&plan, key))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update KMS key: %s", err.Error()))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update KMS key: %s", err))
 		return
 	}
 
 	err = updateKMS(ctx, r.client, &plan, &state, key.ID, string(key.Status))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update KMS key status: %s", err.Error()))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update KMS key status: %s", err))
 		return
 	}
 
@@ -241,12 +240,12 @@ func (r *kmsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	if !state.ScheduleDestructionDays.IsNull() {
 		err := keyOp.ScheduleDestruction(ctx, state.ID.ValueString(), int(state.ScheduleDestructionDays.ValueInt32()))
 		if err != nil {
-			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to set schedule destruction of KMS key[%s]: %s", state.ID.ValueString(), err.Error()))
+			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to set schedule destruction of KMS key[%s]: %s", state.ID.ValueString(), err))
 			return
 		}
 	} else {
 		if err := keyOp.Delete(ctx, key.ID); err != nil {
-			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete KMS key: %s", err.Error()))
+			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete KMS key: %s", err))
 			return
 		}
 	}
@@ -260,7 +259,7 @@ func getKMS(ctx context.Context, client *v1.Client, id string, state *tfsdk.Stat
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get KMS Key Error", fmt.Sprintf("could not read SakuraCloud KMS key[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read SakuraCloud KMS key[%s]: %s", id, err))
 		return nil
 	}
 
@@ -336,10 +335,3 @@ func updateKMS(ctx context.Context, client *v1.Client, model *kmsResourceModel, 
 
 	return nil
 }
-
-/*
-func updateResourceState(model *kmsResourceModel, key *v1.Key, rotateVer int64) {
-	model.updateState(key)
-	model.RotateVersion = types.Int64Value(rotateVer)
-}
-*/

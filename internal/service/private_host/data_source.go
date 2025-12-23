@@ -84,7 +84,7 @@ func (d *privateHostDataSource) Read(ctx context.Context, req datasource.ReadReq
 	searcher := iaas.NewPrivateHostOp(d.client)
 	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", err.Error())
+		resp.Diagnostics.AddError("Read: API Error", err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.PrivateHosts) == 0 {

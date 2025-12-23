@@ -98,7 +98,7 @@ func (r *cloudHSMLicenseResource) Create(ctx context.Context, req resource.Creat
 		Tags:        common.TsetToStrings(plan.Tags),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create CloudHSM License: %s", err.Error()))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create CloudHSM License: %s", err.Error()))
 		return
 	}
 
@@ -147,7 +147,7 @@ func (r *cloudHSMLicenseResource) Update(ctx context.Context, req resource.Updat
 		Tags:        common.TsetToStrings(plan.Tags),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update CloudHSM License[%s]: %s", plan.ID.ValueString(), err.Error()))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update CloudHSM License[%s]: %s", plan.ID.ValueString(), err.Error()))
 		return
 	}
 
@@ -173,7 +173,7 @@ func (r *cloudHSMLicenseResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	if err := cloudhsm.NewLicenseOp(client).Delete(ctx, license.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete CloudHSM License[%s]: %s", license.ID, err.Error()))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete CloudHSM License[%s]: %s", license.ID, err.Error()))
 		return
 	}
 }
@@ -186,7 +186,7 @@ func getCloudHSMLicense(ctx context.Context, client *v1.Client, id string, state
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get CloudHSM License Error", fmt.Sprintf("failed to read CloudHSM License[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read CloudHSM License[%s]: %s", id, err))
 		return nil
 	}
 	return license

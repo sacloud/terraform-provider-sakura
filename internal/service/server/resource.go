@@ -423,16 +423,16 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	builder, err := expandServerBuilder(ctx, r.client, zone, &plan, nil)
 	if err != nil {
-		resp.Diagnostics.AddError("Expand Server Builder Error", err.Error())
+		resp.Diagnostics.AddError("Create: Expand Error", fmt.Sprintf("failed to expand server builder: %s", err))
 		return
 	}
 	if err := builder.Validate(ctx, zone); err != nil {
-		resp.Diagnostics.AddError("Validate Server Builder Error", err.Error())
+		resp.Diagnostics.AddError("Create: Validate Error", fmt.Sprintf("failed to validate server builder: %s", err))
 		return
 	}
 	result, err := builder.Build(ctx, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Build Server Error", err.Error())
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create server: %s", err))
 		return
 	}
 
@@ -488,11 +488,11 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	builder, err := expandServerBuilder(ctx, r.client, zone, &plan, &state)
 	if err != nil {
-		resp.Diagnostics.AddError("Expand Server Builder Error", err.Error())
+		resp.Diagnostics.AddError("Update: Expand Error", fmt.Sprintf("failed to expand server builder: %s", err))
 		return
 	}
 	if err := builder.Validate(ctx, zone); err != nil {
-		resp.Diagnostics.AddError("Validate Server Builder Error", fmt.Sprintf("validating SakuraCloud Server[%s] is failed: %s", sid, err))
+		resp.Diagnostics.AddError("Update: Validate Error", fmt.Sprintf("failed to validate server builder: %s", err))
 		return
 	}
 	// 特定条件下ではIDを変更させるためにModifyPlanでUnknownにしているため、その場合はstateのIDをセットしてUpdateを実行する
@@ -501,7 +501,7 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 	result, err := builder.Update(ctx, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Server Error", fmt.Sprintf("updating SakuraCloud Server[%s] is failed: %s", sid, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Server[%s]: %s", sid, err))
 		return
 	}
 
@@ -536,13 +536,13 @@ func (r *serverResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	server := getServer(ctx, r.client, zone, common.SakuraCloudID(sid), &resp.State, &resp.Diagnostics)
 	if server.InstanceStatus.IsUp() {
 		if err := power.ShutdownServer(ctx, serverOp, zone, server.ID, state.ForceShutdown.ValueBool()); err != nil {
-			resp.Diagnostics.AddError("Shutdown Error", fmt.Sprintf("stopping SakuraCloud Server[%s] is failed: %s", server.ID, err))
+			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to stop Server[%s]: %s", server.ID, err))
 			return
 		}
 	}
 
 	if err := serverOp.Delete(ctx, zone, server.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud Server[%s] is failed: %s", server.ID, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Server[%s]: %s", server.ID, err))
 		return
 	}
 }
@@ -555,7 +555,7 @@ func getServer(ctx context.Context, client *common.APIClient, zone string, id ia
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get Server Error", fmt.Sprintf("could not read SakuraCloud Server[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Server[%s]: %s", id, err))
 	}
 
 	return server

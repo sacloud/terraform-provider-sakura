@@ -106,7 +106,7 @@ func (d *cloudHSMDataSource) Read(ctx context.Context, req datasource.ReadReques
 	id := data.ID.ValueString()
 	name := data.Name.ValueString()
 	if len(name) == 0 && len(id) == 0 {
-		resp.Diagnostics.AddError("Missing Attribute", "either 'id' or 'name' must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id' or 'name' must be specified.")
 		return
 	}
 
@@ -118,18 +118,18 @@ func (d *cloudHSMDataSource) Read(ctx context.Context, req datasource.ReadReques
 	if len(name) > 0 {
 		cloudHSMs, err := cloudhsmOp.List(ctx)
 		if err != nil {
-			resp.Diagnostics.AddError("List Error", fmt.Sprintf("failed to find CloudHSM resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find CloudHSM resource: %s", err))
 			return
 		}
 		cloudhsm, err = FilterCloudHsmByName(cloudHSMs, name)
 		if err != nil {
-			resp.Diagnostics.AddError("Filter Error", err.Error())
+			resp.Diagnostics.AddError("Read: Search Error", fmt.Sprintf("failed to filter CloudHSM resource by name: %s", err))
 			return
 		}
 	} else {
 		cloudhsm, err = cloudhsmOp.Read(ctx, id)
 		if err != nil {
-			resp.Diagnostics.AddError("Read Error", "No result found")
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find CloudHSM resource[%s]: %s", id, err))
 			return
 		}
 	}

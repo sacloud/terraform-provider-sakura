@@ -72,7 +72,7 @@ func (d *sshKeyDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	searcher := iaas.NewSSHKeyOp(d.client)
 	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, types.SetNull(types.StringType)))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud SSHKey resource: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find SakuraCloud SSHKey resource: %s", err.Error()))
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.SSHKeys) == 0 {

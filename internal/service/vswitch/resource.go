@@ -113,14 +113,14 @@ func (r *vSwitchResource) Create(ctx context.Context, req resource.CreateRequest
 		IconID:      common.ExpandSakuraCloudID(plan.IconID),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create vSwitch: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create vSwitch: %s", err))
 		return
 	}
 
 	if !plan.BridgeID.IsNull() && plan.BridgeID.ValueString() != "" {
 		brId := common.ExpandSakuraCloudID(plan.BridgeID)
 		if err := swOp.ConnectToBridge(ctx, zone, sw.ID, brId); err != nil {
-			resp.Diagnostics.AddError("Bridge Connect Error",
+			resp.Diagnostics.AddError("Create: API Error",
 				fmt.Sprintf("failed to connect vSwitch[%s] to Bridge[%s]: %s", sw.ID, brId, err))
 			return
 		}
@@ -151,7 +151,7 @@ func (r *vSwitchResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	if err := state.updateState(ctx, r.client, sw, zone); err != nil {
-		resp.Diagnostics.AddError("Read Error", err.Error())
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for vSwitch[%s]: %s", sw.ID.String(), err))
 		return
 	}
 
@@ -186,7 +186,7 @@ func (r *vSwitchResource) Update(ctx context.Context, req resource.UpdateRequest
 		IconID:      common.ExpandSakuraCloudID(plan.IconID),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update vSwitch[%s]: %s", sw.ID, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update vSwitch[%s]: %s", sw.ID, err))
 		return
 	}
 
@@ -196,13 +196,13 @@ func (r *vSwitchResource) Update(ctx context.Context, req resource.UpdateRequest
 			brId := plan.BridgeID.ValueString()
 			if brId == "" && !sw.BridgeID.IsEmpty() {
 				if err := swOp.DisconnectFromBridge(ctx, zone, sw.ID); err != nil {
-					resp.Diagnostics.AddError("Update Error",
+					resp.Diagnostics.AddError("Update: API Error",
 						fmt.Sprintf("failed to disconnect from Bridge[%s]: %s", sw.BridgeID, err))
 					return
 				}
 			} else {
 				if err := swOp.ConnectToBridge(ctx, zone, sw.ID, common.SakuraCloudID(brId)); err != nil {
-					resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to connect to Bridge[%s]: %s", brId, err))
+					resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to connect to Bridge[%s]: %s", brId, err))
 					return
 				}
 			}
@@ -243,14 +243,14 @@ func (r *vSwitchResource) Delete(ctx context.Context, req resource.DeleteRequest
 
 	if !sw.BridgeID.IsEmpty() {
 		if err := swOp.DisconnectFromBridge(ctx, zone, sw.ID); err != nil {
-			resp.Diagnostics.AddError("Delete Error",
+			resp.Diagnostics.AddError("Delete: API Error",
 				fmt.Sprintf("failed to disconnect vSwitch[%s] from Bridge[%s]: %s", sw.ID, sw.BridgeID, err))
 			return
 		}
 	}
 
 	if err := cleanup.DeleteSwitch(ctx, r.client, zone, sw.ID, r.client.CheckReferencedOption()); err != nil {
-		resp.Diagnostics.AddError("Delete Error",
+		resp.Diagnostics.AddError("Delete: API Error",
 			fmt.Sprintf("failed to delete vSwitch[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
@@ -277,7 +277,7 @@ func updateModelByRead(ctx context.Context, model *vSwitchResourceModel, client 
 	}
 
 	if err := model.updateState(ctx, client, sw, zone); err != nil {
-		diags.AddError("Update State Error", err.Error())
+		diags.AddError("Update State Error", fmt.Sprintf("failed to update state for vSwitch[%s]: %s", sw.ID.String(), err))
 		return true
 	}
 

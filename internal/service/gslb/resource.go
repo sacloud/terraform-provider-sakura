@@ -180,7 +180,7 @@ func (r *gslbResource) Create(ctx context.Context, req resource.CreateRequest, r
 	gslbOp := iaas.NewGSLBOp(r.client)
 	created, err := gslbOp.Create(ctx, expandGSLBCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create GSLB: %s", err.Error()))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create GSLB: %s", err.Error()))
 		return
 	}
 
@@ -218,7 +218,7 @@ func (r *gslbResource) Update(ctx context.Context, req resource.UpdateRequest, r
 
 	gslbOp := iaas.NewGSLBOp(r.client)
 	if _, err := gslbOp.Update(ctx, gslb.ID, expandGSLBUpdateRequest(&plan, gslb)); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update GSLB[%s]: %s", gslb.ID.String(), err.Error()))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update GSLB[%s]: %s", gslb.ID.String(), err.Error()))
 		return
 	}
 
@@ -244,7 +244,7 @@ func (r *gslbResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	if err := iaas.NewGSLBOp(r.client).Delete(ctx, gslb.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete GSLB[%s]: %s", gslb.ID.String(), err.Error()))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete GSLB[%s]: %s", gslb.ID.String(), err.Error()))
 		return
 	}
 }
@@ -257,7 +257,7 @@ func getGSLB(ctx context.Context, client *common.APIClient, id string, state *tf
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get GSLB Error", fmt.Sprintf("failed to read GSLB[%s]: %s", id, err.Error()))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read GSLB[%s]: %s", id, err.Error()))
 		return nil
 	}
 	return gslb

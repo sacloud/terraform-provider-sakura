@@ -5,6 +5,7 @@ package secret_manager
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
@@ -83,7 +84,7 @@ func (d *secretManagerSecretDataSource) Read(ctx context.Context, req datasource
 	secretOp := sm.NewSecretOp(d.client, data.VaultID.ValueString())
 	unveil, err := secretOp.Unveil(ctx, unveilReq)
 	if err != nil {
-		resp.Diagnostics.AddError("SecretManagerSecret Unveil Error", err.Error())
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to unveil secret: %s", err))
 		return
 	}
 

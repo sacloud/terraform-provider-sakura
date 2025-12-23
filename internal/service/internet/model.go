@@ -35,14 +35,14 @@ func (model *internetBaseModel) updateState(ctx context.Context, client *common.
 	swOp := iaas.NewSwitchOp(client)
 	sw, err := swOp.Read(ctx, zone, data.Switch.ID)
 	if err != nil {
-		return fmt.Errorf("could not read SakuraCloud Switch[%s]: %s", data.Switch.ID, err)
+		return fmt.Errorf("failed to read Internet[%s]: %s", data.Switch.ID, err)
 	}
 
 	var serverIDs []string
 	if sw.ServerCount > 0 {
 		servers, err := swOp.GetServers(ctx, zone, sw.ID)
 		if err != nil {
-			return fmt.Errorf("could not find SakuraCloud Servers of Switch[%s]: %s", sw.ID.String(), err)
+			return fmt.Errorf("failed to find Servers of Internet[%s]: %s", sw.ID.String(), err)
 		}
 		for _, s := range servers.Servers {
 			serverIDs = append(serverIDs, s.ID.String())

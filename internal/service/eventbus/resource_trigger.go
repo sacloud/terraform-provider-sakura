@@ -166,7 +166,7 @@ func (r *triggerResource) Create(ctx context.Context, req resource.CreateRequest
 	triggerOp := eventbus.NewTriggerOp(r.client)
 	trigger, err := triggerOp.Create(ctx, expandTriggerCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("create EventBus Trigger failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create EventBus Trigger: %s", err))
 		return
 	}
 
@@ -176,7 +176,7 @@ func (r *triggerResource) Create(ctx context.Context, req resource.CreateRequest
 	}
 
 	if err := plan.updateState(gotTrigger); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update EventBus Trigger[%s] state: %s", plan.ID.String(), err))
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update EventBus Trigger[%s] state: %s", plan.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -195,7 +195,7 @@ func (r *triggerResource) Read(ctx context.Context, req resource.ReadRequest, re
 	}
 
 	if err := state.updateState(trigger); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update EventBus Trigger[%s] state: %s", state.ID.String(), err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update EventBus Trigger[%s] state: %s", state.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -214,7 +214,7 @@ func (r *triggerResource) Update(ctx context.Context, req resource.UpdateRequest
 	triggerOp := eventbus.NewTriggerOp(r.client)
 
 	if _, err := triggerOp.Update(ctx, plan.ID.ValueString(), expandTriggerUpdateRequest(&plan)); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("update on EventBus Trigger[%s] failed: %s", plan.ID.String(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update EventBus Trigger[%s]: %s", plan.ID.String(), err))
 		return
 	}
 
@@ -224,7 +224,7 @@ func (r *triggerResource) Update(ctx context.Context, req resource.UpdateRequest
 	}
 
 	if err := plan.updateState(trigger); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update EventBus Trigger[%s] state: %s", plan.ID.String(), err))
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update EventBus Trigger[%s] state: %s", plan.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -247,7 +247,7 @@ func (r *triggerResource) Delete(ctx context.Context, req resource.DeleteRequest
 	}
 
 	if err := triggerOp.Delete(ctx, state.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("delete EventBus Trigger[%s] failed: %s", state.ID.String(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete EventBus Trigger[%s]: %s", state.ID.String(), err))
 		return
 	}
 }
@@ -260,7 +260,7 @@ func getTrigger(ctx context.Context, client *v1.Client, id string, state *tfsdk.
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get Trigger Error", fmt.Sprintf("could not read EventBus Trigger[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read EventBus Trigger[%s]: %s", id, err))
 		return nil
 	}
 

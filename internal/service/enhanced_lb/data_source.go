@@ -352,7 +352,7 @@ func (d *enhancedLBDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	searcher := iaas.NewProxyLBOp(d.client)
 	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Search Error", "could not find SakuraCloud Enhanced LB resource: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find Enhanced LB resource: "+err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.ProxyLBs) == 0 {
@@ -362,7 +362,7 @@ func (d *enhancedLBDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	elb := res.ProxyLBs[0]
 	if err := data.updateState(ctx, d.client, elb); err != nil {
-		resp.Diagnostics.AddError("Read Error", "could not update SakuraCloud Enhanced LB state: "+err.Error())
+		resp.Diagnostics.AddError("Read: Terraform Error", "failed to update Enhanced LB state: "+err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

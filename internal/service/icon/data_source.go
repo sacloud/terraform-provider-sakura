@@ -66,7 +66,7 @@ func (d *iconDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	searcher := iaas.NewIconOp(d.client)
 	res, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", "could not find SakuraCloud Icon")
+		resp.Diagnostics.AddError("Read: API Error", "failed to find SakuraCloud Icon: "+err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.Icons) == 0 {

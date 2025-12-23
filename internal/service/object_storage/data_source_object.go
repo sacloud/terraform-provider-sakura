@@ -159,7 +159,7 @@ func (d *objectStorageObjectDataSource) Read(ctx context.Context, req datasource
 
 	minioClient, err := data.getMinIOClient()
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to create MinIO client: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: Client Error", fmt.Sprintf("failed to create MinIO client: %s", err.Error()))
 		return
 	}
 	opts := minio.GetObjectOptions{}
@@ -168,22 +168,22 @@ func (d *objectStorageObjectDataSource) Read(ctx context.Context, req datasource
 	}
 	obj, err := minioClient.GetObject(ctx, data.Bucket.ValueString(), data.Key.ValueString(), opts)
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to get object: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object: %s", err.Error()))
 		return
 	}
 	info, err := obj.Stat()
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to get object information: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object information: %s", err.Error()))
 		return
 	}
 	aclInfo, err := minioClient.GetObjectACL(ctx, data.Bucket.ValueString(), data.Key.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to get object ACL: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object ACL: %s", err.Error()))
 		return
 	}
 	content, err := io.ReadAll(obj)
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to read object data: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read object data: %s", err.Error()))
 		return
 	}
 

@@ -119,7 +119,7 @@ func (d *internetDataSource) Read(ctx context.Context, req datasource.ReadReques
 	searcher := iaas.NewInternetOp(d.client)
 	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Internet resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find SakuraCloud Internet resource: %s", err))
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.Internet) == 0 {
@@ -129,7 +129,7 @@ func (d *internetDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 	internet := res.Internet[0]
 	if err := data.updateState(ctx, d.client, zone, internet); err != nil {
-		resp.Diagnostics.AddError("Read Error", err.Error())
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update Internet[%s] state: %s", internet.ID.String(), err.Error()))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

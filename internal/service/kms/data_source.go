@@ -84,7 +84,7 @@ func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	}
 
 	if data.Name.IsNull() && data.ID.IsNull() {
-		resp.Diagnostics.AddError("Missing Attribute", "Either 'id' or 'name' must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id' or 'name' must be specified.")
 		return
 	}
 
@@ -95,18 +95,18 @@ func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	if !data.Name.IsNull() {
 		keys, err := keyOp.List(ctx)
 		if err != nil {
-			resp.Diagnostics.AddError("List Error", fmt.Sprintf("failed to find KMS resources: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list KMS resources: %s", err))
 			return
 		}
 		key, err = FilterKMSByName(keys, data.Name.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("Filter Error", err.Error())
+			resp.Diagnostics.AddError("Read: Search Error", err.Error())
 			return
 		}
 	} else {
 		key, err = keyOp.Read(ctx, data.ID.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to read KMS resource[%s]: %s", data.ID.ValueString(), err.Error()))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read KMS resource[%s]: %s", data.ID.ValueString(), err.Error()))
 			return
 		}
 	}

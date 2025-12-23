@@ -160,7 +160,7 @@ func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadReques
 	searcher := iaas.NewDatabaseOp(d.client)
 	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to find SakuraCloud Database: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find Database: %s", err))
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.Databases) == 0 {
@@ -173,7 +173,7 @@ func (d *databaseDataSource) Read(ctx context.Context, req datasource.ReadReques
 		if removeDB {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update SakuraCloud Database[%s] state: %s", db.ID.String(), err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update Database[%s] state: %s", db.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

@@ -105,14 +105,14 @@ func (d *triggerDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	name := data.Name.ValueString()
 	tags := common.TsetToStrings(data.Tags)
 	if name == "" && len(tags) == 0 {
-		resp.Diagnostics.AddError("Invalid Attribute", "Either name or tags must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'name' or 'tags' must be specified.")
 		return
 	}
 
 	triggerOp := eventbus.NewTriggerOp(d.client)
 	triggers, err := triggerOp.List(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find SakuraCloud EventBus Trigger resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list EventBus Trigger resources: %s", err))
 		return
 	}
 
@@ -134,12 +134,12 @@ func (d *triggerDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		}
 
 		if err := data.updateState(&t); err != nil {
-			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update EventBus Trigger[%s] state: %s", data.ID.String(), err))
+			resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update EventBus Trigger[%s] state: %s", data.ID.String(), err))
 			return
 		}
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 		return
 	}
 
-	resp.Diagnostics.AddError("API Error", fmt.Sprintf("could not find any SakuraCloud EventBus Trigger resources with name=%q and tags=%v", name, tags))
+	resp.Diagnostics.AddError("Read: Search Error", fmt.Sprintf("failed to find any EventBus Trigger resources with name=%q and tags=%v", name, tags))
 }

@@ -186,12 +186,12 @@ func (r *internetResource) Create(ctx context.Context, req resource.CreateReques
 	builder := expandInternetBuilder(&plan, r.client)
 	internet, err := builder.Build(ctx, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud Internet is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create SakuraCloud Internet: %s", err))
 		return
 	}
 
 	if err := plan.updateState(ctx, r.client, zone, internet); err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update Internet[%s] state: %s", internet.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -215,7 +215,7 @@ func (r *internetResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	if err := state.updateState(ctx, r.client, zone, internet); err != nil {
-		resp.Diagnostics.AddError("Read Error", err.Error())
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update Internet[%s] state: %s", internet.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -244,7 +244,7 @@ func (r *internetResource) Update(ctx context.Context, req resource.UpdateReques
 	builder := expandInternetBuilder(&plan, r.client)
 	_, err := builder.Update(ctx, zone, common.SakuraCloudID(internetId))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Internet[%s] is failed: %s", internetId, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Internet[%s]: %s", internetId, err))
 		return
 	}
 
@@ -255,7 +255,7 @@ func (r *internetResource) Update(ctx context.Context, req resource.UpdateReques
 
 	// NOTE: 帯域変更後はIDが変更になる
 	if err := state.updateState(ctx, r.client, zone, internet); err != nil {
-		resp.Diagnostics.AddError("Update Error", err.Error())
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update Internet[%s] state: %s", internet.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -287,17 +287,17 @@ func (r *internetResource) Delete(ctx context.Context, req resource.DeleteReques
 			resp.State.RemoveResource(ctx)
 			return
 		}
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not read SakuraCloud Internet[%s]: %s", internetId, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to read Internet[%s]: %s", internetId, err))
 		return
 	}
 
 	if err := query.WaitWhileSwitchIsReferenced(ctx, r.client, zone, internet.Switch.ID, r.client.CheckReferencedOption()); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("waiting deletion is failed: Internet[%s] still used by others: %s", internet.ID, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to wait deletion: Internet[%s] still used by others: %s", internet.ID, err))
 		return
 	}
 
 	if err := cleanup.DeleteInternet(ctx, internetOp, zone, internet.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud Internet[%s] is failed: %s", internet.ID, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Internet[%s]: %s", internet.ID, err))
 		return
 	}
 }
@@ -310,7 +310,7 @@ func getInternet(ctx context.Context, client *common.APIClient, zone string, id 
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get Internet Error", fmt.Sprintf("could not read SakuraCloud Internet[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Internet[%s]: %s", id, err))
 		return nil
 	}
 

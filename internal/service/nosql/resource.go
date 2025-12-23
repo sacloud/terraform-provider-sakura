@@ -483,23 +483,23 @@ func (r *nosqlResource) Create(ctx context.Context, req resource.CreateRequest, 
 	dbOp := nosql.NewDatabaseOp(r.client)
 	res, err := dbOp.Create(ctx, nosql.Plan(plan.Plan.ValueString()), *expandNosqlCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create NoSQL: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create NoSQL: %s", err))
 		return
 	}
 
 	id := res.ID.Value
 	if err := waitNosqlReady(ctx, r.client, id); err != nil {
-		resp.Diagnostics.AddError("Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: Resource Error", err.Error())
 		return
 	}
 
 	if len(plan.Parameters.Elements()) > 0 {
 		if err := updateParameters(ctx, r.client, id, plan.Zone.ValueString(), &plan); err != nil {
-			resp.Diagnostics.AddWarning("Create Warning", fmt.Sprintf("failed to update parameters for NoSQL[%s]. Update via control panel: %s", id, err))
+			resp.Diagnostics.AddWarning("Create: Warning", fmt.Sprintf("failed to update parameters for NoSQL[%s]. Update via control panel: %s", id, err))
 			return
 		} else {
 			if err := waitNosqlProcessingDone(ctx, r.client, id, "SetParameter"); err != nil {
-				resp.Diagnostics.AddError("Create Error", err.Error())
+				resp.Diagnostics.AddError("Create: Resource Error", err.Error())
 				return
 			}
 		}
@@ -507,7 +507,7 @@ func (r *nosqlResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	data, err := dbOp.Read(ctx, id)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to read NoSQL[%s] for state update: %s", id, err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to read NoSQL[%s] for state update: %s", id, err))
 		return
 	}
 
@@ -551,26 +551,26 @@ func (r *nosqlResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	sid := plan.ID.ValueString()
 	dbOp := nosql.NewDatabaseOp(r.client)
 	if err := dbOp.Update(ctx, sid, *expandNosqlUpdateRequest(&plan, sid)); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update NoSQL[%s]: %s", sid, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update NoSQL[%s]: %s", sid, err))
 		return
 	}
 
 	if err := dbOp.ApplyChanges(ctx, sid); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to apply changes to NoSQL[%s]: %s", sid, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to apply changes to NoSQL[%s]: %s", sid, err))
 		return
 	}
 
 	if err := waitNosqlProcessingDone(ctx, r.client, sid, "Update"); err != nil {
-		resp.Diagnostics.AddError("Update Error", err.Error())
+		resp.Diagnostics.AddError("Update: Resource Error", err.Error())
 		return
 	}
 
 	if len(plan.Parameters.Elements()) > 0 && !plan.Parameters.Equal(state.Parameters) {
 		if err := updateParameters(ctx, r.client, sid, plan.Zone.ValueString(), &plan); err != nil {
-			resp.Diagnostics.AddWarning("Update Warning", fmt.Sprintf("failed to update parameters for NoSQL[%s]. Update via control panel: %s", sid, err))
+			resp.Diagnostics.AddWarning("Update: Warning", fmt.Sprintf("failed to update parameters for NoSQL[%s]. Update via control panel: %s", sid, err))
 		} else {
 			if err := waitNosqlProcessingDone(ctx, r.client, sid, "SetParameter"); err != nil {
-				resp.Diagnostics.AddError("Update Error", err.Error())
+				resp.Diagnostics.AddError("Update: Resource Error", err.Error())
 				return
 			}
 		}
@@ -610,17 +610,17 @@ func (r *nosqlResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	instanceOp := nosql.NewInstanceOp(r.client, sid, state.Zone.ValueString())
 	if data.Instance.Value.Status.Value != "down" {
 		if err := instanceOp.Stop(ctx); err != nil {
-			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to stop NoSQL[%s]: %s", sid, err))
+			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to stop NoSQL[%s]: %s", sid, err))
 			return
 		}
 		if err := waitNosqlDown(ctx, r.client, data.ID.Value); err != nil {
-			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to wait for NoSQL[%s] stop: %s", sid, err))
+			resp.Diagnostics.AddError("Delete: Resource Error", fmt.Sprintf("failed to wait for NoSQL[%s] stop: %s", sid, err))
 			return
 		}
 	}
 
 	if err := dbOp.Delete(ctx, data.ID.Value); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete NoSQL[%s]: %s", sid, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete NoSQL[%s]: %s", sid, err))
 		return
 	}
 }
@@ -635,7 +635,7 @@ func getNosql(ctx context.Context, client *v1.Client, id string, state *tfsdk.St
 			}
 			return nil
 		}
-		diags.AddError("Get NoSQL Error", fmt.Sprintf("failed to read NoSQL[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read NoSQL[%s]: %s", id, err))
 		return nil
 	}
 	return res

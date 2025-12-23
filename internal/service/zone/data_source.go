@@ -91,7 +91,7 @@ func (d *zoneDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	zoneOp := iaas.NewZoneOp(d.client)
 	res, err := zoneOp.Find(ctx, &iaas.FindCondition{})
 	if err != nil {
-		resp.Diagnostics.AddError("Read: Find Error", fmt.Sprintf("failed to find SakuraCloud Zone resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find SakuraCloud Zone resource: %s", err))
 		return
 	}
 	if res == nil || len(res.Zones) == 0 {

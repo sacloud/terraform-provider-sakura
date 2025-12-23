@@ -111,23 +111,23 @@ func (d *subnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	res, err := internetOp.Read(ctx, zone, internetID)
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", "failed to find Internet(switch+router): "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find Internet(switch+router) for Subnet: "+err.Error())
 		return
 	}
 	if subnetIndex >= len(res.Switch.Subnets) {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to find Subnet: invalid subnet index: %d", subnetIndex))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find Subnet: invalid subnet index: %d", subnetIndex))
 		return
 	}
 
 	subnetID := res.Switch.Subnets[subnetIndex].ID
 	subnet, err := subnetOp.Read(ctx, zone, subnetID)
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to find Subnet[%s]: %s", subnetID, err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find Subnet[%s]: %s", subnetID, err))
 		return
 	}
 
 	if err := data.updateState(zone, subnet); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update state: %s", err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update Subnet state: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

@@ -263,7 +263,7 @@ func (r *simpleMonitorResource) Create(ctx context.Context, req resource.CreateR
 	smOp := iaas.NewSimpleMonitorOp(r.client)
 	created, err := smOp.Create(ctx, expandSimpleMonitorCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create SimpleMonitor: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create SimpleMonitor: %s", err))
 		return
 	}
 
@@ -305,7 +305,7 @@ func (r *simpleMonitorResource) Update(ctx context.Context, req resource.UpdateR
 
 	smOp := iaas.NewSimpleMonitorOp(r.client)
 	if _, err := smOp.Update(ctx, sm.ID, expandSimpleMonitorUpdateRequest(&plan)); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SimpleMonitor failed: %s", err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update SimpleMonitor: %s", err))
 		return
 	}
 
@@ -334,7 +334,7 @@ func (r *simpleMonitorResource) Delete(ctx context.Context, req resource.DeleteR
 	}
 
 	if err := iaas.NewSimpleMonitorOp(r.client).Delete(ctx, sm.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete SimpleMonitor: %s", err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete SimpleMonitor: %s", err))
 		return
 	}
 }
@@ -347,7 +347,7 @@ func getSimpleMonitor(ctx context.Context, client *common.APIClient, id string, 
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get SimpleMonitor Error", fmt.Sprintf("failed to read SimpleMonitor[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read SimpleMonitor[%s]: %s", id, err))
 		return nil
 	}
 	return sm

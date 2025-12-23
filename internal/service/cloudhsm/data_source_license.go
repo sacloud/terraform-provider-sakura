@@ -75,7 +75,7 @@ func (d *cloudHSMLicenseDataSource) Read(ctx context.Context, req datasource.Rea
 	id := data.ID.ValueString()
 	name := data.Name.ValueString()
 	if len(name) == 0 && len(id) == 0 {
-		resp.Diagnostics.AddError("Missing Attribute", "either 'id' or 'name' must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id' or 'name' must be specified.")
 		return
 	}
 
@@ -87,18 +87,18 @@ func (d *cloudHSMLicenseDataSource) Read(ctx context.Context, req datasource.Rea
 	if len(name) > 0 {
 		chsmLicenses, err := licenseOp.List(ctx)
 		if err != nil {
-			resp.Diagnostics.AddError("List Error", fmt.Sprintf("failed to list CloudHSM License resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list CloudHSM License resource: %s", err))
 			return
 		}
 		chsmLicense, err = FilterCloudHSMLicenseByName(chsmLicenses, name)
 		if err != nil {
-			resp.Diagnostics.AddError("Filter Error", err.Error())
+			resp.Diagnostics.AddError("Read: Search Error", fmt.Sprintf("failed to filter CloudHSM License resource by name: %s", err))
 			return
 		}
 	} else {
 		chsmLicense, err = licenseOp.Read(ctx, id)
 		if err != nil {
-			resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to find CloudHSM License resource[%s]: %s", id, err.Error()))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find CloudHSM License resource[%s]: %s", id, err))
 			return
 		}
 	}

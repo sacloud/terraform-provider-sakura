@@ -364,18 +364,18 @@ func (d *nosqlDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	if !data.Name.IsNull() {
 		nosqls, err := databaseOp.List(ctx)
 		if err != nil {
-			resp.Diagnostics.AddError("NoSQL List Error", fmt.Sprintf("could not find NoSQL resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list NoSQL resources: %s", err))
 			return
 		}
 		res, err = filterNosqlByName(nosqls, data.Name.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("NoSQL Filter Error", err.Error())
+			resp.Diagnostics.AddError("Read: Search Error", err.Error())
 			return
 		}
 	} else {
 		res, err = databaseOp.Read(ctx, data.ID.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("NoSQL Read Error", "No result found")
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read NoSQL[%s] resource: %s", data.ID.ValueString(), err))
 			return
 		}
 	}

@@ -5,6 +5,7 @@ package secret_manager
 
 import (
 	"context"
+	"fmt"
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -95,7 +96,7 @@ func (r *secretManagerSecretResource) Create(ctx context.Context, req resource.C
 		Value: plan.Value.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("SecretManagerSecret Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Secret Manager's secret: %s", err))
 		return
 	}
 
@@ -122,7 +123,6 @@ func (r *secretManagerSecretResource) Read(ctx context.Context, req resource.Rea
 }
 
 func (r *secretManagerSecretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	// TODO: This is same as Create, consider refactoring
 	var plan secretManagerSecretResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
@@ -138,7 +138,7 @@ func (r *secretManagerSecretResource) Update(ctx context.Context, req resource.U
 		Value: plan.Value.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("SecretManagerSecret Create Error", err.Error())
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Secret Manager's secret: %s", err))
 		return
 	}
 
@@ -165,7 +165,7 @@ func (r *secretManagerSecretResource) Delete(ctx context.Context, req resource.D
 	secretOp := sm.NewSecretOp(r.client, state.VaultID.ValueString())
 	err := secretOp.Delete(ctx, v1.DeleteSecret{Name: state.Name.ValueString()})
 	if err != nil {
-		resp.Diagnostics.AddError("SecretManagerSecret Delete Error", err.Error())
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Secret Manager's secret: %s", err))
 		return
 	}
 }
@@ -178,7 +178,7 @@ func getSecretManagerSecret(ctx context.Context, client *v1.Client, model *secre
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("SecretManagerSecret Read Error", err.Error())
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Secret Manager's secret: %s", err))
 		return nil
 	}
 

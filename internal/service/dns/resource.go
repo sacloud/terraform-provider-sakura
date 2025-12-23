@@ -97,7 +97,7 @@ func (r *dnsResource) Create(ctx context.Context, req resource.CreateRequest, re
 	dnsOp := iaas.NewDNSOp(r.client)
 	dns, err := dnsOp.Create(ctx, expandDNSCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud DNS is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create DNS: %s", err))
 		return
 	}
 
@@ -134,20 +134,20 @@ func (r *dnsResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	dnsOp := iaas.NewDNSOp(r.client)
 	dns, err := dnsOp.Read(ctx, common.ExpandSakuraCloudID(plan.ID))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("reading SakuraCloud DNS[%s] is failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read DNS[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
 	updateReq := expandDNSUpdateRequest(&plan, dns)
 	_, err = dnsOp.Update(ctx, dns.ID, updateReq)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud DNS[%s] is failed: %s", dns.ID.String(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update DNS[%s]: %s", dns.ID.String(), err))
 		return
 	}
 
 	updated, err := dnsOp.Read(ctx, dns.ID)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("reading updated SakuraCloud DNS[%s] is failed: %s", dns.ID.String(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read updated DNS[%s]: %s", dns.ID.String(), err))
 		return
 	}
 
@@ -172,7 +172,7 @@ func (r *dnsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 	dnsOp := iaas.NewDNSOp(r.client)
 	if err := dnsOp.Delete(ctx, dns.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud DNS[%s] is failed: %s", dns.ID.String(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete DNS[%s]: %s", dns.ID.String(), err))
 		return
 	}
 }
@@ -185,7 +185,7 @@ func getDNS(ctx context.Context, client *common.APIClient, id iaastypes.ID, stat
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get DNS Error", fmt.Sprintf("could not read SakuraCloud DNS[%s]: %s", id.String(), err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read DNS[%s]: %s", id.String(), err))
 		return nil
 	}
 	return dns

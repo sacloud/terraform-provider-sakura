@@ -89,7 +89,7 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 			"virtual_domain": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The alias for accessing the container registry",
+				Description: "The alias for accessing the Container Registry",
 			},
 			"fqdn": schema.StringAttribute{
 				Computed:    true,
@@ -97,7 +97,7 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 			},
 			"user": schema.SetNestedAttribute{
 				Optional:    true,
-				Description: "User accounts for accessing the container registry",
+				Description: "User accounts for accessing the Container Registry",
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{
@@ -147,7 +147,7 @@ func (r *containerRegistryResource) Create(ctx context.Context, req resource.Cre
 	builder := expandContainerRegistryBuilder(&plan, r.client, "")
 	reg, err := builder.Build(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud ContainerRegistry failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create SakuraCloud Container Registry: %s", err))
 		return
 	}
 
@@ -189,13 +189,13 @@ func (r *containerRegistryResource) Update(ctx context.Context, req resource.Upd
 	regOp := iaas.NewContainerRegistryOp(r.client)
 	reg, err := regOp.Read(ctx, common.SakuraCloudID(plan.ID.ValueString()))
 	if err != nil {
-		resp.Diagnostics.AddError("Update error", fmt.Sprintf("could not read SakuraCloud ContainerRegistry[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read SakuraCloud Container Registry[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 	builder := expandContainerRegistryBuilder(&plan, r.client, reg.SettingsHash)
 	builder.ID = reg.ID
 	if _, err := builder.Build(ctx); err != nil {
-		resp.Diagnostics.AddError("Update error", fmt.Sprintf("updating SakuraCloud ContainerRegistry[%s] failed: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update SakuraCloud Container Registry[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -226,7 +226,7 @@ func (r *containerRegistryResource) Delete(ctx context.Context, req resource.Del
 	regOp := iaas.NewContainerRegistryOp(r.client)
 	err := regOp.Delete(ctx, gotReg.ID)
 	if err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("deleting SakuraCloud ContainerRegistry[%s] failed: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete SakuraCloud Container Registry[%s]: %s", state.ID.ValueString(), err))
 	}
 }
 
@@ -253,7 +253,7 @@ func getContainerRegistry(ctx context.Context, client *common.APIClient, id iaas
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get Container Registry Error", fmt.Sprintf("could not read SakuraCloud ContainerRegistry[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Container Registry[%s]: %s", id, err))
 		return nil
 	}
 

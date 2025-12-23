@@ -5,6 +5,7 @@ package secret_manager
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -85,7 +86,7 @@ func (r *secretManagerResource) Create(ctx context.Context, req resource.CreateR
 	vaultOp := sm.NewVaultOp(r.client)
 	createdVault, err := vaultOp.Create(ctx, expandSecretManagerCreateVault(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("SecretManager Create Error", err.Error())
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create SecretManager vault: %s", err))
 		return
 	}
 
@@ -133,7 +134,7 @@ func (r *secretManagerResource) Update(ctx context.Context, req resource.UpdateR
 	vaultOp := sm.NewVaultOp(r.client)
 	_, err := vaultOp.Update(ctx, vault.ID, expandSecretManagerUpdateVault(&plan, vault))
 	if err != nil {
-		resp.Diagnostics.AddError("SecretManager Update Error", err.Error())
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update SecretManager vault: %s", err))
 		return
 	}
 
@@ -164,7 +165,7 @@ func (r *secretManagerResource) Delete(ctx context.Context, req resource.DeleteR
 	vaultOp := sm.NewVaultOp(r.client)
 	err := vaultOp.Delete(ctx, vault.ID)
 	if err != nil {
-		resp.Diagnostics.AddError("SecretManager Delete Error", err.Error())
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete SecretManager vault: %s", err))
 		return
 	}
 }
@@ -177,7 +178,7 @@ func getSecretManagerVault(ctx context.Context, client *v1.Client, id string, st
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diag.AddError("Get SecretManager Vault Error", err.Error())
+		diag.AddError("API Read Error", fmt.Sprintf("failed to get SecretManager vault: %s", err))
 		return nil
 	}
 

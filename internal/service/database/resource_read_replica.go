@@ -165,12 +165,12 @@ func (r *databaseReadReplicaResource) Create(ctx context.Context, req resource.C
 
 	builder, err := expandDatabaseReadReplicaBuilder(ctx, &plan, r.client, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to build SakuraCloud Database Read Replica builder: %s", err))
+		resp.Diagnostics.AddError("Create: Expand Builder Error", fmt.Sprintf("failed to build Database Read Replica builder: %s", err))
 		return
 	}
 	db, err := builder.Build(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create SakuraCloud Database Read Replica: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Database Read Replica: %s", err))
 		return
 	}
 
@@ -179,7 +179,7 @@ func (r *databaseReadReplicaResource) Create(ctx context.Context, req resource.C
 	time.Sleep(databaseWaitAfterCreateDuration)
 
 	if err := plan.updateState(zone, db); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update SakuraCloud Database Read Replica state: %s", err))
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update Database Read Replica state: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -199,7 +199,7 @@ func (r *databaseReadReplicaResource) Read(ctx context.Context, req resource.Rea
 	}
 
 	if err := state.updateState(zone, db); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update state: %s", err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update Database Read Replica state: %s", err))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -225,19 +225,19 @@ func (r *databaseReadReplicaResource) Update(ctx context.Context, req resource.U
 
 	builder, err := expandDatabaseReadReplicaBuilder(ctx, &plan, r.client, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to build Database Read Replica builder: %s", err))
+		resp.Diagnostics.AddError("Update: Expand Builder Error", fmt.Sprintf("failed to build Database Read Replica builder: %s", err))
 		return
 	}
 	builder.ID = dbID
 
 	db, err = builder.Build(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update Database Read Replica: %s", err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Database Read Replica[%s]: %s", dbID.String(), err))
 		return
 	}
 
 	if err := plan.updateState(zone, db); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update state: %s", err))
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update Database Read Replica[%s] state: %s", dbID.String(), err))
 		resp.State.RemoveResource(ctx)
 		return
 	}
@@ -264,12 +264,12 @@ func (r *databaseReadReplicaResource) Delete(ctx context.Context, req resource.D
 	// shutdown(force) if running
 	if db.InstanceStatus.IsUp() {
 		if err := power.ShutdownDatabase(ctx, dbOp, zone, db.ID, true); err != nil {
-			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to shutdown Database Read Replica: %s", err))
+			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to shutdown Database Read Replica[%s]: %s", db.ID.String(), err))
 			return
 		}
 	}
 	if err := dbOp.Delete(ctx, zone, db.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete Database Read Replica: %s", err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Database Read Replica[%s]: %s", db.ID.String(), err))
 		return
 	}
 }

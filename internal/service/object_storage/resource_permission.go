@@ -134,13 +134,13 @@ func (r *objectStoragePermissionResource) Create(ctx context.Context, req resour
 		DisplayName:    v1.DisplayName(plan.Name.ValueString()),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create Object Storage Permission: %s", err.Error()))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Object Storage Permission: %s", err.Error()))
 		return
 	}
 
 	accessKey, err := permissionOp.CreateAccessKey(ctx, plan.SiteID.ValueString(), permission.Id.Int64())
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create Object Storage Permission Access Key: %s", err.Error()))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Object Storage Permission Access Key: %s", err.Error()))
 		return
 	}
 
@@ -161,7 +161,7 @@ func (r *objectStoragePermissionResource) Read(ctx context.Context, req resource
 	permissionOp := objectstorage.NewPermissionOp(r.client)
 	permission, err := permissionOp.Read(ctx, state.SiteID.ValueString(), common.MustAtoInt64(state.ID.ValueString()))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to read Object Storage Permission: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Object Storage Permission: %s", err.Error()))
 		return
 	}
 
@@ -194,7 +194,7 @@ func (r *objectStoragePermissionResource) Update(ctx context.Context, req resour
 		DisplayName:    v1.DisplayName(plan.Name.ValueString()),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update Object Storage Permission: %s", err.Error()))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Object Storage Permission: %s", err.Error()))
 		return
 	}
 
@@ -215,7 +215,7 @@ func (r *objectStoragePermissionResource) Delete(ctx context.Context, req resour
 
 	permissionOp := objectstorage.NewPermissionOp(r.client)
 	if err := permissionOp.Delete(ctx, state.SiteID.ValueString(), common.MustAtoInt64(state.ID.ValueString())); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete Object Storage Permission: %s", err.Error()))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Object Storage Permission: %s", err.Error()))
 		return
 	}
 }

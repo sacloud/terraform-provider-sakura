@@ -252,7 +252,7 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 
 	db, err := dbBuilder.Build(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create SakuraCloud Database: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Database: %s", err))
 		return
 	}
 
@@ -261,7 +261,7 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 	time.Sleep(databaseWaitAfterCreateDuration)
 
 	if _, err := plan.updateState(ctx, r.client, zone, db); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to update SakuraCloud Database state: %s", err))
+		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update Database state: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -289,7 +289,7 @@ func (r *databaseResource) Read(ctx context.Context, req resource.ReadRequest, r
 		if removeDB {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("failed to update SakuraCloud Database[%s] state: %s", db.ID.String(), err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update Database[%s] state: %s", db.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -315,7 +315,7 @@ func (r *databaseResource) Update(ctx context.Context, req resource.UpdateReques
 	dbBuilder.Zone = zone
 	dbBuilder.ID = dbID
 	if _, err := dbBuilder.Build(ctx); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update SakuraCloud Database[%s]: %s", dbID, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Database[%s]: %s", dbID.String(), err))
 		return
 	}
 
@@ -328,7 +328,7 @@ func (r *databaseResource) Update(ctx context.Context, req resource.UpdateReques
 		if removeDB {
 			resp.State.RemoveResource(ctx)
 		}
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update SakuraCloud Database[%s] state: %s", db.ID.String(), err))
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update Database[%s] state: %s", db.ID.String(), err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -353,13 +353,13 @@ func (r *databaseResource) Delete(ctx context.Context, req resource.DeleteReques
 
 	if db.InstanceStatus.IsUp() {
 		if err := power.ShutdownDatabase(ctx, dbOp, zone, db.ID, true); err != nil {
-			resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to shutdown SakuraCloud Database[%s]: %s", db.ID, err))
+			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to shutdown Database[%s]: %s", db.ID.String(), err))
 			return
 		}
 	}
 
 	if err := dbOp.Delete(ctx, zone, db.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete SakuraCloud Database[%s]: %s", db.ID, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Database[%s]: %s", db.ID.String(), err))
 		return
 	}
 }
@@ -372,7 +372,7 @@ func getDatabase(ctx context.Context, client *common.APIClient, id iaastypes.ID,
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Read Error", fmt.Sprintf("failed to read SakuraCloud Database[%s] : %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Database[%s]: %s", id, err))
 		return nil
 	}
 	return db

@@ -85,7 +85,7 @@ func (d *nfsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 
 	res, err := searcher.Find(ctx, zone, findCondition)
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud NFS resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find NFS resource: %s", err))
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.NFS) == 0 {
@@ -95,7 +95,7 @@ func (d *nfsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 
 	nfs := res.NFS[0]
 	if _, err := data.updateState(ctx, d.client, nfs, zone); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not update state for SakuraCloud NFS resource: %s", err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for NFS resource: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

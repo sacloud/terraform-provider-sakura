@@ -194,12 +194,12 @@ func (r *localRouterResource) Create(ctx context.Context, req resource.CreateReq
 
 	builder := expandLocalRouterBuilder(&plan, r.client)
 	if err := builder.Validate(ctx); err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to validate parameter for LocalRouter: %s", err))
+		resp.Diagnostics.AddError("Create: Validation Error", fmt.Sprintf("failed to validate parameter for LocalRouter: %s", err))
 		return
 	}
 	lr, err := builder.Build(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("failed to create LocalRouter: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create LocalRouter: %s", err))
 		return
 	}
 
@@ -239,12 +239,12 @@ func (r *localRouterResource) Update(ctx context.Context, req resource.UpdateReq
 
 	builder := expandLocalRouterBuilder(&plan, r.client)
 	if err := builder.Validate(ctx); err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to validate parameter for LocalRouter[%s]: %s", id, err))
+		resp.Diagnostics.AddError("Update: Validation Error", fmt.Sprintf("failed to validate parameter for LocalRouter[%s]: %s", id, err))
 		return
 	}
 	updated, err := builder.Update(ctx, common.SakuraCloudID(id))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("failed to update LocalRouter[%s]: %s", id, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update LocalRouter[%s]: %s", id, err))
 		return
 	}
 
@@ -277,7 +277,7 @@ func (r *localRouterResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 
 	if err := iaas.NewLocalRouterOp(r.client).Delete(ctx, lr.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("failed to delete LocalRouter[%s]: %s", id, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete LocalRouter[%s]: %s", id, err))
 		return
 	}
 }

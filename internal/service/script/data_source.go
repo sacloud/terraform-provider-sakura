@@ -72,7 +72,7 @@ func (d *scriptDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	searcher := iaas.NewNoteOp(d.client)
 	result, err := searcher.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Script resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find SakuraCloud Script resource: %s", err))
 		return
 	}
 	if result == nil || result.Count == 0 || len(result.Notes) == 0 {

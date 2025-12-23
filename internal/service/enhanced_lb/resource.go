@@ -516,13 +516,13 @@ func (r *enhancedLBResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout20min)
 	defer cancel()
 
 	enhancedLBOp := iaas.NewProxyLBOp(r.client)
 	elb, err := enhancedLBOp.Create(ctx, expandEnhancedLBCreateRequest(&plan))
 	if err != nil {
-		resp.Diagnostics.AddError("Create Error", fmt.Sprintf("creating SakuraCloud Enhanced LB is failed: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Enhanced LB: %s", err))
 		return
 	}
 
@@ -533,13 +533,13 @@ func (r *enhancedLBResource) Create(ctx context.Context, req resource.CreateRequ
 			AdditionalCerts: certs.AdditionalCerts,
 		})
 		if err != nil {
-			resp.Diagnostics.AddError("Set Certificates Error", fmt.Sprintf("setting Certificates to Enhanced LB[%s] is failed: %s", elb.ID, err))
+			resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to set Certificates to Enhanced LB[%s]: %s", elb.ID, err))
 			return
 		}
 	}
 
 	if err := plan.updateState(ctx, r.client, elb); err != nil {
-		resp.Diagnostics.AddError("Create Error", "could not update SakuraCloud Enhanced LB state: "+err.Error())
+		resp.Diagnostics.AddError("Create: Terraform Error", "failed to update Enhanced LB state: "+err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -558,7 +558,7 @@ func (r *enhancedLBResource) Read(ctx context.Context, req resource.ReadRequest,
 	}
 
 	if err := state.updateState(ctx, r.client, elb); err != nil {
-		resp.Diagnostics.AddError("Read Error", "could not update SakuraCloud Enhanced LB state: "+err.Error())
+		resp.Diagnostics.AddError("Read: Terraform Error", "failed to update Enhanced LB state: "+err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
@@ -572,7 +572,7 @@ func (r *enhancedLBResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout20min)
 	defer cancel()
 
 	enhancedLBOp := iaas.NewProxyLBOp(r.client)
@@ -588,7 +588,7 @@ func (r *enhancedLBResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	elb, err := enhancedLBOp.Update(ctx, common.SakuraCloudID(id), expandEnhancedLBUpdateRequest(&plan, &state))
 	if err != nil {
-		resp.Diagnostics.AddError("Update Error", fmt.Sprintf("updating SakuraCloud Enhanced LB[%s] is failed: %s", id, err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Enhanced LB[%s]: %s", id, err))
 		return
 	}
 
@@ -597,7 +597,7 @@ func (r *enhancedLBResource) Update(ctx context.Context, req resource.UpdateRequ
 		serviceClass := iaastypes.ProxyLBServiceClass(newPlan, elb.Region)
 		upd, err := enhancedLBOp.ChangePlan(ctx, elb.ID, &iaas.ProxyLBChangePlanRequest{ServiceClass: serviceClass})
 		if err != nil {
-			resp.Diagnostics.AddError("Change Plan Error", fmt.Sprintf("changing plan of SakuraCloud Enhanced LB[%s] is failed: %s", elb.ID, err))
+			resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to change plan of Enhanced LB[%s]: %s", elb.ID, err))
 			return
 		}
 		elb = upd
@@ -608,7 +608,7 @@ func (r *enhancedLBResource) Update(ctx context.Context, req resource.UpdateRequ
 		certs := expandEnhancedLBCerts(&plan)
 		if certs == nil {
 			if err := enhancedLBOp.DeleteCertificates(ctx, elb.ID); err != nil {
-				resp.Diagnostics.AddError("Delete Certificates Error", fmt.Sprintf("deleting Certificates of Enhanced LB[%s] is failed: %s", elb.ID, err))
+				resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to delete Certificates of Enhanced LB[%s]: %s", elb.ID, err))
 				return
 			}
 		} else {
@@ -617,14 +617,14 @@ func (r *enhancedLBResource) Update(ctx context.Context, req resource.UpdateRequ
 				AdditionalCerts: certs.AdditionalCerts,
 			})
 			if err != nil {
-				resp.Diagnostics.AddError("Set Certificates Error", fmt.Sprintf("setting Certificates to Enhanced LB[%s] is failed: %s", elb.ID, err))
+				resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to set Certificates to Enhanced LB[%s]: %s", elb.ID, err))
 				return
 			}
 		}
 	}
 
 	if err := plan.updateState(ctx, r.client, elb); err != nil {
-		resp.Diagnostics.AddError("Update Error", "could not update SakuraCloud Enhanced LB state: "+err.Error())
+		resp.Diagnostics.AddError("Update: Terraform Error", "failed to update Enhanced LB state: "+err.Error())
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -652,7 +652,7 @@ func (r *enhancedLBResource) Delete(ctx context.Context, req resource.DeleteRequ
 	}
 
 	if err := enhancedLBOp.Delete(ctx, elb.ID); err != nil {
-		resp.Diagnostics.AddError("Delete Error", fmt.Sprintf("could not delete SakuraCloud Enhanced LB[%s]: %s", elb.ID, err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Enhanced LB[%s]: %s", elb.ID, err))
 		return
 	}
 }
@@ -665,7 +665,7 @@ func getELB(ctx context.Context, client *common.APIClient, id string, state *tfs
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("Get Enhanced LB Error", fmt.Sprintf("could not read SakuraCloud Enhanced LB[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Enhanced LB[%s]: %s", id, err))
 		return nil
 	}
 

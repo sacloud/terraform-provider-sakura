@@ -95,7 +95,7 @@ func (d *diskDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	searcher := iaas.NewDiskOp(d.client)
 	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not find SakuraCloud Disk resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find Disk resource: %s", err))
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.Disks) == 0 {

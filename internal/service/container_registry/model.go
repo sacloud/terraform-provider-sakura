@@ -33,7 +33,7 @@ type containerRegistryUserModel struct {
 func (model *containerRegistryBaseModel) updateState(ctx context.Context, c *common.APIClient, reg *iaas.ContainerRegistry, includePassword bool, diags *diag.Diagnostics) {
 	users := getContainerRegistryUsers(ctx, c, reg)
 	if users == nil {
-		diags.AddError("Get Users Error", "could not get users for SakuraCloud ContainerRegistry")
+		diags.AddError("API Read Error", "failed to get users for Container Registry")
 		return
 	}
 

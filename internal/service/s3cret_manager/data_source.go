@@ -78,22 +78,22 @@ func (d *secretManagerDataSource) Read(ctx context.Context, req datasource.ReadR
 	if !data.Name.IsNull() { //nolint:gocritic
 		vaults, err := vaultOp.List(ctx)
 		if err != nil {
-			resp.Diagnostics.AddError("SecretManager List Error", err.Error())
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list SecretManager vaults: %s", err))
 			return
 		}
 		vault, err = FilterSecretManagerVaultByName(vaults, data.Name.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("SecretManager Filter Error", err.Error())
+			resp.Diagnostics.AddError("Read: Search Error", fmt.Sprintf("failed to find SecretManager vault: %s", err))
 			return
 		}
 	} else if !data.ID.IsNull() {
 		vault, err = vaultOp.Read(ctx, data.ID.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("SecretManager Read Error", err.Error())
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read SecretManager vault: %s", err))
 			return
 		}
 	} else {
-		resp.Diagnostics.AddError("Missing Attribute", "Either 'id' or 'name' must be specified.")
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id' or 'name' must be specified.")
 		return
 	}
 

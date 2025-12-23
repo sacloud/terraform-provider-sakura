@@ -457,7 +457,7 @@ func (d *vpnRouterDataSource) Read(ctx context.Context, req datasource.ReadReque
 	searcher := iaas.NewVPCRouterOp(d.client)
 	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read Error", "could not find SakuraCloud VPCRouter resource: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find VPNRouter resource: "+err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.VPCRouters) == 0 {
@@ -467,7 +467,7 @@ func (d *vpnRouterDataSource) Read(ctx context.Context, req datasource.ReadReque
 
 	vpnRouter := res.VPCRouters[0]
 	if _, err := data.updateState(ctx, d.client, zone, vpnRouter); err != nil {
-		resp.Diagnostics.AddError("Read Error", fmt.Sprintf("could not update state for SakuraCloud VPCRouter resource: %s", err))
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for VPNRouter resource: %s", err))
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)

@@ -201,7 +201,7 @@ func testCheckSakuraDiskAttributes(disk *iaas.Disk) resource.TestCheckFunc {
 }
 
 func TestAccImportSakuraDisk_basic(t *testing.T) {
-	//test.SkipIfFakeModeEnabled(t) // KMSを利用するためacctestでのみ実施したい
+	test.SkipIfFakeModeEnabled(t) // KMSを利用するためacctestでのみ実施したい
 
 	rand := test.RandomName()
 	checkFn := func(s []*terraform.InstanceState) error {
