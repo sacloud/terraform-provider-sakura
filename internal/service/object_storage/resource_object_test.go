@@ -4,12 +4,9 @@
 package object_storage_test
 
 import (
-	"errors"
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -46,38 +43,9 @@ func TestAccSakuraObjectStorageObject_basic(t *testing.T) {
 	})
 }
 
-func testCheckSakuraObjectStorageObjectExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-
-		if !ok {
-			return fmt.Errorf("not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return errors.New("no Object Storage Object ID is set")
-		}
-
-		// TODO: implement check logic
-
-		return nil
-	}
-}
-
-func testCheckSakuraObjectStorageObjectDestroy(s *terraform.State) error {
-	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_object_storage_object" {
-			continue
-		}
-		if rs.Primary.ID == "" {
-			continue
-		}
-
-		// TODO: implement check logic to verify the Object Storage Object is destroyed
-	}
-
-	return nil
-}
+// TODO: implement check functions after update object-storage-api-go
+// func testCheckSakuraObjectStorageObjectExists(n string) resource.TestCheckFunc {
+// func testCheckSakuraObjectStorageObjectDestroy(s *terraform.State) error {
 
 const testAccSakuraObjectStorageObject_basic = `
 data "sakura_object_storage_site" "foobar" {
