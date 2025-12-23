@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
 	github.com/minio/minio-go/v7 v7.0.97
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/sacloud/api-client-go v0.3.3
+	github.com/sacloud/api-client-go v0.3.4
 	github.com/sacloud/apprun-api-go v0.5.0
 	github.com/sacloud/cloudhsm-api-go v0.2.0
 	github.com/sacloud/eventbus-api-go v0.5.2
