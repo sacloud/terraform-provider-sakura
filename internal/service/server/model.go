@@ -22,6 +22,7 @@ type serverBaseModel struct {
 	GPUModel         types.String                  `tfsdk:"gpu_model"`
 	CPUModel         types.String                  `tfsdk:"cpu_model"`
 	Commitment       types.String                  `tfsdk:"commitment"`
+	ConfidentialVM   types.Bool                    `tfsdk:"confidential_vm"`
 	Disks            types.List                    `tfsdk:"disks"`
 	InterfaceDriver  types.String                  `tfsdk:"interface_driver"`
 	NetworkInterface []serverNetworkInterfaceModel `tfsdk:"network_interface"`
@@ -53,6 +54,7 @@ func (model *serverBaseModel) updateState(server *iaas.Server, zone string) {
 	model.GPUModel = types.StringValue(server.GPUModel)
 	model.CPUModel = types.StringValue(server.CPUModel)
 	model.Commitment = types.StringValue(server.Commitment.String())
+	model.ConfidentialVM = types.BoolValue(server.ConfidentialVM)
 	model.Disks = common.StringsToTlist(flattenServerConnectedDiskIDs(server))
 	model.InterfaceDriver = types.StringValue(server.InterfaceDriver.String())
 	model.PrivateHostName = types.StringValue(server.PrivateHostName)

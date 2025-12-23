@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -143,6 +144,14 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Description: desc.Sprintf("The policy of how to allocate virtual CPUs to the server. This must be one of [%s]", iaastypes.CommitmentStrings),
 				Validators: []validator.String{
 					stringvalidator.OneOf(iaastypes.CommitmentStrings...),
+				},
+			},
+			"confidential_vm": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "A flag indicating whether to use a confidential VM",
+				PlanModifiers: []planmodifier.Bool{
+					boolplanmodifier.RequiresReplace(),
 				},
 			},
 			"disks": schema.ListAttribute{
@@ -575,6 +584,7 @@ func expandServerBuilder(ctx context.Context, client *common.APIClient, zone str
 		GPUModel:        plan.GPUModel.ValueString(),
 		CPUModel:        plan.CPUModel.ValueString(),
 		Commitment:      iaastypes.ECommitment(plan.Commitment.ValueString()),
+		ConfidentialVM:  plan.ConfidentialVM.ValueBool(),
 		Generation:      iaastypes.PlanGenerations.Default,
 		InterfaceDriver: iaastypes.EInterfaceDriver(plan.InterfaceDriver.ValueString()),
 		Description:     plan.Description.ValueString(),
