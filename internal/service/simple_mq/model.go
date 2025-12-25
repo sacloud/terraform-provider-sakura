@@ -22,11 +22,9 @@ type simpleMqBaseModel struct {
 func (model *simpleMqBaseModel) updateState(data *queue.CommonServiceItem) {
 	model.ID = types.StringValue(simplemq.GetQueueID(data))
 	model.Name = types.StringValue(simplemq.GetQueueName(data))
+	model.Description = types.StringValue(data.Description.Value)
 	model.VisibilityTimeoutSeconds = types.Int64Value(int64(data.Settings.VisibilityTimeoutSeconds))
 	model.ExpireSeconds = types.Int64Value(int64(data.Settings.ExpireSeconds))
-	if v, ok := data.Description.Get(); ok {
-		model.Description = types.StringValue(v)
-	}
 	if iconID, ok := data.Icon.Value.ID.Get(); ok {
 		id, ok := iconID.GetString()
 		if !ok {
