@@ -38,9 +38,9 @@ testacc:
 dev-tools:
 	$(GO) install github.com/rinchsan/gosimports/cmd/gosimports@latest
 	$(GO) install golang.org/x/tools/cmd/stringer@latest
-	$(GO) install github.com/sacloud/addlicense@latest
+	$(GO) install github.com/google/addlicense@latest
 	$(GO) install github.com/client9/misspell/cmd/misspell@latest
-	$(GO) install github.com/google/go-licenses@v1.0.0
+	$(GO) install github.com/google/go-licenses/v2@v2.0.1
 	$(GO) install github.com/rhysd/actionlint/cmd/actionlint@latest
 	curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $$(go env GOPATH)/bin $(GOLANG_CI_LINT_VERSION)
 
@@ -79,9 +79,9 @@ lint-action:
 
 .PHONY: set-license
 set-license:
-	@addlicense -c "$(AUTHOR)" -y "$(COPYRIGHT_YEAR)" $(COPYRIGHT_FILES)
+	@addlicense -l apache -c "$(AUTHOR)" -y "$(COPYRIGHT_YEAR)" -s=only $(COPYRIGHT_FILES)
 
 .PHONY: go-licenses-check
 go-licenses-check:
 	@echo "running go-licenses..."
-	@go-licenses check .
+	@go-licenses check . --ignore github.com/segmentio/asm/,golang.org/x/sys/,golang.org/x/crypto/chacha20,github.com/klauspost/compress/s2,github.com/klauspost/crc32,github.com/klauspost/cpuid/v2,github.com/minio/crc64nvme

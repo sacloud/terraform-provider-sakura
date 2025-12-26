@@ -1,3 +1,6 @@
+// Copyright 2016-2025 The sacloud/terraform-provider-sakura Authors
+// SPDX-License-Identifier: Apache-2.0
+
 package local_router
 
 import (

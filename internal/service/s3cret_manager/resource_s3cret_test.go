@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	sm "github.com/sacloud/secretmanager-api-go"
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
-
 	secret_manager "github.com/sacloud/terraform-provider-sakura/internal/service/s3cret_manager"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )

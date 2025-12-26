@@ -179,11 +179,13 @@ func (r *xxxResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 ### ドキュメントの生成
 
-[terraform-plugin-docs](https://github.com/hashicorp/terraform-plugin-docs)を利用。tools以下に利用するためのtools.goを用意してあるので `go install github.com/hashicorp/terraform-plugin-docs/cmd/tfplugindocs` を実行した後、以下のコマンド群を入力する。
+[terraform-plugin-docs](https://github.com/hashicorp/terraform-plugin-docs)を利用。以下のコマンドを入力することで`docs`以下にドキュメントが生成される。
 
 ```
-$ tfplugindocs generate --provider-name=sakura
-$ ruby tools/update_subcategories.rb
+$ make
+# または
+$ make generate-docs
 ```
 
-これによって `docs` 以下にドキュメントが生成される。 `update_subcategories.rb`によってさくらのマニュアルに合わせたサブカテゴリが各リソースのドキュメントに埋め込まれる。新規リソースを追加した時には `./tools/subcategories.yaml` を更新して適切なサブカテゴリを設定する。
+生成処理の中で`./tools/update_subcategories.rb`によってさくらのマニュアルに合わせたサブカテゴリが各リソースのドキュメントに埋め込まれる。  
+新規リソースを追加した時には `./tools/subcategories.yaml` を更新して適切なサブカテゴリを設定する。
