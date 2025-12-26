@@ -80,6 +80,10 @@ func (d *serverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 					iaastypes.CommitmentStrings,
 				),
 			},
+			"confidential_vm": schema.BoolAttribute{
+				Computed:    true,
+				Description: "A flag indicating whether to use a confidential VM",
+			},
 			"disks": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,

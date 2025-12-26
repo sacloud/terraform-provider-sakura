@@ -560,6 +560,33 @@ func TestAccSakuraServer_cloudInit(t *testing.T) {
 	})
 }
 
+func TestAccSakuraServer_confidentialVM(t *testing.T) {
+	resourceName := "sakura_server.foobar"
+	rand := test.RandomName()
+	password := test.RandomPassword()
+
+	var server iaas.Server
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             test.CheckSakuraServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraServer_confidentialVM, rand, password),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "core", "16"),
+					resource.TestCheckResourceAttr(resourceName, "memory", "24"),
+					resource.TestCheckResourceAttr(resourceName, "cpu_model", "amd_epyc_9654p"),
+					resource.TestCheckResourceAttr(resourceName, "commitment", "dedicatedcpu"),
+					resource.TestCheckResourceAttr(resourceName, "confidential_vm", "true"),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraServerSharedInterface(server *iaas.Server) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if !server.InstanceStatus.IsUp() {
@@ -1137,5 +1164,19 @@ resource "sakura_server" "foobar" {
   gpu_model = "nvidia_v100_32gbvram"
 
   force_shutdown = true
+}
+`
+
+const testAccSakuraServer_confidentialVM = `
+resource "sakura_server" "foobar" {
+  name        = "{{ .arg0 }}"
+
+  core            = 16
+  memory          = 24
+  cpu_model       = "amd_epyc_9654p"
+  commitment      = "dedicatedcpu"
+  confidential_vm = true
+
+  zone = "tk1b"
 }
 `

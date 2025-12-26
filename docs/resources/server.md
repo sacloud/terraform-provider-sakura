@@ -83,6 +83,7 @@ resource "sakura_disk" "foobar" {
 
 - `cdrom_id` (String) The id of the CD-ROM to attach to the Server
 - `commitment` (String) The policy of how to allocate virtual CPUs to the server. This must be one of [`standard`/`dedicatedcpu`]
+- `confidential_vm` (Boolean) A flag indicating whether to use a confidential VM
 - `core` (Number) The number of virtual CPUs
 - `cpu_model` (String) The model of cpu
 - `description` (String) The description of the Server. The length of this value must be in the range [`1`-`512`]
