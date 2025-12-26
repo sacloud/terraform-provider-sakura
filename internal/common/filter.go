@@ -19,10 +19,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/terraform-provider-sakura/internal/desc"
-
 	"github.com/sacloud/iaas-api-go/search"
 	"github.com/sacloud/iaas-api-go/search/keys"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
 const (

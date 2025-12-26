@@ -9,7 +9,6 @@ import (
 	"log"
 
 	"github.com/hashicorp/terraform-plugin-framework/providerserver"
-
 	sakura "github.com/sacloud/terraform-provider-sakura/internal/provider"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
 )
