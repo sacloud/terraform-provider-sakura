@@ -151,7 +151,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Computed:    true,
 				Description: "A flag indicating whether to use a confidential VM",
 				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
+					boolplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"disks": schema.ListAttribute{
