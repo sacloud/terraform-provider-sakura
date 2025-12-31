@@ -1,6 +1,6 @@
 module github.com/sacloud/terraform-provider-sakura
 
-go 1.25.3
+go 1.25.5
 
 require (
 	github.com/google/go-cmp v0.7.0
@@ -15,7 +15,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.97
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sacloud/api-client-go v0.3.4
-	github.com/sacloud/apprun-api-go v0.5.0
+	github.com/sacloud/apprun-api-go v0.6.0
 	github.com/sacloud/cloudhsm-api-go v0.2.0
 	github.com/sacloud/eventbus-api-go v0.5.2
 	github.com/sacloud/go-http v0.1.9
@@ -56,6 +56,8 @@ require (
 	github.com/go-faster/jx v1.2.0 // indirect
 	github.com/go-faster/yaml v0.4.6 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
+	github.com/gofrs/flock v0.13.0 // indirect
+	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/cli v1.1.7 // indirect
@@ -100,6 +102,7 @@ require (
 	github.com/posener/complete v1.2.3 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/sacloud/ftps v1.2.0 // indirect
+	github.com/sacloud/saclient-go v0.2.5-0.20251224021203-f6c92b75e9ab // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
