@@ -22,6 +22,7 @@ include includes/go/common.mk
 include includes/go/single.mk
 #====================
 export GOPROXY=https://proxy.golang.org
+TF_DOCS_EXAMPLE_FILES ?= $(shell find ./examples -name '*.tf' -o -name '*.sh')
 
 default: generate-docs fmt set-license go-licenses-check goimports lint test build
 
@@ -33,5 +34,5 @@ tools: dev-tools
 
 .PHONY: generate-docs
 generate-docs: docs/index.md
-docs/index.md: $(GO_FILES)
+docs/index.md: $(GO_FILES) $(TF_DOCS_EXAMPLE_FILES)
 	cd tools; go generate ./... ; ruby ./update_subcategories.rb
