@@ -1,3 +1,6 @@
+// Copyright 2016-2025 The sacloud/terraform-provider-sakura Authors
+// SPDX-License-Identifier: Apache-2.0
+
 package gslb
 
 import (
@@ -5,10 +8,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-
 	iaas "github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
-
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )

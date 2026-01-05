@@ -6,12 +6,6 @@ package cloudhsm
 import (
 	"fmt"
 
-	client "github.com/sacloud/api-client-go"
-	"github.com/sacloud/cloudhsm-api-go"
-	v1 "github.com/sacloud/cloudhsm-api-go/apis/v1"
-	"github.com/sacloud/terraform-provider-sakura/internal/common"
-	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
-
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	dschema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -19,6 +13,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	client "github.com/sacloud/api-client-go"
+	"github.com/sacloud/cloudhsm-api-go"
+	v1 "github.com/sacloud/cloudhsm-api-go/apis/v1"
+	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
