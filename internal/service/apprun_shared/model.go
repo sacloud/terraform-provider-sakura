@@ -38,10 +38,12 @@ type apprunSharedComponentDeploySourceModel struct {
 }
 
 type apprunSharedComponentContainerRegistryModel struct {
-	Image    types.String `tfsdk:"image"`
-	Server   types.String `tfsdk:"server"`
-	Username types.String `tfsdk:"username"`
-	Password types.String `tfsdk:"password"`
+	Image             types.String `tfsdk:"image"`
+	Server            types.String `tfsdk:"server"`
+	Username          types.String `tfsdk:"username"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int32  `tfsdk:"password_wo_version"`
 }
 
 type apprunSharedComponentEnvModel struct {
@@ -153,13 +155,18 @@ func flattenApprunApplicationComponents(model *apprunSharedBaseModel, applicatio
 			// v1.Applicationはcontainer_registryのpasswordが含まれないため、そのままだとtfstateに空文字列がセットされてしまう。
 			// この場合resourceにpasswordの定義があると、resourceを変更していなくてもterraform planでdiffが出てしまう。
 			// この対策として、passwordのみschema.ResourceDataからデータを参照してセットするようにする。
-			var password string
 			for _, exComponent := range model.Components {
-				if exComponent.Name.ValueString() == c.Name && exComponent.DeploySource.ContainerRegistry != nil && exComponent.DeploySource.ContainerRegistry.Password.ValueString() != "" {
-					password = exComponent.DeploySource.ContainerRegistry.Password.ValueString()
+				if exComponent.Name.ValueString() == c.Name && exComponent.DeploySource.ContainerRegistry != nil {
+					if exComponent.DeploySource.ContainerRegistry.PasswordWOVersion.ValueInt32() > 0 {
+						result.DeploySource.ContainerRegistry.PasswordWOVersion = types.Int32Value(exComponent.DeploySource.ContainerRegistry.PasswordWOVersion.ValueInt32())
+						break
+					}
+					if exComponent.DeploySource.ContainerRegistry.Password.ValueString() != "" {
+						result.DeploySource.ContainerRegistry.Password = types.StringValue(exComponent.DeploySource.ContainerRegistry.Password.ValueString())
+					}
+					break
 				}
 			}
-			result.DeploySource.ContainerRegistry.Password = types.StringValue(password)
 		}
 
 		results = append(results, result)

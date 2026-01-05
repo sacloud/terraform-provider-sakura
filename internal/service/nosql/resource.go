@@ -64,10 +64,11 @@ func (d *nosqlResource) Configure(ctx context.Context, req resource.ConfigureReq
 
 type nosqlResourceModel struct {
 	nosqlBaseModel
-	Password   types.String   `tfsdk:"password"`
-	VSwitchID  types.String   `tfsdk:"vswitch_id"`
-	Parameters types.Map      `tfsdk:"parameters"`
-	Timeouts   timeouts.Value `tfsdk:"timeouts"`
+	Password        types.String   `tfsdk:"password"`
+	PasswordVersion types.String   `tfsdk:"password_version"`
+	VSwitchID       types.String   `tfsdk:"vswitch_id"`
+	Parameters      types.Map      `tfsdk:"parameters"`
+	Timeouts        timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -89,11 +90,19 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 			},
 			"password": schema.StringAttribute{
 				Required:    true,
-				Sensitive:   true,
+				WriteOnly:   true,
 				Description: "Password for NoSQL appliance",
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(12, 30),
 					stringvalidator.RegexMatches(regexp.MustCompile(`^[a-zA-Z0-9-._]+$`), "only alphanumeric characters and - . _ are allowed"),
+				},
+			},
+			"password_version": schema.Int32Attribute{
+				Optional:    true,
+				Description: "The version of the password field. This value must be greater than zero when set. Increment this when changing password.",
+				Validators: []validator.Int32{
+					int32validator.AtLeast(1),
+					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password")),
 				},
 			},
 			"vswitch_id": schema.StringAttribute{
@@ -471,8 +480,9 @@ func (r *nosqlResource) ImportState(ctx context.Context, req resource.ImportStat
 }
 
 func (r *nosqlResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan nosqlResourceModel
+	var plan, config nosqlResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -481,7 +491,7 @@ func (r *nosqlResource) Create(ctx context.Context, req resource.CreateRequest, 
 	defer cancel()
 
 	dbOp := nosql.NewDatabaseOp(r.client)
-	res, err := dbOp.Create(ctx, nosql.Plan(plan.Plan.ValueString()), *expandNosqlCreateRequest(&plan))
+	res, err := dbOp.Create(ctx, nosql.Plan(plan.Plan.ValueString()), *expandNosqlCreateRequest(&plan, &config))
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create NoSQL: %s", err))
 		return
@@ -538,9 +548,10 @@ func (r *nosqlResource) Read(ctx context.Context, req resource.ReadRequest, resp
 }
 
 func (r *nosqlResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, state nosqlResourceModel
+	var plan, state, config nosqlResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -550,7 +561,7 @@ func (r *nosqlResource) Update(ctx context.Context, req resource.UpdateRequest, 
 
 	sid := plan.ID.ValueString()
 	dbOp := nosql.NewDatabaseOp(r.client)
-	if err := dbOp.Update(ctx, sid, *expandNosqlUpdateRequest(&plan, sid)); err != nil {
+	if err := dbOp.Update(ctx, sid, *expandNosqlUpdateRequest(&plan, &config, sid)); err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update NoSQL[%s]: %s", sid, err))
 		return
 	}
@@ -669,16 +680,17 @@ func updateParameters(ctx context.Context, client *v1.Client, id, zone string, m
 	return nil
 }
 
-func expandNosqlCreateRequest(model *nosqlResourceModel) *v1.NosqlCreateRequestAppliance {
+func expandNosqlCreateRequest(model, config *nosqlResourceModel) *v1.NosqlCreateRequestAppliance {
 	var remarkNosql nosqlRemarkNosqlModel
 	_ = model.Remark.Nosql.As(context.Background(), &remarkNosql, basetypes.ObjectAsOptions{})
+
 	appliance := &v1.NosqlCreateRequestAppliance{
 		Name:        model.Name.ValueString(),
 		Description: v1.NewOptString(model.Description.ValueString()),
 		Tags:        v1.NewOptNilTags(common.TsetToStrings(model.Tags)),
 		Settings: v1.NosqlSettings{
 			SourceNetwork: common.TlistToStrings(model.Settings.SourceNetwork),
-			Password:      v1.NewOptPassword(v1.Password(model.Password.ValueString())),
+			Password:      v1.NewOptPassword(v1.Password(config.Password.ValueString())),
 		},
 		Remark: v1.NosqlRemark{
 			Nosql: v1.NosqlRemarkNosql{
@@ -752,7 +764,7 @@ func setupServers(model *nosqlResourceModel, req *v1.NosqlCreateRequestAppliance
 	}
 }
 
-func expandNosqlUpdateRequest(plan *nosqlResourceModel, id string) *v1.NosqlUpdateRequestAppliance {
+func expandNosqlUpdateRequest(plan, config *nosqlResourceModel, id string) *v1.NosqlUpdateRequestAppliance {
 	appliance := &v1.NosqlUpdateRequestAppliance{
 		ID:          id,
 		Name:        v1.NewOptString(plan.Name.ValueString()),
@@ -760,7 +772,7 @@ func expandNosqlUpdateRequest(plan *nosqlResourceModel, id string) *v1.NosqlUpda
 		Tags:        v1.NewOptNilTags(common.TsetToStrings(plan.Tags)),
 		Settings: v1.NosqlSettings{
 			SourceNetwork:    common.TlistToStrings(plan.Settings.SourceNetwork),
-			Password:         v1.NewOptPassword(v1.Password(plan.Password.ValueString())),
+			Password:         v1.NewOptPassword(v1.Password(config.Password.ValueString())),
 			ReserveIPAddress: v1.NewOptIPv4(netip.MustParseAddr(plan.Settings.ReserveIPAddress.ValueString())),
 		},
 	}

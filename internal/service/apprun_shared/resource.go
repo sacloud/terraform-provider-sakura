@@ -9,6 +9,7 @@ import (
 	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -153,9 +154,29 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 										},
 										"password": schema.StringAttribute{
 											Optional:    true,
-											Computed:    true,
 											Sensitive:   true,
+											Description: "The container registry credentials. Use password_wo instead for newer deployments.",
+											Validators: []validator.String{
+												stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("components").AtAnyListIndex().AtName("deploy_source").AtName("container_registry").AtName("password_wo")),
+												stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
+											},
+										},
+										"password_wo": schema.StringAttribute{
+											Optional:    true,
+											WriteOnly:   true,
 											Description: "The container registry credentials",
+											Validators: []validator.String{
+												stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
+												stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
+											},
+										},
+										"password_wo_version": schema.Int32Attribute{
+											Optional:    true,
+											Description: "The version of the password_wo field. This value must be greater than zero when set. Increment this when changing password.",
+											Validators: []validator.Int32{
+												int32validator.AtLeast(1),
+												int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo")),
+											},
 										},
 									},
 								},
@@ -282,8 +303,9 @@ func (r *apprunSharedResource) ImportState(ctx context.Context, req resource.Imp
 }
 
 func (r *apprunSharedResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan apprunSharedResourceModel
+	var plan, config apprunSharedResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -300,7 +322,7 @@ func (r *apprunSharedResource) Create(ctx context.Context, req resource.CreateRe
 		Port:           int(plan.Port.ValueInt32()),
 		MinScale:       int(plan.MinScale.ValueInt32()),
 		MaxScale:       int(plan.MaxScale.ValueInt32()),
-		Components:     expandApprunApplicationComponents(&plan),
+		Components:     expandApprunApplicationComponents(&plan, &config),
 	}
 	result, err := appOp.Create(ctx, &params)
 	if err != nil {
@@ -364,8 +386,9 @@ func (r *apprunSharedResource) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *apprunSharedResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan apprunSharedResourceModel
+	var plan, config apprunSharedResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -386,7 +409,7 @@ func (r *apprunSharedResource) Update(ctx context.Context, req resource.UpdateRe
 		Port:           &port,
 		MinScale:       &minScale,
 		MaxScale:       &maxScale,
-		Components:     expandApprunApplicationComponentsForUpdate(&plan),
+		Components:     expandApprunApplicationComponentsForUpdate(&plan, &config),
 	}
 	result, err := appOp.Update(ctx, application.Id, &params)
 	if err != nil {
@@ -527,10 +550,9 @@ func updateModel(ctx context.Context, model *apprunSharedResourceModel, client *
 	return false, nil
 }
 
-func expandApprunApplicationComponentsForUpdate(model *apprunSharedResourceModel) *[]v1.PatchApplicationBodyComponent {
+func expandApprunApplicationComponentsForUpdate(model, config *apprunSharedResourceModel) *[]v1.PatchApplicationBodyComponent {
 	var components []v1.PatchApplicationBodyComponent
-	for _, component := range model.Components {
-		// Create ContainerRegistry
+	for i, component := range model.Components {
 		cr := component.DeploySource.ContainerRegistry
 		containerRegistry := &v1.PatchApplicationBodyComponentDeploySourceContainerRegistry{
 			Image: cr.Image.ValueString(),
@@ -543,12 +565,14 @@ func expandApprunApplicationComponentsForUpdate(model *apprunSharedResourceModel
 			v := cr.Username.ValueString()
 			containerRegistry.Username = &v
 		}
-		if !cr.Password.IsNull() && !cr.Password.IsUnknown() {
-			v := cr.Password.ValueString()
-			containerRegistry.Password = &v
+		password := config.Components[i].DeploySource.ContainerRegistry.PasswordWO.ValueString()
+		if password == "" {
+			password = cr.Password.ValueString()
+		}
+		if password != "" {
+			containerRegistry.Password = &password
 		}
 
-		// Create Env
 		envModel := make([]apprunSharedComponentEnvModel, 0, len(component.Env.Elements()))
 		_ = component.Env.ElementsAs(context.Background(), &envModel, false)
 		var env []v1.PatchApplicationBodyComponentEnv
@@ -563,7 +587,6 @@ func expandApprunApplicationComponentsForUpdate(model *apprunSharedResourceModel
 				})
 		}
 
-		// CreateProbe
 		var probe v1.PatchApplicationBodyComponentProbe
 		if !component.Probe.IsNull() && !component.Probe.IsUnknown() {
 			var d apprunSharedProbeModel
@@ -606,10 +629,9 @@ func expandApprunApplicationComponentsForUpdate(model *apprunSharedResourceModel
 	return &components
 }
 
-func expandApprunApplicationComponents(model *apprunSharedResourceModel) []v1.PostApplicationBodyComponent {
+func expandApprunApplicationComponents(model, config *apprunSharedResourceModel) []v1.PostApplicationBodyComponent {
 	var components []v1.PostApplicationBodyComponent
-	for _, component := range model.Components {
-		// Create ContainerRegistry
+	for i, component := range model.Components {
 		cr := component.DeploySource.ContainerRegistry
 		containerRegistry := &v1.PostApplicationBodyComponentDeploySourceContainerRegistry{
 			Image: cr.Image.ValueString(),
@@ -622,12 +644,14 @@ func expandApprunApplicationComponents(model *apprunSharedResourceModel) []v1.Po
 			v := cr.Username.ValueString()
 			containerRegistry.Username = &v
 		}
-		if !cr.Password.IsNull() && !cr.Password.IsUnknown() {
-			v := cr.Password.ValueString()
-			containerRegistry.Password = &v
+		password := config.Components[i].DeploySource.ContainerRegistry.PasswordWO.ValueString()
+		if password == "" {
+			password = cr.Password.ValueString()
+		}
+		if password != "" {
+			containerRegistry.Password = &password
 		}
 
-		// Create Env
 		envModel := make([]apprunSharedComponentEnvModel, 0, len(component.Env.Elements()))
 		_ = component.Env.ElementsAs(context.Background(), &envModel, false)
 		var env []v1.PostApplicationBodyComponentEnv
@@ -642,7 +666,6 @@ func expandApprunApplicationComponents(model *apprunSharedResourceModel) []v1.Po
 				})
 		}
 
-		// Create Probe
 		var probe v1.PostApplicationBodyComponentProbe
 		if !component.Probe.IsNull() && !component.Probe.IsUnknown() {
 			var d apprunSharedProbeModel

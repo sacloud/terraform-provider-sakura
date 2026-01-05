@@ -62,7 +62,12 @@ func (d *databaseResource) Configure(ctx context.Context, req resource.Configure
 
 type databaseResourceModel struct {
 	databaseBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	Password          types.String   `tfsdk:"password"`
+	PasswordWO        types.String   `tfsdk:"password_wo"`
+	ReplicaPassword   types.String   `tfsdk:"replica_password"`
+	ReplicaPasswordWO types.String   `tfsdk:"replica_password_wo"`
+	PasswordWOVersion types.Int32    `tfsdk:"password_wo_version"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -106,9 +111,22 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				},
 			},
 			"password": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
+				Description: "The password of default user on the database. Use password_wo instead for newer deployments.",
+				Validators: []validator.String{
+					stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("password_wo")),
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
+				},
+			},
+			"password_wo": schema.StringAttribute{
+				Optional:    true,
+				WriteOnly:   true,
 				Description: "The password of default user on the database",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
+				},
 			},
 			"replica_user": schema.StringAttribute{
 				Optional:    true,
@@ -118,9 +136,28 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			},
 			"replica_password": schema.StringAttribute{
 				Optional:    true,
-				Computed:    true,
 				Sensitive:   true,
+				Description: "The password of user that processing a replication. Use replica_password_wo instead for newer deployments.",
+				Validators: []validator.String{
+					stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("replica_password_wo")),
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("replica_password_wo")),
+				},
+			},
+			"replica_password_wo": schema.StringAttribute{
+				Optional:    true,
+				WriteOnly:   true,
 				Description: "The password of user that processing a replication",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("replica_password")),
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
+				},
+			},
+			"password_wo_version": schema.Int32Attribute{
+				Optional:    true,
+				Description: "The version of the password_wo/replica_password_wo field. This value must be greater than zero when set. Increment this when changing password.",
+				Validators: []validator.Int32{
+					int32validator.AtLeast(1),
+				},
 			},
 			"network_interface": schema.SingleNestedAttribute{
 				Required: true,
@@ -232,8 +269,9 @@ func (r *databaseResource) ImportState(ctx context.Context, req resource.ImportS
 }
 
 func (r *databaseResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan databaseResourceModel
+	var plan, config databaseResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -246,9 +284,8 @@ func (r *databaseResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	dbBuilder := expandDatabaseBuilder(&plan, r.client)
+	dbBuilder := expandDatabaseBuilder(&plan, &config, r.client)
 	dbBuilder.Zone = zone
-
 	db, err := dbBuilder.Build(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Database: %s", err))
@@ -295,8 +332,9 @@ func (r *databaseResource) Read(ctx context.Context, req resource.ReadRequest, r
 }
 
 func (r *databaseResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan databaseResourceModel
+	var plan, config databaseResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -310,7 +348,7 @@ func (r *databaseResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	dbID := common.ExpandSakuraCloudID(plan.ID)
-	dbBuilder := expandDatabaseBuilder(&plan, r.client)
+	dbBuilder := expandDatabaseBuilder(&plan, &config, r.client)
 	dbBuilder.Zone = zone
 	dbBuilder.ID = dbID
 	if _, err := dbBuilder.Build(ctx); err != nil {
@@ -377,12 +415,19 @@ func getDatabase(ctx context.Context, client *common.APIClient, id iaastypes.ID,
 	return db
 }
 
-func expandDatabaseBuilder(model *databaseResourceModel, client *common.APIClient) *databaseBuilder.Builder {
+func expandDatabaseBuilder(model, config *databaseResourceModel, client *common.APIClient) *databaseBuilder.Builder {
 	dbType := model.DatabaseType.ValueString()
 	dbName := iaastypes.RDBMSTypeFromString(dbType)
 	nic := model.NetworkInterface
 	replicaUser := model.ReplicaUser.ValueString()
-	replicaPassword := model.ReplicaPassword.ValueString()
+	password := config.PasswordWO.ValueString()
+	if password == "" {
+		password = model.Password.ValueString()
+	}
+	replicaPassword := config.ReplicaPasswordWO.ValueString()
+	if replicaPassword == "" {
+		replicaPassword = model.ReplicaPassword.ValueString()
+	}
 
 	req := &databaseBuilder.Builder{
 		PlanID:         iaastypes.DatabasePlanIDMap[model.Plan.ValueString()],
@@ -394,13 +439,13 @@ func expandDatabaseBuilder(model *databaseResourceModel, client *common.APIClien
 			DatabaseName:    dbName.String(),
 			DatabaseVersion: model.DatabaseVersion.ValueString(),
 			DefaultUser:     model.Username.ValueString(),
-			UserPassword:    model.Password.ValueString(),
+			UserPassword:    password,
 		},
 		CommonSetting: &iaas.DatabaseSettingCommon{
 			ServicePort:     int(nic.Port.ValueInt32()),
 			SourceNetwork:   common.TlistToStringsOrDefault(nic.SourceRanges),
 			DefaultUser:     model.Username.ValueString(),
-			UserPassword:    model.Password.ValueString(),
+			UserPassword:    password,
 			ReplicaUser:     replicaUser,
 			ReplicaPassword: replicaPassword,
 		},

@@ -178,6 +178,44 @@ func TestStructureServer_isDiskEditParameterChanged(t *testing.T) {
 			expect: true,
 		},
 		{
+			msg: "updated: disk_edit_parameter with write-only",
+			in: &dummyResourceValueChangeHandler{
+				oldState: &serverResourceModel{
+					serverBaseModel: serverBaseModel{
+						Disks: common.StringsToTlist([]string{"1"}),
+						NetworkInterface: []serverNetworkInterfaceModel{
+							{
+								Upstream: types.StringValue("shared"),
+							},
+						},
+					},
+					DiskEdit: &serverDiskEditModel{
+						PasswordWO:        types.StringValue("password-wo"),
+						PasswordWOVersion: types.Int32Value(1),
+						SSHKeys:           types.SetNull(types.StringType),
+						SSHKeyIDs:         types.SetNull(types.StringType),
+					},
+				},
+				newState: &serverResourceModel{
+					serverBaseModel: serverBaseModel{
+						Disks: common.StringsToTlist([]string{"1"}),
+						NetworkInterface: []serverNetworkInterfaceModel{
+							{
+								Upstream: types.StringValue("shared"),
+							},
+						},
+					},
+					DiskEdit: &serverDiskEditModel{
+						PasswordWO:        types.StringValue("password-wo-upd"),
+						PasswordWOVersion: types.Int32Value(2),
+						SSHKeys:           types.SetNull(types.StringType),
+						SSHKeyIDs:         types.SetNull(types.StringType),
+					},
+				},
+			},
+			expect: true,
+		},
+		{
 			msg: "updated: network_interface.upstream",
 			in: &dummyResourceValueChangeHandler{
 				oldState: &serverResourceModel{

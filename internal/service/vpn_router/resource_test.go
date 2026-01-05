@@ -172,9 +172,12 @@ func TestAccSakuraVPNRouter_Full(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "static_route.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "static_route.0.prefix", "172.16.0.0/16"),
 					resource.TestCheckResourceAttr(resourceName, "static_route.0.next_hop", "192.168.11.99"),
-					resource.TestCheckResourceAttr(resourceName, "user.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "user.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "user.0.name", "username"),
 					resource.TestCheckResourceAttr(resourceName, "user.0.password", "password"),
+					resource.TestCheckResourceAttr(resourceName, "user.1.name", "username2"),
+					resource.TestCheckResourceAttr(resourceName, "user.1.password_wo_version", "1"),
+					resource.TestCheckNoResourceAttr(resourceName, "user.1.password_wo"),
 					resource.TestCheckResourceAttr(resourceName, "scheduled_maintenance.day_of_week", "tue"),
 					resource.TestCheckResourceAttr(resourceName, "scheduled_maintenance.hour", "1"),
 				),
@@ -430,6 +433,11 @@ resource "sakura_vpn_router" "foobar" {
   user = [{
     name     = "username"
     password = "password"
+  },
+  {
+    name                = "username2"
+	password_wo         = "password2"
+	password_wo_version = 1
   }]
 
   scheduled_maintenance = {
