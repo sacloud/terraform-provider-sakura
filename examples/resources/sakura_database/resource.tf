@@ -8,9 +8,12 @@ resource "sakura_database" "foobar" {
   plan             = "30g"
 
   username = var.username
-  password = var.password
-
-  replica_password = var.replica_password
+  password_wo = var.password
+  replica_password_wo = var.replica_password
+  password_wo_version = 1
+  // for backward compatibility
+  //password = var.password
+  //replica_password = var.replica_password
 
   network_interface = {
     vswitch_id    = sakura_vswitch.foobar.id

@@ -9,6 +9,7 @@ resource "sakura_nosql" "foobar" {
   plan        = "100GB" // or "250GB"
   description = "NoSQL database"
   password    = "password-123456789"
+  password_version = 1
   vswitch_id  = data.sakura_vswitch.foobar.id
   settings = {
     reserve_ip_address = "192.168.0.6"

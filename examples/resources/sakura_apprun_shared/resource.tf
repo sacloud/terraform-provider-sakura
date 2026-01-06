@@ -13,6 +13,9 @@ resource "sakura_apprun_shared" "foobar" {
         image    = "foobar.sakuracr.jp/my-app:latest"
         //server   = "foobar.sakuracr.jp"
         //username = "username"
+        //password_wo = "userpassword"
+        //password_wo_version = 1
+        // for backward compatibility
         //password = "userpassword"
       }
     }

@@ -11,7 +11,10 @@ resource "sakura_server" "foobar" {
 
   disk_edit_parameter = {
     hostname = "hostname"
-    password = "password"
+    password_wo = "password"
+    password_wo_version = 1
+    // for backward compatibility
+    //password = "password"
     disable_pw_auth = true
 
     # ssh_keys    = ["ssh-rsa xxxxx"]

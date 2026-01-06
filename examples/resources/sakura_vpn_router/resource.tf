@@ -135,8 +135,11 @@ resource "sakura_vpn_router" "premium" {
   }]
 
   user = [{
-    name     = "username"
-    password = "password"
+    name        = "username"
+    password_wo = "password"
+    password_wo_version = 1
+    // for backward compatibility
+    //password = "password"
   }]
 
   scheduled_maintenance = {

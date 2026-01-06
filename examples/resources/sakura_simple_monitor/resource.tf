@@ -17,9 +17,12 @@ resource "sakura_simple_monitor" "foobar" {
     sni             = true
     verify_sni      = true
     http2           = true
-    # username    = "username"
-    # password    = "password"
     # ftps        = "explicit"
+    # username    = "username"
+    # password_wo = "password"
+    # password_wo_version = 1
+    # for backward compatibility
+    # password    = "password"
   }
 
   description = "description"
