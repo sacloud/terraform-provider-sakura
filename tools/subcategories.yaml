@@ -55,6 +55,7 @@ Security:
 Container and Image:
   - container_registry
 Misc:
+  - auto_backup
   - icon
   - script
   - ssh_key

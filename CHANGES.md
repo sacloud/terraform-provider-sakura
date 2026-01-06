@@ -237,6 +237,10 @@ timeouts = {
   }
 ```
 
+### auto_backup
+
+`weekdays`フィールドは`days_of_week`に変更されました。
+
 ### container_registry
 
 `user`フィールドがBlockからSet型のAttributeに変更されたため、下記のように書き換える必要があります。
