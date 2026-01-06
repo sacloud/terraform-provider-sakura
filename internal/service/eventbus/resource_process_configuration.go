@@ -67,19 +67,18 @@ func (r *processConfigurationResource) ValidateConfig(ctx context.Context, req r
 
 	switch destination := config.Destination.ValueString(); destination {
 	case destinationSimpleMQ:
-		if config.SimpleMQAPIKey.ValueString() == "" {
+		if !config.SimpleMQAPIKey.IsUnknown() && config.SimpleMQAPIKey.ValueString() == "" {
 			requiredAttributeMissing(resp, "simplemq_api_key_wo", destinationSimpleMQ)
 		}
 		version := config.CredentialsVersion
 		if version.IsNull() || version.IsUnknown() {
 			requiredAttributeMissing(resp, "credentials_wo_version", destinationSimpleMQ)
 		}
-
 	case destinationSimpleNotification, destinationAutoScale:
-		if config.SakuraAccessToken.ValueString() == "" {
+		if !config.SakuraAccessToken.IsUnknown() && config.SakuraAccessToken.ValueString() == "" {
 			requiredAttributeMissing(resp, "sakura_access_token_wo", destination)
 		}
-		if config.SakuraAccessTokenSecret.ValueString() == "" {
+		if !config.SakuraAccessTokenSecret.IsUnknown() && config.SakuraAccessTokenSecret.ValueString() == "" {
 			requiredAttributeMissing(resp, "sakura_access_token_secret_wo", destination)
 		}
 		version := config.CredentialsVersion
