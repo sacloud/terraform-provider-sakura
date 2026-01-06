@@ -82,6 +82,11 @@ func TestAccSakuraResourceProcessConfiguration_validation_credentials(t *testing
 				Config:      test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_SimpleMQCredential, rand),
 				ExpectError: regexp.MustCompile(`Expected "simplemq_api_key_wo" to be configured`),
 			},
+			{
+				Config:             test.BuildConfigWithArgs(testAccSakuraProcessConfiguration_validation_SimpleMQCredentialWithVariables, rand),
+				PlanOnly:           true,
+				ExpectNonEmptyPlan: true,
+			},
 		},
 	})
 }
@@ -197,4 +202,21 @@ resource "sakura_eventbus_process_configuration" "foobar" {
   sakura_access_token_wo        = "test"
   sakura_access_token_secret_wo = "test"
   credentials_wo_version        = 1
+}`
+
+//nolint:gosec // hardcoded credentials but this is dummy data for test
+var testAccSakuraProcessConfiguration_validation_SimpleMQCredentialWithVariables = `
+// Using variable becomes unknown state in ValidateConfig
+variable "simplemq_api_key_testvalue" {
+  type = string
+  default = "foo"
+}
+
+resource "sakura_eventbus_process_configuration" "foobar" {
+  name        = "{{ .arg0 }}"
+
+  destination            = "simplemq"
+  parameters             = "{\"queue_name\": \"test-queue\", \"content\":\"TestContent\"}"
+  simplemq_api_key_wo    = var.simplemq_api_key_testvalue
+  credentials_wo_version = 1
 }`
