@@ -22,6 +22,7 @@ type diskBaseModel struct {
 	SourceDiskID        types.String `tfsdk:"source_disk_id"`
 	ServerID            types.String `tfsdk:"server_id"`
 	KMSKeyID            types.String `tfsdk:"kms_key_id"`
+	DedicatedStorageID  types.String `tfsdk:"dedicated_storage_id"`
 }
 
 func (model *diskBaseModel) updateState(disk *iaas.Disk, zone string) {
@@ -35,6 +36,7 @@ func (model *diskBaseModel) updateState(disk *iaas.Disk, zone string) {
 	model.SourceDiskID = types.StringValue(disk.SourceDiskID.String())
 	model.ServerID = types.StringValue(disk.ServerID.String())
 	model.KMSKeyID = types.StringValue(disk.KMSKeyID.String())
+	model.DedicatedStorageID = types.StringValue(disk.Storage.DedicatedStorageContractID.String())
 	if disk.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
 	} else {

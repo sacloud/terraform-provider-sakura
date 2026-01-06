@@ -31,6 +31,7 @@ data "sakura_disk" "foobar" {
 ### Read-Only
 
 - `connector` (String) The name of the disk connector. This will be one of [`virtio`/`ide`]
+- `dedicated_storage_id` (String) ID of the dedicated storage
 - `description` (String) The description of the Disk.
 - `encryption_algorithm` (String) The disk encryption algorithm. This must be one of [`none`/`aes256_xts`]
 - `icon_id` (String) The icon id attached to the Disk

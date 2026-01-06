@@ -76,6 +76,10 @@ func (d *diskDataSource) Schema(_ context.Context, req datasource.SchemaRequest,
 				Computed:    true,
 				Description: "ID of the KMS key for encryption",
 			},
+			"dedicated_storage_id": schema.StringAttribute{
+				Computed:    true,
+				Description: "ID of the dedicated storage",
+			},
 		},
 		MarkdownDescription: "Get information about an existing Disk.",
 	}

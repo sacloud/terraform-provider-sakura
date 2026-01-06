@@ -130,6 +130,35 @@ func TestAccSakuraPrivateHost_destroyWithRunningServer(t *testing.T) {
 	})
 }
 
+func TestAccSakuraPrivateHost_withDedicatedStorage(t *testing.T) {
+	test.SkipIfZoneIsDummy(t)
+
+	resourceName := "sakura_private_host.foobar"
+	rand := test.RandomName()
+
+	var privateHost iaas.PrivateHost
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraPrivateHostDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraPrivateHost_withDedicatedStorage, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraPrivateHostExists(resourceName, &privateHost),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttrPair(
+						resourceName, "dedicated_storage_id",
+						"sakura_dedicated_storage.foobar", "id",
+					),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraPrivateHostExists(n string, privateHost *iaas.PrivateHost) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -249,5 +278,17 @@ resource "sakura_server" "foobar" {
   }]
 
   force_shutdown = true
+}
+`
+
+var testAccSakuraPrivateHost_withDedicatedStorage = `
+resource "sakura_private_host" "foobar" {
+  name        = "{{ .arg0 }}"
+
+  dedicated_storage_id = sakura_dedicated_storage.foobar.id
+}
+
+resource "sakura_dedicated_storage" "foobar" {
+  name = "{{ .arg0 }}"
 }
 `

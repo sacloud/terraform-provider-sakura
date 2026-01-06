@@ -6,6 +6,7 @@ Computing:
 Storage and Data:
   - archive
   - disk
+  - dedicated_storage
   - nfs
   - object_storage_bucket
   - object_storage_bucket_cors

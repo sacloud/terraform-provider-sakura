@@ -137,6 +137,16 @@ func (r *diskResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
+			"dedicated_storage_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "ID of the dedicated storage",
+				Validators: []validator.String{
+					sacloudvalidator.SakuraIDValidator(),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
 			"distant_from": schema.SetAttribute{
 				ElementType: types.StringType,
 				Optional:    true,
@@ -179,8 +189,16 @@ func (r *diskResource) Create(ctx context.Context, req resource.CreateRequest, r
 	diskBuilder := &setup.RetryableSetup{
 		IsWaitForCopy: true,
 		Create: func(ctx context.Context, zone string) (accessor.ID, error) {
-			return diskOp.Create(ctx, zone, expandDiskCreateRequest(&plan),
-				common.ExpandSakuraCloudIDs(plan.DistantFrom), common.ExpandSakuraCloudID(plan.KMSKeyID))
+			dedicatedStorageID := common.ExpandSakuraCloudID(plan.DedicatedStorageID)
+
+			if dedicatedStorageID.IsEmpty() {
+				return diskOp.Create(ctx, zone, expandDiskCreateRequest(&plan),
+					common.ExpandSakuraCloudIDs(plan.DistantFrom), common.ExpandSakuraCloudID(plan.KMSKeyID))
+			}
+			return diskOp.CreateOnDedicatedStorage(
+				ctx, zone, expandDiskCreateRequest(&plan),
+				common.ExpandSakuraCloudIDs(plan.DistantFrom), common.ExpandSakuraCloudID(plan.KMSKeyID), dedicatedStorageID,
+			)
 		},
 		Read: func(ctx context.Context, zone string, id iaastypes.ID) (interface{}, error) {
 			return diskOp.Read(ctx, zone, id)
