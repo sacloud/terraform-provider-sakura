@@ -234,7 +234,7 @@ func Md5CheckSumFromFile(path string) (string, error) {
 	return hex.EncodeToString(h.Sum(nil)), nil
 }
 
-func ExpandBackupWeekdays(d types.Set) []iaastypes.EDayOfTheWeek {
+func ExpandBackupDaysOfWeek(d types.Set) []iaastypes.EDayOfTheWeek {
 	var vs []iaastypes.EDayOfTheWeek
 
 	for _, w := range TsetToStrings(d) {
@@ -244,9 +244,9 @@ func ExpandBackupWeekdays(d types.Set) []iaastypes.EDayOfTheWeek {
 	return vs
 }
 
-func FlattenBackupWeekdays(weekdays []iaastypes.EDayOfTheWeek) types.Set {
-	set := make([]string, 0, len(weekdays))
-	for _, w := range weekdays {
+func FlattenBackupDaysOfWeek(daysOfWeek []iaastypes.EDayOfTheWeek) types.Set {
+	set := make([]string, 0, len(daysOfWeek))
+	for _, w := range daysOfWeek {
 		set = append(set, w.String())
 	}
 	return StringsToTset(set)

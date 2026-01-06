@@ -453,7 +453,7 @@ func expandDatabaseBackupSetting(model *databaseResourceModel) *iaas.DatabaseSet
 	}
 
 	backupTime := backup.Time.ValueString()
-	backupDaysOfWeek := common.ExpandBackupWeekdays(backup.DaysOfWeek)
+	backupDaysOfWeek := common.ExpandBackupDaysOfWeek(backup.DaysOfWeek)
 	return &iaas.DatabaseSettingBackup{
 		Time:      backupTime,
 		DayOfWeek: backupDaysOfWeek,
@@ -468,7 +468,7 @@ func expandDatabaseContinuousBackup(model *databaseResourceModel) *iaas.Database
 
 	return &iaas.DatabaseSettingBackupv2{
 		Time:      model.ContinuousBackup.Time.ValueString(),
-		DayOfWeek: common.ExpandBackupWeekdays(model.ContinuousBackup.DaysOfWeek),
+		DayOfWeek: common.ExpandBackupDaysOfWeek(model.ContinuousBackup.DaysOfWeek),
 		Connect:   model.ContinuousBackup.Connect.ValueString(),
 		Rotate:    8,
 	}

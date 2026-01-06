@@ -131,7 +131,7 @@ func flattenDatabaseBackupSetting(db *iaas.Database) types.Object {
 	if db.BackupSetting != nil {
 		m := databaseBackupModel{
 			Time:       types.StringValue(db.BackupSetting.Time),
-			DaysOfWeek: common.FlattenBackupWeekdays(db.BackupSetting.DayOfWeek),
+			DaysOfWeek: common.FlattenBackupDaysOfWeek(db.BackupSetting.DayOfWeek),
 		}
 		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
 		if diags.HasError() {
@@ -145,7 +145,7 @@ func flattenDatabaseBackupSetting(db *iaas.Database) types.Object {
 func flattenDatabaseContinuousBackup(db *iaas.Database) *databaseContinuousBackupModel {
 	if db.Backupv2Setting != nil {
 		return &databaseContinuousBackupModel{
-			DaysOfWeek: common.FlattenBackupWeekdays(db.Backupv2Setting.DayOfWeek),
+			DaysOfWeek: common.FlattenBackupDaysOfWeek(db.Backupv2Setting.DayOfWeek),
 			Time:       types.StringValue(db.Backupv2Setting.Time),
 			Connect:    types.StringValue(db.Backupv2Setting.Connect),
 		}
