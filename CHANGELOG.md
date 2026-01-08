@@ -1,5 +1,10 @@
 # Changelog
 
+## [v3.1.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.0.1...v3.1.0) - 2026-01-08
+- Add auto_backup resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/77
+- Support write-only password by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/75
+- feat: sakura_dedicated_storage by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/78
+
 ## [v3.0.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.0.0...v3.0.1) - 2026-01-06
 - Update README and CHANGES by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/63
 - simple_mq: Fix description parameter handling by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/64
