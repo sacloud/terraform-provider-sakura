@@ -18,8 +18,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+
 	iaas "github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/types"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
@@ -53,7 +54,15 @@ func (r *simpleMonitorResource) Configure(ctx context.Context, req resource.Conf
 
 type simpleMonitorResourceModel struct {
 	simpleMonitorBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	HealthCheck *simpleMonitorHealthCheckResourceModel `tfsdk:"health_check"`
+	Timeouts    timeouts.Value                         `tfsdk:"timeouts"`
+}
+
+type simpleMonitorHealthCheckResourceModel struct {
+	simpleMonitorHealthCheckModel
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int32  `tfsdk:"password_wo_version"`
 }
 
 func (r *simpleMonitorResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -148,7 +157,28 @@ func (r *simpleMonitorResource) Schema(ctx context.Context, req resource.SchemaR
 					"password": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
+						Description: "The password for basic auth used when checking by HTTP/HTTPS. Use password_wo instead for newer deployments.",
+						Validators: []validator.String{
+							stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("health_check").AtName("password_wo")),
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
+						},
+					},
+					"password_wo": schema.StringAttribute{
+						Optional:    true,
+						WriteOnly:   true,
 						Description: "The password for basic auth used when checking by HTTP/HTTPS",
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
+						},
+					},
+					"password_wo_version": schema.Int32Attribute{
+						Optional:    true,
+						Description: "The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.",
+						Validators: []validator.Int32{
+							int32validator.AtLeast(1),
+							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo")),
+						},
 					},
 					"qname": schema.StringAttribute{
 						Optional:    true,
@@ -248,8 +278,9 @@ func (r *simpleMonitorResource) ImportState(ctx context.Context, req resource.Im
 }
 
 func (r *simpleMonitorResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan simpleMonitorResourceModel
+	var plan, config simpleMonitorResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -257,15 +288,14 @@ func (r *simpleMonitorResource) Create(ctx context.Context, req resource.CreateR
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	// expand request
 	smOp := iaas.NewSimpleMonitorOp(r.client)
-	created, err := smOp.Create(ctx, expandSimpleMonitorCreateRequest(&plan))
+	created, err := smOp.Create(ctx, expandSimpleMonitorCreateRequest(&plan, &config))
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create SimpleMonitor: %s", err))
 		return
 	}
 
-	plan.updateState(created)
+	updateModel(&plan, created)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -281,14 +311,15 @@ func (r *simpleMonitorResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	state.updateState(sm)
+	updateModel(&state, sm)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *simpleMonitorResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, state simpleMonitorResourceModel
+	var plan, state, config simpleMonitorResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -302,7 +333,7 @@ func (r *simpleMonitorResource) Update(ctx context.Context, req resource.UpdateR
 	}
 
 	smOp := iaas.NewSimpleMonitorOp(r.client)
-	if _, err := smOp.Update(ctx, sm.ID, expandSimpleMonitorUpdateRequest(&plan)); err != nil {
+	if _, err := smOp.Update(ctx, sm.ID, expandSimpleMonitorUpdateRequest(&plan, &config)); err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update SimpleMonitor: %s", err))
 		return
 	}
@@ -312,7 +343,7 @@ func (r *simpleMonitorResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	plan.updateState(updated)
+	updateModel(&plan, updated)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -355,18 +386,18 @@ func expandSimpleMonitorNotifyInterval(d *simpleMonitorResourceModel) int {
 	return int(d.NotifyInterval.ValueInt32()) * 60 * 60 // hours => seconds
 }
 
-func expandSimpleMonitorCreateRequest(model *simpleMonitorResourceModel) *iaas.SimpleMonitorCreateRequest {
+func expandSimpleMonitorCreateRequest(model, config *simpleMonitorResourceModel) *iaas.SimpleMonitorCreateRequest {
 	return &iaas.SimpleMonitorCreateRequest{
 		Target:             model.Target.ValueString(),
-		Enabled:            types.StringFlag(model.Enabled.ValueBool()),
-		HealthCheck:        expandSimpleMonitorHealthCheck(model),
+		Enabled:            iaastypes.StringFlag(model.Enabled.ValueBool()),
+		HealthCheck:        expandSimpleMonitorHealthCheck(model, config),
 		DelayLoop:          int(model.DelayLoop.ValueInt32()),
 		MaxCheckAttempts:   int(model.MaxCheckAttempts.ValueInt32()),
 		RetryInterval:      int(model.RetryInterval.ValueInt32()),
 		Timeout:            int(model.Timeout.ValueInt32()),
-		NotifyEmailEnabled: types.StringFlag(model.NotifyEmailEnabled.ValueBool()),
-		NotifyEmailHTML:    types.StringFlag(model.NotifyEmailHTML.ValueBool()),
-		NotifySlackEnabled: types.StringFlag(model.NotifySlackEnabled.ValueBool()),
+		NotifyEmailEnabled: iaastypes.StringFlag(model.NotifyEmailEnabled.ValueBool()),
+		NotifyEmailHTML:    iaastypes.StringFlag(model.NotifyEmailHTML.ValueBool()),
+		NotifySlackEnabled: iaastypes.StringFlag(model.NotifySlackEnabled.ValueBool()),
 		SlackWebhooksURL:   model.NotifySlackWebhook.ValueString(),
 		NotifyInterval:     expandSimpleMonitorNotifyInterval(model),
 		Description:        model.Description.ValueString(),
@@ -376,17 +407,17 @@ func expandSimpleMonitorCreateRequest(model *simpleMonitorResourceModel) *iaas.S
 	}
 }
 
-func expandSimpleMonitorUpdateRequest(model *simpleMonitorResourceModel) *iaas.SimpleMonitorUpdateRequest {
+func expandSimpleMonitorUpdateRequest(model, config *simpleMonitorResourceModel) *iaas.SimpleMonitorUpdateRequest {
 	return &iaas.SimpleMonitorUpdateRequest{
-		Enabled:            types.StringFlag(model.Enabled.ValueBool()),
-		HealthCheck:        expandSimpleMonitorHealthCheck(model),
+		Enabled:            iaastypes.StringFlag(model.Enabled.ValueBool()),
+		HealthCheck:        expandSimpleMonitorHealthCheck(model, config),
 		DelayLoop:          int(model.DelayLoop.ValueInt32()),
 		MaxCheckAttempts:   int(model.MaxCheckAttempts.ValueInt32()),
 		RetryInterval:      int(model.RetryInterval.ValueInt32()),
 		Timeout:            int(model.Timeout.ValueInt32()),
-		NotifyEmailEnabled: types.StringFlag(model.NotifyEmailEnabled.ValueBool()),
-		NotifyEmailHTML:    types.StringFlag(model.NotifyEmailHTML.ValueBool()),
-		NotifySlackEnabled: types.StringFlag(model.NotifySlackEnabled.ValueBool()),
+		NotifyEmailEnabled: iaastypes.StringFlag(model.NotifyEmailEnabled.ValueBool()),
+		NotifyEmailHTML:    iaastypes.StringFlag(model.NotifyEmailHTML.ValueBool()),
+		NotifySlackEnabled: iaastypes.StringFlag(model.NotifySlackEnabled.ValueBool()),
 		SlackWebhooksURL:   model.NotifySlackWebhook.ValueString(),
 		NotifyInterval:     expandSimpleMonitorNotifyInterval(model),
 		Description:        model.Description.ValueString(),
@@ -396,51 +427,57 @@ func expandSimpleMonitorUpdateRequest(model *simpleMonitorResourceModel) *iaas.S
 	}
 }
 
-func expandSimpleMonitorHealthCheck(model *simpleMonitorResourceModel) *iaas.SimpleMonitorHealthCheck {
+func expandSimpleMonitorHealthCheck(model, config *simpleMonitorResourceModel) *iaas.SimpleMonitorHealthCheck {
 	conf := model.HealthCheck
 	protocol := conf.Protocol.ValueString()
 	port := conf.Port.ValueInt32()
+	password := config.HealthCheck.PasswordWO.ValueString()
+	if password == "" {
+		password = conf.Password.ValueString()
+	}
 
 	switch protocol {
 	case "http":
 		if port == 0 {
 			port = 80
 		}
+
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol:          types.SimpleMonitorProtocols.HTTP,
-			Port:              types.StringNumber(port),
+			Protocol:          iaastypes.SimpleMonitorProtocols.HTTP,
+			Port:              iaastypes.StringNumber(port),
 			Path:              conf.Path.ValueString(),
-			Status:            types.StringNumber(conf.Status.ValueInt32()),
+			Status:            iaastypes.StringNumber(conf.Status.ValueInt32()),
 			ContainsString:    conf.ContainsString.ValueString(),
 			Host:              conf.HostHeader.ValueString(),
 			BasicAuthUsername: conf.Username.ValueString(),
-			BasicAuthPassword: conf.Password.ValueString(),
+			BasicAuthPassword: password,
 		}
 	case "https":
 		if port == 0 {
 			port = 443
 		}
+
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol:          types.SimpleMonitorProtocols.HTTPS,
-			Port:              types.StringNumber(port),
+			Protocol:          iaastypes.SimpleMonitorProtocols.HTTPS,
+			Port:              iaastypes.StringNumber(port),
 			Path:              conf.Path.ValueString(),
-			Status:            types.StringNumber(conf.Status.ValueInt32()),
+			Status:            iaastypes.StringNumber(conf.Status.ValueInt32()),
 			ContainsString:    conf.ContainsString.ValueString(),
-			SNI:               types.StringFlag(conf.SNI.ValueBool()),
+			SNI:               iaastypes.StringFlag(conf.SNI.ValueBool()),
 			Host:              conf.HostHeader.ValueString(),
 			BasicAuthUsername: conf.Username.ValueString(),
-			BasicAuthPassword: conf.Password.ValueString(),
-			HTTP2:             types.StringFlag(conf.Http2.ValueBool()),
+			BasicAuthPassword: password,
+			HTTP2:             iaastypes.StringFlag(conf.Http2.ValueBool()),
 		}
 	case "dns":
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol:     types.SimpleMonitorProtocols.DNS,
+			Protocol:     iaastypes.SimpleMonitorProtocols.DNS,
 			QName:        conf.QName.ValueString(),
 			ExpectedData: conf.ExpectedData.ValueString(),
 		}
 	case "snmp":
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol:     types.SimpleMonitorProtocols.SNMP,
+			Protocol:     iaastypes.SimpleMonitorProtocols.SNMP,
 			Community:    conf.Community.ValueString(),
 			SNMPVersion:  conf.SnmpVersion.ValueString(),
 			OID:          conf.Oid.ValueString(),
@@ -448,36 +485,36 @@ func expandSimpleMonitorHealthCheck(model *simpleMonitorResourceModel) *iaas.Sim
 		}
 	case "tcp":
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol: types.SimpleMonitorProtocols.TCP,
-			Port:     types.StringNumber(port),
+			Protocol: iaastypes.SimpleMonitorProtocols.TCP,
+			Port:     iaastypes.StringNumber(port),
 		}
 	case "ssh":
 		if port == 0 {
 			port = 22
 		}
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol: types.SimpleMonitorProtocols.SSH,
-			Port:     types.StringNumber(port),
+			Protocol: iaastypes.SimpleMonitorProtocols.SSH,
+			Port:     iaastypes.StringNumber(port),
 		}
 	case "smtp":
 		if port == 0 {
 			port = 25
 		}
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol: types.SimpleMonitorProtocols.SMTP,
-			Port:     types.StringNumber(port),
+			Protocol: iaastypes.SimpleMonitorProtocols.SMTP,
+			Port:     iaastypes.StringNumber(port),
 		}
 	case "pop3":
 		if port == 0 {
 			port = 110
 		}
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol: types.SimpleMonitorProtocols.POP3,
-			Port:     types.StringNumber(port),
+			Protocol: iaastypes.SimpleMonitorProtocols.POP3,
+			Port:     iaastypes.StringNumber(port),
 		}
 	case "ping":
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol: types.SimpleMonitorProtocols.Ping,
+			Protocol: iaastypes.SimpleMonitorProtocols.Ping,
 		}
 	case "sslcertificate":
 		days := 30
@@ -485,9 +522,9 @@ func expandSimpleMonitorHealthCheck(model *simpleMonitorResourceModel) *iaas.Sim
 			days = int(conf.RemainingDays.ValueInt32())
 		}
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol:      types.SimpleMonitorProtocols.SSLCertificate,
+			Protocol:      iaastypes.SimpleMonitorProtocols.SSLCertificate,
 			RemainingDays: days,
-			VerifySNI:     types.StringFlag(conf.VerifySni.ValueBool()),
+			VerifySNI:     iaastypes.StringFlag(conf.VerifySni.ValueBool()),
 		}
 	case "ftp":
 		if port == 0 {
@@ -498,11 +535,37 @@ func expandSimpleMonitorHealthCheck(model *simpleMonitorResourceModel) *iaas.Sim
 			ftps = conf.Ftps.ValueString()
 		}
 		return &iaas.SimpleMonitorHealthCheck{
-			Protocol: types.SimpleMonitorProtocols.FTP,
-			Port:     types.StringNumber(port),
-			FTPS:     types.ESimpleMonitorFTPS(ftps),
+			Protocol: iaastypes.SimpleMonitorProtocols.FTP,
+			Port:     iaastypes.StringNumber(port),
+			FTPS:     iaastypes.ESimpleMonitorFTPS(ftps),
 		}
 	}
 
 	return nil
+}
+
+func updateModel(model *simpleMonitorResourceModel, sm *iaas.SimpleMonitor) {
+	model.updateState(sm)
+	model.HealthCheck = flattenSimpleMonitorHealthCheckResource(model, sm)
+}
+
+func flattenSimpleMonitorHealthCheckResource(model *simpleMonitorResourceModel, sm *iaas.SimpleMonitor) *simpleMonitorHealthCheckResourceModel {
+	res := simpleMonitorHealthCheckResourceModel{}
+	res.updateState(sm)
+
+	hc := sm.HealthCheck
+	hcModel := model.HealthCheck
+	switch sm.HealthCheck.Protocol {
+	case iaastypes.SimpleMonitorProtocols.HTTP, iaastypes.SimpleMonitorProtocols.HTTPS:
+		if hcModel.Password.ValueString() != "" {
+			res.Password = types.StringValue(hc.BasicAuthPassword)
+		} else {
+			res.Password = types.StringNull()
+		}
+		if hcModel.PasswordWOVersion.ValueInt32() > 0 {
+			res.PasswordWOVersion = hcModel.PasswordWOVersion
+		}
+	}
+
+	return &res
 }

@@ -40,8 +40,8 @@ type vpnRouterBaseModel struct {
 	StaticNAT               []vpnRouterStaticNATModel               `tfsdk:"static_nat"`
 	StaticRoute             []vpnRouterStaticRouteModel             `tfsdk:"static_route"`
 	ScheduledMaintenance    types.Object                            `tfsdk:"scheduled_maintenance"`
-	User                    []vpnRouterUserModel                    `tfsdk:"user"`
-	MonitoringSuite         types.Object                            `tfsdk:"monitoring_suite"`
+	//User                    []vpnRouterUserModel                    `tfsdk:"user"`
+	MonitoringSuite types.Object `tfsdk:"monitoring_suite"`
 }
 
 type vpnRouterPublicNetworkInterfaceModel struct {
@@ -256,11 +256,6 @@ func (m vpnRouterScheduledMaintenanceModel) AttributeTypes() map[string]attr.Typ
 	}
 }
 
-type vpnRouterUserModel struct {
-	Name     types.String `tfsdk:"name"`
-	Password types.String `tfsdk:"password"`
-}
-
 func (model *vpnRouterBaseModel) updateState(ctx context.Context, client *common.APIClient, zone string, vpnRouter *iaas.VPCRouter) (bool, error) {
 	if vpnRouter.Availability.IsFailed() {
 		return true, fmt.Errorf("got unexpected state: VPCRouter[%d].Availability is failed", vpnRouter.ID)
@@ -306,7 +301,6 @@ func (model *vpnRouterBaseModel) updateState(ctx context.Context, client *common
 	model.SiteToSiteVPNParameter = flattenVPNRouterSiteToSiteParameter(vpnRouter)
 	model.StaticNAT = flattenVPNRouterStaticNAT(vpnRouter)
 	model.StaticRoute = flattenVPNRouterStaticRoutes(vpnRouter)
-	model.User = flattenVPNRouterUsers(vpnRouter)
 	model.ScheduledMaintenance = flattenVPNRouterScheduledMaintenance(vpnRouter)
 	model.MonitoringSuite = common.FlattenMonitoringSuite(vpnRouter.Settings.MonitoringSuite)
 
@@ -660,17 +654,6 @@ func flattenVPNRouterStaticRoutes(vpcRouter *iaas.VPCRouter) []vpnRouterStaticRo
 		})
 	}
 	return staticRoutes
-}
-
-func flattenVPNRouterUsers(vpcRouter *iaas.VPCRouter) []vpnRouterUserModel {
-	var users []vpnRouterUserModel
-	for _, u := range vpcRouter.Settings.RemoteAccessUsers {
-		users = append(users, vpnRouterUserModel{
-			Name:     types.StringValue(u.UserName),
-			Password: types.StringValue(u.Password),
-		})
-	}
-	return users
 }
 
 func flattenVPNRouterScheduledMaintenance(vpcRouter *iaas.VPCRouter) types.Object {

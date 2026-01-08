@@ -20,7 +20,7 @@ import (
 
 // resource.goに入れてもいいが、量が多いのでとりあえず分割
 
-func expandVPNRouterBuilder(model *vpnRouterResourceModel, client *common.APIClient, zone string) *builder.Builder {
+func expandVPNRouterBuilder(model, config *vpnRouterResourceModel, client *common.APIClient, zone string) *builder.Builder {
 	return &builder.Builder{
 		Zone:                  zone,
 		Name:                  model.Name.ValueString(),
@@ -31,7 +31,7 @@ func expandVPNRouterBuilder(model *vpnRouterResourceModel, client *common.APICli
 		Version:               int(model.Version.ValueInt32()),
 		NICSetting:            expandVPNRouterNICSetting(model),
 		AdditionalNICSettings: expandVPNRouterAdditionalNICSettings(model),
-		RouterSetting:         expandVPNRouterSettings(model),
+		RouterSetting:         expandVPNRouterSettings(model, config),
 		SetupOptions: &setup.Options{
 			BootAfterBuild:        true,
 			NICUpdateWaitDuration: defaults.DefaultNICUpdateWaitDuration,
@@ -118,7 +118,7 @@ func expandVPNRouterAdditionalNICSettings(model *vpnRouterResourceModel) []build
 	return results
 }
 
-func expandVPNRouterSettings(model *vpnRouterResourceModel) *builder.RouterSetting {
+func expandVPNRouterSettings(model, config *vpnRouterResourceModel) *builder.RouterSetting {
 	nic := expandVPNRouterPublicNetworkInterface(model)
 	vrid := 0
 	if nic != nil {
@@ -135,7 +135,7 @@ func expandVPNRouterSettings(model *vpnRouterResourceModel) *builder.RouterSetti
 		DNSForwarding:             expandVPNRouterDNSForwarding(model),
 		PPTPServer:                expandVPNRouterPPTP(model),
 		L2TPIPsecServer:           expandVPNRouterL2TP(model),
-		RemoteAccessUsers:         expandVPNRouterUserList(model),
+		RemoteAccessUsers:         expandVPNRouterUserList(model, config),
 		WireGuard:                 expandVPNRouterWireGuard(model),
 		SiteToSiteIPsecVPN:        expandVPNRouterSiteToSite(model),
 		StaticRoute:               expandVPNRouterStaticRouteList(model),
@@ -494,21 +494,26 @@ func expandVPNRouterStaticRoute(model *vpnRouterStaticRouteModel) *iaas.VPCRoute
 	}
 }
 
-func expandVPNRouterUserList(model *vpnRouterResourceModel) []*iaas.VPCRouterRemoteAccessUser {
-	if values := model.User; len(values) > 0 {
+func expandVPNRouterUserList(model, config *vpnRouterResourceModel) []*iaas.VPCRouterRemoteAccessUser {
+	if len(model.User) > 0 {
 		var results []*iaas.VPCRouterRemoteAccessUser
-		for _, v := range values {
-			results = append(results, expandVPNRouterUser(&v))
+		for i, u := range model.User {
+			cu := config.User[i]
+			results = append(results, expandVPNRouterUser(&u, &cu))
 		}
 		return results
 	}
 	return nil
 }
 
-func expandVPNRouterUser(model *vpnRouterUserModel) *iaas.VPCRouterRemoteAccessUser {
+func expandVPNRouterUser(model, config *vpnRouterUserModel) *iaas.VPCRouterRemoteAccessUser {
+	password := config.PasswordWO.ValueString()
+	if password == "" {
+		password = model.Password.ValueString()
+	}
 	return &iaas.VPCRouterRemoteAccessUser{
 		UserName: model.Name.ValueString(),
-		Password: model.Password.ValueString(),
+		Password: password,
 	}
 }
 

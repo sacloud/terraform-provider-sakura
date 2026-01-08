@@ -10,6 +10,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/objectvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
@@ -73,6 +74,8 @@ type serverResourceModel struct {
 type serverDiskEditModel struct {
 	Hostname            types.String                 `tfsdk:"hostname"`
 	Password            types.String                 `tfsdk:"password"`
+	PasswordWO          types.String                 `tfsdk:"password_wo"`
+	PasswordWOVersion   types.Int32                  `tfsdk:"password_wo_version"`
 	SSHKeyIDs           types.Set                    `tfsdk:"ssh_key_ids"`
 	SSHKeys             types.Set                    `tfsdk:"ssh_keys"`
 	DisablePwAuth       types.Bool                   `tfsdk:"disable_pw_auth"`
@@ -263,9 +266,29 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 					"password": schema.StringAttribute{
 						Optional:    true,
 						Sensitive:   true,
+						Description: desc.Sprintf("The password of default user. %s. Use password_wo instead for newer deployments.", desc.Length(12, 128)),
+						Validators: []validator.String{
+							stringvalidator.LengthBetween(12, 128),
+							stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("disk_edit_parameter").AtName("password_wo")),
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
+						},
+					},
+					"password_wo": schema.StringAttribute{
+						Optional:    true,
+						WriteOnly:   true,
 						Description: desc.Sprintf("The password of default user. %s", desc.Length(12, 128)),
 						Validators: []validator.String{
 							stringvalidator.LengthBetween(12, 128),
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
+						},
+					},
+					"password_wo_version": schema.Int32Attribute{
+						Optional:    true,
+						Description: "The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.",
+						Validators: []validator.Int32{
+							int32validator.AtLeast(1),
+							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo")),
 						},
 					},
 					"ssh_key_ids": schema.SetAttribute{
@@ -415,8 +438,9 @@ func (r *serverResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 }
 
 func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan serverResourceModel
+	var plan, config serverResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -429,7 +453,7 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-	builder, err := expandServerBuilder(ctx, r.client, zone, &plan, nil)
+	builder, err := expandServerBuilder(ctx, r.client, zone, &plan, nil, &config)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: Expand Error", fmt.Sprintf("failed to expand server builder: %s", err))
 		return
@@ -475,9 +499,10 @@ func (r *serverResource) Read(ctx context.Context, req resource.ReadRequest, res
 }
 
 func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, state serverResourceModel
+	var plan, state, config serverResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -494,7 +519,7 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 	common.SakuraMutexKV.Lock(sid)
 	defer common.SakuraMutexKV.Unlock(sid)
 
-	builder, err := expandServerBuilder(ctx, r.client, zone, &plan, &state)
+	builder, err := expandServerBuilder(ctx, r.client, zone, &plan, &state, &config)
 	if err != nil {
 		resp.Diagnostics.AddError("Update: Expand Error", fmt.Sprintf("failed to expand server builder: %s", err))
 		return
@@ -569,8 +594,8 @@ func getServer(ctx context.Context, client *common.APIClient, zone string, id ia
 	return server
 }
 
-func expandServerBuilder(ctx context.Context, client *common.APIClient, zone string, plan *serverResourceModel, state *serverResourceModel) (*serverBuilder.Builder, error) {
-	diskBuilders, err := expandServerDisks(ctx, client, zone, plan, state)
+func expandServerBuilder(ctx context.Context, client *common.APIClient, zone string, plan, state, config *serverResourceModel) (*serverBuilder.Builder, error) {
+	diskBuilders, err := expandServerDisks(ctx, client, zone, plan, state, config)
 	if err != nil {
 		return nil, err
 	}
@@ -610,7 +635,7 @@ func expandServerUserData(plan *serverResourceModel, state *serverResourceModel)
 	return ""
 }
 
-func expandServerDisks(ctx context.Context, client *common.APIClient, zone string, plan *serverResourceModel, state *serverResourceModel) ([]diskBuilder.Builder, error) {
+func expandServerDisks(ctx context.Context, client *common.APIClient, zone string, plan, state, config *serverResourceModel) ([]diskBuilder.Builder, error) {
 	var builders []diskBuilder.Builder
 	diskIDs := common.ExpandSakuraCloudIDsFromList(plan.Disks)
 	diskOp := iaas.NewDiskOp(client)
@@ -631,11 +656,17 @@ func expandServerDisks(ctx context.Context, client *common.APIClient, zone strin
 		// set only when value was changed
 		if i == 0 && isDiskEditParameterChanged(plan, state) {
 			if plan.DiskEdit != nil {
+				password := ""
+				if !plan.DiskEdit.Password.IsNull() {
+					password = plan.DiskEdit.Password.ValueString()
+				} else if !config.DiskEdit.PasswordWO.IsNull() {
+					password = config.DiskEdit.PasswordWO.ValueString()
+				}
 				de := plan.DiskEdit
 				log.Printf("[INFO] disk_edit_parameter is specified for Disk[%s]", diskID)
 				b.EditParameter = &diskBuilder.UnixEditRequest{
 					HostName:            de.Hostname.ValueString(),
-					Password:            de.Password.ValueString(),
+					Password:            password,
 					DisablePWAuth:       de.DisablePwAuth.ValueBool(),
 					EnableDHCP:          de.EnableDHCP.ValueBool(),
 					ChangePartitionUUID: de.ChangePartitionUUID.ValueBool(),

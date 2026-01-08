@@ -92,6 +92,43 @@ func TestAccSakuraApprunShared_withCRUser(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.server", "apprun-test.sakuracr.jp"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.username", "user"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.password", "password"),
+					resource.TestCheckNoResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo"),
+					resource.TestCheckNoResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo_version"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraApprunShared_withCRUserWithWO(t *testing.T) {
+	resourceName := "sakura_apprun_shared.foobar"
+	rand := test.RandomName()
+
+	var application v1.Application
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withCRUserWithWO, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraApprunSharedExists(resourceName, &application),
+					testCheckSakuraApprunSharedAttributes(&application),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "timeout_seconds", "90"),
+					resource.TestCheckResourceAttr(resourceName, "port", "80"),
+					resource.TestCheckResourceAttr(resourceName, "min_scale", "0"),
+					resource.TestCheckResourceAttr(resourceName, "max_scale", "1"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.name", "compo1"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.max_cpu", "0.5"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.max_memory", "1Gi"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "apprun-test.sakuracr.jp/test1:latest"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.server", "apprun-test.sakuracr.jp"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.username", "user"),
+					resource.TestCheckNoResourceAttr(resourceName, "components.0.deploy_source.container_registry.password"),
+					resource.TestCheckNoResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo_version", "1"),
 				),
 			},
 		},
@@ -595,6 +632,30 @@ resource "sakura_apprun_shared" "foobar" {
         server   = "apprun-test.sakuracr.jp"
         username = "user"
         password = "password"
+      }
+    }
+  }]
+}
+`
+
+const testAccSakuraApprunShared_withCRUserWithWO = `
+resource "sakura_apprun_shared" "foobar" {
+  name            = "{{ .arg0 }}"
+  timeout_seconds = 90
+  port            = 80
+  min_scale       = 0
+  max_scale       = 1
+  components = [{
+    name       = "compo1"
+    max_cpu    = "0.5"
+    max_memory = "1Gi"
+    deploy_source = {
+      container_registry = {
+        image    = "apprun-test.sakuracr.jp/test1:latest"
+        server   = "apprun-test.sakuracr.jp"
+        username = "user"
+        password_wo = "password"
+		password_wo_version = 1
       }
     }
   }]

@@ -108,9 +108,17 @@ func (r *apprunSharedDataSource) Schema(ctx context.Context, req datasource.Sche
 											Computed:    true,
 											Description: "The container registry credentials",
 										},
-										"password": schema.StringAttribute{ // In data source, password is always empty string
+										"password": schema.StringAttribute{
 											Computed:    true,
-											Description: "The container registry credentials",
+											Description: "The container registry credentials. Always empty in data source.",
+										},
+										"password_wo": schema.StringAttribute{
+											Computed:    true,
+											Description: "Placeholder for resource schema. Always empty in data source.",
+										},
+										"password_wo_version": schema.Int32Attribute{
+											Computed:    true,
+											Description: "Placeholder for resource schema. Always 0 in data source.",
 										},
 									},
 								},

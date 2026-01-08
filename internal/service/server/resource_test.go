@@ -88,6 +88,50 @@ func TestAccSakuraServer_basic(t *testing.T) {
 	})
 }
 
+func TestAccSakuraServer_basicWithWO(t *testing.T) {
+	resourceName := "sakura_server.foobar"
+	rand := test.RandomName()
+	password := test.RandomPassword()
+
+	var server iaas.Server
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             test.CheckSakuraServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraServer_basicWithWO, rand, password),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					test.CheckSakuraServerAttributes(&server),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "core", "1"),
+					resource.TestCheckResourceAttr(resourceName, "memory", "1"),
+					resource.TestCheckResourceAttr(resourceName, "disks.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "interface_driver", "virtio"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.hostname", rand),
+					resource.TestCheckNoResourceAttr(resourceName, "disk_edit_parameter.password"),
+					resource.TestCheckNoResourceAttr(resourceName, "disk_edit_parameter.password_wo"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.password_wo_version", "1"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.ssh_keys.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.ssh_keys.0", "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEAo5G7cwRp423KOrtCewX5nXFkboGxZ3hfvECNGg56 e2e-test-only@example"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.ssh_key_ids.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.ssh_key_ids.0", "100000000000"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.disable_pw_auth", "true"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.id", "100000000000"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.api_key_id", "100000000001"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "shared"),
+					resource.TestCheckResourceAttr(resourceName, "hostname", rand),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.mac_address"),
+					resource.TestCheckResourceAttrSet(resourceName, "ip_address"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSakuraServer_validateHostName(t *testing.T) {
 	rand := test.RandomName()
 
@@ -666,6 +710,35 @@ resource "sakura_server" "foobar" {
 }
 `
 
+const testAccSakuraServer_basicWithWO = `
+data "sakura_archive" "ubuntu" {
+  os_type = "ubuntu"
+}
+resource "sakura_disk" "foobar" {
+  name              = "{{ .arg0 }}"
+  source_archive_id = data.sakura_archive.ubuntu.id
+}
+
+resource "sakura_server" "foobar" {
+  name        = "{{ .arg0 }}"
+  disks       = [sakura_disk.foobar.id]
+  network_interface = [{
+    upstream = "shared"
+  }]
+  disk_edit_parameter = {
+    hostname        = "{{ .arg0 }}"
+    password_wo     = "{{ .arg1 }}"
+	password_wo_version = 1
+    ssh_keys        = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEAo5G7cwRp423KOrtCewX5nXFkboGxZ3hfvECNGg56 e2e-test-only@example"]
+    ssh_key_ids     = ["100000000000", "200000000000"]
+    disable_pw_auth = true
+    script = [{
+      id         = "100000000000"
+      api_key_id = "100000000001"
+    }]
+  }
+}`
+
 const testAccSakuraServer_validateHostName = `
 data "sakura_archive" "ubuntu" {
   os_type = "ubuntu"
@@ -780,6 +853,10 @@ resource "sakura_vswitch" "foobar0" {
 const testAccSakuraServer_packetFilter = `
 resource "sakura_packet_filter" "foobar" {
   name = "{{ .arg0 }}"
+}
+
+resource "sakura_packet_filter_rules" "rules" {
+  packet_filter_id = sakura_packet_filter.foobar.id
   expression = [{
     protocol         = "tcp"
     source_network   = "0.0.0.0"
@@ -815,7 +892,10 @@ resource "sakura_vswitch" "foobar" {
 const testAccSakuraServer_packetFilterUpdate = `
 resource "sakura_packet_filter" "foobar" {
   name = "{{ .arg0 }}-upd"
+}
 
+resource "sakura_packet_filter_rules" "rules" {
+  packet_filter_id = sakura_packet_filter.foobar.id
   expression = [{
     protocol         = "udp"
     source_network   = "0.0.0.0"

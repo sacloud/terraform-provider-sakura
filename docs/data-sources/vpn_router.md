@@ -257,7 +257,6 @@ Read-Only:
 Read-Only:
 
 - `name` (String) The user name used to authenticate remote access
-- `password` (String, Sensitive) The password used to authenticate remote access
 
 
 <a id="nestedatt--wire_guard"></a>

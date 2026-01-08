@@ -23,9 +23,12 @@ resource "sakura_database" "foobar" {
   plan             = "30g"
 
   username = var.username
-  password = var.password
-
-  replica_password = var.replica_password
+  password_wo = var.password
+  replica_password_wo = var.replica_password
+  password_wo_version = 1
+  // for backward compatibility
+  //password = var.password
+  //replica_password = var.replica_password
 
   network_interface = {
     vswitch_id    = sakura_vswitch.foobar.id
@@ -95,10 +98,11 @@ resource "sakura_kms" "foobar" {
 
 - `name` (String) The name of the Database.
 - `network_interface` (Attributes) (see [below for nested schema](#nestedatt--network_interface))
-- `password` (String, Sensitive) The password of default user on the database
 - `username` (String) The name of default user on the database. The length of this value must be in the range [`3`-`20`]
 
 ### Optional
+
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `backup` (Attributes) (see [below for nested schema](#nestedatt--backup))
 - `continuous_backup` (Attributes) (see [below for nested schema](#nestedatt--continuous_backup))
@@ -109,8 +113,12 @@ resource "sakura_kms" "foobar" {
 - `icon_id` (String) The icon id to attach to the Database
 - `monitoring_suite` (Attributes) The monitoring suite settings of the Database. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `parameters` (Map of String) The map for setting RDBMS-specific parameters. Valid keys can be found with the `usacloud database list-parameters` command
+- `password` (String, Sensitive) The password of default user on the database. Use password_wo instead for newer deployments.
+- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of default user on the database
+- `password_wo_version` (Number) The version of the password_wo/replica_password_wo field. This value must be greater than 0 when set. Increment this when changing password.
 - `plan` (String) The plan name of the Database. This must be one of [`10g`/`30g`/`90g`/`240g`/`500g`/`1t`]
-- `replica_password` (String, Sensitive) The password of user that processing a replication
+- `replica_password` (String, Sensitive) The password of user that processing a replication. Use replica_password_wo instead for newer deployments.
+- `replica_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of user that processing a replication
 - `replica_user` (String) The name of user that processing a replication
 - `tags` (Set of String) The tags of the Database.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

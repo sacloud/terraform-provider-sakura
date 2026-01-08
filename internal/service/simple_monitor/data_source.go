@@ -28,11 +28,6 @@ type simpleMonitorDataSource struct {
 	client *common.APIClient
 }
 
-type simpleMonitorDataSourceModel struct {
-	simpleMonitorBaseModel
-	Name types.String `tfsdk:"name"`
-}
-
 func (d *simpleMonitorDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_simple_monitor"
 }
@@ -43,6 +38,12 @@ func (d *simpleMonitorDataSource) Configure(ctx context.Context, req datasource.
 		return
 	}
 	d.client = apiclient
+}
+
+type simpleMonitorDataSourceModel struct {
+	simpleMonitorBaseModel
+	Name        types.String                   `tfsdk:"name"`
+	HealthCheck *simpleMonitorHealthCheckModel `tfsdk:"health_check"`
 }
 
 func (d *simpleMonitorDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -104,10 +105,6 @@ func (d *simpleMonitorDataSource) Schema(ctx context.Context, req datasource.Sch
 					"username": schema.StringAttribute{
 						Computed:    true,
 						Description: "The user name for basic auth used when checking by HTTP/HTTPS",
-					},
-					"password": schema.StringAttribute{
-						Computed:    true,
-						Description: "The password for basic auth used when checking by HTTP/HTTPS",
 					},
 					"port": schema.Int32Attribute{
 						Computed:    true,
@@ -208,7 +205,9 @@ func (d *simpleMonitorDataSource) Read(ctx context.Context, req datasource.ReadR
 		return
 	}
 
-	data.updateState(res.SimpleMonitors[0])
-	data.Name = types.StringValue(res.SimpleMonitors[0].Name)
+	sm := res.SimpleMonitors[0]
+	data.updateState(sm)
+	data.Name = types.StringValue(sm.Name)
+	data.HealthCheck = flattenSimpleMonitorHealthCheck(sm)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

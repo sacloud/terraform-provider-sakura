@@ -43,7 +43,8 @@ func TestAccSakuraNosql_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
-					resource.TestCheckResourceAttr(resourceName, "password", password),
+					resource.TestCheckNoResourceAttr(resourceName, "password_wo"),
+					resource.TestCheckResourceAttr(resourceName, "password_wo_version", "1"),
 					resource.TestCheckResourceAttr(resourceName, "settings.reserve_ip_address", "192.168.0.10"),
 					resource.TestCheckResourceAttr(resourceName, "settings.repair.full.interval", "14"),
 					resource.TestCheckResourceAttr(resourceName, "settings.repair.full.day_of_week", "fri"),
@@ -77,7 +78,8 @@ func TestAccSakuraNosql_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1-upd"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2-upd"),
-					resource.TestCheckResourceAttr(resourceName, "password", password),
+					resource.TestCheckNoResourceAttr(resourceName, "password_wo"),
+					resource.TestCheckResourceAttr(resourceName, "password_wo_version", "1"),
 					resource.TestCheckResourceAttr(resourceName, "settings.reserve_ip_address", "192.168.0.10"),
 					resource.TestCheckResourceAttr(resourceName, "settings.repair.full.interval", "14"),
 					resource.TestCheckResourceAttr(resourceName, "settings.repair.full.day_of_week", "fri"),
@@ -165,7 +167,8 @@ resource "sakura_nosql" "foobar" {
   zone = "tk1b"
   plan = "100GB"
   description = "description"
-  password    = "{{ .arg1 }}"
+  password_wo = "{{ .arg1 }}"
+  password_wo_version = 1
   vswitch_id  = sakura_vswitch.foobar.id
   settings = {
     reserve_ip_address = "192.168.0.10"
@@ -221,7 +224,8 @@ resource "sakura_nosql" "foobar" {
   zone = "tk1b"
   plan = "100GB"
   description = "description-updated"
-  password    = "{{ .arg1 }}"
+  password_wo = "{{ .arg1 }}"
+  password_wo_version = 1
   vswitch_id  = sakura_vswitch.foobar.id
   settings = {
     reserve_ip_address = "192.168.0.10"

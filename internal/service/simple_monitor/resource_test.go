@@ -78,6 +78,38 @@ func TestAccSakuraSimpleMonitor_basic(t *testing.T) {
 	})
 }
 
+func TestAccSakuraSimpleMonitor_basicWithWO(t *testing.T) {
+	resourceName := "sakura_simple_monitor.foobar"
+	zone := test.RandomName() + ".com"
+
+	var monitor iaas.SimpleMonitor
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraSimpleMonitorDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSimpleMonitor_basicWithWO, zone, testAccSlackWebhook),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraSimpleMonitorExists(resourceName, &monitor),
+					testCheckSakuraSimpleMonitorAttributes(&monitor),
+					resource.TestCheckResourceAttr(resourceName, "health_check.protocol", "https"),
+					resource.TestCheckResourceAttr(resourceName, "health_check.port", "8443"),
+					resource.TestCheckResourceAttr(resourceName, "health_check.contains_string", "ok"),
+					resource.TestCheckResourceAttr(resourceName, "health_check.sni", "true"),
+					resource.TestCheckResourceAttr(resourceName, "health_check.username", "foo"),
+					resource.TestCheckNoResourceAttr(resourceName, "health_check.password"),
+					resource.TestCheckNoResourceAttr(resourceName, "health_check.password_wo"),
+					resource.TestCheckResourceAttr(resourceName, "health_check.password_wo_version", "1"),
+					resource.TestCheckResourceAttr(resourceName, "health_check.http2", "true"),
+					resource.TestCheckResourceAttr(resourceName, "health_check.contains_string", "ok"),
+					resource.TestCheckResourceAttr(resourceName, "target", zone),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSakuraSimpleMonitor_certMonitor(t *testing.T) {
 	resourceName := "sakura_simple_monitor.foobar"
 	zone := test.RandomName() + ".com"
@@ -235,6 +267,24 @@ resource "sakura_simple_monitor" "foobar" {
   notify_slack_webhook = "{{ .arg1 }}"
   monitoring_suite = {
     enabled = false
+  }
+}`
+
+var testAccSakuraSimpleMonitor_basicWithWO = `
+resource "sakura_simple_monitor" "foobar" {
+  target = "{{ .arg0 }}"
+  health_check = {
+    protocol        = "https"
+    port            = 8443
+    path            = "/"
+    status          = "200"
+    contains_string = "ok"
+    host_header     = "usacloud.jp"
+    sni             = true
+    username        = "foo"
+    password_wo     = "bar"
+	password_wo_version = 1
+    http2           = true
   }
 }`
 

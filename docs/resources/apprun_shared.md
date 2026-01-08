@@ -28,6 +28,9 @@ resource "sakura_apprun_shared" "foobar" {
         image    = "foobar.sakuracr.jp/my-app:latest"
         //server   = "foobar.sakuracr.jp"
         //username = "username"
+        //password_wo = "userpassword"
+        //password_wo_version = 1
+        // for backward compatibility
         //password = "userpassword"
       }
     }
@@ -119,7 +122,9 @@ Required:
 
 Optional:
 
-- `password` (String, Sensitive) The container registry credentials
+- `password` (String, Sensitive) The container registry credentials. Use password_wo instead for newer deployments.
+- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The container registry credentials
+- `password_wo_version` (Number) The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.
 - `server` (String) The container registry server name
 - `username` (String) The container registry credentials
 

@@ -65,7 +65,15 @@ func (d *vpnRouterResource) Configure(ctx context.Context, req resource.Configur
 
 type vpnRouterResourceModel struct {
 	vpnRouterBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	User     []vpnRouterUserModel `tfsdk:"user"`
+	Timeouts timeouts.Value       `tfsdk:"timeouts"`
+}
+
+type vpnRouterUserModel struct {
+	Name              types.String `tfsdk:"name"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int32  `tfsdk:"password_wo_version"`
 }
 
 func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -627,11 +635,31 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 							},
 						},
 						"password": schema.StringAttribute{
-							Required:    true,
+							Optional:    true,
 							Sensitive:   true,
+							Description: "The password used to authenticate remote access. Use password_wo instead for newer deployments",
+							Validators: []validator.String{
+								stringvalidator.LengthBetween(1, 20),
+								stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("user").AtAnyListIndex().AtName("password_wo")),
+								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
+							},
+						},
+						"password_wo": schema.StringAttribute{
+							Optional:    true,
+							WriteOnly:   true,
 							Description: "The password used to authenticate remote access",
 							Validators: []validator.String{
 								stringvalidator.LengthBetween(1, 20),
+								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
+								stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
+							},
+						},
+						"password_wo_version": schema.Int32Attribute{
+							Optional:    true,
+							Description: "The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.",
+							Validators: []validator.Int32{
+								int32validator.AtLeast(1),
+								int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo")),
 							},
 						},
 					},
@@ -651,8 +679,9 @@ func (r *vpnRouterResource) ImportState(ctx context.Context, req resource.Import
 }
 
 func (r *vpnRouterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan vpnRouterResourceModel
+	var plan, config vpnRouterResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -665,7 +694,7 @@ func (r *vpnRouterResource) Create(ctx context.Context, req resource.CreateReque
 		return
 	}
 
-	builder := expandVPNRouterBuilder(&plan, r.client, zone)
+	builder := expandVPNRouterBuilder(&plan, &config, r.client, zone)
 	if err := builder.Validate(ctx, zone); err != nil {
 		resp.Diagnostics.AddError("Create: Validation Error", fmt.Sprintf("failed to validate parameter for VPNRouter: %s", err))
 		return
@@ -716,8 +745,9 @@ func (r *vpnRouterResource) Read(ctx context.Context, req resource.ReadRequest, 
 }
 
 func (r *vpnRouterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan vpnRouterResourceModel
+	var plan, config vpnRouterResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -736,7 +766,7 @@ func (r *vpnRouterResource) Update(ctx context.Context, req resource.UpdateReque
 	common.SakuraMutexKV.Lock(sid)
 	defer common.SakuraMutexKV.Unlock(sid)
 
-	builder := expandVPNRouterBuilder(&plan, r.client, zone)
+	builder := expandVPNRouterBuilder(&plan, &config, r.client, zone)
 	if err := builder.Validate(ctx, zone); err != nil {
 		resp.Diagnostics.AddError("Update: Validation Error", fmt.Sprintf("failed to validate parameter for VPNRouter[%s]: %s", sid, err))
 		return

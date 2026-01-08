@@ -67,19 +67,9 @@ func (d *databaseDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Computed:    true,
 				Description: "The name of default user on the database",
 			},
-			"password": schema.StringAttribute{
-				Computed:    true,
-				Sensitive:   true,
-				Description: "The password of default user on the database",
-			},
 			"replica_user": schema.StringAttribute{
 				Computed:    true,
 				Description: "The name of user that processing a replication",
-			},
-			"replica_password": schema.StringAttribute{
-				Computed:    true,
-				Sensitive:   true,
-				Description: "The password of user that processing a replication",
 			},
 			"network_interface": schema.SingleNestedAttribute{
 				Computed:    true,

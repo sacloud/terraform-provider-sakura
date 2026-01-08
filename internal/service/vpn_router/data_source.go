@@ -43,6 +43,11 @@ func (d *vpnRouterDataSource) Configure(ctx context.Context, req datasource.Conf
 
 type vpnRouterDataSourceModel struct {
 	vpnRouterBaseModel
+	User []vpnRouterUserDataSourceModel `tfsdk:"user"`
+}
+
+type vpnRouterUserDataSourceModel struct {
+	Name types.String `tfsdk:"name"`
 }
 
 func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -428,11 +433,6 @@ func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 							Computed:    true,
 							Description: "The user name used to authenticate remote access",
 						},
-						"password": schema.StringAttribute{
-							Computed:    true,
-							Sensitive:   true,
-							Description: "The password used to authenticate remote access",
-						},
 					},
 				},
 			},
@@ -470,5 +470,16 @@ func (d *vpnRouterDataSource) Read(ctx context.Context, req datasource.ReadReque
 		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for VPNRouter resource: %s", err))
 		return
 	}
+	data.User = flattenVPNRouterDataSourceUsers(vpnRouter)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func flattenVPNRouterDataSourceUsers(vpcRouter *iaas.VPCRouter) []vpnRouterUserDataSourceModel {
+	var users []vpnRouterUserDataSourceModel
+	for _, u := range vpcRouter.Settings.RemoteAccessUsers {
+		users = append(users, vpnRouterUserDataSourceModel{
+			Name: types.StringValue(u.UserName),
+		})
+	}
+	return users
 }

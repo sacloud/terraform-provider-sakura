@@ -26,9 +26,7 @@ type databaseBaseModel struct {
 	DatabaseVersion  types.String                   `tfsdk:"database_version"`
 	Plan             types.String                   `tfsdk:"plan"`
 	Username         types.String                   `tfsdk:"username"`
-	Password         types.String                   `tfsdk:"password"`
 	ReplicaUser      types.String                   `tfsdk:"replica_user"`
-	ReplicaPassword  types.String                   `tfsdk:"replica_password"`
 	NetworkInterface *databaseNetworkInterfaceModel `tfsdk:"network_interface"`
 	Backup           types.Object                   `tfsdk:"backup"`
 	ContinuousBackup *databaseContinuousBackupModel `tfsdk:"continuous_backup"`
@@ -76,16 +74,14 @@ func (model *databaseBaseModel) updateState(ctx context.Context, client *common.
 	model.DatabaseVersion = types.StringValue(db.Conf.DatabaseVersion)
 	model.Plan = types.StringValue(iaastypes.DatabasePlanNameMap[db.PlanID])
 	model.Username = types.StringValue(db.CommonSetting.DefaultUser)
-	model.Password = types.StringValue(db.CommonSetting.UserPassword)
-	if db.ReplicationSetting != nil {
-		model.ReplicaUser = types.StringValue(db.CommonSetting.ReplicaUser)
-		model.ReplicaPassword = types.StringValue(db.CommonSetting.ReplicaPassword)
-	}
 	model.NetworkInterface = flattenDatabaseNetworkInterface(db)
 	model.Backup = flattenDatabaseBackupSetting(db)
 	model.ContinuousBackup = flattenDatabaseContinuousBackup(db)
 	model.Disk = flattenDatabaseDisk(db)
 	model.MonitoringSuite = common.FlattenMonitoringSuite(db.MonitoringSuite)
+	if db.ReplicationSetting != nil {
+		model.ReplicaUser = types.StringValue(db.CommonSetting.ReplicaUser)
+	}
 	if db.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
 	} else {
