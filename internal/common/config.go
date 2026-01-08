@@ -16,6 +16,8 @@ import (
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/api-client-go/profile"
 	"github.com/sacloud/apprun-api-go"
+	dedicatedstorage "github.com/sacloud/dedicated-storage-api-go"
+	dedicatedstorageapi "github.com/sacloud/dedicated-storage-api-go/apis/v1"
 	"github.com/sacloud/eventbus-api-go"
 	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
 	saht "github.com/sacloud/go-http"
@@ -27,6 +29,7 @@ import (
 	nosql "github.com/sacloud/nosql-api-go"
 	nosqlapi "github.com/sacloud/nosql-api-go/apis/v1"
 	objectstorage "github.com/sacloud/object-storage-api-go"
+	"github.com/sacloud/saclient-go"
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
 	"github.com/sacloud/simplemq-api-go"
@@ -92,6 +95,7 @@ type APIClient struct {
 	EventBusClient                   *eventbus_api.Client
 	ObjectStorageClient              *objectstorage.Client
 	NosqlClient                      *nosqlapi.Client
+	DedicatedStorageClient           *dedicatedstorageapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -280,6 +284,11 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		TraceAPI:    enableAPITrace,
 	})
 
+	theClient := &saclient.Client{}
+	if err := theClient.CompatSettingsFromAPIClientOptions(callerOptions); err != nil {
+		return nil, err
+	}
+
 	zones := c.Zones
 	if len(zones) == 0 {
 		zones = iaas.SakuraCloudZones
@@ -305,6 +314,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	dedicatedStorageClient, err := dedicatedstorage.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -322,6 +335,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		AppRunClient:                     &apprun.Client{Options: callerOptions},
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
 		NosqlClient:                      nosqlClient,
+		DedicatedStorageClient:           dedicatedStorageClient,
 	}, nil
 }
 

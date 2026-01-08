@@ -25,6 +25,8 @@ resource "sakura_disk" "foobar" {
   source_archive_id = data.sakura_archive.ubuntu.id
   #distant_from      = ["111111111111"]
 
+  # dedicated_storage_id = sakura_dedicated_storage.foobar.id
+
   # For encryption
   #encryption_algorithm = "aes256_xts"
   #kms_key_id           = data.sakura_kms.foobar.id
@@ -44,6 +46,7 @@ resource "sakura_disk" "foobar" {
 ### Optional
 
 - `connector` (String) The name of the disk connector. This must be one of [`virtio`/`ide`]
+- `dedicated_storage_id` (String) ID of the dedicated storage
 - `description` (String) The description of the Disk. The length of this value must be in the range [`1`-`512`]
 - `distant_from` (Set of String) A list of disk id. The disk will be located to different storage from these disks
 - `encryption_algorithm` (String) The disk encryption algorithm. This must be one of [`none`/`aes256_xts`]

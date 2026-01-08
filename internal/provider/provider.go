@@ -23,6 +23,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/cloudhsm"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/database"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/dedicated_storage"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/disk"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dns"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/enhanced_lb"
@@ -219,6 +220,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		cloudhsm.NewCloudHSMLicenseDataSource,
 		container_registry.NewContainerRegistryDataSource,
 		database.NewDatabaseDataSource,
+		dedicated_storage.NewDedicatedStorageDataSource,
 		disk.NewDiskDataSource,
 		dns.NewDNSDataSource,
 		enhanced_lb.NewEnhancedLBDataSource,
@@ -266,6 +268,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		container_registry.NewContainerRegistryResource,
 		database.NewDatabaseResource,
 		database.NewDatabaseReadReplicaResource,
+		dedicated_storage.NewDedicatedStorageResource,
 		disk.NewDiskResource,
 		dns.NewDNSResource,
 		dns.NewDNSRecordResource,

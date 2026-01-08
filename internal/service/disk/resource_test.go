@@ -155,6 +155,36 @@ func TestAccSakuraDisk_with_Server(t *testing.T) {
 	})
 }
 
+func TestAccSakuraDisk_onDedicatedStorage(t *testing.T) {
+	test.SkipIfFakeModeEnabled(t)
+
+	resourceName := "sakura_disk.foobar"
+	rand := test.RandomName()
+
+	var disk iaas.Disk
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			test.CheckSakuraDiskDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraDisk_onDedicatedStorage, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraDiskExists(resourceName, &disk),
+					testCheckSakuraDiskAttributes(&disk),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttrPair(
+						resourceName, "dedicated_storage_id",
+						"sakura_dedicated_storage.foobar", "id",
+					),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraDiskExists(n string, disk *iaas.Disk) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -360,5 +390,21 @@ resource "sakura_server" "foobar" {
   }]
   core  = 2
   memory = 4
+}
+`
+
+var testAccSakuraDisk_onDedicatedStorage = `
+resource "sakura_disk" "foobar" {
+  name              = "{{ .arg0 }}"
+  plan              = "ssd"
+  connector         = "virtio"
+  size              = 20
+  description       = "description"
+
+  dedicated_storage_id = sakura_dedicated_storage.foobar.id
+}
+
+resource "sakura_dedicated_storage" "foobar" {
+  name        = "{{ .arg0 }}"
 }
 `

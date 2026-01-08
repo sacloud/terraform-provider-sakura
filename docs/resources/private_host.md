@@ -17,6 +17,8 @@ resource "sakura_private_host" "foobar" {
   name        = "foobar"
   description = "description"
   tags        = ["tag1", "tag2"]
+
+  # dedicated_storage_id = sakura_dedicated_storage.foobar.id
 }
 ```
 
@@ -30,6 +32,7 @@ resource "sakura_private_host" "foobar" {
 ### Optional
 
 - `class` (String) The class of the PrivateHost. This will be one of [`dynamic`/`ms_windows`]
+- `dedicated_storage_id` (String) ID of the dedicated storage (input-only). This value is not returned by the backend API, so Terraform cannot detect drift for this attribute. Note: it cannot be restored via `terraform import`
 - `description` (String) The description of the PrivateHost. The length of this value must be in the range [`1`-`512`]
 - `icon_id` (String) The icon id to attach to the PrivateHost
 - `tags` (Set of String) The tags of the PrivateHost.

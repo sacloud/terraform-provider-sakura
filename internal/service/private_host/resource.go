@@ -14,15 +14,19 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/cleanup"
 	"github.com/sacloud/iaas-api-go/search"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
 type privateHostResource struct {
@@ -53,7 +57,8 @@ func (r *privateHostResource) Configure(ctx context.Context, req resource.Config
 
 type privateHostResourceModel struct {
 	privateHostBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	DedicatedStorageID types.String   `tfsdk:"dedicated_storage_id"`
+	Timeouts           timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *privateHostResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -74,6 +79,16 @@ func (r *privateHostResource) Schema(ctx context.Context, req resource.SchemaReq
 				Default:     stringdefault.StaticString(iaastypes.PrivateHostClassDynamic),
 				Validators: []validator.String{
 					stringvalidator.OneOf(classes...),
+				},
+			},
+			"dedicated_storage_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "ID of the dedicated storage (input-only). This value is not returned by the backend API, so Terraform cannot detect drift for this attribute. Note: it cannot be restored via `terraform import`",
+				Validators: []validator.String{
+					sacloudvalidator.SakuraIDValidator(),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"hostname": schema.StringAttribute{
@@ -122,10 +137,23 @@ func (r *privateHostResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	ph, err := phOp.Create(ctx, zone, expandPrivateHostCreateRequest(&plan, planID))
-	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create PrivateHost: %s", err))
-		return
+	var ph *iaas.PrivateHost
+
+	if plan.DedicatedStorageID.IsNull() || plan.DedicatedStorageID.IsUnknown() {
+		created, err := phOp.Create(ctx, zone, expandPrivateHostCreateRequest(&plan, planID))
+		if err != nil {
+			resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create PrivateHost: %s", err))
+			return
+		}
+		ph = created
+	} else {
+		dedicatedStorageID := common.ExpandSakuraCloudID(plan.DedicatedStorageID)
+		created, err := phOp.CreateWithDedicatedStorage(ctx, zone, expandPrivateHostCreateRequest(&plan, planID), dedicatedStorageID)
+		if err != nil {
+			resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create PrivateHost with Dedicated Storage: %s", err))
+			return
+		}
+		ph = created
 	}
 
 	plan.updateState(ph, zone)
@@ -237,7 +265,12 @@ func expandPrivateHostPlanID(ctx context.Context, d *privateHostResourceModel, c
 		return iaastypes.ID(0), errors.New("failed to find PrivateHostPlan: plan is not found")
 	}
 
-	return searched.PrivateHostPlans[0].ID, nil
+	for _, plan := range searched.PrivateHostPlans {
+		if plan.Dedicated == (!d.DedicatedStorageID.IsNull() && !d.DedicatedStorageID.IsUnknown()) {
+			return plan.ID, nil
+		}
+	}
+	return iaastypes.ID(0), errors.New("failed to find PrivateHostPlan: plan is not found")
 }
 
 func expandPrivateHostCreateRequest(model *privateHostResourceModel, planID iaastypes.ID) *iaas.PrivateHostCreateRequest {
