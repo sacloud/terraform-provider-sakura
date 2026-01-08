@@ -18,6 +18,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_shared"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/auto_backup"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/bridge"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/cloudhsm"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
@@ -256,6 +257,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 	return []func() resource.Resource{
 		apprun_shared.NewApprunSharedResource,
 		archive.NewArchiveResource,
+		auto_backup.NewAutoBackupResource,
 		bridge.NewBridgeResource,
 		cloudhsm.NewCloudHSMResource,
 		cloudhsm.NewCloudHSMClientResource,
