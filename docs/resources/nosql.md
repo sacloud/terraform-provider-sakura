@@ -23,7 +23,8 @@ resource "sakura_nosql" "foobar" {
   zone        = "tk1b"
   plan        = "100GB" // or "250GB"
   description = "NoSQL database"
-  password    = "password-123456789"
+  password_wo = "password-123456789"
+  password_wo_version = 1
   vswitch_id  = data.sakura_vswitch.foobar.id
   settings = {
     reserve_ip_address = "192.168.0.6"
@@ -108,8 +109,10 @@ resource "sakura_nosql" "foobar40GB" {
 
 ### Required
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `name` (String) The name of the NoSQL appliance.
-- `password` (String, Sensitive) Password for NoSQL appliance
+- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password for NoSQL appliance
 - `remark` (Attributes) (see [below for nested schema](#nestedatt--remark))
 - `settings` (Attributes) Settings of the NoSQL appliance (see [below for nested schema](#nestedatt--settings))
 - `vswitch_id` (String) The ID of the vSwitch to connect to the NoSQL appliance.
@@ -119,6 +122,7 @@ resource "sakura_nosql" "foobar40GB" {
 - `description` (String) The description of the NoSQL appliance. The length of this value must be in the range [`1`-`512`]
 - `disk` (Attributes) (see [below for nested schema](#nestedatt--disk))
 - `parameters` (Map of String) Parameters for the NoSQL appliance
+- `password_wo_version` (Number) The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.
 - `plan` (String) The plan name of the NoSQL appliance. This must be one of [`40GB`/`100GB`/`250GB`]
 - `tags` (Set of String) The tags of the NoSQL appliance.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

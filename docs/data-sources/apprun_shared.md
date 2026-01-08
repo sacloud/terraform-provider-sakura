@@ -62,7 +62,9 @@ Read-Only:
 Read-Only:
 
 - `image` (String) The container image name
-- `password` (String) The container registry credentials
+- `password` (String) The container registry credentials. Always empty in data source.
+- `password_wo` (String) Placeholder for resource schema. Always empty in data source.
+- `password_wo_version` (Number) Placeholder for resource schema. Always 0 in data source.
 - `server` (String) The container registry server name
 - `username` (String) The container registry credentials
 

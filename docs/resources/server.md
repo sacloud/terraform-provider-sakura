@@ -26,7 +26,10 @@ resource "sakura_server" "foobar" {
 
   disk_edit_parameter = {
     hostname = "hostname"
-    password = "password"
+    password_wo = "password"
+    password_wo_version = 1
+    // for backward compatibility
+    //password = "password"
     disable_pw_auth = true
 
     # ssh_keys    = ["ssh-rsa xxxxx"]
@@ -125,7 +128,9 @@ Optional:
 - `hostname` (String) The hostname of the Server. The length of this value must be in the range [`1`-`64`]
 - `ip_address` (String) The IP address to assign to the Server
 - `netmask` (Number) The bit length of the subnet to assign to the Server
-- `password` (String, Sensitive) The password of default user. The length of this value must be in the range [`12`-`128`]
+- `password` (String, Sensitive) The password of default user. The length of this value must be in the range [`12`-`128`]. Use password_wo instead for newer deployments.
+- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of default user. The length of this value must be in the range [`12`-`128`]
+- `password_wo_version` (Number) The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.
 - `script` (Attributes List) A list of the StartupScript (see [below for nested schema](#nestedatt--disk_edit_parameter--script))
 - `ssh_key_ids` (Set of String) A set of the SSHKey id
 - `ssh_keys` (Set of String) A set of the SSHKey text

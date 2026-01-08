@@ -40,9 +40,7 @@ data "sakura_database" "foobar" {
 - `monitoring_suite` (Attributes) The monitoring suite settings of the Database. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `network_interface` (Attributes) Network interfaces (simplified map form) (see [below for nested schema](#nestedatt--network_interface))
 - `parameters` (Map of String) The map for setting RDBMS-specific parameters. Valid keys can be found with the `usacloud database list-parameters` command
-- `password` (String, Sensitive) The password of default user on the database
 - `plan` (String) The plan name of the Database. This will be one of [`10g`/`30g`/`90g`/`240g`/`500g`/`1t`]
-- `replica_password` (String, Sensitive) The password of user that processing a replication
 - `replica_user` (String) The name of user that processing a replication
 - `username` (String) The name of default user on the database
 

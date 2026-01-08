@@ -150,8 +150,11 @@ resource "sakura_vpn_router" "premium" {
   }]
 
   user = [{
-    name     = "username"
-    password = "password"
+    name        = "username"
+    password_wo = "password"
+    password_wo_version = 1
+    // for backward compatibility
+    //password = "password"
   }]
 
   scheduled_maintenance = {
@@ -447,7 +450,12 @@ Optional:
 Required:
 
 - `name` (String) The user name used to authenticate remote access
-- `password` (String, Sensitive) The password used to authenticate remote access
+
+Optional:
+
+- `password` (String, Sensitive) The password used to authenticate remote access. Use password_wo instead for newer deployments
+- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password used to authenticate remote access
+- `password_wo_version` (Number) The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.
 
 
 <a id="nestedatt--wire_guard"></a>

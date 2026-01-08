@@ -61,7 +61,6 @@ Read-Only:
 - `host_header` (String) The value of host header send when checking by HTTP/HTTPS
 - `http2` (Boolean) The flag to enable HTTP/2 when checking by HTTPS
 - `oid` (String) The SNMP OID used when checking by SNMP
-- `password` (String) The password for basic auth used when checking by HTTP/HTTPS
 - `path` (String) The path used when checking by HTTP/HTTPS
 - `port` (Number) The port number used for monitoring
 - `protocol` (String) The protocol used for health checks. This will be one of [`http`/`https`/`ping`/`tcp`/`dns`/`ssh`/`smtp`/`pop3`/`snmp`/`sslcertificate`/`ftp`]
