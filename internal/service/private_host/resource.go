@@ -150,7 +150,7 @@ func (r *privateHostResource) Create(ctx context.Context, req resource.CreateReq
 		dedicatedStorageID := common.ExpandSakuraCloudID(plan.DedicatedStorageID)
 		created, err := phOp.CreateWithDedicatedStorage(ctx, zone, expandPrivateHostCreateRequest(&plan, planID), dedicatedStorageID)
 		if err != nil {
-			resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create PrivateHost: %s", err))
+			resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create PrivateHost with Dedicated Storage: %s", err))
 			return
 		}
 		ph = created

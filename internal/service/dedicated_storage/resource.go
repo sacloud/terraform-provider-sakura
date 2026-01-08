@@ -102,7 +102,7 @@ func (r *dedicatedStorageResource) Read(ctx context.Context, req resource.ReadRe
 	}
 
 	dsOp := dedicatedstorage.NewContractOp(r.client)
-	id := common.SakuraCloudID(state.ID.ValueString()).Int64()
+	id := common.ExpandSakuraCloudID(state.ID).Int64()
 	data, err := dsOp.Read(ctx, id)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read DedicatedStorage[%s]: %s", state.ID.ValueString(), err))
