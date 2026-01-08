@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -55,11 +56,12 @@ func (r *autoBackupResource) Configure(ctx context.Context, req resource.Configu
 
 type autoBackupResourceModel struct {
 	common.SakuraBaseModel
-	Zone         types.String `tfsdk:"zone"`
-	IconID       types.String `tfsdk:"icon_id"`
-	DiskID       types.String `tfsdk:"disk_id"`
-	DaysOfWeek   types.Set    `tfsdk:"days_of_week"`
-	MaxBackupNum types.Int32  `tfsdk:"max_backup_num"`
+	Zone         types.String   `tfsdk:"zone"`
+	IconID       types.String   `tfsdk:"icon_id"`
+	DiskID       types.String   `tfsdk:"disk_id"`
+	DaysOfWeek   types.Set      `tfsdk:"days_of_week"`
+	MaxBackupNum types.Int32    `tfsdk:"max_backup_num"`
+	Timeouts     timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *autoBackupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -98,6 +100,9 @@ func (r *autoBackupResource) Schema(ctx context.Context, _ resource.SchemaReques
 					int32validator.Between(1, 10),
 				},
 			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
+				Create: true, Update: true, Delete: true,
+			}),
 		},
 		MarkdownDescription: "Manage an Auto Backup",
 	}
@@ -113,6 +118,9 @@ func (r *autoBackupResource) Create(ctx context.Context, req resource.CreateRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
+	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -158,6 +166,9 @@ func (r *autoBackupResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
+	defer cancel()
+
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -184,6 +195,9 @@ func (r *autoBackupResource) Delete(ctx context.Context, req resource.DeleteRequ
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
+	defer cancel()
 
 	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
