@@ -285,7 +285,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 					},
 					"password_wo_version": schema.Int32Attribute{
 						Optional:    true,
-						Description: "The version of the password_wo field. This value must be greater than zero when set. Increment this when changing password.",
+						Description: "The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.",
 						Validators: []validator.Int32{
 							int32validator.AtLeast(1),
 							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo")),

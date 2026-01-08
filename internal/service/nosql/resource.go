@@ -64,11 +64,11 @@ func (d *nosqlResource) Configure(ctx context.Context, req resource.ConfigureReq
 
 type nosqlResourceModel struct {
 	nosqlBaseModel
-	Password        types.String   `tfsdk:"password"`
-	PasswordVersion types.String   `tfsdk:"password_version"`
-	VSwitchID       types.String   `tfsdk:"vswitch_id"`
-	Parameters      types.Map      `tfsdk:"parameters"`
-	Timeouts        timeouts.Value `tfsdk:"timeouts"`
+	PasswordWO        types.String   `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int32    `tfsdk:"password_wo_version"`
+	VSwitchID         types.String   `tfsdk:"vswitch_id"`
+	Parameters        types.Map      `tfsdk:"parameters"`
+	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -88,21 +88,22 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
-			"password": schema.StringAttribute{
+			"password_wo": schema.StringAttribute{
 				Required:    true,
 				WriteOnly:   true,
 				Description: "Password for NoSQL appliance",
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(12, 30),
 					stringvalidator.RegexMatches(regexp.MustCompile(`^[a-zA-Z0-9-._]+$`), "only alphanumeric characters and - . _ are allowed"),
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
 				},
 			},
-			"password_version": schema.Int32Attribute{
+			"password_wo_version": schema.Int32Attribute{
 				Optional:    true,
-				Description: "The version of the password field. This value must be greater than zero when set. Increment this when changing password.",
+				Description: "The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.",
 				Validators: []validator.Int32{
 					int32validator.AtLeast(1),
-					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password")),
+					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo")),
 				},
 			},
 			"vswitch_id": schema.StringAttribute{
@@ -690,7 +691,7 @@ func expandNosqlCreateRequest(model, config *nosqlResourceModel) *v1.NosqlCreate
 		Tags:        v1.NewOptNilTags(common.TsetToStrings(model.Tags)),
 		Settings: v1.NosqlSettings{
 			SourceNetwork: common.TlistToStrings(model.Settings.SourceNetwork),
-			Password:      v1.NewOptPassword(v1.Password(config.Password.ValueString())),
+			Password:      v1.NewOptPassword(v1.Password(config.PasswordWO.ValueString())),
 		},
 		Remark: v1.NosqlRemark{
 			Nosql: v1.NosqlRemarkNosql{
@@ -772,7 +773,7 @@ func expandNosqlUpdateRequest(plan, config *nosqlResourceModel, id string) *v1.N
 		Tags:        v1.NewOptNilTags(common.TsetToStrings(plan.Tags)),
 		Settings: v1.NosqlSettings{
 			SourceNetwork:    common.TlistToStrings(plan.Settings.SourceNetwork),
-			Password:         v1.NewOptPassword(v1.Password(config.Password.ValueString())),
+			Password:         v1.NewOptPassword(v1.Password(config.PasswordWO.ValueString())),
 			ReserveIPAddress: v1.NewOptIPv4(netip.MustParseAddr(plan.Settings.ReserveIPAddress.ValueString())),
 		},
 	}
