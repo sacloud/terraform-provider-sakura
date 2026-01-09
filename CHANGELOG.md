@@ -1,5 +1,9 @@
 # Changelog
 
+## [v3.1.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.1.0...v3.1.1) - 2026-01-09
+- Update CHANGES and add write-only password guide by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/80
+- disk: don't set empty string because dedicated_storage_id is optional by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/82
+
 ## [v3.1.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.0.1...v3.1.0) - 2026-01-08
 - Add auto_backup resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/77
 - Support write-only password by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/75
