@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/packages-go/envvar"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_shared"
@@ -198,7 +199,13 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		cfg.Profile = envConf.Profile
 	}
 
-	client, err := cfg.NewClient(envConf)
+	var theClient saclient.Client
+	if err := theClient.SettingsFromTerraformProvider(&config); err != nil {
+		resp.Diagnostics.AddError("Error creating Sakura client", err.Error())
+		return
+	}
+
+	client, err := cfg.NewClient(envConf, &theClient)
 	if err != nil {
 		resp.Diagnostics.AddError("Error creating Sakura client", err.Error())
 		return
@@ -307,3 +314,69 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		// ...他のリソースも同様に追加...
 	}
 }
+
+func (p *sakuraProviderModel) LookupClientConfigProfileName() (string, bool) {
+	return p.Profile.ValueString(), !p.Profile.IsNull() && !p.Profile.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigPrivateKeyPath() (string, bool) {
+	return "", false // :TODO: :TBW:
+}
+
+func (p *sakuraProviderModel) LookupClientConfigServicePrincipalID() (string, bool) {
+	return "", false // :TODO: :TBW:
+}
+
+func (p *sakuraProviderModel) LookupClientConfigServicePrincipalKeyID() (string, bool) {
+	return "", false // :TODO: :TBW:
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAccessToken() (string, bool) {
+	return p.AccessToken.ValueString(), !p.AccessToken.IsNull() && !p.AccessToken.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAccessTokenSecret() (string, bool) {
+	return p.AccessTokenSecret.ValueString(), !p.AccessTokenSecret.IsNull() && !p.AccessTokenSecret.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigZone() (string, bool) {
+	return p.Zone.ValueString(), !p.Zone.IsNull() && !p.Zone.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigDefaultZone() (string, bool) {
+	return p.DefaultZone.ValueString(), !p.DefaultZone.IsNull() && !p.DefaultZone.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigZones() ([]string, bool) {
+	return common.TlistToStrings(p.Zones), !p.Zones.IsNull() && !p.Zones.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigRetryMax() (int64, bool) {
+	return int64(p.RetryMax.ValueInt32()), !p.RetryMax.IsNull() && !p.RetryMax.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigRetryWaitMax() (int64, bool) {
+	return p.RetryWaitMax.ValueInt64(), !p.RetryWaitMax.IsNull() && !p.RetryWaitMax.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigRetryWaitMin() (int64, bool) {
+	return p.RetryWaitMin.ValueInt64(), !p.RetryWaitMin.IsNull() && !p.RetryWaitMin.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAPIRootURL() (string, bool) {
+	return p.APIRootURL.ValueString(), !p.APIRootURL.IsNull() && !p.APIRootURL.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAPIRequestTimeout() (int64, bool) {
+	return p.APIRequestTimeout.ValueInt64(), !p.APIRequestTimeout.IsNull() && !p.APIRequestTimeout.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAPIRequestRateLimit() (int64, bool) {
+	return int64(p.APIRequestRateLimit.ValueInt32()), !p.APIRequestRateLimit.IsNull() && !p.APIRequestRateLimit.IsUnknown()
+}
+
+func (p *sakuraProviderModel) LookupClientConfigTraceMode() (string, bool) {
+	return p.TraceMode.ValueString(), !p.TraceMode.IsNull() && !p.TraceMode.IsUnknown()
+}
+
+var _ saclient.TerraformProviderInterface = (*sakuraProviderModel)(nil)
