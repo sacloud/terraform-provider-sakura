@@ -130,6 +130,8 @@ timeouts = {
 
 ### apprun_shared
 
+v3.1.0からwrite-only版の`password_wo`/`password_wo_version`が提供されました。今後はこちらを利用してください。
+
 `components`フィールドがBlockからList型Attribute、内部で設定可能なパラメータもAttributeに変更されたため、下記のように書き換える必要があります。
 
 - v2
@@ -278,6 +280,8 @@ user = [
 ```
 
 ### database
+
+v3.1.0からwrite-only版の`password_wo`/`password_wo_version`が提供されました。今後はこちらを利用してください。
 
 `switch_id`フィールドは`vswitch_id`に変更されました。
 `weekdays`フィールドは`days_of_week`に変更されました。
@@ -706,6 +710,8 @@ expression = [
 
 ### server
 
+v3.1.0からwrite-only版の`password_wo`/`password_wo_version`が提供されました。今後はこちらを利用してください。
+
 `disk_edit_parameter`内の`note_ids`フィールドが削除されました。代わりに`disk_edit_parameter`内のList型の`script`フィールドを利用してください。
 
 `network_interface`フィールドがBlockからList型のAttributeに変更されたため、下記のように書き換える必要があります。
@@ -762,6 +768,8 @@ disk_edit_parameter = {
 
 ### simple_monitor
 
+v3.1.0からwrite-only版の`password_wo`/`password_wo_version`が提供されました。今後はこちらを利用してください。
+
 `health_check`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
 
 - v2
@@ -787,6 +795,8 @@ health_check = {
 `switch_id`フィールドは`vswitch_id`に変更されました。
 
 ### vpn_router
+
+v3.1.0からwrite-only版の`password_wo`/`password_wo_version`が提供されました。今後はこちらを利用してください。
 
 `switch_id`フィールドは`vswitch_id`に変更されました。
 
