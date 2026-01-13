@@ -176,15 +176,12 @@ Optional:
 <a id="nestedatt--certificate"></a>
 ### Nested Schema for `certificate`
 
-Required:
-
-- `intermediate_cert` (String) The intermediate certificate for a server
-- `private_key` (String, Sensitive) The private key for a server
-- `server_cert` (String) The certificate for a server
-
 Optional:
 
 - `additional_certificate` (Attributes List) (see [below for nested schema](#nestedatt--certificate--additional_certificate))
+- `intermediate_cert` (String) The intermediate certificate for a server
+- `private_key` (String, Sensitive) The private key for a server
+- `server_cert` (String) The certificate for a server
 
 Read-Only:
 

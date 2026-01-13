@@ -1257,6 +1257,8 @@ resource "sakura_server" "foobar" {
   commitment      = "dedicatedcpu"
   confidential_vm = true
 
+  force_shutdown = true
+
   zone = "tk1b"
 }
 `

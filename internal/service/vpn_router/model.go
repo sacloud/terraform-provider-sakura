@@ -40,7 +40,7 @@ type vpnRouterBaseModel struct {
 	StaticNAT               []vpnRouterStaticNATModel               `tfsdk:"static_nat"`
 	StaticRoute             []vpnRouterStaticRouteModel             `tfsdk:"static_route"`
 	ScheduledMaintenance    types.Object                            `tfsdk:"scheduled_maintenance"`
-	//User                    []vpnRouterUserModel                    `tfsdk:"user"`
+	// User                    []vpnRouterUserModel                    `tfsdk:"user"`
 	MonitoringSuite types.Object `tfsdk:"monitoring_suite"`
 }
 

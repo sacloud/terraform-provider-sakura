@@ -277,15 +277,18 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Computed: true,
 				Attributes: map[string]schema.Attribute{
 					"server_cert": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
 						Description: "The certificate for a server",
 					},
 					"intermediate_cert": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
 						Description: "The intermediate certificate for a server",
 					},
 					"private_key": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
+						Computed:    true,
 						Sensitive:   true,
 						Description: "The private key for a server",
 					},

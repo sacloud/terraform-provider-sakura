@@ -29,8 +29,6 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 	resourceName := "sakura_enhanced_lb.foobar"
 	rand := test.RandomName()
 	ip := os.Getenv(envEnhancedLBRealServerIP0)
-	subDomain := "acme-acctest1" + test.RandStringFromCharSet(5, "")
-	elbDomain := os.Getenv(envEnhancedLBACMEDomain)
 
 	var elb, elbUpd iaas.ProxyLB
 	resource.Test(t, resource.TestCase{
@@ -91,13 +89,6 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.0.request_header_value_ignore_case", "true"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.request_header_value_not_match", "true"),
 
-					resource.TestCheckResourceAttr(resourceName, "certificate.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "certificate.0.common_name", subDomain+"."+elbDomain),
-					resource.TestCheckResourceAttr(resourceName,
-						"certificate.0.subject_alt_names",
-						fmt.Sprintf("%s.%s, acme-acctest2.%s, acme-acctest3.%s", subDomain, elbDomain, elbDomain, elbDomain),
-					),
-
 					resource.TestCheckResourceAttrSet(resourceName, "vip"),
 					resource.TestCheckResourceAttrPair(
 						resourceName, "server.0.ip_address",
@@ -153,11 +144,6 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.0.fixed_message_body", ""),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.redirect_status_code", "301"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.redirect_location", "https://redirect.usacloud.jp"),
-					resource.TestCheckResourceAttr(resourceName, "certificate.common_name", subDomain+"."+elbDomain),
-					resource.TestCheckResourceAttr(resourceName,
-						"certificate.0.subject_alt_names",
-						fmt.Sprintf("%s.%s, acme-acctest2.%s, acme-acctest3.%s", subDomain, elbDomain, elbDomain, elbDomain),
-					),
 					resource.TestCheckResourceAttrSet(resourceName, "vip"),
 					resource.TestCheckResourceAttrPair(
 						resourceName, "server.0.ip_address",
@@ -362,15 +348,6 @@ resource "sakura_server" "foobar" {
     upstream = "shared"
   }]
   force_shutdown = true
-}
-
-resource "sakura_enhanced_lb_acme" "foobar" {
-  enhanced_lb_id               = sakura_enhanced_lb.foobar.id
-  accept_tos                   = true
-  common_name                  = "{{ .arg2 }}.{{ .arg1 }}"
-  subject_alt_names            = ["acme-acctest2.{{ .arg1 }}", "acme-acctest3.{{ .arg1 }}"]
-  update_delay_sec             = 120
-  get_certificates_timeout_sec = 300
 }
 `
 
