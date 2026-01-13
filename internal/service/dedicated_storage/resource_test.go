@@ -16,6 +16,7 @@ import (
 
 func TestAccSakuraResourceDedicatedStorage_basic(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_DEDICATED_STORAGE")
 
 	resourceName := "sakura_dedicated_storage.foobar"
 	rand := test.RandomName()

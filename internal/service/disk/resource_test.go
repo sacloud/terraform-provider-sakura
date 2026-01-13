@@ -157,6 +157,7 @@ func TestAccSakuraDisk_with_Server(t *testing.T) {
 
 func TestAccSakuraDisk_onDedicatedStorage(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_DEDICATED_STORAGE")
 
 	resourceName := "sakura_disk.foobar"
 	rand := test.RandomName()
