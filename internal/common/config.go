@@ -213,7 +213,7 @@ func (c *Config) validate() error {
 	return err
 }
 
-func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
+func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APIClient, error) {
 	if profileConf, err := c.LoadFromProfile(); err != nil {
 		return nil, err
 	} else {
@@ -283,11 +283,6 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		DefaultZone: c.DefaultZone,
 		TraceAPI:    enableAPITrace,
 	})
-
-	theClient := &saclient.Client{}
-	if err := theClient.CompatSettingsFromAPIClientOptions(callerOptions); err != nil {
-		return nil, err
-	}
 
 	zones := c.Zones
 	if len(zones) == 0 {
