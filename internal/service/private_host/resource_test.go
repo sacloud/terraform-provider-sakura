@@ -132,6 +132,7 @@ func TestAccSakuraPrivateHost_destroyWithRunningServer(t *testing.T) {
 
 func TestAccSakuraPrivateHost_withDedicatedStorage(t *testing.T) {
 	test.SkipIfZoneIsDummy(t)
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_DEDICATED_STORAGE")
 
 	resourceName := "sakura_private_host.foobar"
 	rand := test.RandomName()
