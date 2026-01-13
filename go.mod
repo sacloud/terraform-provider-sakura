@@ -21,7 +21,7 @@ require (
 	github.com/sacloud/go-http v0.1.9
 	github.com/sacloud/iaas-api-go v1.24.1
 	github.com/sacloud/iaas-service-go v1.21.0
-	github.com/sacloud/kms-api-go v0.3.0
+	github.com/sacloud/kms-api-go v0.3.1
 	github.com/sacloud/nosql-api-go v0.2.0
 	github.com/sacloud/object-storage-api-go v0.0.12
 	github.com/sacloud/packages-go v0.0.12
