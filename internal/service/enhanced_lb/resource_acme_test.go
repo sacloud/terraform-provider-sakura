@@ -47,9 +47,19 @@ func TestAccSakuraEnhancedLBACME_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "proxy_protocol", "true"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "backend_http_keep_alive", "aggressive"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "rule.#", "1"),
+
 					resource.TestCheckResourceAttr(resourceName, "certificate.common_name", subDomain+"."+elbDomain),
-					resource.TestCheckResourceAttr(resourceName,
-						"certificate.subject_alt_names",
+					resource.TestCheckResourceAttr(resourceName, "certificate.subject_alt_names",
+						fmt.Sprintf("%s.%s, acme-acctest2.%s, acme-acctest3.%s", subDomain, elbDomain, elbDomain, elbDomain),
+					),
+				),
+			},
+			// State refresh is required to evaluate sakura_enhanced_lb.foobar.certificate.*
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraEnhancedLBACME_basic, rand, elbDomain, subDomain),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "certificate.common_name", subDomain+"."+elbDomain),
+					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "certificate.subject_alt_names",
 						fmt.Sprintf("%s.%s, acme-acctest2.%s, acme-acctest3.%s", subDomain, elbDomain, elbDomain, elbDomain),
 					),
 				),
@@ -115,9 +125,9 @@ resource "sakura_disk" "foobar" {
 resource "sakura_server" "foobar" {
   name  = "{{ .arg0 }}"
   disks = [sakura_disk.foobar.id]
-  network_interface {
+  network_interface = [{
     upstream = "shared"
-  }
+  }]
 }
 
 data "sakura_dns" "zone" {
