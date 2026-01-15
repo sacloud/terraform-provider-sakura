@@ -24,8 +24,7 @@ func TestAccSakuraDataSourceEnhancedLB_basic(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config:             test.BuildConfigWithArgs(testAccSakuraDataSourceEnhancedLB_basic, rand, ip0, ip1),
-				ExpectNonEmptyPlan: true,
+				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceEnhancedLB_basic, rand, ip0, ip1),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
