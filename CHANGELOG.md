@@ -1,5 +1,12 @@
 # Changelog
 
+## [v3.1.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.1.1...v3.1.2) - 2026-01-16
+- provider: propagate extra settings to `theCLient` by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/83
+- Run DedicatedStorage acceptance tests only when SAKURA_ENABLE_DEDICATED_STORAGE is set by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/84
+- Fix acceptance tests and ELB schema by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/87
+- test: fix enhanced LB data source acc test plan expectation by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/89
+- secret_manager_secret: Support write-only value by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/91
+
 ## [v3.1.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.1.0...v3.1.1) - 2026-01-09
 - Update CHANGES and add write-only password guide by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/80
 - disk: don't set empty string because dedicated_storage_id is optional by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/82
