@@ -49,6 +49,42 @@ func TestAccSakuraSecretManagerSecret_basic(t *testing.T) {
 	})
 }
 
+func TestAccSakuraSecretManagerSecret_basicWithWO(t *testing.T) {
+	resourceName := "sakura_secret_manager_secret.foobar"
+	rand := test.RandomName()
+
+	var secret v1.Secret
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraSecretManagerSecretDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_basicWithWO, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraSecretManagerSecretExists(resourceName, &secret),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "version", "1"),
+					resource.TestCheckResourceAttr(resourceName, "value_wo_version", "1"),
+					resource.TestCheckNoResourceAttr(resourceName, "value"),
+					resource.TestCheckNoResourceAttr(resourceName, "value_wo"),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_updateWithWO, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraSecretManagerSecretExists(resourceName, &secret),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "version", "2"),
+					resource.TestCheckResourceAttr(resourceName, "value_wo_version", "2"),
+					resource.TestCheckNoResourceAttr(resourceName, "value"),
+					resource.TestCheckNoResourceAttr(resourceName, "value_wo"),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraSecretManagerSecretDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	ctx := context.Background()
@@ -139,6 +175,54 @@ resource "sakura_secret_manager_secret" "foobar" {
   name     = "{{ .arg0 }}"
   value    = "value2"
   vault_id = sakura_secret_manager.foobar.id
+
+  depends_on = [sakura_secret_manager.foobar]
+}`
+
+//nolint:gosec
+var testAccSakuraSecretManagerSecret_basicWithWO = `
+resource "sakura_kms" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+}
+
+resource "sakura_secret_manager" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+  kms_key_id  = sakura_kms.foobar.id
+
+  depends_on = [sakura_kms.foobar]
+}
+
+resource "sakura_secret_manager_secret" "foobar" {
+  name     = "{{ .arg0 }}"
+  vault_id = sakura_secret_manager.foobar.id
+  value_wo = "value1"
+  value_wo_version = 1
+
+  depends_on = [sakura_secret_manager.foobar]
+}`
+
+//nolint:gosec
+var testAccSakuraSecretManagerSecret_updateWithWO = `
+resource "sakura_kms" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+}
+
+resource "sakura_secret_manager" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+  kms_key_id  = sakura_kms.foobar.id
+
+  depends_on = [sakura_kms.foobar]
+}
+
+resource "sakura_secret_manager_secret" "foobar" {
+  name     = "{{ .arg0 }}"
+  vault_id = sakura_secret_manager.foobar.id
+  value_wo = "value2"
+  value_wo_version = 2
 
   depends_on = [sakura_secret_manager.foobar]
 }`

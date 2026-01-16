@@ -5,19 +5,24 @@ package secret_manager
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	sm "github.com/sacloud/secretmanager-api-go"
 	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type secretManagerSecretResource struct {
@@ -48,7 +53,9 @@ func (r *secretManagerSecretResource) Configure(ctx context.Context, req resourc
 
 type secretManagerSecretResourceModel struct {
 	secretManagerSecretBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	ValueWO        types.String   `tfsdk:"value_wo"`
+	ValueWOVersion types.Int32    `tfsdk:"value_wo_version"`
+	Timeouts       timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *secretManagerSecretResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -61,12 +68,33 @@ func (r *secretManagerSecretResource) Schema(ctx context.Context, req resource.S
 			},
 			"version": schema.Int64Attribute{
 				Computed:    true,
-				Description: "Version of secret value. This value is incremented by create/update.",
+				Description: "Version of secret value. This value is incremented internally by create/update.",
 			},
 			"value": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
 				Description: "Secret value.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("value_wo")),
+					stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("value_wo")),
+				},
+			},
+			"value_wo": schema.StringAttribute{
+				Optional:    true,
+				WriteOnly:   true,
+				Description: "Secret value. (write-only)",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("value")),
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("value_wo_version")),
+				},
+			},
+			"value_wo_version": schema.Int32Attribute{
+				Optional:    true,
+				Description: "The version of the value_wo field. This value must be greater than 0 when set. Increment this when changing value.",
+				Validators: []validator.Int32{
+					int32validator.AtLeast(1),
+					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("value_wo")),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
@@ -81,8 +109,9 @@ func (r *secretManagerSecretResource) ImportState(ctx context.Context, req resou
 }
 
 func (r *secretManagerSecretResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan secretManagerSecretResourceModel
+	var plan, config secretManagerSecretResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -90,10 +119,16 @@ func (r *secretManagerSecretResource) Create(ctx context.Context, req resource.C
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
+	value, err := getValue(&plan, &config)
+	if err != nil {
+		resp.Diagnostics.AddError("Create: Attribute Error", fmt.Sprintf("invalid secret value: %s", err))
+		return
+	}
+
 	secretOp := sm.NewSecretOp(r.client, plan.VaultID.ValueString())
 	createdSec, err := secretOp.Create(ctx, v1.CreateSecret{
 		Name:  plan.Name.ValueString(),
-		Value: plan.Value.ValueString(),
+		Value: value,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Secret Manager's secret: %s", err))
@@ -123,8 +158,9 @@ func (r *secretManagerSecretResource) Read(ctx context.Context, req resource.Rea
 }
 
 func (r *secretManagerSecretResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan secretManagerSecretResourceModel
+	var plan, config secretManagerSecretResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -132,10 +168,16 @@ func (r *secretManagerSecretResource) Update(ctx context.Context, req resource.U
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
+	value, err := getValue(&plan, &config)
+	if err != nil {
+		resp.Diagnostics.AddError("Update: Attribute Error", fmt.Sprintf("invalid secret value: %s", err))
+		return
+	}
+
 	secretOp := sm.NewSecretOp(r.client, plan.VaultID.ValueString())
 	createdSec, err := secretOp.Create(ctx, v1.CreateSecret{
 		Name:  plan.Name.ValueString(),
-		Value: plan.Value.ValueString(),
+		Value: value,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Secret Manager's secret: %s", err))
@@ -207,4 +249,16 @@ func FilterSecretManagerSecretByName(ctx context.Context, secretOp sm.SecretAPI,
 	}
 
 	return &match[0], nil
+}
+
+func getValue(plan, config *secretManagerSecretResourceModel) (string, error) {
+	if (plan.Value.IsNull() || plan.Value.IsUnknown()) && (config.ValueWO.IsNull() || config.ValueWO.IsUnknown()) {
+		return "", errors.New("either 'value' or 'value_wo' must be specified")
+	}
+
+	if utils.IsKnown(config.ValueWO) {
+		return config.ValueWO.ValueString(), nil
+	} else {
+		return plan.Value.ValueString(), nil
+	}
 }
