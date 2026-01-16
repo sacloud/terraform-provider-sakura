@@ -15,8 +15,11 @@ Manages a Secret Manager's secret.
 ```terraform
 resource "sakura_secret_manager_secret" "foobar" {
   name     = "foobar"
-  value    = "secret value!"
-  vault_id = "secret_manager-resource-id" # e.g. sakuracloud_secret_manager.foobar.id
+  vault_id = "secret_manager-resource-id" # e.g. sakura_secret_manager.foobar.id
+  value_wo = "secret value!"
+  value_wo_version = 1
+  // for backward compatibility
+  //value = "secret value!"
 }
 ```
 
@@ -26,16 +29,20 @@ resource "sakura_secret_manager_secret" "foobar" {
 ### Required
 
 - `name` (String) The name of the Secret Manager's secret.
-- `value` (String, Sensitive) Secret value.
 - `vault_id` (String) The Secret Manager's vault id.
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
+- `value` (String, Sensitive) Secret value.
+- `value_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Secret value. (write-only)
+- `value_wo_version` (Number) The version of the value_wo field. This value must be greater than 0 when set. Increment this when changing value.
 
 ### Read-Only
 
-- `version` (Number) Version of secret value. This value is incremented by create/update.
+- `version` (Number) Version of secret value. This value is incremented internally by create/update.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`
