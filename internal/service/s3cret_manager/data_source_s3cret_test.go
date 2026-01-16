@@ -51,8 +51,9 @@ resource "sakura_secret_manager" "foobar" {
 
 resource "sakura_secret_manager_secret" "foobar" {
   name     = "{{ .arg0 }}"
-  value    = "value1"
   vault_id = sakura_secret_manager.foobar.id
+  value_wo = "value1"
+  value_wo_version = 1
 
   depends_on = [sakura_secret_manager.foobar]
 }
