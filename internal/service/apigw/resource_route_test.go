@@ -28,7 +28,7 @@ func TestAccSakuraResourceAPIGWRoute_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraAPIGWServiceDestroy,
+		CheckDestroy:             testCheckSakuraAPIGWRouteDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraAPIGWRoute_basic, rand, host),

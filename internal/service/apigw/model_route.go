@@ -115,7 +115,7 @@ type apigwResponseTransformRemoveModel struct {
 type apigwResponseTransformRenameModel struct {
 	IfStatusCode types.Set                   `tfsdk:"if_status_code"`
 	Headers      []apigwTransformFromToModel `tfsdk:"headers"`
-	//JSON         []apigwTransformFromToModel `tfsdk:"json"`
+	// JSON         []apigwTransformFromToModel `tfsdk:"json"`
 }
 
 type apigwResponseTransformKVsModel struct {
@@ -149,18 +149,18 @@ func (m *apigwRouteBaseModel) updateState(ctx context.Context, client *v1.Client
 	m.Tags = common.StringsToTset(route.Tags)
 	m.CreatedAt = types.StringValue(route.CreatedAt.Value.String())
 	m.UpdatedAt = types.StringValue(route.UpdatedAt.Value.String())
-	m.ServiceID = types.StringValue(string(route.ServiceId.Value.String()))
+	m.ServiceID = types.StringValue(route.ServiceId.Value.String())
 	m.Protocols = types.StringValue(string(route.Protocols.Value))
-	m.Path = types.StringValue(string(route.Path.Value))
-	m.Host = types.StringValue(string(route.Host.Value))
+	m.Path = types.StringValue(route.Path.Value)
+	m.Host = types.StringValue(route.Host.Value)
 	m.Hosts = common.StringsToTlist(route.Hosts)
 	m.Methods = common.StringsToTset(common.MapTo(route.Methods, common.ToString))
 	m.HttpsRedirectStatusCode = types.Int32Value(int32(route.HttpsRedirectStatusCode.Value))
 	m.RegexPriority = types.Int32Value(int32(route.RegexPriority.Value))
-	m.StripPath = types.BoolValue(bool(route.StripPath.Value))
-	m.PreserveHost = types.BoolValue(bool(route.PreserveHost.Value))
-	m.RequestBuffering = types.BoolValue(bool(route.RequestBuffering.Value))
-	m.ResponseBuffering = types.BoolValue(bool(route.ResponseBuffering.Value))
+	m.StripPath = types.BoolValue(route.StripPath.Value)
+	m.PreserveHost = types.BoolValue(route.PreserveHost.Value)
+	m.RequestBuffering = types.BoolValue(route.RequestBuffering.Value)
+	m.ResponseBuffering = types.BoolValue(route.ResponseBuffering.Value)
 
 	if route.IpRestrictionConfig.IsSet() {
 		ipr := route.IpRestrictionConfig.Value
@@ -296,7 +296,7 @@ func flattenAPIGWRequestTransformKVs(req *v1.RequestModificationDetail) *apigwRe
 	for _, b := range req.Body {
 		body = append(body, apigwTransformKVModel{
 			Key:   types.StringValue(string(b.Key.Value)),
-			Value: types.StringValue(string(b.Value.Value)),
+			Value: types.StringValue(b.Value.Value),
 		})
 	}
 
@@ -362,7 +362,7 @@ func flattenAPIGWResponseTransformation(rt *v1.ResponseTransformation) *apigwRes
 			for _, j := range replace.JSON {
 				jsons = append(jsons, apigwTransformKVModel{
 					Key:   types.StringValue(string(j.Key.Value)),
-					Value: types.StringValue(string(j.Value.Value)),
+					Value: types.StringValue(j.Value.Value),
 				})
 			}
 			model.Replace = &apigwResponseTransformKVsWithBodyModel{
@@ -371,7 +371,7 @@ func flattenAPIGWResponseTransformation(rt *v1.ResponseTransformation) *apigwRes
 					Headers:      headers,
 					JSON:         jsons,
 				},
-				types.StringValue(string(replace.Body.Value)),
+				types.StringValue(replace.Body.Value),
 			}
 		}
 	}
@@ -406,7 +406,7 @@ func flattenAPIGWResponseTransformKVs(res *v1.ResponseModificationDetail) *apigw
 	for _, j := range res.JSON {
 		jsons = append(jsons, apigwTransformKVModel{
 			Key:   types.StringValue(string(j.Key.Value)),
-			Value: types.StringValue(string(j.Value.Value)),
+			Value: types.StringValue(j.Value.Value),
 		})
 	}
 

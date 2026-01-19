@@ -19,11 +19,11 @@ type apigwDomainBaseModel struct {
 
 func (m *apigwDomainBaseModel) updateState(domain *v1.Domain) {
 	m.ID = types.StringValue(domain.ID.Value.String())
-	m.Name = types.StringValue(string(domain.DomainName))
+	m.Name = types.StringValue(domain.DomainName)
 	m.CreatedAt = types.StringValue(domain.CreatedAt.Value.String())
 	m.UpdatedAt = types.StringValue(domain.UpdatedAt.Value.String())
-	m.CertificateName = types.StringValue(string(domain.CertificateName.Value))
+	m.CertificateName = types.StringValue(domain.CertificateName.Value)
 	if domain.CertificateId.IsSet() {
-		m.CertificateId = types.StringValue(string(domain.CertificateId.Value.String()))
+		m.CertificateId = types.StringValue(domain.CertificateId.Value.String())
 	}
 }

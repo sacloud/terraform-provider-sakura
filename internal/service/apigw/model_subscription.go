@@ -19,7 +19,7 @@ type apigwSubscriptionBaseModel struct {
 	PlanID         types.String `tfsdk:"plan_id"`
 	ResourceId     types.Int64  `tfsdk:"resource_id"`
 	MonthlyRequest types.Int64  `tfsdk:"monthly_request"`
-	//Service        *apigwSubscriptionServiceModel `tfsdk:"service"`
+	// Service        *apigwSubscriptionServiceModel `tfsdk:"service"`
 	Service types.Object `tfsdk:"service"`
 }
 
@@ -66,7 +66,7 @@ func (m *apigwSubscriptionBaseModel) updateState(sub *v1.Subscription) {
 	if sub.Service.IsSet() {
 		svc := &apigwSubscriptionServiceModel{
 			ID:   types.StringValue(sub.Service.Value.ID.String()),
-			Name: types.StringValue(string(sub.Service.Value.Name)),
+			Name: types.StringValue(sub.Service.Value.Name),
 		}
 		value, diags := types.ObjectValueFrom(context.Background(), svc.AttributeTypes(), svc)
 		if diags.HasError() {

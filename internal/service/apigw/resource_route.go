@@ -76,9 +76,7 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Required:    true,
 				Description: "The Service ID associated with the API Gateway Route",
 				Validators: []validator.String{
-					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return uuid.Validate(v)
-					}),
+					sacloudvalidator.StringFuncValidator(uuid.Validate),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

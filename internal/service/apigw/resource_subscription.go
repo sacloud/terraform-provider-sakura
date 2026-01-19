@@ -67,9 +67,7 @@ func (r *apigwSubscriptionResource) Schema(ctx context.Context, req resource.Sch
 				Required:    true,
 				Description: "Plan ID of the API Gateway Subscription",
 				Validators: []validator.String{
-					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return uuid.Validate(v)
-					}),
+					sacloudvalidator.StringFuncValidator(uuid.Validate),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
@@ -220,7 +218,7 @@ func getAPIGWSubscriptionFromList(ctx context.Context, client *v1.Client, id str
 	}
 
 	for _, s := range subs {
-		if string(s.ID.Value.String()) == id {
+		if s.ID.Value.String() == id {
 			return &s
 		}
 	}

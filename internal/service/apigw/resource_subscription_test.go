@@ -111,7 +111,7 @@ func getSubscriptionFromList(client *v1.Client, id string) (*v1.Subscription, er
 	}
 
 	for _, s := range subs {
-		if string(s.ID.Value.String()) == id {
+		if s.ID.Value.String() == id {
 			return &s, nil
 		}
 	}

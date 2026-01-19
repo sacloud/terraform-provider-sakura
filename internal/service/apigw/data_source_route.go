@@ -62,9 +62,7 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 				Required:    true,
 				Description: "The Service ID associated with the API Gateway Route",
 				Validators: []validator.String{
-					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return uuid.Validate(v)
-					}),
+					sacloudvalidator.StringFuncValidator(uuid.Validate),
 				},
 			},
 			"protocols": schema.StringAttribute{
@@ -343,7 +341,10 @@ func (d *apigwRouteDataSource) Read(ctx context.Context, req datasource.ReadRequ
 		return
 	}
 
-	data.updateState(ctx, d.client, route)
+	if err := data.updateState(ctx, d.client, route); err != nil {
+		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state: %s", err))
+		return
+	}
 	data.Groups = flattenEnabledGroups(authz)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
@@ -355,7 +356,7 @@ func flattenEnabledGroups(authz *v1.RouteAuthorizationDetailResponse) []apigwGro
 			model := apigwGroupAuthModel{
 				ID:      types.StringValue(g.ID.Value.String()),
 				Name:    types.StringValue(string(g.Name.Value)),
-				Enabled: types.BoolValue(bool(g.Enabled.Value)),
+				Enabled: types.BoolValue(g.Enabled.Value),
 			}
 			result = append(result, model)
 		}

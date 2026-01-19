@@ -75,7 +75,7 @@ func (m *apigwServiceBaseModel) updateState(service *v1.ServiceDetailResponse) {
 	if service.Oidc.IsSet() {
 		m.OIDC = &apigwServiceOIDCModel{
 			ID:   types.StringValue(service.Oidc.Value.ID.Value.String()),
-			Name: types.StringValue(string(service.Oidc.Value.Name.Value)),
+			Name: types.StringValue(service.Oidc.Value.Name.Value),
 		}
 	} else {
 		m.OIDC = nil
@@ -87,7 +87,7 @@ func (m *apigwServiceBaseModel) updateState(service *v1.ServiceDetailResponse) {
 			Credentials:                 types.BoolValue(cors.Credentials.Value),
 			AccessControlExposedHeaders: types.StringValue(cors.AccessControlExposedHeaders.Value),
 			AccessControlAllowHeaders:   types.StringValue(cors.AccessControlAllowHeaders.Value),
-			MaxAge:                      types.Int32Value(int32(cors.MaxAge.Value)),
+			MaxAge:                      types.Int32Value(cors.MaxAge.Value),
 			AccessControlAllowMethods:   common.StringsToTset(common.MapTo(cors.AccessControlAllowMethods, common.ToString)),
 			AccessControlAllowOrigins:   types.StringValue(cors.AccessControlAllowOrigins.Value),
 			PreflightContinue:           types.BoolValue(cors.PreflightContinue.Value),
@@ -101,7 +101,7 @@ func (m *apigwServiceBaseModel) updateState(service *v1.ServiceDetailResponse) {
 func (m *apigwServiceObjectStorageModel) updateState(obst *v1.ObjectStorageConfig) {
 	m.Bucket = types.StringValue(obst.BucketName)
 	m.Endpoint = types.StringValue(obst.Endpoint)
-	m.Region = types.StringValue(string(obst.Region))
+	m.Region = types.StringValue(obst.Region)
 	m.UseDocumentIndex = types.BoolValue(obst.UseDocumentIndex)
 
 	if obst.FolderName.IsSet() {

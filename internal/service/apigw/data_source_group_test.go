@@ -10,7 +10,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraDataSourceGroup_basic(t *testing.T) {
+func TestAccSakuraDataSourceAPIGWGroup_basic(t *testing.T) {
 	test.SkipIfEnvIsNotSet(t, "SAKURA_APIGW_NO_SUBSCRIPTION")
 
 	resourceName := "data.sakura_apigw_group.foobar"

@@ -476,7 +476,7 @@ func flattenAPIGWUserAuthenticationResource(model *apigwUserAuthenticationResour
 	if auth.BasicAuth.IsSet() {
 		basic := auth.BasicAuth.Value
 		bm := &apigwUserAuthenticationBasicAuthResourceModel{
-			Username: types.StringValue(string(basic.UserName)),
+			Username: types.StringValue(basic.UserName),
 		}
 		// import時はmodelがnilの可能性があるためチェック
 		if model != nil && model.BasicAuth != nil && utils.IsKnown(model.BasicAuth.PasswordWOVersion) {
@@ -487,7 +487,7 @@ func flattenAPIGWUserAuthenticationResource(model *apigwUserAuthenticationResour
 	if auth.Jwt.IsSet() {
 		jwt := auth.Jwt.Value
 		jm := &apigwUserAuthenticationJWTResourceModel{
-			Key:       types.StringValue(string(jwt.Key)),
+			Key:       types.StringValue(jwt.Key),
 			Algorithm: types.StringValue(string(jwt.Algorithm)),
 		}
 		// ditto
@@ -499,7 +499,7 @@ func flattenAPIGWUserAuthenticationResource(model *apigwUserAuthenticationResour
 	if auth.HmacAuth.IsSet() {
 		hmac := auth.HmacAuth.Value
 		hm := &apigwUserAuthenticationHMACAuthResourceModel{
-			Username: types.StringValue(string(hmac.UserName)),
+			Username: types.StringValue(hmac.UserName),
 		}
 		// ditto
 		if model != nil && model.HMACAuth != nil && utils.IsKnown(model.HMACAuth.SecretWOVersion) {

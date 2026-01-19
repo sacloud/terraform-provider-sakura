@@ -50,13 +50,13 @@ type apigwUserAuthenticationHMACAuthModel struct {
 	Username types.String `tfsdk:"username"`
 }
 
-func (m *apigwUserBaseModel) updateState(user *v1.UserDetail) error {
+func (m *apigwUserBaseModel) updateState(user *v1.UserDetail) {
 	m.ID = types.StringValue(user.ID.Value.String())
 	m.Name = types.StringValue(string(user.Name))
 	m.Tags = common.StringsToTset(user.Tags)
 	m.CreatedAt = types.StringValue(user.CreatedAt.Value.String())
 	m.UpdatedAt = types.StringValue(user.UpdatedAt.Value.String())
-	m.CustomID = types.StringValue(string(user.CustomID.Value))
+	m.CustomID = types.StringValue(user.CustomID.Value)
 
 	if user.IpRestrictionConfig.IsSet() {
 		ipr := user.IpRestrictionConfig.Value
@@ -78,8 +78,6 @@ func (m *apigwUserBaseModel) updateState(user *v1.UserDetail) error {
 	if len(groups) > 0 {
 		m.Groups = groups
 	}
-
-	return nil
 }
 
 func flattenAPIGWUserAuthentication(auth *v1.UserAuthentication) *apigwUserAuthenticationModel {
@@ -91,20 +89,20 @@ func flattenAPIGWUserAuthentication(auth *v1.UserAuthentication) *apigwUserAuthe
 	if auth.BasicAuth.IsSet() {
 		basic := auth.BasicAuth.Value
 		authentication.BasicAuth = &apigwUserAuthenticationBasicAuthModel{
-			Username: types.StringValue(string(basic.UserName)),
+			Username: types.StringValue(basic.UserName),
 		}
 	}
 	if auth.Jwt.IsSet() {
 		jwt := auth.Jwt.Value
 		authentication.JWT = &apigwUserAuthenticationJWTModel{
-			Key:       types.StringValue(string(jwt.Key)),
+			Key:       types.StringValue(jwt.Key),
 			Algorithm: types.StringValue(string(jwt.Algorithm)),
 		}
 	}
 	if auth.HmacAuth.IsSet() {
 		hmac := auth.HmacAuth.Value
 		authentication.HMACAuth = &apigwUserAuthenticationHMACAuthModel{
-			Username: types.StringValue(string(hmac.UserName)),
+			Username: types.StringValue(hmac.UserName),
 		}
 	}
 

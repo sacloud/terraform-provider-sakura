@@ -75,9 +75,7 @@ func (r *apigwDomainResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Description: "ID of the API Gateway Certificate",
 				Validators: []validator.String{
-					sacloudvalidator.StringFuncValidator(func(v string) error {
-						return uuid.Validate(v)
-					}),
+					sacloudvalidator.StringFuncValidator(uuid.Validate),
 				},
 			},
 			"certificate_name": schema.StringAttribute{
@@ -215,7 +213,7 @@ func getAPIGWDomain(ctx context.Context, client *v1.Client, id string, name stri
 			domain = &d
 			break
 		}
-		if name != "" && string(d.DomainName) == name {
+		if name != "" && d.DomainName == name {
 			domain = &d
 			break
 		}
