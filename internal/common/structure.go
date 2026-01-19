@@ -127,6 +127,29 @@ func TsetToStrings(d types.Set) []string {
 	return tags
 }
 
+func TsetToInts(d types.Set) []int {
+	if d.IsNull() || d.IsUnknown() {
+		return nil
+	}
+
+	var ints []int
+	ctx := context.Background()
+	for _, v := range d.Elements() {
+		switch v.Type(ctx) {
+		case types.Int32Type:
+			if vInt, ok := v.(types.Int32); ok && !vInt.IsNull() && !vInt.IsUnknown() {
+				ints = append(ints, int(vInt.ValueInt32()))
+			}
+		case types.Int64Type:
+			if vInt, ok := v.(types.Int64); ok && !vInt.IsNull() && !vInt.IsUnknown() {
+				ints = append(ints, int(vInt.ValueInt64()))
+			}
+		}
+	}
+
+	return ints
+}
+
 func TlistToStringsOrDefault(d types.List) []string {
 	list := TlistToStrings(d)
 	if list == nil {
@@ -146,6 +169,12 @@ func TsetToStringsOrDefault(d types.Set) []string {
 func StringsToTset(values []string) types.Set {
 	// types.SetValueでは内部でcontext.Background()を呼び出しているため、同じアプローチを採用
 	setValue, _ := types.SetValueFrom(context.Background(), types.StringType, values)
+	return setValue
+}
+
+func IntsToTset32(values []int) types.Set {
+	// types.SetValueでは内部でcontext.Background()を呼び出しているため、同じアプローチを採用
+	setValue, _ := types.SetValueFrom(context.Background(), types.Int32Type, values)
 	return setValue
 }
 
