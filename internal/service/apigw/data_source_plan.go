@@ -101,7 +101,7 @@ func (d *apigwPlanDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing API Gateway plan.",
+		MarkdownDescription: "Get information about an existing API Gateway Plan.",
 	}
 }
 

@@ -88,7 +88,7 @@ func (r *apigwDomainResource) Schema(ctx context.Context, req resource.SchemaReq
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manage an API Gateway domain.",
+		MarkdownDescription: "Manage an API Gateway Domain.",
 	}
 }
 

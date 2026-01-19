@@ -284,7 +284,7 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manage an API Gateway service.",
+		MarkdownDescription: "Manage an API Gateway Service.",
 	}
 }
 

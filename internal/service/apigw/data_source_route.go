@@ -304,7 +304,7 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing API Gateway User.",
+		MarkdownDescription: "Get information about an existing API Gateway Route.",
 	}
 }
 

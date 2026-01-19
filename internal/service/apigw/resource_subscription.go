@@ -101,7 +101,7 @@ func (r *apigwSubscriptionResource) Schema(ctx context.Context, req resource.Sch
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manage an API Gateway subscription.",
+		MarkdownDescription: "Manage an API Gateway Subscription.",
 	}
 }
 

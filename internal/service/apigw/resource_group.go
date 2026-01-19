@@ -65,7 +65,7 @@ func (r *apigwGroupResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manage an API Gateway group.",
+		MarkdownDescription: "Manage an API Gateway Group.",
 	}
 }
 

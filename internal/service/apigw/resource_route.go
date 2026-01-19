@@ -361,7 +361,7 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Get information about an existing API Gateway User.",
+		MarkdownDescription: "Get information about an existing API Gateway Route.",
 	}
 }
 
