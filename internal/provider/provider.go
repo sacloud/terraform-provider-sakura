@@ -17,6 +17,7 @@ import (
 	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/apigw"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_shared"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/auto_backup"
@@ -219,6 +220,14 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
 		apprun_shared.NewApprunSharedDataSource,
+		apigw.NewApigwCertDataSource,
+		apigw.NewApigwDomainDataSource,
+		apigw.NewApigwGroupDataSource,
+		apigw.NewApigwPlanDataSource,
+		apigw.NewApigwRouteDataSource,
+		apigw.NewApigwServiceDataSource,
+		apigw.NewApigwSubscriptionDataSource,
+		apigw.NewApigwUserDataSource,
 		archive.NewArchiveDataSource,
 		bridge.NewBridgeDataSource,
 		cloudhsm.NewCloudHSMDataSource,
@@ -265,6 +274,13 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		apprun_shared.NewApprunSharedResource,
+		apigw.NewApigwCertResource,
+		apigw.NewApigwDomainResource,
+		apigw.NewApigwGroupResource,
+		apigw.NewApigwRouteResource,
+		apigw.NewApigwServiceResource,
+		apigw.NewApigwSubscriptionResource,
+		apigw.NewApigwUserResource,
 		archive.NewArchiveResource,
 		auto_backup.NewAutoBackupResource,
 		bridge.NewBridgeResource,
