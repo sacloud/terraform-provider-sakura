@@ -185,7 +185,7 @@ func (r *nlbResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manage a NLB",
+		MarkdownDescription: "Manage a NLB (load_balancer in v2).",
 	}
 }
 
@@ -199,6 +199,9 @@ func (r *nlbResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout60min)
+	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
@@ -274,6 +277,9 @@ func (r *nlbResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout60min)
+	defer cancel()
+
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {
 		return
@@ -310,6 +316,9 @@ func (r *nlbResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout20min)
+	defer cancel()
 
 	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)
 	if resp.Diagnostics.HasError() {

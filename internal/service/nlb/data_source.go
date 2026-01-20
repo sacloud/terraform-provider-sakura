@@ -122,7 +122,7 @@ func (r *nlbDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing NLB.",
+		MarkdownDescription: "Get information about an existing NLB (load_balancer in v2).",
 	}
 }
 
