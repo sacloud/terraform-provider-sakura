@@ -36,7 +36,14 @@ Networking:
   - vpn_router
 Application Integration:
   - addon
-  - apigw
+  - apigw_cert
+  - apigw_domain
+  - apigw_group
+  - apigw_plan
+  - apigw_route
+  - apigw_service
+  - apigw_subscription
+  - apigw_user
   - eventbus_process_configuration
   - eventbus_schedule
   - eventbus_trigger

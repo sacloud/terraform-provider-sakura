@@ -49,6 +49,14 @@ func SchemaDataSourceTags(name string) schema.Attribute {
 	}
 }
 
+func SchemaDataSourceComputedTags(name string) schema.Attribute {
+	return schema.SetAttribute{
+		ElementType: types.StringType,
+		Computed:    true,
+		Description: desc.Sprintf("The tags of the %s.", name),
+	}
+}
+
 func SchemaDataSourceZone(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Optional:    true,

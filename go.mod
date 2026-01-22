@@ -4,6 +4,7 @@ go 1.25.5
 
 require (
 	github.com/google/go-cmp v0.7.0
+	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/terraform-plugin-framework v1.17.0
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0
@@ -14,6 +15,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.97
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sacloud/api-client-go v0.3.4
+	github.com/sacloud/apigw-api-go v0.2.3
 	github.com/sacloud/apprun-api-go v0.5.0
 	github.com/sacloud/cloudhsm-api-go v0.2.0
 	github.com/sacloud/dedicated-storage-api-go v0.0.3
@@ -52,7 +54,6 @@ require (
 	github.com/gofrs/flock v0.13.0 // indirect
 	github.com/golang-jwt/jwt/v5 v5.3.0 // indirect
 	github.com/golang/protobuf v1.5.4 // indirect
-	github.com/google/uuid v1.6.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-checkpoint v0.5.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect

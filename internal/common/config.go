@@ -15,6 +15,8 @@ import (
 	"github.com/hashicorp/go-multierror"
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/api-client-go/profile"
+	"github.com/sacloud/apigw-api-go"
+	apigwapi "github.com/sacloud/apigw-api-go/apis/v1"
 	"github.com/sacloud/apprun-api-go"
 	dedicatedstorage "github.com/sacloud/dedicated-storage-api-go"
 	dedicatedstorageapi "github.com/sacloud/dedicated-storage-api-go/apis/v1"
@@ -96,6 +98,7 @@ type APIClient struct {
 	ObjectStorageClient              *objectstorage.Client
 	NosqlClient                      *nosqlapi.Client
 	DedicatedStorageClient           *dedicatedstorageapi.Client
+	ApigwClient                      *apigwapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -313,6 +316,10 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 	if err != nil {
 		return nil, err
 	}
+	apigwClient, err := apigw.NewClient(client.WithOptions(callerOptions))
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -331,6 +338,7 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
 		NosqlClient:                      nosqlClient,
 		DedicatedStorageClient:           dedicatedStorageClient,
+		ApigwClient:                      apigwClient,
 	}, nil
 }
 
