@@ -1,7 +1,7 @@
 // Copyright 2016-2026 terraform-provider-sakura authors
 // SPDX-License-Identifier: Apache-2.0
 
-package nlb
+package dsr_lb
 
 import (
 	"context"
@@ -16,24 +16,24 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
-type nlbDataSource struct {
+type dsrLBDataSource struct {
 	client *common.APIClient
 }
 
-func NewNLBDataSource() datasource.DataSource {
-	return &nlbDataSource{}
+func NewDSRLBDataSource() datasource.DataSource {
+	return &dsrLBDataSource{}
 }
 
 var (
-	_ datasource.DataSource              = &nlbDataSource{}
-	_ datasource.DataSourceWithConfigure = &nlbDataSource{}
+	_ datasource.DataSource              = &dsrLBDataSource{}
+	_ datasource.DataSourceWithConfigure = &dsrLBDataSource{}
 )
 
-func (r *nlbDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_nlb"
+func (r *dsrLBDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_dsr_lb"
 }
 
-func (r *nlbDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (r *dsrLBDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -41,28 +41,28 @@ func (r *nlbDataSource) Configure(ctx context.Context, req datasource.ConfigureR
 	r.client = apiclient
 }
 
-type nlbDataSourceModel struct {
-	nlbBaseModel
+type dsrLBDataSourceModel struct {
+	dsrLBBaseModel
 }
 
-func (r *nlbDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (r *dsrLBDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("NLB"),
-			"name":        common.SchemaDataSourceName("NLB"),
-			"description": common.SchemaDataSourceDescription("NLB"),
-			"tags":        common.SchemaDataSourceTags("NLB"),
-			"zone":        common.SchemaDataSourceZone("NLB"),
-			"icon_id":     common.SchemaDataSourceIconID("NLB"),
-			"plan":        common.SchemaDataSourcePlan("NLB", []string{"standard", "highspec"}),
+			"id":          common.SchemaDataSourceId("DSR LB"),
+			"name":        common.SchemaDataSourceName("DSR LB"),
+			"description": common.SchemaDataSourceDescription("DSR LB"),
+			"tags":        common.SchemaDataSourceTags("DSR LB"),
+			"zone":        common.SchemaDataSourceZone("DSR LB"),
+			"icon_id":     common.SchemaDataSourceIconID("DSR LB"),
+			"plan":        common.SchemaDataSourcePlan("DSR LB", []string{"standard", "highspec"}),
 			"network_interface": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "Network interface for NLB",
+				Description: "Network interface for DSR LB",
 				Attributes: map[string]schema.Attribute{
-					"vswitch_id":   common.SchemaDataSourceVSwitchID("NLB"),
-					"ip_addresses": common.SchemaDataSourceIPAddresses("NLB"),
-					"netmask":      common.SchemaDataSourceNetMask("NLB"),
-					"gateway":      common.SchemaDataSourceGateway("NLB"),
+					"vswitch_id":   common.SchemaDataSourceVSwitchID("DSR LB"),
+					"ip_addresses": common.SchemaDataSourceIPAddresses("DSR LB"),
+					"netmask":      common.SchemaDataSourceNetMask("DSR LB"),
+					"gateway":      common.SchemaDataSourceGateway("DSR LB"),
 					"vrid": schema.Int64Attribute{
 						Computed:    true,
 						Description: "The Virtual Router Identifier",
@@ -90,7 +90,7 @@ func (r *nlbDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 							Computed:    true,
 							Description: "The IP address of the SorryServer. This will be used when all servers under this VIP are down",
 						},
-						"description": common.SchemaDataSourceDescription("NLB's VIP"),
+						"description": common.SchemaDataSourceDescription("DSR LB's VIP"),
 						"server": schema.ListNestedAttribute{
 							Computed: true,
 							NestedObject: schema.NestedAttributeObject{
@@ -122,12 +122,12 @@ func (r *nlbDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing NLB (load_balancer in v2).",
+		MarkdownDescription: "Get information about an existing DSR LB (load_balancer in v2).",
 	}
 }
 
-func (d *nlbDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data nlbDataSourceModel
+func (d *dsrLBDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data dsrLBDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -141,17 +141,17 @@ func (d *nlbDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	searcher := iaas.NewLoadBalancerOp(d.client)
 	res, err := searcher.Find(ctx, zone, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find NLB resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find DSR LB resource: %s", err))
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.LoadBalancers) == 0 {
-		resp.Diagnostics.AddError("Read: Search Error", "no NLB found matching the given criteria")
+		resp.Diagnostics.AddError("Read: Search Error", "no DSR LB found matching the given criteria")
 		return
 	}
 
 	lb := res.LoadBalancers[0]
 	if lb.Availability.IsFailed() {
-		resp.Diagnostics.AddError("Read: State Error", fmt.Sprintf("got unexpected state: NLB[%s].Availability is failed", lb.ID.String()))
+		resp.Diagnostics.AddError("Read: State Error", fmt.Sprintf("got unexpected state: DSR LB[%s].Availability is failed", lb.ID.String()))
 		return
 	}
 	data.updateState(lb, zone)

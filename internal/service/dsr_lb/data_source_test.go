@@ -1,7 +1,7 @@
 // Copyright 2016-2026 terraform-provider-sakura authors
 // SPDX-License-Identifier: Apache-2.0
 
-package nlb_test
+package dsr_lb_test
 
 import (
 	"testing"
@@ -10,19 +10,19 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraDataSourceNLB_basic(t *testing.T) {
+func TestAccSakuraDataSourceDSRLB_basic(t *testing.T) {
 	if !test.IsFakeModeEnabled() {
-		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_NLB_TEST")
+		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_DSRLB_TEST")
 	}
 
-	resourceName := "data.sakura_nlb.foobar"
+	resourceName := "data.sakura_dsr_lb.foobar"
 	rand := test.RandomName()
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceNLB_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceDSRLB_basic, rand),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -37,12 +37,12 @@ func TestAccSakuraDataSourceNLB_basic(t *testing.T) {
 	})
 }
 
-var testAccSakuraDataSourceNLB_basic = `
+var testAccSakuraDataSourceDSRLB_basic = `
 resource sakura_vswitch "foobar" {
   name = "{{ .arg0 }}"
 }
 
-resource "sakura_nlb" "foobar" {
+resource "sakura_dsr_lb" "foobar" {
   network_interface = {
     vswitch_id   = sakura_vswitch.foobar.id
     vrid         = 1
@@ -56,6 +56,6 @@ resource "sakura_nlb" "foobar" {
   tags        = ["tag1", "tag2", "tag3"]
 }
 
-data "sakura_nlb" "foobar" {
-  name = sakura_nlb.foobar.name
+data "sakura_dsr_lb" "foobar" {
+  name = sakura_dsr_lb.foobar.name
 }`

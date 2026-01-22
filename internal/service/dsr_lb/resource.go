@@ -1,7 +1,7 @@
 // Copyright 2016-2026 terraform-provider-sakura authors
 // SPDX-License-Identifier: Apache-2.0
 
-package nlb
+package dsr_lb
 
 import (
 	"context"
@@ -33,25 +33,25 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
-type nlbResource struct {
+type dsrLBResource struct {
 	client *common.APIClient
 }
 
 var (
-	_ resource.Resource                = &nlbResource{}
-	_ resource.ResourceWithConfigure   = &nlbResource{}
-	_ resource.ResourceWithImportState = &nlbResource{}
+	_ resource.Resource                = &dsrLBResource{}
+	_ resource.ResourceWithConfigure   = &dsrLBResource{}
+	_ resource.ResourceWithImportState = &dsrLBResource{}
 )
 
-func NewNLBResource() resource.Resource {
-	return &nlbResource{}
+func NewDSRLBResource() resource.Resource {
+	return &dsrLBResource{}
 }
 
-func (r *nlbResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_nlb"
+func (r *dsrLBResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_dsr_lb"
 }
 
-func (r *nlbResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *dsrLBResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -59,26 +59,26 @@ func (r *nlbResource) Configure(ctx context.Context, req resource.ConfigureReque
 	r.client = apiclient
 }
 
-type nlbResourceModel struct {
-	nlbBaseModel
+type dsrLBResourceModel struct {
+	dsrLBBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *nlbResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *dsrLBResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId("NLB"),
-			"name":        common.SchemaResourceName("NLB"),
-			"description": common.SchemaResourceDescription("NLB"),
-			"tags":        common.SchemaResourceTags("NLB"),
-			"zone":        common.SchemaResourceZone("NLB"),
-			"icon_id":     common.SchemaResourceIconID("NLB"),
-			"plan":        common.SchemaResourcePlan("NLB", "standard", []string{"standard", "highspec"}),
+			"id":          common.SchemaResourceId("DSR LB"),
+			"name":        common.SchemaResourceName("DSR LB"),
+			"description": common.SchemaResourceDescription("DSR LB"),
+			"tags":        common.SchemaResourceTags("DSR LB"),
+			"zone":        common.SchemaResourceZone("DSR LB"),
+			"icon_id":     common.SchemaResourceIconID("DSR LB"),
+			"plan":        common.SchemaResourcePlan("DSR LB", "standard", []string{"standard", "highspec"}),
 			"network_interface": schema.SingleNestedAttribute{
 				Required:    true,
-				Description: "Network interface for NLB",
+				Description: "Network interface for DSR LB",
 				Attributes: map[string]schema.Attribute{
-					"vswitch_id": common.SchemaResourceSwitchID("NLB"),
+					"vswitch_id": common.SchemaResourceVSwitchID("DSR LB"),
 					"vrid": schema.Int64Attribute{
 						Required:    true,
 						Description: "The Virtual Router Identifier",
@@ -89,7 +89,7 @@ func (r *nlbResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 					"ip_addresses": schema.ListAttribute{
 						Required:    true,
 						ElementType: types.StringType,
-						Description: "A list of IP address to assign to the load balancer.",
+						Description: "A list of IP address to assign to the DSR LB.",
 						Validators: []validator.List{
 							listvalidator.SizeAtLeast(1),
 							listvalidator.SizeAtMost(2),
@@ -100,7 +100,7 @@ func (r *nlbResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 					},
 					"netmask": schema.Int32Attribute{
 						Required:    true,
-						Description: desc.Sprintf("The bit length of the subnet assigned to the load balancer. %s", desc.Range(8, 29)),
+						Description: desc.Sprintf("The bit length of the subnet assigned to the DSR LB. %s", desc.Range(8, 29)),
 						Validators: []validator.Int32{
 							int32validator.Between(8, 29),
 						},
@@ -110,7 +110,7 @@ func (r *nlbResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 					},
 					"gateway": schema.StringAttribute{
 						Optional:    true,
-						Description: "The IP address of the gateway used by load balancer.",
+						Description: "The IP address of the gateway used by the DSR LB.",
 						PlanModifiers: []planmodifier.String{
 							stringplanmodifier.RequiresReplaceIfConfigured(),
 						},
@@ -185,16 +185,16 @@ func (r *nlbResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manage a NLB (load_balancer in v2).",
+		MarkdownDescription: "Manage a DSR LB (load_balancer in v2).",
 	}
 }
 
-func (r *nlbResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *dsrLBResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *nlbResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan nlbResourceModel
+func (r *dsrLBResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan dsrLBResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -232,7 +232,7 @@ func (r *nlbResource) Create(ctx context.Context, req resource.CreateRequest, re
 
 	res, err := builder.Setup(ctx, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create NLB: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create DSR LB: %s", err))
 		return
 	}
 	lb, ok := res.(*iaas.LoadBalancer)
@@ -241,7 +241,7 @@ func (r *nlbResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 	if lb.Availability.IsFailed() {
-		resp.Diagnostics.AddError("Create: State Error", fmt.Sprintf("got unexpected state: NLB[%s].Availability is failed", lb.ID.String()))
+		resp.Diagnostics.AddError("Create: State Error", fmt.Sprintf("got unexpected state: DSR LB[%s].Availability is failed", lb.ID.String()))
 		return
 	}
 
@@ -249,8 +249,8 @@ func (r *nlbResource) Create(ctx context.Context, req resource.CreateRequest, re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *nlbResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state nlbResourceModel
+func (r *dsrLBResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state dsrLBResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -270,8 +270,8 @@ func (r *nlbResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *nlbResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan nlbResourceModel
+func (r *dsrLBResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan dsrLBResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -288,16 +288,16 @@ func (r *nlbResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	lbOp := iaas.NewLoadBalancerOp(r.client)
 	found, err := lbOp.Read(ctx, zone, common.ExpandSakuraCloudID(plan.ID))
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read NLB[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read DSR LB[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
 	if _, err := iaas.NewLoadBalancerOp(r.client).Update(ctx, zone, found.ID, expandLoadBalancerUpdateRequest(&plan, found)); err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update NLB[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update DSR LB[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 	if err := iaas.NewLoadBalancerOp(r.client).Config(ctx, zone, found.ID); err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to configure NLB[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to configure DSR LB[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -310,8 +310,8 @@ func (r *nlbResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *nlbResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state nlbResourceModel
+func (r *dsrLBResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state dsrLBResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -332,12 +332,12 @@ func (r *nlbResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 
 	if err := power.ShutdownLoadBalancer(ctx, lbOp, zone, found.ID, true); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to shutdown NLB[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to shutdown DSR LB[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 
 	if err := lbOp.Delete(ctx, zone, found.ID); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete NLB[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete DSR LB[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -350,18 +350,18 @@ func getLoadBalancer(ctx context.Context, client *common.APIClient, zone string,
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("failed to read NLB[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read DSR LB[%s]: %s", id, err))
 		return nil
 	}
 	if lb.Availability.IsFailed() {
 		state.RemoveResource(ctx)
-		diags.AddError("State Error", fmt.Sprintf("got unexpected state: NLB[%s].Availability is failed", id))
+		diags.AddError("State Error", fmt.Sprintf("got unexpected state: DSR LB[%s].Availability is failed", id))
 		return nil
 	}
 	return lb
 }
 
-func expandLoadBalancerCreateRequest(model *nlbResourceModel) *iaas.LoadBalancerCreateRequest {
+func expandLoadBalancerCreateRequest(model *dsrLBResourceModel) *iaas.LoadBalancerCreateRequest {
 	nic := model.NetworkInterface
 	return &iaas.LoadBalancerCreateRequest{
 		SwitchID:           common.ExpandSakuraCloudID(nic.VSwitchID),
@@ -378,7 +378,7 @@ func expandLoadBalancerCreateRequest(model *nlbResourceModel) *iaas.LoadBalancer
 	}
 }
 
-func expandLoadBalancerUpdateRequest(model *nlbResourceModel, lb *iaas.LoadBalancer) *iaas.LoadBalancerUpdateRequest {
+func expandLoadBalancerUpdateRequest(model *dsrLBResourceModel, lb *iaas.LoadBalancer) *iaas.LoadBalancerUpdateRequest {
 	return &iaas.LoadBalancerUpdateRequest{
 		Name:               model.Name.ValueString(),
 		Description:        model.Description.ValueString(),
@@ -389,14 +389,14 @@ func expandLoadBalancerUpdateRequest(model *nlbResourceModel, lb *iaas.LoadBalan
 	}
 }
 
-func expandLoadBalancerPlanID(model *nlbResourceModel) iaastypes.ID {
+func expandLoadBalancerPlanID(model *dsrLBResourceModel) iaastypes.ID {
 	if model.Plan.ValueString() == "standard" {
 		return iaastypes.LoadBalancerPlans.Standard
 	}
 	return iaastypes.LoadBalancerPlans.HighSpec
 }
 
-func expandLoadBalancerVIPs(model *nlbResourceModel) []*iaas.LoadBalancerVirtualIPAddress {
+func expandLoadBalancerVIPs(model *dsrLBResourceModel) []*iaas.LoadBalancerVirtualIPAddress {
 	if model == nil || len(model.VIP) == 0 {
 		return nil
 	}

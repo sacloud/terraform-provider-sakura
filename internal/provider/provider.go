@@ -27,6 +27,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dedicated_storage"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/disk"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dns"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/dsr_lb"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/enhanced_lb"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/eventbus"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/gslb"
@@ -35,7 +36,6 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/kms"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/local_router"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/nfs"
-	"github.com/sacloud/terraform-provider-sakura/internal/service/nlb"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/nosql"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/object_storage"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/packet_filter"
@@ -231,6 +231,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		dedicated_storage.NewDedicatedStorageDataSource,
 		disk.NewDiskDataSource,
 		dns.NewDNSDataSource,
+		dsr_lb.NewDSRLBDataSource,
 		enhanced_lb.NewEnhancedLBDataSource,
 		eventbus.NewEventBusProcessConfigurationDataSource,
 		eventbus.NewEventBusScheduleDataSource,
@@ -241,7 +242,6 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		kms.NewKmsDataSource,
 		local_router.NewLocalRouterDataSource,
 		nfs.NewNFSDataSource,
-		nlb.NewNLBDataSource,
 		nosql.NewNosqlDataSource,
 		object_storage.NewObjectStorageSiteDataSource,
 		object_storage.NewObjectStorageBucketDataSource,
@@ -281,6 +281,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		disk.NewDiskResource,
 		dns.NewDNSResource,
 		dns.NewDNSRecordResource,
+		dsr_lb.NewDSRLBResource,
 		enhanced_lb.NewEnhancedLBResource,
 		enhanced_lb.NewEnhancedLBACMEResource,
 		eventbus.NewEventBusProcessConfigurationResource,
@@ -292,7 +293,6 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		kms.NewKMSResource,
 		local_router.NewLocalRouterResource,
 		nfs.NewNFSResource,
-		nlb.NewNLBResource,
 		nosql.NewNosqlResource,
 		nosql.NewNosqlAdditionalNodesResource,
 		object_storage.NewObjectStorageBucketResource,

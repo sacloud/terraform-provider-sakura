@@ -1,7 +1,7 @@
 // Copyright 2016-2026 terraform-provider-sakura authors
 // SPDX-License-Identifier: Apache-2.0
 
-package nlb_test
+package dsr_lb_test
 
 import (
 	"context"
@@ -17,12 +17,12 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraNLB_basic(t *testing.T) {
+func TestAccSakuraDSRLB_basic(t *testing.T) {
 	if !test.IsFakeModeEnabled() {
-		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_NLB_TEST")
+		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_DSRLB_TEST")
 	}
 
-	resourceName := "sakura_nlb.foobar"
+	resourceName := "sakura_dsr_lb.foobar"
 	rand := test.RandomName()
 	var loadBalancer iaas.LoadBalancer
 	resource.Test(t, resource.TestCase{
@@ -30,14 +30,14 @@ func TestAccSakuraNLB_basic(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			test.CheckSakuraIconDestroy,
-			testCheckSakuraNLBDestroy,
+			testCheckSakuraDSRLBDestroy,
 			test.CheckSakuravSwitchDestroy,
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraNLB_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraDSRLB_basic, rand),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraNLBExists(resourceName, &loadBalancer),
+					testCheckSakuraDSRLBExists(resourceName, &loadBalancer),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
@@ -68,9 +68,9 @@ func TestAccSakuraNLB_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraNLB_update, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraDSRLB_update, rand),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraNLBExists(resourceName, &loadBalancer),
+					testCheckSakuraDSRLBExists(resourceName, &loadBalancer),
 					resource.TestCheckResourceAttr(resourceName, "name", rand+"-upd"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-upd"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
@@ -100,12 +100,12 @@ func TestAccSakuraNLB_basic(t *testing.T) {
 	})
 }
 
-func TestAccSakuraNLB_withRouter(t *testing.T) {
+func TestAccSakuraDSRLB_withRouter(t *testing.T) {
 	if !test.IsFakeModeEnabled() {
-		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_NLB_TEST")
+		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_DSRLB_TEST")
 	}
 
-	resourceName := "sakura_nlb.foobar"
+	resourceName := "sakura_dsr_lb.foobar"
 	name := test.RandomName()
 	var loadBalancer iaas.LoadBalancer
 	resource.Test(t, resource.TestCase{
@@ -113,13 +113,13 @@ func TestAccSakuraNLB_withRouter(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			test.CheckSakuraInternetDestroy,
-			testCheckSakuraNLBDestroy,
+			testCheckSakuraDSRLBDestroy,
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraNLB_withRouter, name),
+				Config: test.BuildConfigWithArgs(testAccSakuraDSRLB_withRouter, name),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraNLBExists(resourceName, &loadBalancer),
+					testCheckSakuraDSRLBExists(resourceName, &loadBalancer),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
@@ -131,7 +131,7 @@ func TestAccSakuraNLB_withRouter(t *testing.T) {
 	})
 }
 
-func testCheckSakuraNLBExists(n string, loadBalancer *iaas.LoadBalancer) resource.TestCheckFunc {
+func testCheckSakuraDSRLBExists(n string, loadBalancer *iaas.LoadBalancer) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -140,7 +140,7 @@ func testCheckSakuraNLBExists(n string, loadBalancer *iaas.LoadBalancer) resourc
 		}
 
 		if rs.Primary.ID == "" {
-			return errors.New("no NLB ID is set")
+			return errors.New("no DSR LB ID is set")
 		}
 
 		client := test.AccClientGetter()
@@ -152,7 +152,7 @@ func testCheckSakuraNLBExists(n string, loadBalancer *iaas.LoadBalancer) resourc
 		}
 
 		if foundLoadBalancer.ID.String() != rs.Primary.ID {
-			return fmt.Errorf("not found NLB: %s", rs.Primary.ID)
+			return fmt.Errorf("not found DSR LB: %s", rs.Primary.ID)
 		}
 
 		*loadBalancer = *foundLoadBalancer
@@ -160,12 +160,12 @@ func testCheckSakuraNLBExists(n string, loadBalancer *iaas.LoadBalancer) resourc
 	}
 }
 
-func testCheckSakuraNLBDestroy(s *terraform.State) error {
+func testCheckSakuraDSRLBDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	lbOp := iaas.NewLoadBalancerOp(client)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_nlb" {
+		if rs.Type != "sakura_dsr_lb" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -175,16 +175,16 @@ func testCheckSakuraNLBDestroy(s *terraform.State) error {
 		zone := rs.Primary.Attributes["zone"]
 		_, err := lbOp.Read(context.Background(), zone, common.SakuraCloudID(rs.Primary.ID))
 		if err == nil {
-			return fmt.Errorf("still exists NLB: %s", rs.Primary.ID)
+			return fmt.Errorf("still exists DSR LB: %s", rs.Primary.ID)
 		}
 	}
 
 	return nil
 }
 
-func TestAccImportSakuraNLB_basic(t *testing.T) {
+func TestAccImportSakuraDSRLB_basic(t *testing.T) {
 	if !test.IsFakeModeEnabled() {
-		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_NLB_TEST")
+		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_DSRLB_TEST")
 	}
 
 	rand := test.RandomName()
@@ -211,14 +211,14 @@ func TestAccImportSakuraNLB_basic(t *testing.T) {
 		return test.StateNotEmptyMulti(s[0], "network_interface.vswitch_id", "icon_id")
 	}
 
-	resourceName := "sakura_nlb.foobar"
+	resourceName := "sakura_dsr_lb.foobar"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraNLBDestroy,
+		CheckDestroy:             testCheckSakuraDSRLBDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraNLB_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraDSRLB_basic, rand),
 			},
 			{
 				ResourceName:      resourceName,
@@ -230,11 +230,11 @@ func TestAccImportSakuraNLB_basic(t *testing.T) {
 	})
 }
 
-const testAccSakuraNLB_basic = `
+const testAccSakuraDSRLB_basic = `
 resource "sakura_vswitch" "foobar" {
   name = "{{ .arg0 }}"
 }
-resource "sakura_nlb" "foobar" {
+resource "sakura_dsr_lb" "foobar" {
   network_interface = {
     vswitch_id   = sakura_vswitch.foobar.id
     vrid         = 1
@@ -280,11 +280,11 @@ resource "sakura_icon" "foobar" {
 }
 `
 
-const testAccSakuraNLB_update = `
+const testAccSakuraDSRLB_update = `
 resource "sakura_vswitch" "foobar" {
   name = "{{ .arg0 }}"
 }
-resource "sakura_nlb" "foobar" {
+resource "sakura_dsr_lb" "foobar" {
   network_interface = {
     vswitch_id   = sakura_vswitch.foobar.id
     vrid         = 1
@@ -320,12 +320,12 @@ resource "sakura_nlb" "foobar" {
 }
 `
 
-const testAccSakuraNLB_withRouter = `
+const testAccSakuraDSRLB_withRouter = `
 resource "sakura_internet" "foobar" {
   name = "{{ .arg0 }}"
 }
 
-resource "sakura_nlb" "foobar" {
+resource "sakura_dsr_lb" "foobar" {
   plan = "highspec"
   network_interface = {
     vswitch_id    = sakura_internet.foobar.vswitch_id
