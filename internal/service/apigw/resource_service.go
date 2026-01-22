@@ -94,7 +94,7 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 			},
 			"protocol": schema.StringAttribute{
 				Required:    true,
-				Description: "The protocol used by the backend (http or https).",
+				Description: "The protocol used by the backend (http or https)",
 				Validators: []validator.String{
 					stringvalidator.OneOf("http", "https"),
 				},
@@ -110,7 +110,7 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("/"),
-				Description: "The base path for the backend.",
+				Description: "The base path for the backend",
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(255),
 				},
@@ -118,7 +118,7 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 			"port": schema.Int32Attribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The port of the backend.",
+				Description: "The port of the backend",
 				Validators: []validator.Int32{
 					int32validator.Between(0, 65535),
 				},
@@ -127,7 +127,7 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 				Optional:    true,
 				Computed:    true,
 				Default:     int32default.StaticInt32(5),
-				Description: "The number of retries for backend requests.",
+				Description: "The number of retries for backend requests",
 				Validators: []validator.Int32{
 					int32validator.Between(0, 32767),
 				},
@@ -135,30 +135,30 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 			"connect_timeout": schema.Int32Attribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "Connect timeout in milliseconds.",
+				Description: "Connect timeout in milliseconds for the backend",
 			},
 			"write_timeout": schema.Int32Attribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "Write timeout in milliseconds.",
+				Description: "Write timeout in milliseconds for the backend",
 			},
 			"read_timeout": schema.Int32Attribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "Read timeout in milliseconds.",
+				Description: "Read timeout in milliseconds for the backend",
 			},
 			"authentication": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("none"),
-				Description: desc.Sprintf("Authentication method for the backend. This can be one of %s.", []string{"`none`", "`basic`", "`hmac`", "`jwt`", "`oidc`"}),
+				Description: desc.Sprintf("Authentication method for the backend. This can be one of %s.", serviceAuthTypes),
 				Validators: []validator.String{
-					stringvalidator.OneOf("none", "basic", "hmac", "jwt", "oidc"),
+					stringvalidator.OneOf(serviceAuthTypes...),
 				},
 			},
 			"route_host": schema.StringAttribute{
 				Computed:    true,
-				Description: "The route host for the service.",
+				Description: "The route host for the service",
 			},
 			"oidc": schema.SingleNestedAttribute{
 				Optional:    true,
@@ -166,11 +166,11 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Required:    true,
-						Description: "The entity ID of OIDC authentication.",
+						Description: "The entity ID of OIDC authentication",
 					},
 					"name": schema.StringAttribute{
 						Computed:    true,
-						Description: "The name of the OIDC authentication.",
+						Description: "The name of the OIDC authentication",
 					},
 				},
 			},
@@ -236,24 +236,24 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
 						Required:    true,
-						Description: "The bucket name.",
+						Description: "The bucket name",
 					},
 					"folder": schema.StringAttribute{
 						Optional:    true,
-						Description: "The folder name within the bucket.",
+						Description: "The folder name within the bucket",
 					},
 					"endpoint": schema.StringAttribute{
 						Required:    true,
-						Description: "The object storage endpoint.",
+						Description: "The object storage endpoint",
 					},
 					"region": schema.StringAttribute{
 						Required:    true,
-						Description: "The object storage region.",
+						Description: "The object storage region",
 					},
 					"access_key_wo": schema.StringAttribute{
 						Required:    true,
 						WriteOnly:   true,
-						Description: "Access key for object storage.",
+						Description: "Access key for object storage",
 						Validators: []validator.String{
 							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_access_key_wo")),
 						},
@@ -261,14 +261,14 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 					"secret_access_key_wo": schema.StringAttribute{
 						Required:    true,
 						WriteOnly:   true,
-						Description: "Secret access key for object storage.",
+						Description: "Secret access key for object storage",
 						Validators: []validator.String{
 							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("access_key_wo")),
 						},
 					},
 					"credentials_wo_version": schema.Int32Attribute{
 						Optional:    true,
-						Description: "The version of the credentials. This value must be greater than 0 when set. Increment this when changing credentials.",
+						Description: "The version of the credentials. This value must be greater than 0 when set. Increment this when changing credentials",
 					},
 					"use_document_index": schema.BoolAttribute{
 						Optional:    true,

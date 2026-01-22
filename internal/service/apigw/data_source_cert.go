@@ -58,7 +58,7 @@ func (r *apigwCertDataSource) Schema(ctx context.Context, req datasource.SchemaR
 			"updated_at": schemaDataSourceAPIGWUpdatedAt("API Gateway Certificate"),
 			"rsa": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "API Gateway Certificate(RSA)",
+				Description: "RSA settings of the API Gateway Certificate",
 				Attributes: map[string]schema.Attribute{
 					"expired_at": schema.StringAttribute{
 						Computed:    true,
@@ -68,7 +68,7 @@ func (r *apigwCertDataSource) Schema(ctx context.Context, req datasource.SchemaR
 			},
 			"ecdsa": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "API Gateway Certificate(ECDSA)",
+				Description: "ECDSA settings of the API Gateway Certificate",
 				Attributes: map[string]schema.Attribute{
 					"expired_at": schema.StringAttribute{
 						Computed:    true,

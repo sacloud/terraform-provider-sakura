@@ -66,16 +66,16 @@ func (r *apigwUserDataSource) Schema(ctx context.Context, req datasource.SchemaR
 				Attributes: map[string]schema.Attribute{
 					"protocols": schema.StringAttribute{
 						Computed:    true,
-						Description: "The protocols to restrict by.",
+						Description: "The protocols to restrict by",
 					},
 					"restricted_by": schema.StringAttribute{
 						Computed:    true,
-						Description: "The category to restrict by.",
+						Description: "The category to restrict by",
 					},
 					"ips": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
-						Description: "The IPv4 addresses to be restricted.",
+						Description: "The IPv4 addresses to be restricted",
 					},
 				},
 			},

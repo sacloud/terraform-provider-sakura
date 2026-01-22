@@ -67,25 +67,25 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 			},
 			"protocols": schema.StringAttribute{
 				Computed:    true,
-				Description: "The protocols",
+				Description: "The protocols supported by the route",
 			},
 			"path": schema.StringAttribute{
 				Computed:    true,
-				Description: "The request path",
+				Description: "The path to access the Route",
 			},
 			"host": schema.StringAttribute{
 				Computed:    true,
-				Description: "The request host",
+				Description: "The auto-issued host when hosts is not specified",
 			},
 			"hosts": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: "The request hosts",
+				Description: "The list of hosts. Auto-issued host or API Gateway Domain can be used.",
 			},
 			"methods": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
-				Description: "The request methods",
+				Description: "HTTP methods to access the Route",
 			},
 			"https_redirect_status_code": schema.Int32Attribute{
 				Computed:    true,
@@ -117,16 +117,16 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 				Attributes: map[string]schema.Attribute{
 					"protocols": schema.StringAttribute{
 						Computed:    true,
-						Description: "The protocols to restrict by.",
+						Description: "The protocols to restrict by",
 					},
 					"restricted_by": schema.StringAttribute{
 						Computed:    true,
-						Description: "The category to restrict by.",
+						Description: "The category to restrict by",
 					},
 					"ips": schema.SetAttribute{
 						ElementType: types.StringType,
 						Computed:    true,
-						Description: "The IPv4 addresses to be restricted.",
+						Description: "The IPv4 addresses to be restricted",
 					},
 				},
 			},
@@ -152,11 +152,11 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 			},
 			"request_transformation": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "Request transform configuration (headers, query params, body transformations).",
+				Description: "Request transform configuration (headers, query params, body transformations)",
 				Attributes: map[string]schema.Attribute{
 					"http_method": schema.StringAttribute{
 						Computed:    true,
-						Description: "HTTP method (e.g. GET).",
+						Description: "HTTP method (e.g. GET)",
 					},
 					"allow": schema.SingleNestedAttribute{
 						Computed:    true,
@@ -165,34 +165,34 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 							"body": schema.SetAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
-								Description: "List of body fields to allow.",
+								Description: "List of body fields to allow",
 							},
 						},
 					},
 					"remove": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Fields to remove from the request.",
+						Description: "Fields to remove from the request",
 						Attributes: map[string]schema.Attribute{
 							"header_keys": schema.SetAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
-								Description: "Header keys to remove.",
+								Description: "Header keys to remove",
 							},
 							"query_params": schema.SetAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
-								Description: "Query parameter names to remove.",
+								Description: "Query parameter names to remove",
 							},
 							"body": schema.SetAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
-								Description: "Body fields to remove.",
+								Description: "Body fields to remove",
 							},
 						},
 					},
 					"rename": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Rename request fields (from -> to).",
+						Description: "Rename request fields (from -> to)",
 						Attributes: map[string]schema.Attribute{
 							"headers":      schemaDataSourceAPIGWListFromTo(),
 							"query_params": schemaDataSourceAPIGWListFromTo(),
@@ -201,7 +201,7 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 					},
 					"replace": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Replace values for keys.",
+						Description: "Replace values for keys",
 						Attributes: map[string]schema.Attribute{
 							"headers":      schemaDataSourceAPIGWListKV(),
 							"query_params": schemaDataSourceAPIGWListKV(),
@@ -210,7 +210,7 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 					},
 					"add": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Add key/value pairs to request.",
+						Description: "Add key/value pairs to request",
 						Attributes: map[string]schema.Attribute{
 							"headers":      schemaDataSourceAPIGWListKV(),
 							"query_params": schemaDataSourceAPIGWListKV(),
@@ -219,7 +219,7 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 					},
 					"append": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Append values to existing keys.",
+						Description: "Append values to existing keys",
 						Attributes: map[string]schema.Attribute{
 							"headers":      schemaDataSourceAPIGWListKV(),
 							"query_params": schemaDataSourceAPIGWListKV(),
@@ -230,7 +230,7 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 			},
 			"response_transformation": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "Response transform configuration (conditionals by status code, header/json/body transformations).",
+				Description: "Response transform configuration (conditionals by status code, header/json/body transformations)",
 				Attributes: map[string]schema.Attribute{
 					"allow": schema.SingleNestedAttribute{
 						Computed:    true,
@@ -239,30 +239,30 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 							"json_keys": schema.SetAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
-								Description: "List of JSON keys to allow.",
+								Description: "List of JSON keys to allow",
 							},
 						},
 					},
 					"remove": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Fields to remove from the response.",
+						Description: "Fields to remove from the response",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaResourceAPIGWIfStatusCode(),
 							"header_keys": schema.SetAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
-								Description: "Header keys to remove.",
+								Description: "Header keys to remove",
 							},
 							"json_keys": schema.SetAttribute{
 								ElementType: types.StringType,
 								Computed:    true,
-								Description: "JSON keys to remove from the response body.",
+								Description: "JSON keys to remove from the response body",
 							},
 						},
 					},
 					"rename": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Rename response fields (from -> to).",
+						Description: "Rename response fields (from -> to)",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaDataSourceAPIGWIfStatusCode(),
 							"headers":        schemaDataSourceAPIGWListFromTo(),
@@ -270,20 +270,20 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 					},
 					"replace": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Replace values for keys or body.",
+						Description: "Replace values for keys or body",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaDataSourceAPIGWIfStatusCode(),
 							"headers":        schemaDataSourceAPIGWListKV(),
 							"json":           schemaDataSourceAPIGWListKV(),
 							"body": schema.StringAttribute{
 								Computed:    true,
-								Description: "Replace whole response body with this string.",
+								Description: "Replace whole response body with this string",
 							},
 						},
 					},
 					"add": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Add key/value pairs to response.",
+						Description: "Add key/value pairs to response",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaDataSourceAPIGWIfStatusCode(),
 							"headers":        schemaDataSourceAPIGWListKV(),
@@ -292,7 +292,7 @@ func (r *apigwRouteDataSource) Schema(ctx context.Context, req datasource.Schema
 					},
 					"append": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "Append values to existing keys in response.",
+						Description: "Append values to existing keys in response",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaDataSourceAPIGWIfStatusCode(),
 							"headers":        schemaDataSourceAPIGWListKV(),

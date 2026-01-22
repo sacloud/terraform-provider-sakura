@@ -54,6 +54,8 @@ type apigwServiceObjectStorageModel struct {
 	UseDocumentIndex types.Bool   `tfsdk:"use_document_index"`
 }
 
+var serviceAuthTypes = common.MapTo(v1.ServiceDetailAuthenticationNone.AllValues(), common.ToString)
+
 func (m *apigwServiceBaseModel) updateState(service *v1.ServiceDetailResponse) {
 	m.ID = types.StringValue(service.ID.Value.String())
 	m.Name = types.StringValue(string(service.Name))

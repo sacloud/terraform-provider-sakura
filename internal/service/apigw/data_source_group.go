@@ -49,17 +49,11 @@ type apigwGroupDataSourceModel struct {
 func (d *apigwGroupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":   common.SchemaDataSourceId("API Gateway Group"),
-			"name": common.SchemaDataSourceName("API Gateway Group"),
-			"tags": common.SchemaDataSourceComputedTags("API Gateway Group"),
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "Creation timestamp",
-			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "Last update timestamp",
-			},
+			"id":         common.SchemaDataSourceId("API Gateway Group"),
+			"name":       common.SchemaDataSourceName("API Gateway Group"),
+			"tags":       common.SchemaDataSourceComputedTags("API Gateway Group"),
+			"created_at": schemaDataSourceAPIGWCreatedAt("API Gateway Group"),
+			"updated_at": schemaDataSourceAPIGWUpdatedAt("API Gateway Group"),
 		},
 		MarkdownDescription: "Get information about an existing API Gateway Group.",
 	}

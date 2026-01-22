@@ -64,55 +64,55 @@ func (r *apigwServiceDataSource) Schema(ctx context.Context, req datasource.Sche
 			},
 			"protocol": schema.StringAttribute{
 				Computed:    true,
-				Description: "The protocol used by the backend (http or https).",
+				Description: "The protocol used by the backend (http or https)",
 			},
 			"host": schema.StringAttribute{
 				Computed:    true,
-				Description: "The host name of the backend.",
+				Description: "The host name of the backend",
 			},
 			"path": schema.StringAttribute{
 				Computed:    true,
-				Description: "The base path for the backend.",
+				Description: "The base path for the backend",
 			},
 			"port": schema.Int32Attribute{
 				Computed:    true,
-				Description: "The port of the backend.",
+				Description: "The port of the backend",
 			},
 			"retries": schema.Int32Attribute{
 				Computed:    true,
-				Description: "The number of retries for backend requests.",
+				Description: "The number of retries for backend requests",
 			},
 			"connect_timeout": schema.Int32Attribute{
 				Computed:    true,
-				Description: "Connect timeout in milliseconds.",
+				Description: "Connect timeout in milliseconds for backend requests",
 			},
 			"write_timeout": schema.Int32Attribute{
 				Computed:    true,
-				Description: "Write timeout in milliseconds.",
+				Description: "Write timeout in milliseconds for backend requests",
 			},
 			"read_timeout": schema.Int32Attribute{
 				Computed:    true,
-				Description: "Read timeout in milliseconds.",
+				Description: "Read timeout in milliseconds for backend requests",
 			},
 			"authentication": schema.StringAttribute{
 				Computed:    true,
-				Description: desc.Sprintf("Authentication method for the backend. This can be one of %s.", []string{"`none`", "`basic`", "`hmac`", "`jwt`", "`oidc`"}),
+				Description: desc.Sprintf("Authentication method for the backend. This can be one of %s.", serviceAuthTypes),
 			},
 			"route_host": schema.StringAttribute{
 				Computed:    true,
-				Description: "The route host for the service.",
+				Description: "The route host for the service",
 			},
 			"oidc": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "OIDC authentication configuration",
+				Description: "OIDC authentication configuration for the service",
 				Attributes: map[string]schema.Attribute{
 					"id": schema.StringAttribute{
 						Computed:    true,
-						Description: "The entity ID of OIDC authentication.",
+						Description: "The entity ID of OIDC authentication",
 					},
 					"name": schema.StringAttribute{
 						Computed:    true,
-						Description: "The name of the OIDC authentication.",
+						Description: "The name of the OIDC authentication",
 					},
 				},
 			},
@@ -161,19 +161,19 @@ func (r *apigwServiceDataSource) Schema(ctx context.Context, req datasource.Sche
 				Attributes: map[string]schema.Attribute{
 					"bucket": schema.StringAttribute{
 						Computed:    true,
-						Description: "The bucket name.",
+						Description: "The bucket name",
 					},
 					"folder": schema.StringAttribute{
 						Computed:    true,
-						Description: "The folder name within the bucket.",
+						Description: "The folder name within the bucket",
 					},
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
-						Description: "The object storage endpoint.",
+						Description: "The object storage endpoint",
 					},
 					"region": schema.StringAttribute{
 						Computed:    true,
-						Description: "The object storage region.",
+						Description: "The object storage region",
 					},
 					"use_document_index": schema.BoolAttribute{
 						Computed:    true,

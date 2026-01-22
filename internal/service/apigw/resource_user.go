@@ -103,16 +103,16 @@ func (r *apigwUserResource) Schema(ctx context.Context, req resource.SchemaReque
 				Attributes: map[string]schema.Attribute{
 					"protocols": schema.StringAttribute{
 						Required:    true,
-						Description: "The protocols to restrict.",
+						Description: "The protocols to restrict",
 					},
 					"restricted_by": schema.StringAttribute{
 						Required:    true,
-						Description: "The category to restrict by.",
+						Description: "The category to restrict by",
 					},
 					"ips": schema.SetAttribute{
 						ElementType: types.StringType,
 						Required:    true,
-						Description: "The IPv4 addresses to be restricted.",
+						Description: "The IPv4 addresses to be restricted",
 					},
 				},
 			},
@@ -156,7 +156,7 @@ func (r *apigwUserResource) Schema(ctx context.Context, req resource.SchemaReque
 							},
 							"password_wo_version": schema.Int32Attribute{
 								Required:    true,
-								Description: "The version of the password_wo. This value must be greater than 0 when set. Increment this when changing password.",
+								Description: "The version of the password_wo. This value must be greater than 0 when set. Increment this when changing password",
 								Validators: []validator.Int32{
 									int32validator.AtLeast(1),
 									int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo")),
@@ -182,7 +182,7 @@ func (r *apigwUserResource) Schema(ctx context.Context, req resource.SchemaReque
 							},
 							"secret_wo_version": schema.Int32Attribute{
 								Required:    true,
-								Description: "The version of the secret_wo. This value must be greater than 0 when set. Increment this when changing secret.",
+								Description: "The version of the secret_wo. This value must be greater than 0 when set. Increment this when changing secret",
 								Validators: []validator.Int32{
 									int32validator.AtLeast(1),
 									int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_wo")),
@@ -212,7 +212,7 @@ func (r *apigwUserResource) Schema(ctx context.Context, req resource.SchemaReque
 							},
 							"secret_wo_version": schema.Int32Attribute{
 								Required:    true,
-								Description: "The version of the secret_wo. This value must be greater than 0 when set. Increment this when changing secret.",
+								Description: "The version of the secret_wo. This value must be greater than 0 when set. Increment this when changing secret",
 								Validators: []validator.Int32{
 									int32validator.AtLeast(1),
 									int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_wo")),

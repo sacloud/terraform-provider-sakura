@@ -84,7 +84,7 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 			"protocols": schema.StringAttribute{
 				Required:    true,
-				Description: "The protocols to restrict.",
+				Description: "The protocols supported by the Route",
 				Validators: []validator.String{
 					stringvalidator.OneOf(common.MapTo(v1.RouteDetailProtocolsHTTP.AllValues(), common.ToString)...),
 				},
@@ -93,7 +93,7 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Optional:    true,
 				Computed:    true,
 				Default:     stringdefault.StaticString("/"),
-				Description: "The path to access the Route. '/' or '~' prefix is required.",
+				Description: "The path to access the Route. '/' or '~' prefix is required",
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 255),
 					sacloudvalidator.StringFuncValidator(func(v string) error {
@@ -166,16 +166,16 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Attributes: map[string]schema.Attribute{
 					"protocols": schema.StringAttribute{
 						Required:    true,
-						Description: "The protocols to restrict.",
+						Description: "The protocols to restrict",
 					},
 					"restricted_by": schema.StringAttribute{
 						Required:    true,
-						Description: "The category to restrict by.",
+						Description: "The category to restrict by",
 					},
 					"ips": schema.SetAttribute{
 						ElementType: types.StringType,
 						Required:    true,
-						Description: "The IPv4 addresses to be restricted.",
+						Description: "The IPv4 addresses to be restricted",
 					},
 				},
 			},
@@ -203,50 +203,50 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 			"request_transformation": schema.SingleNestedAttribute{
 				Optional:    true,
-				Description: "Request transform configuration (headers, query params, body transformations).",
+				Description: "Request transform configuration (headers, query params, body transformations)",
 				Attributes: map[string]schema.Attribute{
 					"http_method": schema.StringAttribute{
 						Required:    true,
-						Description: "HTTP method (e.g. GET).",
+						Description: "HTTP method (e.g. GET)",
 						Validators: []validator.String{
-							stringvalidator.OneOf("GET", "POST", "PUT", "DELETE", "PATCH", "HEAD", "OPTIONS", "TRACE", "CONNECT"),
+							stringvalidator.OneOf(common.MapTo(v1.HTTPMethodGET.AllValues(), common.ToString)...),
 						},
 					},
 					"allow": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Allow list.",
+						Description: "Allow list",
 						Attributes: map[string]schema.Attribute{
 							"body": schema.SetAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
-								Description: "List of body fields to allow.",
+								Description: "List of body fields to allow",
 							},
 						},
 					},
 					"remove": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Fields to remove from the request.",
+						Description: "Fields to remove from the request",
 						Attributes: map[string]schema.Attribute{
 							"header_keys": schema.SetAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
-								Description: "Header keys to remove.",
+								Description: "Header keys to remove",
 							},
 							"query_params": schema.SetAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
-								Description: "Query parameter names to remove.",
+								Description: "Query parameter names to remove",
 							},
 							"body": schema.SetAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
-								Description: "Body fields to remove.",
+								Description: "Body fields to remove",
 							},
 						},
 					},
 					"rename": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Rename request fields (from -> to).",
+						Description: "Rename request fields (from -> to)",
 						Attributes: map[string]schema.Attribute{
 							"headers":      schemaResourceAPIGWListFromTo(),
 							"query_params": schemaResourceAPIGWListFromTo(),
@@ -255,7 +255,7 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 					"replace": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Replace values for keys.",
+						Description: "Replace values for keys",
 						Attributes: map[string]schema.Attribute{
 							"headers":      schemaResourceAPIGWListKV(),
 							"query_params": schemaResourceAPIGWListKV(),
@@ -264,7 +264,7 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 					"add": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Add key/value pairs to request.",
+						Description: "Add key/value pairs to request",
 						Attributes: map[string]schema.Attribute{
 							"headers":      schemaResourceAPIGWListKV(),
 							"query_params": schemaResourceAPIGWListKV(),
@@ -273,7 +273,7 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 					"append": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Append values to existing keys.",
+						Description: "Append values to existing keys",
 						Attributes: map[string]schema.Attribute{
 							"headers":      schemaResourceAPIGWListKV(),
 							"query_params": schemaResourceAPIGWListKV(),
@@ -284,39 +284,39 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 			},
 			"response_transformation": schema.SingleNestedAttribute{
 				Optional:    true,
-				Description: "Response transform configuration (conditionals by status code, header/json/body transformations).",
+				Description: "Response transform configuration (conditionals by status code, header/json/body transformations)",
 				Attributes: map[string]schema.Attribute{
 					"allow": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Allow list.",
+						Description: "Allow list",
 						Attributes: map[string]schema.Attribute{
 							"json_keys": schema.SetAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
-								Description: "List of JSON keys to allow.",
+								Description: "List of JSON keys to allow",
 							},
 						},
 					},
 					"remove": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Fields to remove from the response.",
+						Description: "Fields to remove from the response",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaResourceAPIGWIfStatusCode(),
 							"header_keys": schema.SetAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
-								Description: "Header keys to remove.",
+								Description: "Header keys to remove",
 							},
 							"json_keys": schema.SetAttribute{
 								ElementType: types.StringType,
 								Optional:    true,
-								Description: "JSON keys to remove from the response body.",
+								Description: "JSON keys to remove from the response body",
 							},
 						},
 					},
 					"rename": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Rename response fields (from -> to).",
+						Description: "Rename response fields (from -> to)",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaResourceAPIGWIfStatusCode(),
 							"headers":        schemaResourceAPIGWListFromTo(),
@@ -324,20 +324,20 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 					"replace": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Replace values for keys or body.",
+						Description: "Replace values for keys or body",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaResourceAPIGWIfStatusCode(),
 							"headers":        schemaResourceAPIGWListKV(),
 							"json":           schemaResourceAPIGWListKV(),
 							"body": schema.StringAttribute{
 								Optional:    true,
-								Description: "Replace whole response body with this string.",
+								Description: "Replace whole response body with this string",
 							},
 						},
 					},
 					"add": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Add key/value pairs to response.",
+						Description: "Add key/value pairs to response",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaResourceAPIGWIfStatusCode(),
 							"headers":        schemaResourceAPIGWListKV(),
@@ -346,7 +346,7 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 					},
 					"append": schema.SingleNestedAttribute{
 						Optional:    true,
-						Description: "Append values to existing keys in response.",
+						Description: "Append values to existing keys in response",
 						Attributes: map[string]schema.Attribute{
 							"if_status_code": schemaResourceAPIGWIfStatusCode(),
 							"headers":        schemaResourceAPIGWListKV(),
