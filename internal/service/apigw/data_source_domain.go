@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-
 	v1 "github.com/sacloud/apigw-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )

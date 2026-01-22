@@ -10,12 +10,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-
-	"github.com/hashicorp/terraform-plugin-framework/path"
-
 	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/apigw-api-go"
 	v1 "github.com/sacloud/apigw-api-go/apis/v1"
