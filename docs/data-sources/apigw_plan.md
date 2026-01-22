@@ -28,14 +28,14 @@ data "sakura_apigw_plan" "foobar" {
 
 ### Read-Only
 
-- `created_at` (String) The creation timestamp of the API Gateway Plan.
+- `created_at` (String) The creation timestamp of the API Gateway Plan
 - `description` (String) The description of the plan
 - `max_requests` (Number) The maximum number of requests
 - `max_requests_unit` (String) The unit for max requests
 - `max_services` (Number) The maximum number of services
 - `overage` (Attributes) Overage information (see [below for nested schema](#nestedatt--overage))
 - `price` (String) The price of the plan
-- `updated_at` (String) The last update timestamp of the API Gateway Plan.
+- `updated_at` (String) The last update timestamp of the API Gateway Plan
 
 <a id="nestedatt--overage"></a>
 ### Nested Schema for `overage`

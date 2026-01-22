@@ -29,12 +29,12 @@ data "sakura_apigw_user" "foobar" {
 ### Read-Only
 
 - `authentication` (Attributes) Authentication information of the API Gateway User (see [below for nested schema](#nestedatt--authentication))
-- `created_at` (String) The creation timestamp of the API Gateway User.
+- `created_at` (String) The creation timestamp of the API Gateway User
 - `custom_id` (String) The custom ID of the API Gateway User
 - `groups` (Attributes List) Groups associated with the user (see [below for nested schema](#nestedatt--groups))
 - `ip_restriction` (Attributes) IP restriction configuration for the user (see [below for nested schema](#nestedatt--ip_restriction))
 - `tags` (Set of String) The tags of the API Gateway User.
-- `updated_at` (String) The last update timestamp of the API Gateway User.
+- `updated_at` (String) The last update timestamp of the API Gateway User
 
 <a id="nestedatt--authentication"></a>
 ### Nested Schema for `authentication`
@@ -88,6 +88,6 @@ Read-Only:
 
 Read-Only:
 
-- `ips` (Set of String) The IPv4 addresses to be restricted.
-- `protocols` (String) The protocols to restrict by.
-- `restricted_by` (String) The category to restrict by.
+- `ips` (Set of String) The IPv4 addresses to be restricted
+- `protocols` (String) The protocols to restrict by
+- `restricted_by` (String) The category to restrict by

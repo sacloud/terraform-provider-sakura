@@ -33,19 +33,19 @@ resource "sakura_apigw_cert" "foobar" {
 
 ### Required
 
-- `name` (String) The name of the API Gateway Certificate.
-- `rsa` (Attributes) API Gateway Certificate(RSA) (see [below for nested schema](#nestedatt--rsa))
+- `name` (String) The name of the API Gateway Certificate
+- `rsa` (Attributes) RSA setting for API Gateway Certificate (see [below for nested schema](#nestedatt--rsa))
 
 ### Optional
 
-- `ecdsa` (Attributes) API Gateway Certificate(ECDSA) (see [below for nested schema](#nestedatt--ecdsa))
+- `ecdsa` (Attributes) ECDSA setting for API Gateway Certificate (see [below for nested schema](#nestedatt--ecdsa))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `created_at` (String) The creation timestamp of the API Gateway Certificate.
+- `created_at` (String) The creation timestamp of the API Gateway Certificate
 - `id` (String) The ID of the API Gateway Certificate.
-- `updated_at` (String) The last update timestamp of the API Gateway Certificate.
+- `updated_at` (String) The last update timestamp of the API Gateway Certificate
 
 <a id="nestedatt--rsa"></a>
 ### Nested Schema for `rsa`
@@ -57,7 +57,7 @@ Required:
 
 Optional:
 
-- `cert_wo_version` (Number) The version of the certificate. This value must be greater than 0 when set. Increment this when changing certificate.
+- `cert_wo_version` (Number) The version of the certificate. This value must be greater than 0 when set. Increment this when changing certificate
 
 Read-Only:
 
@@ -74,7 +74,7 @@ Required:
 
 Optional:
 
-- `cert_wo_version` (Number) The version of the certificate. This value must be greater than 0 when set. Increment this when changing certificate.
+- `cert_wo_version` (Number) The version of the certificate. This value must be greater than 0 when set. Increment this when changing certificate
 
 Read-Only:
 

@@ -28,10 +28,10 @@ data "sakura_apigw_cert" "foobar" {
 
 ### Read-Only
 
-- `created_at` (String) The creation timestamp of the API Gateway Certificate.
-- `ecdsa` (Attributes) API Gateway Certificate(ECDSA) (see [below for nested schema](#nestedatt--ecdsa))
-- `rsa` (Attributes) API Gateway Certificate(RSA) (see [below for nested schema](#nestedatt--rsa))
-- `updated_at` (String) The last update timestamp of the API Gateway Certificate.
+- `created_at` (String) The creation timestamp of the API Gateway Certificate
+- `ecdsa` (Attributes) ECDSA settings of the API Gateway Certificate (see [below for nested schema](#nestedatt--ecdsa))
+- `rsa` (Attributes) RSA settings of the API Gateway Certificate (see [below for nested schema](#nestedatt--rsa))
+- `updated_at` (String) The last update timestamp of the API Gateway Certificate
 
 <a id="nestedatt--ecdsa"></a>
 ### Nested Schema for `ecdsa`

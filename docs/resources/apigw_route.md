@@ -88,7 +88,7 @@ resource "sakura_apigw_route" "foobar" {
 ### Required
 
 - `name` (String) The name of the API Gateway Route.
-- `protocols` (String) The protocols to restrict.
+- `protocols` (String) The protocols supported by the Route
 - `service_id` (String) The Service ID associated with the API Gateway Route
 
 ### Optional
@@ -98,23 +98,23 @@ resource "sakura_apigw_route" "foobar" {
 - `https_redirect_status_code` (Number) The HTTPS redirect status code
 - `ip_restriction` (Attributes) IP restriction configuration for the user (see [below for nested schema](#nestedatt--ip_restriction))
 - `methods` (Set of String) HTTP methods to access the Route
-- `path` (String) The path to access the Route. '/' or '~' prefix is required.
+- `path` (String) The path to access the Route. '/' or '~' prefix is required
 - `preserve_host` (Boolean) Whether to preserve the original Host header
 - `regex_priority` (Number) The regex priority
 - `request_buffering` (Boolean) Whether to enable request buffering
-- `request_transformation` (Attributes) Request transform configuration (headers, query params, body transformations). (see [below for nested schema](#nestedatt--request_transformation))
+- `request_transformation` (Attributes) Request transform configuration (headers, query params, body transformations) (see [below for nested schema](#nestedatt--request_transformation))
 - `response_buffering` (Boolean) Whether to enable response buffering
-- `response_transformation` (Attributes) Response transform configuration (conditionals by status code, header/json/body transformations). (see [below for nested schema](#nestedatt--response_transformation))
+- `response_transformation` (Attributes) Response transform configuration (conditionals by status code, header/json/body transformations) (see [below for nested schema](#nestedatt--response_transformation))
 - `strip_path` (Boolean) Whether to strip the matching route path from the upstream request URL
 - `tags` (Set of String) The tags of the API Gateway Route.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
-- `created_at` (String) The creation timestamp of the API Gateway Route.
+- `created_at` (String) The creation timestamp of the API Gateway Route
 - `host` (String) The auto-issued host when hosts is not specified
 - `id` (String) The ID of the API Gateway Route.
-- `updated_at` (String) The last update timestamp of the API Gateway Route.
+- `updated_at` (String) The last update timestamp of the API Gateway Route
 
 <a id="nestedatt--groups"></a>
 ### Nested Schema for `groups`
@@ -137,9 +137,9 @@ Read-Only:
 
 Required:
 
-- `ips` (Set of String) The IPv4 addresses to be restricted.
-- `protocols` (String) The protocols to restrict.
-- `restricted_by` (String) The category to restrict by.
+- `ips` (Set of String) The IPv4 addresses to be restricted
+- `protocols` (String) The protocols to restrict
+- `restricted_by` (String) The category to restrict by
 
 
 <a id="nestedatt--request_transformation"></a>
@@ -147,16 +147,16 @@ Required:
 
 Required:
 
-- `http_method` (String) HTTP method (e.g. GET).
+- `http_method` (String) HTTP method (e.g. GET)
 
 Optional:
 
-- `add` (Attributes) Add key/value pairs to request. (see [below for nested schema](#nestedatt--request_transformation--add))
-- `allow` (Attributes) Allow list. (see [below for nested schema](#nestedatt--request_transformation--allow))
-- `append` (Attributes) Append values to existing keys. (see [below for nested schema](#nestedatt--request_transformation--append))
-- `remove` (Attributes) Fields to remove from the request. (see [below for nested schema](#nestedatt--request_transformation--remove))
-- `rename` (Attributes) Rename request fields (from -> to). (see [below for nested schema](#nestedatt--request_transformation--rename))
-- `replace` (Attributes) Replace values for keys. (see [below for nested schema](#nestedatt--request_transformation--replace))
+- `add` (Attributes) Add key/value pairs to request (see [below for nested schema](#nestedatt--request_transformation--add))
+- `allow` (Attributes) Allow list (see [below for nested schema](#nestedatt--request_transformation--allow))
+- `append` (Attributes) Append values to existing keys (see [below for nested schema](#nestedatt--request_transformation--append))
+- `remove` (Attributes) Fields to remove from the request (see [below for nested schema](#nestedatt--request_transformation--remove))
+- `rename` (Attributes) Rename request fields (from -> to) (see [below for nested schema](#nestedatt--request_transformation--rename))
+- `replace` (Attributes) Replace values for keys (see [below for nested schema](#nestedatt--request_transformation--replace))
 
 <a id="nestedatt--request_transformation--add"></a>
 ### Nested Schema for `request_transformation.add`
@@ -172,8 +172,8 @@ Optional:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 <a id="nestedatt--request_transformation--add--headers"></a>
@@ -181,8 +181,8 @@ Required:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 <a id="nestedatt--request_transformation--add--query_params"></a>
@@ -190,8 +190,8 @@ Required:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 
@@ -200,7 +200,7 @@ Required:
 
 Optional:
 
-- `body` (Set of String) List of body fields to allow.
+- `body` (Set of String) List of body fields to allow
 
 
 <a id="nestedatt--request_transformation--append"></a>
@@ -217,8 +217,8 @@ Optional:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 <a id="nestedatt--request_transformation--append--headers"></a>
@@ -226,8 +226,8 @@ Required:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 <a id="nestedatt--request_transformation--append--query_params"></a>
@@ -235,8 +235,8 @@ Required:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 
@@ -245,9 +245,9 @@ Required:
 
 Optional:
 
-- `body` (Set of String) Body fields to remove.
-- `header_keys` (Set of String) Header keys to remove.
-- `query_params` (Set of String) Query parameter names to remove.
+- `body` (Set of String) Body fields to remove
+- `header_keys` (Set of String) Header keys to remove
+- `query_params` (Set of String) Query parameter names to remove
 
 
 <a id="nestedatt--request_transformation--rename"></a>
@@ -264,8 +264,8 @@ Optional:
 
 Required:
 
-- `from` (String) Source name to rename from.
-- `to` (String) Destination name to rename to.
+- `from` (String) Source name to rename from
+- `to` (String) Destination name to rename to
 
 
 <a id="nestedatt--request_transformation--rename--headers"></a>
@@ -273,8 +273,8 @@ Required:
 
 Required:
 
-- `from` (String) Source name to rename from.
-- `to` (String) Destination name to rename to.
+- `from` (String) Source name to rename from
+- `to` (String) Destination name to rename to
 
 
 <a id="nestedatt--request_transformation--rename--query_params"></a>
@@ -282,8 +282,8 @@ Required:
 
 Required:
 
-- `from` (String) Source name to rename from.
-- `to` (String) Destination name to rename to.
+- `from` (String) Source name to rename from
+- `to` (String) Destination name to rename to
 
 
 
@@ -301,8 +301,8 @@ Optional:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 <a id="nestedatt--request_transformation--replace--headers"></a>
@@ -310,8 +310,8 @@ Required:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 <a id="nestedatt--request_transformation--replace--query_params"></a>
@@ -319,8 +319,8 @@ Required:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 
@@ -330,12 +330,12 @@ Required:
 
 Optional:
 
-- `add` (Attributes) Add key/value pairs to response. (see [below for nested schema](#nestedatt--response_transformation--add))
-- `allow` (Attributes) Allow list. (see [below for nested schema](#nestedatt--response_transformation--allow))
-- `append` (Attributes) Append values to existing keys in response. (see [below for nested schema](#nestedatt--response_transformation--append))
-- `remove` (Attributes) Fields to remove from the response. (see [below for nested schema](#nestedatt--response_transformation--remove))
-- `rename` (Attributes) Rename response fields (from -> to). (see [below for nested schema](#nestedatt--response_transformation--rename))
-- `replace` (Attributes) Replace values for keys or body. (see [below for nested schema](#nestedatt--response_transformation--replace))
+- `add` (Attributes) Add key/value pairs to response (see [below for nested schema](#nestedatt--response_transformation--add))
+- `allow` (Attributes) Allow list (see [below for nested schema](#nestedatt--response_transformation--allow))
+- `append` (Attributes) Append values to existing keys in response (see [below for nested schema](#nestedatt--response_transformation--append))
+- `remove` (Attributes) Fields to remove from the response (see [below for nested schema](#nestedatt--response_transformation--remove))
+- `rename` (Attributes) Rename response fields (from -> to) (see [below for nested schema](#nestedatt--response_transformation--rename))
+- `replace` (Attributes) Replace values for keys or body (see [below for nested schema](#nestedatt--response_transformation--replace))
 
 <a id="nestedatt--response_transformation--add"></a>
 ### Nested Schema for `response_transformation.add`
@@ -343,7 +343,7 @@ Optional:
 Optional:
 
 - `headers` (Attributes List) (see [below for nested schema](#nestedatt--response_transformation--add--headers))
-- `if_status_code` (Set of Number) Apply only for these HTTP status codes.
+- `if_status_code` (Set of Number) Apply only for these HTTP status codes
 - `json` (Attributes List) (see [below for nested schema](#nestedatt--response_transformation--add--json))
 
 <a id="nestedatt--response_transformation--add--headers"></a>
@@ -351,8 +351,8 @@ Optional:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 <a id="nestedatt--response_transformation--add--json"></a>
@@ -360,8 +360,8 @@ Required:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 
@@ -370,7 +370,7 @@ Required:
 
 Optional:
 
-- `json_keys` (Set of String) List of JSON keys to allow.
+- `json_keys` (Set of String) List of JSON keys to allow
 
 
 <a id="nestedatt--response_transformation--append"></a>
@@ -379,7 +379,7 @@ Optional:
 Optional:
 
 - `headers` (Attributes List) (see [below for nested schema](#nestedatt--response_transformation--append--headers))
-- `if_status_code` (Set of Number) Apply only for these HTTP status codes.
+- `if_status_code` (Set of Number) Apply only for these HTTP status codes
 - `json` (Attributes List) (see [below for nested schema](#nestedatt--response_transformation--append--json))
 
 <a id="nestedatt--response_transformation--append--headers"></a>
@@ -387,8 +387,8 @@ Optional:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 <a id="nestedatt--response_transformation--append--json"></a>
@@ -396,8 +396,8 @@ Required:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 
@@ -406,9 +406,9 @@ Required:
 
 Optional:
 
-- `header_keys` (Set of String) Header keys to remove.
-- `if_status_code` (Set of Number) Apply only for these HTTP status codes.
-- `json_keys` (Set of String) JSON keys to remove from the response body.
+- `header_keys` (Set of String) Header keys to remove
+- `if_status_code` (Set of Number) Apply only for these HTTP status codes
+- `json_keys` (Set of String) JSON keys to remove from the response body
 
 
 <a id="nestedatt--response_transformation--rename"></a>
@@ -417,15 +417,15 @@ Optional:
 Optional:
 
 - `headers` (Attributes List) (see [below for nested schema](#nestedatt--response_transformation--rename--headers))
-- `if_status_code` (Set of Number) Apply only for these HTTP status codes.
+- `if_status_code` (Set of Number) Apply only for these HTTP status codes
 
 <a id="nestedatt--response_transformation--rename--headers"></a>
 ### Nested Schema for `response_transformation.rename.headers`
 
 Required:
 
-- `from` (String) Source name to rename from.
-- `to` (String) Destination name to rename to.
+- `from` (String) Source name to rename from
+- `to` (String) Destination name to rename to
 
 
 
@@ -434,9 +434,9 @@ Required:
 
 Optional:
 
-- `body` (String) Replace whole response body with this string.
+- `body` (String) Replace whole response body with this string
 - `headers` (Attributes List) (see [below for nested schema](#nestedatt--response_transformation--replace--headers))
-- `if_status_code` (Set of Number) Apply only for these HTTP status codes.
+- `if_status_code` (Set of Number) Apply only for these HTTP status codes
 - `json` (Attributes List) (see [below for nested schema](#nestedatt--response_transformation--replace--json))
 
 <a id="nestedatt--response_transformation--replace--headers"></a>
@@ -444,8 +444,8 @@ Optional:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 <a id="nestedatt--response_transformation--replace--json"></a>
@@ -453,8 +453,8 @@ Required:
 
 Required:
 
-- `key` (String) The target key.
-- `value` (String) The value for the key.
+- `key` (String) The target key
+- `value` (String) The value for the key
 
 
 

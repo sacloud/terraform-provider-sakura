@@ -24,7 +24,7 @@ resource "sakura_apigw_group" "foobar" {
 
 ### Required
 
-- `name` (String) The name of the API Gateway Group.
+- `name` (String) The name of the API Gateway Group
 
 ### Optional
 
@@ -33,9 +33,9 @@ resource "sakura_apigw_group" "foobar" {
 
 ### Read-Only
 
-- `created_at` (String) The creation timestamp of the API Gateway Group.
+- `created_at` (String) The creation timestamp of the API Gateway Group
 - `id` (String) The ID of the API Gateway Group.
-- `updated_at` (String) The last update timestamp of the API Gateway Group.
+- `updated_at` (String) The last update timestamp of the API Gateway Group
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

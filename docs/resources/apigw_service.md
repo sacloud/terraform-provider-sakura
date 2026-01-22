@@ -50,30 +50,30 @@ resource "sakura_apigw_service" "foobar" {
 
 - `host` (String) The host name of the backend.
 - `name` (String) The name of the API Gateway Service.
-- `protocol` (String) The protocol used by the backend (http or https).
+- `protocol` (String) The protocol used by the backend (http or https)
 - `subscription_id` (String) The subscription plan ID associated with the service
 
 ### Optional
 
-- `authentication` (String) Authentication method for the backend. This can be one of ``none``/``basic``/``hmac``/``jwt``/``oidc``.
-- `connect_timeout` (Number) Connect timeout in milliseconds.
+- `authentication` (String) Authentication method for the backend. This can be one of `none`/`basic`/`hmac`/`jwt`/`oidc`.
+- `connect_timeout` (Number) Connect timeout in milliseconds for the backend
 - `cors_config` (Attributes) CORS configuration for the service (see [below for nested schema](#nestedatt--cors_config))
 - `object_storage_config` (Attributes) Object Storage configuration used by the service (see [below for nested schema](#nestedatt--object_storage_config))
 - `oidc` (Attributes) OIDC authentication configuration (see [below for nested schema](#nestedatt--oidc))
-- `path` (String) The base path for the backend.
-- `port` (Number) The port of the backend.
-- `read_timeout` (Number) Read timeout in milliseconds.
-- `retries` (Number) The number of retries for backend requests.
+- `path` (String) The base path for the backend
+- `port` (Number) The port of the backend
+- `read_timeout` (Number) Read timeout in milliseconds for the backend
+- `retries` (Number) The number of retries for backend requests
 - `tags` (Set of String) The tags of the API Gateway Service.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `write_timeout` (Number) Write timeout in milliseconds.
+- `write_timeout` (Number) Write timeout in milliseconds for the backend
 
 ### Read-Only
 
-- `created_at` (String) The creation timestamp of the API Gateway Service.
+- `created_at` (String) The creation timestamp of the API Gateway Service
 - `id` (String) The ID of the API Gateway Service.
-- `route_host` (String) The route host for the service.
-- `updated_at` (String) The last update timestamp of the API Gateway Service.
+- `route_host` (String) The route host for the service
+- `updated_at` (String) The last update timestamp of the API Gateway Service
 
 <a id="nestedatt--cors_config"></a>
 ### Nested Schema for `cors_config`
@@ -95,16 +95,16 @@ Optional:
 
 Required:
 
-- `access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Access key for object storage.
-- `bucket` (String) The bucket name.
-- `endpoint` (String) The object storage endpoint.
-- `region` (String) The object storage region.
-- `secret_access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Secret access key for object storage.
+- `access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Access key for object storage
+- `bucket` (String) The bucket name
+- `endpoint` (String) The object storage endpoint
+- `region` (String) The object storage region
+- `secret_access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Secret access key for object storage
 
 Optional:
 
-- `credentials_wo_version` (Number) The version of the credentials. This value must be greater than 0 when set. Increment this when changing credentials.
-- `folder` (String) The folder name within the bucket.
+- `credentials_wo_version` (Number) The version of the credentials. This value must be greater than 0 when set. Increment this when changing credentials
+- `folder` (String) The folder name within the bucket
 - `use_document_index` (Boolean) Whether to use document index for object storage
 
 
@@ -113,11 +113,11 @@ Optional:
 
 Required:
 
-- `id` (String) The entity ID of OIDC authentication.
+- `id` (String) The entity ID of OIDC authentication
 
 Read-Only:
 
-- `name` (String) The name of the OIDC authentication.
+- `name` (String) The name of the OIDC authentication
 
 
 <a id="nestedatt--timeouts"></a>

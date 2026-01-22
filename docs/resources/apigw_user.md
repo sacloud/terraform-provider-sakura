@@ -58,9 +58,9 @@ resource "sakura_apigw_user" "foobar" {
 
 ### Read-Only
 
-- `created_at` (String) The creation timestamp of the API Gateway User.
+- `created_at` (String) The creation timestamp of the API Gateway User
 - `id` (String) The ID of the API Gateway User.
-- `updated_at` (String) The last update timestamp of the API Gateway User.
+- `updated_at` (String) The last update timestamp of the API Gateway User
 
 <a id="nestedatt--authentication"></a>
 ### Nested Schema for `authentication`
@@ -77,7 +77,7 @@ Optional:
 Required:
 
 - `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The basic auth password
-- `password_wo_version` (Number) The version of the password_wo. This value must be greater than 0 when set. Increment this when changing password.
+- `password_wo_version` (Number) The version of the password_wo. This value must be greater than 0 when set. Increment this when changing password
 - `username` (String) The basic auth username
 
 
@@ -87,7 +87,7 @@ Required:
 Required:
 
 - `secret_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The HMAC auth secret
-- `secret_wo_version` (Number) The version of the secret_wo. This value must be greater than 0 when set. Increment this when changing secret.
+- `secret_wo_version` (Number) The version of the secret_wo. This value must be greater than 0 when set. Increment this when changing secret
 - `username` (String) The HMAC auth username
 
 
@@ -99,7 +99,7 @@ Required:
 - `algorithm` (String) The JWT algorithm
 - `key` (String) The JWT key
 - `secret_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The JWT secret
-- `secret_wo_version` (Number) The version of the secret_wo. This value must be greater than 0 when set. Increment this when changing secret.
+- `secret_wo_version` (Number) The version of the secret_wo. This value must be greater than 0 when set. Increment this when changing secret
 
 
 
@@ -117,9 +117,9 @@ Optional:
 
 Required:
 
-- `ips` (Set of String) The IPv4 addresses to be restricted.
-- `protocols` (String) The protocols to restrict.
-- `restricted_by` (String) The category to restrict by.
+- `ips` (Set of String) The IPv4 addresses to be restricted
+- `protocols` (String) The protocols to restrict
+- `restricted_by` (String) The category to restrict by
 
 
 <a id="nestedatt--timeouts"></a>

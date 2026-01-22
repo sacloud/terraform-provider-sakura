@@ -30,5 +30,5 @@ data "sakura_apigw_domain" "foobar" {
 
 - `certificate_id` (String) ID of the API Gateway Certificate
 - `certificate_name` (String) Name of the API Gateway Certificate
-- `created_at` (String) The creation timestamp of the API Gateway Domain.
-- `updated_at` (String) The last update timestamp of the API Gateway Domain.
+- `created_at` (String) The creation timestamp of the API Gateway Domain
+- `updated_at` (String) The last update timestamp of the API Gateway Domain

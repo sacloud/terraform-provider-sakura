@@ -38,9 +38,9 @@ resource "sakura_apigw_domain" "foobar" {
 ### Read-Only
 
 - `certificate_name` (String) Name of the API Gateway Certificate
-- `created_at` (String) The creation timestamp of the API Gateway Domain.
+- `created_at` (String) The creation timestamp of the API Gateway Domain
 - `id` (String) The ID of the API Gateway Domain.
-- `updated_at` (String) The last update timestamp of the API Gateway Domain.
+- `updated_at` (String) The last update timestamp of the API Gateway Domain
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

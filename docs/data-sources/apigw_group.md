@@ -28,6 +28,6 @@ data "sakura_apigw_group" "foobar" {
 
 ### Read-Only
 
-- `created_at` (String) Creation timestamp
+- `created_at` (String) The creation timestamp of the API Gateway Group
 - `tags` (Set of String) The tags of the API Gateway Group.
-- `updated_at` (String) Last update timestamp
+- `updated_at` (String) The last update timestamp of the API Gateway Group

@@ -28,7 +28,7 @@ resource "sakura_apigw_subscription" "foobar" {
 
 ### Required
 
-- `name` (String) The name of the API Gateway Subscription.
+- `name` (String) The name of the API Gateway Subscription
 - `plan_id` (String) Plan ID of the API Gateway Subscription
 
 ### Optional
@@ -37,12 +37,12 @@ resource "sakura_apigw_subscription" "foobar" {
 
 ### Read-Only
 
-- `created_at` (String) The creation timestamp of the API Gateway Subscription.
+- `created_at` (String) The creation timestamp of the API Gateway Subscription
 - `id` (String) The ID of the API Gateway Subscription.
 - `monthly_request` (Number) Monthly request count of the API Gateway Subscription
 - `resource_id` (Number) Resource ID of the API Gateway Subscription
 - `service` (Attributes) Service information of the API Gateway Subscription (see [below for nested schema](#nestedatt--service))
-- `updated_at` (String) The last update timestamp of the API Gateway Subscription.
+- `updated_at` (String) The last update timestamp of the API Gateway Subscription
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

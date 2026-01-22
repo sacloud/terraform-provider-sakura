@@ -12,14 +12,14 @@ import (
 func schemaDataSourceAPIGWCreatedAt(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Computed:    true,
-		Description: desc.Sprintf("The creation timestamp of the %s.", name),
+		Description: desc.Sprintf("The creation timestamp of the %s", name),
 	}
 }
 
 func schemaDataSourceAPIGWUpdatedAt(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Computed:    true,
-		Description: desc.Sprintf("The last update timestamp of the %s.", name),
+		Description: desc.Sprintf("The last update timestamp of the %s", name),
 	}
 }
 
@@ -30,11 +30,11 @@ func schemaDataSourceAPIGWListFromTo() schema.Attribute {
 			Attributes: map[string]schema.Attribute{
 				"from": schema.StringAttribute{
 					Computed:    true,
-					Description: "Source name to rename from.",
+					Description: "Source name to rename from",
 				},
 				"to": schema.StringAttribute{
 					Computed:    true,
-					Description: "Destination name to rename to.",
+					Description: "Destination name to rename to",
 				},
 			},
 		},
@@ -48,11 +48,11 @@ func schemaDataSourceAPIGWListKV() schema.Attribute {
 			Attributes: map[string]schema.Attribute{
 				"key": schema.StringAttribute{
 					Computed:    true,
-					Description: "The target key.",
+					Description: "The target key",
 				},
 				"value": schema.StringAttribute{
 					Computed:    true,
-					Description: "The value for the key.",
+					Description: "The value for the key",
 				},
 			},
 		},
@@ -63,6 +63,6 @@ func schemaDataSourceAPIGWIfStatusCode() schema.Attribute {
 	return schema.SetAttribute{
 		ElementType: types.Int32Type,
 		Computed:    true,
-		Description: "Apply only for these HTTP status codes.",
+		Description: "Apply only for these HTTP status codes",
 	}
 }
