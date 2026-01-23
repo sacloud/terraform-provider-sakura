@@ -1,5 +1,10 @@
 # Changelog
 
+## [v3.2.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.1.2...v3.2.0) - 2026-01-23
+- Add apigw by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/92
+- Add dsr_lb resources by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/93
+- go: bump github.com/sacloud/kms-api-go from 0.3.0 to 0.3.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/74
+
 ## [v3.1.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.1.1...v3.1.2) - 2026-01-16
 - provider: propagate extra settings to `theCLient` by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/83
 - Run DedicatedStorage acceptance tests only when SAKURA_ENABLE_DEDICATED_STORAGE is set by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/84
