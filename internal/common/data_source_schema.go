@@ -100,6 +100,14 @@ func SchemaDataSourceIPAddress(name string) schema.Attribute {
 	}
 }
 
+func SchemaDataSourceIPAddresses(name string) schema.Attribute {
+	return schema.ListAttribute{
+		ElementType: types.StringType,
+		Computed:    true,
+		Description: desc.Sprintf("The IP addresses assigned to the %s", name),
+	}
+}
+
 func SchemaDataSourceNetMask(name string) schema.Attribute {
 	return schema.Int32Attribute{
 		Computed:    true,

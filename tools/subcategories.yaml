@@ -23,6 +23,7 @@ Networking:
   - bridge
   - dns
   - dns_record
+  - dsr_lb
   - enhanced_lb
   - enhanced_lb_acme
   - gslb

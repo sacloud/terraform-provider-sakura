@@ -73,7 +73,21 @@ func SchemaResourceServerID(name string) schema.Attribute {
 	}
 }
 
+// Deprecated: Use vswitch for vswitch case
 func SchemaResourceSwitchID(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Required:    true,
+		Description: desc.Sprintf("The id of the vSwitch to which the %s connects", name),
+		Validators: []validator.String{
+			sacloudvalidator.SakuraIDValidator(),
+		},
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.RequiresReplace(),
+		},
+	}
+}
+
+func SchemaResourceVSwitchID(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Required:    true,
 		Description: desc.Sprintf("The id of the vSwitch to which the %s connects", name),

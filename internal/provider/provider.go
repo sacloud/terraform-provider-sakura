@@ -28,6 +28,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dedicated_storage"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/disk"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/dns"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/dsr_lb"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/enhanced_lb"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/eventbus"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/gslb"
@@ -239,6 +240,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		dedicated_storage.NewDedicatedStorageDataSource,
 		disk.NewDiskDataSource,
 		dns.NewDNSDataSource,
+		dsr_lb.NewDSRLBDataSource,
 		enhanced_lb.NewEnhancedLBDataSource,
 		eventbus.NewEventBusProcessConfigurationDataSource,
 		eventbus.NewEventBusScheduleDataSource,
@@ -295,6 +297,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		disk.NewDiskResource,
 		dns.NewDNSResource,
 		dns.NewDNSRecordResource,
+		dsr_lb.NewDSRLBResource,
 		enhanced_lb.NewEnhancedLBResource,
 		enhanced_lb.NewEnhancedLBACMEResource,
 		eventbus.NewEventBusProcessConfigurationResource,

@@ -25,7 +25,6 @@ v2からまだ移植できていないリソースのリストになります。
 - enhanced_db
 - esme
 - ipv4_ptr
-- load_balancer
 - mobile_gateway
 - sim
 - webaccel
