@@ -34,6 +34,8 @@ import (
 	"github.com/sacloud/saclient-go"
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
+	seccon "github.com/sacloud/security-control-api-go"
+	secconapi "github.com/sacloud/security-control-api-go/apis/v1"
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
@@ -99,6 +101,7 @@ type APIClient struct {
 	NosqlClient                      *nosqlapi.Client
 	DedicatedStorageClient           *dedicatedstorageapi.Client
 	ApigwClient                      *apigwapi.Client
+	SecurityControlClient            *secconapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -320,6 +323,10 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 	if err != nil {
 		return nil, err
 	}
+	secconClient, err := seccon.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -339,6 +346,7 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 		NosqlClient:                      nosqlClient,
 		DedicatedStorageClient:           dedicatedStorageClient,
 		ApigwClient:                      apigwClient,
+		SecurityControlClient:            secconClient,
 	}, nil
 }
 

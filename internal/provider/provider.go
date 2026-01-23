@@ -43,6 +43,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/private_host"
 	secret_manager "github.com/sacloud/terraform-provider-sakura/internal/service/s3cret_manager"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/script"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/security_control"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/server"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_monitor"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_mq"
@@ -260,6 +261,9 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		script.NewScriptDataSource,
 		secret_manager.NewSecretManagerDataSource,
 		secret_manager.NewSecretManagerSecretDataSource,
+		security_control.NewActivationDataSource,
+		security_control.NewAutomatedActionDataSource,
+		security_control.NewEvaluationRuleDataSource,
 		server.NewServerDataSource,
 		simple_monitor.NewSimpleMonitorDataSource,
 		simple_mq.NewSimpleMQDataSource,
@@ -322,6 +326,9 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		script.NewScriptResource,
 		secret_manager.NewSecretManagerResource,
 		secret_manager.NewSecretManagerSecretResource,
+		security_control.NewActivationResource,
+		security_control.NewAutomatedActionResource,
+		security_control.NewEvaluationRuleResource,
 		server.NewServerResource,
 		simple_monitor.NewSimpleMonitorResource,
 		simple_mq.NewSimpleMQResource,
