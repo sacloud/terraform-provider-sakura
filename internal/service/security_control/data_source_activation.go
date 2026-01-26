@@ -59,7 +59,7 @@ func (d *activationDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Description: "The number of registerable automated actions",
 			},
 		},
-		MarkdownDescription: "Get information about an existing Security Control Activation.",
+		MarkdownDescription: "Get information about an existing Security Control's Activation.",
 	}
 }
 

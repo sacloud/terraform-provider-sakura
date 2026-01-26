@@ -82,7 +82,7 @@ func (d *evaluationRuleDataSource) Schema(_ context.Context, _ datasource.Schema
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing Security Control Evaluation Rule.",
+		MarkdownDescription: "Get information about an existing Security Control's Evaluation Rule.",
 	}
 }
 

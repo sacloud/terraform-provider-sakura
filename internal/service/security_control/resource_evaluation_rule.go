@@ -63,7 +63,7 @@ func (r *evaluationRuleResource) Schema(ctx context.Context, _ resource.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the Evaluation Rule",
+				Description: "The ID of the Evaluation Rule. The list of available IDs, e.g. server-no-public-ip, can be found in the documentation.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(common.MapTo(v1.EvaluationRuleIDServerNoPublicIP.AllValues(), common.ToString)...),
 				},
@@ -105,7 +105,7 @@ func (r *evaluationRuleResource) Schema(ctx context.Context, _ resource.SchemaRe
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
-				Description: "No action when the resource is deleted.",
+				Description: "No action when the resource is deleted. Keep existing Evaluation Rule as is.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,

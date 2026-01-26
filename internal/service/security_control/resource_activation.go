@@ -83,7 +83,7 @@ func (r *activationResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(true),
-				Description: "No action when the resource is deleted.",
+				Description: "No action when the resource is deleted. Keep existing Activation as is.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
