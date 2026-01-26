@@ -54,7 +54,8 @@ func (r *evaluationRuleResource) Configure(ctx context.Context, req resource.Con
 
 type evaluationRuleResourceModel struct {
 	evaluationRuleBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	NoActionOnDelete types.Bool     `tfsdk:"no_action_on_delete"`
+	Timeouts         timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *evaluationRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -99,6 +100,12 @@ func (r *evaluationRuleResource) Schema(ctx context.Context, _ resource.SchemaRe
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "The set of IAM roles required for the Evaluation Rule",
+			},
+			"no_action_on_delete": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
+				Description: "No action when the resource is deleted.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
@@ -176,6 +183,10 @@ func (r *evaluationRuleResource) Delete(ctx context.Context, req resource.Delete
 	var state evaluationRuleResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if state.NoActionOnDelete.ValueBool() {
 		return
 	}
 

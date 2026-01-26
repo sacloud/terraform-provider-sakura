@@ -37,14 +37,14 @@ func (model *automatedActionBaseModel) updateState(aa *v1.AutomatedActionOutput)
 	model.Name = types.StringValue(aa.Name)
 	model.Description = types.StringValue(aa.Description.Value)
 	model.Enabled = types.BoolValue(aa.IsEnabled)
-	model.ExecutionCondition = types.StringValue(string(aa.ExecutionCondition))
+	model.ExecutionCondition = types.StringValue(aa.ExecutionCondition)
 	model.CreatedAt = types.StringValue(aa.CreatedAt.String())
 	model.Action = flattenAutomatedActionActionModel(&aa.Action.OneOf)
 }
 
 func flattenAutomatedActionActionModel(action *v1.ActionDefinitionSum) *automatedActionActionModel {
 	actionModel := &automatedActionActionModel{
-		Type: types.StringValue(string(action.Type)),
+		Type: flattenActionDefinitionType(action.Type),
 	}
 	switch action.Type {
 	case v1.ActionDefinitionSimpleNotificationActionDefinitionSum:
@@ -78,4 +78,15 @@ func flattenAutomatedActionActionModel(action *v1.ActionDefinitionSum) *automate
 	}
 
 	return actionModel
+}
+
+func flattenActionDefinitionType(actionType v1.ActionDefinitionSumType) types.String {
+	switch actionType {
+	case v1.ActionDefinitionSimpleNotificationActionDefinitionSum:
+		return types.StringValue("simple_notification")
+	case v1.ActionDefinitionWorkflowsActionDefinitionSum:
+		return types.StringValue("workflows")
+	default:
+		panic("unsupported action type")
+	}
 }

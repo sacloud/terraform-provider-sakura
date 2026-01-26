@@ -136,13 +136,6 @@ func (d *automatedActionDataSource) Read(ctx context.Context, req datasource.Rea
 			return
 		}
 	}
-	/*
-		result, err := aaOp.Read(ctx, data.ID.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Security Control's Automated Actions: %s", err))
-			return
-		}
-	*/
 
 	data.updateState(res)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
@@ -163,7 +156,7 @@ func filterAutomatedActionByName(aas []v1.AutomatedActionOutput, name string) (*
 		return nil, fmt.Errorf("no result")
 	}
 	if len(match) > 1 {
-		return nil, fmt.Errorf("multiple NoSQL resources found with the same condition. name=%q", name)
+		return nil, fmt.Errorf("multiple Automated Action resources found with the same condition. name=%q", name)
 	}
 
 	return &match[0], nil

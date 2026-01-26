@@ -10,10 +10,6 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-type evaluationRulesBaseModel struct {
-	Rules []evaluationRuleBaseModel `tfsdk:"rules"`
-}
-
 type evaluationRuleBaseModel struct {
 	ID               types.String                   `tfsdk:"id"`
 	Description      types.String                   `tfsdk:"description"`
@@ -25,16 +21,6 @@ type evaluationRuleBaseModel struct {
 type evaluationRuleParametersModel struct {
 	ServicePrincipalID types.String `tfsdk:"service_principal_id"`
 	Targets            types.List   `tfsdk:"targets"`
-}
-
-func (model *evaluationRulesBaseModel) updateState(erRules []v1.EvaluationRule) {
-	rules := make([]evaluationRuleBaseModel, 0, len(erRules))
-	for _, erRule := range erRules {
-		m := evaluationRuleBaseModel{}
-		flattenEvaluationRule(&m, &erRule)
-		rules = append(rules, m)
-	}
-	model.Rules = rules
 }
 
 func (model *evaluationRuleBaseModel) updateState(erRule *v1.EvaluationRule) {
@@ -49,9 +35,13 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            flattenParameterTargets(r.Parameter),
+		// IsEnabledがfalseの場合レスポンスのParametersはnilになるが、そのまま設定するとParametersを設定しながら一時的にfalseにする等の場合に不整合になるため
+		// Enabledがfalseの場合は設定をそのまま使うようにしている。
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            flattenParameterTargets(r.Parameter),
+			}
 		}
 	case "disk-encryption-enabled":
 		r := rule.Rule.OneOf.DiskEncryptionEnabled
@@ -59,9 +49,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            flattenParameterTargets(r.Parameter),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            flattenParameterTargets(r.Parameter),
+			}
 		}
 	case "dba-encryption-enabled":
 		r := rule.Rule.OneOf.DbaEncryptionEnabled
@@ -69,9 +61,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            flattenParameterTargets(r.Parameter),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            flattenParameterTargets(r.Parameter),
+			}
 		}
 	case "dba-no-public-ip":
 		r := rule.Rule.OneOf.DbaNoPublicIP
@@ -79,9 +73,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            flattenParameterTargets(r.Parameter),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            flattenParameterTargets(r.Parameter),
+			}
 		}
 	case "objectstorage-bucket-acl-changed":
 		r := rule.Rule.OneOf.ObjectStorageBucketACLChanged
@@ -89,9 +85,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            types.ListNull(types.StringType),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            types.ListNull(types.StringType),
+			}
 		}
 	case "addon-datalake-no-public-access":
 		r := rule.Rule.OneOf.AddonDatalakeNoPublicAccess
@@ -99,9 +97,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            types.ListNull(types.StringType),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            types.ListNull(types.StringType),
+			}
 		}
 	case "addon-dwh-no-public-access":
 		r := rule.Rule.OneOf.AddonDwhNoPublicAccess
@@ -109,9 +109,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            types.ListNull(types.StringType),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            types.ListNull(types.StringType),
+			}
 		}
 	case "addon-threat-detection-enabled":
 		r := rule.Rule.OneOf.AddonThreatDetectionEnabled
@@ -119,9 +121,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            flattenParameterTargets(r.Parameter),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            flattenParameterTargets(r.Parameter),
+			}
 		}
 	case "addon-threat-detections":
 		r := rule.Rule.OneOf.AddonThreatDetections
@@ -143,9 +147,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            types.ListNull(types.StringType),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            types.ListNull(types.StringType),
+			}
 		}
 	case "iam-member-operation-detected":
 		r := rule.Rule.OneOf.IAMMemberOperationDetected
@@ -153,9 +159,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            types.ListNull(types.StringType),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            types.ListNull(types.StringType),
+			}
 		}
 	case "nosql-encryption-enabled":
 		r := rule.Rule.OneOf.NoSQLEncryptionEnabled
@@ -163,9 +171,11 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 		model.Description = types.StringValue(rule.Description.Value)
 		model.Enabled = types.BoolValue(rule.IsEnabled)
 		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
-		model.Parameters = &evaluationRuleParametersModel{
-			ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
-			Targets:            flattenParameterTargets(r.Parameter),
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            flattenParameterTargets(r.Parameter),
+			}
 		}
 	default:
 		return

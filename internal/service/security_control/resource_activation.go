@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/saclient-go"
 	seccon "github.com/sacloud/security-control-api-go"
 	v1 "github.com/sacloud/security-control-api-go/apis/v1"
@@ -51,7 +52,8 @@ func (r *activationResource) Configure(ctx context.Context, req resource.Configu
 
 type activationResourceModel struct {
 	activationBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	NoActionOnDelete types.Bool     `tfsdk:"no_action_on_delete"`
+	Timeouts         timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *activationResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -76,6 +78,12 @@ func (r *activationResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"automated_action_limit": schema.Int32Attribute{
 				Computed:    true,
 				Description: "The number of registerable automated actions",
+			},
+			"no_action_on_delete": schema.BoolAttribute{
+				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(true),
+				Description: "No action when the resource is deleted.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
@@ -168,13 +176,17 @@ func (r *activationResource) Delete(ctx context.Context, req resource.DeleteRequ
 		return
 	}
 
+	if state.NoActionOnDelete.ValueBool() {
+		return
+	}
+
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
 	actOp := seccon.NewActivationOp(r.client)
 	_, err := actOp.Update(ctx, state.ServicePrincipalID.ValueString(), false)
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to disable Security Control Activation: %s", err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to disable Security Control Activation: %s", err))
 		return
 	}
 }
