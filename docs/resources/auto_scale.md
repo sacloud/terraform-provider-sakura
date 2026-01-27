@@ -32,7 +32,7 @@ resource "sakura_auto_scale" "foobar" {
   zones = [local.zone]
 
   # 設定ファイル
-  config = jsonencode({
+  config = yamlencode({
     resources : [{
       type : "Server",
       selector : {
