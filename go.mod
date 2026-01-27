@@ -21,8 +21,8 @@ require (
 	github.com/sacloud/dedicated-storage-api-go v0.0.3
 	github.com/sacloud/eventbus-api-go v0.5.2
 	github.com/sacloud/go-http v0.1.9
-	github.com/sacloud/iaas-api-go v1.24.1
-	github.com/sacloud/iaas-service-go v1.21.0
+	github.com/sacloud/iaas-api-go v1.24.2
+	github.com/sacloud/iaas-service-go v1.21.1
 	github.com/sacloud/kms-api-go v0.3.1
 	github.com/sacloud/nosql-api-go v0.2.0
 	github.com/sacloud/object-storage-api-go v0.0.12
