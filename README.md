@@ -19,7 +19,6 @@ v2: https://github.com/sacloud/terraform-provider-sakuracloud
 v2からまだ移植できていないリソースのリストになります。これらを利用したい場合にはv2と併用してください。
 
 - archive_share
-- auto_scale
 - cdrom
 - certificate_authority
 - enhanced_db
