@@ -200,8 +200,8 @@ github.com/sacloud/api-client-go v0.3.4 h1:2j8YAGk68qqS4gp52IDgUyRuYwkPHYY1jWsVE
 github.com/sacloud/api-client-go v0.3.4/go.mod h1:axv150sa/th23rU1/EC5ZjNm2I8WyW7X2mkYNGoQKxs=
 github.com/sacloud/apigw-api-go v0.2.3 h1:rYlVVX3ExuGilWpkh1FL12KLy6gK+xrI5kS/a6Rk21I=
 github.com/sacloud/apigw-api-go v0.2.3/go.mod h1:7Qznf/O/ePACII9vmhc7Q82tbhzg0VAx7KbFYk65uao=
-github.com/sacloud/apprun-api-go v0.5.0 h1:bRznwoDv0rnyfttHULszA0YXAK0TjcfnRvR6HhYoiJg=
-github.com/sacloud/apprun-api-go v0.5.0/go.mod h1:O5w5SsHC12gKOScPdv4XDW0XCnNQuGuIBJLYRgEBdPM=
+github.com/sacloud/apprun-api-go v0.6.0 h1:8/HAu6Vw2a01dCIRkaqrXw/U27wsLy8vekTDfrUN5MM=
+github.com/sacloud/apprun-api-go v0.6.0/go.mod h1:H400OqgfgYclHSO8m5ihPEgUdWnPVinnVlAaMksXS14=
 github.com/sacloud/cloudhsm-api-go v0.2.0 h1:ESBNWN1ZhwXOAwUCdzcnVe8JWXlJOK306MBoNoDs/cA=
 github.com/sacloud/cloudhsm-api-go v0.2.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
 github.com/sacloud/dedicated-storage-api-go v0.0.3 h1:i8P8y6XaZUNqKUd0TBDIqzixBQ9okaa8Ui2K79icTts=
