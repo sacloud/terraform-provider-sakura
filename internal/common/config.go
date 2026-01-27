@@ -296,11 +296,11 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 	if err != nil {
 		return nil, err
 	}
-	smClient, err := sm.NewClient(client.WithOptions(callerOptions))
+	smClient, err := sm.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
-	simplemqClient, err := simplemq.NewQueueClient(client.WithOptions(callerOptions))
+	simplemqClient, err := simplemq.NewQueueClient(theClient)
 	if err != nil {
 		return nil, err
 	}
