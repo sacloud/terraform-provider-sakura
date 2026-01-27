@@ -35,8 +35,7 @@ func TestAccSakuraSecretManager_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
-					// 綺麗に動的にkms_key_idをテストで取得する方法があればコメントアウト
-					// resource.TestCheckResourceAttr(resourceName, "kms_key_id", vault.KmsKeyID),
+					resource.TestCheckResourceAttrPair(resourceName, "kms_key_id", "sakura_kms.foobar", "id"),
 				),
 			},
 			{
@@ -47,7 +46,7 @@ func TestAccSakuraSecretManager_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1-upd"),
-					// resource.TestCheckResourceAttr(resourceName, "kms_key_id", vault.KmsKeyID),
+					resource.TestCheckResourceAttrPair(resourceName, "kms_key_id", "sakura_kms.foobar", "id"),
 				),
 			},
 		},

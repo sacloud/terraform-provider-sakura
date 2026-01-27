@@ -1,5 +1,15 @@
 # Changelog
 
+## [v3.2.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.2.0...v3.2.1) - 2026-01-27
+- go: bump github.com/sacloud/saclient-go from 0.2.5 to 0.2.7 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/99
+- ci: bump Songmu/tagpr from 1.10.0 to 1.11.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/94
+- go: bump github.com/sacloud/apprun-api-go from 0.5.0 to 0.6.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/72
+- go: bump github.com/minio/minio-go/v7 from 7.0.97 to 7.0.98 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/86
+- go: bump github.com/sacloud/iaas-service-go from 1.21.0 to 1.21.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/88
+- ci: bump actions/checkout from 6.0.1 to 6.0.2 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/97
+- ci: bump actions/setup-go from 6.1.0 to 6.2.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/95
+- Update code by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/103
+
 ## [v3.2.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.1.2...v3.2.0) - 2026-01-23
 - Add apigw by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/92
 - Add dsr_lb resources by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/93
