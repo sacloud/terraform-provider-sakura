@@ -21,6 +21,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_shared"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/auto_backup"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/auto_scale"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/bridge"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/cloudhsm"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
@@ -230,6 +231,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		apigw.NewApigwSubscriptionDataSource,
 		apigw.NewApigwUserDataSource,
 		archive.NewArchiveDataSource,
+		auto_scale.NewAutoScaleDataSource,
 		bridge.NewBridgeDataSource,
 		cloudhsm.NewCloudHSMDataSource,
 		cloudhsm.NewCloudHSMClientDataSource,
@@ -285,6 +287,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		apigw.NewApigwUserResource,
 		archive.NewArchiveResource,
 		auto_backup.NewAutoBackupResource,
+		auto_scale.NewAutoScaleResource,
 		bridge.NewBridgeResource,
 		cloudhsm.NewCloudHSMResource,
 		cloudhsm.NewCloudHSMClientResource,

@@ -65,6 +65,7 @@ Container and Image:
   - container_registry
 Misc:
   - auto_backup
+  - auto_scale
   - icon
   - script
   - ssh_key

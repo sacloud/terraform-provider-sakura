@@ -244,13 +244,59 @@ v3.1.0からwrite-only版の`password_wo`/`password_wo_version`が提供され�
 
 `weekdays`フィールドは`days_of_week`に変更されました。
 
+### auto_scale
+
+`disabled`フィールドは逆の真偽値を指定する`enabled`に変更されました。これは他のリソースとパラメータ名を統一するためです。指定していなかった場合の挙動はかわっていません。
+
+`trigger_type`はオプションではなく必須フィールドとなりました。
+
+`router_threshold_scaling` / `cpu_threshold_scaling` / `schedule_scaling`はBlock型からAttribute型に変更されました。下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+cpu_threshold_scaling {
+  // ...
+}
+
+router_threshold_scaling {
+  // ...
+}
+
+schedule_scaling {
+  // ...
+}
+schedule_scaling {
+  // ...
+}
+```
+
+- v3
+
+```hcl
+cpu_threshold_scaling = {
+  // ...
+}
+
+router_threshold_scaling = {
+  // ...
+}
+
+schedule_scaling = [{
+  // ...
+},
+{
+  // ...
+}]
+```
+
 ### container_registry
 
 `user`フィールドがBlockからSet型のAttributeに変更されたため、下記のように書き換える必要があります。
 
 - v2
 
-```
+```hcl
 user {
   name       = "user1"
   password   = "user1_pass"
@@ -265,7 +311,7 @@ user {
 
 - v3
 
-```
+```hcl
 user = [
   {
     name       = "user1"
