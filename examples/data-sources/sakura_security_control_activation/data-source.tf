@@ -1,0 +1,1 @@
+data "sakura_security_control_activation" "foobar" {}
