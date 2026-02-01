@@ -20,6 +20,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
@@ -111,6 +112,9 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 				Description: "The ID of the vSwitch to connect to the NoSQL appliance.",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
 				},
 			},
 			"parameters": schema.MapAttribute{
@@ -252,6 +256,9 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 								Validators: []validator.Int32{
 									int32validator.Between(1024, 65535),
 								},
+								PlanModifiers: []planmodifier.Int32{
+									int32planmodifier.RequiresReplaceIfConfigured(),
+								},
 							},
 							"default_user": schema.StringAttribute{
 								Required:    true,
@@ -259,6 +266,9 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 								Validators: []validator.String{
 									stringvalidator.LengthBetween(4, 20),
 									stringvalidator.RegexMatches(regexp.MustCompile(`^[a-z][a-z0-9_]{3,19}$`), "invalid user name"),
+								},
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.RequiresReplace(),
 								},
 							},
 							"version": schema.StringAttribute{
@@ -268,6 +278,9 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 								Description: "Version of database engine used by NoSQL appliance.",
 								Validators: []validator.String{
 									stringvalidator.RegexMatches(regexp.MustCompile(`^\d+\.\d+\.\d+$`), "invalid database version"),
+								},
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.RequiresReplaceIfConfigured(),
 								},
 							},
 							// これより下のフィールドは現状固定値。将来的には指定できるようになる可能性はある
@@ -329,10 +342,16 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 								Validators: []validator.String{
 									sacloudvalidator.IPAddressValidator(sacloudvalidator.IPv4),
 								},
+								PlanModifiers: []planmodifier.String{
+									stringplanmodifier.RequiresReplace(),
+								},
 							},
 							"netmask": schema.Int32Attribute{
 								Required:    true,
 								Description: "The netmask of the network",
+								PlanModifiers: []planmodifier.Int32{
+									int32planmodifier.RequiresReplaceIfConfigured(),
+								},
 							},
 						},
 					},
