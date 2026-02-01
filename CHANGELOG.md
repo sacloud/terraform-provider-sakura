@@ -1,5 +1,11 @@
 # Changelog
 
+## [v3.3.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.2.1...v3.3.0) - 2026-02-01
+- Add auto_scale by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/101
+- Add security_control resources by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/98
+- go: bump github.com/sacloud/api-client-go from 0.3.4 to 0.3.5 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/106
+- Update NoSQL resource parameters with PlanModifiers by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/107
+
 ## [v3.2.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.2.0...v3.2.1) - 2026-01-27
 - go: bump github.com/sacloud/saclient-go from 0.2.5 to 0.2.7 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/99
 - ci: bump Songmu/tagpr from 1.10.0 to 1.11.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/94
