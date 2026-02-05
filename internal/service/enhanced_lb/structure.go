@@ -174,6 +174,7 @@ func expandEnhancedLBServers(model *enhancedLBResourceModel) []*iaas.ProxyLBServ
 				Port:        int(server.Port.ValueInt32()),
 				Enabled:     server.Enabled.ValueBool(),
 				ServerGroup: server.Group.ValueString(),
+				ProxySSL:    server.TLSEnabled.ValueBool(),
 			})
 		}
 	}

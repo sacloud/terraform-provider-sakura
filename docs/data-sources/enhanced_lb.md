@@ -156,6 +156,7 @@ Read-Only:
 - `group` (String) The name of load balancing group. This is used when using rule-based load balancing
 - `ip_address` (String) The IP address of the destination server
 - `port` (Number) The port number of the destination server
+- `tls_enabled` (Boolean) The flag to enable TLS/SSL for communication with the destination server
 
 
 <a id="nestedatt--sorry_server"></a>
