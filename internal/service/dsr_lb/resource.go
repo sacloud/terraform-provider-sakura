@@ -169,6 +169,20 @@ func (r *dsrLBResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 										Optional:    true,
 										Description: "The response code to expect when checking by HTTP/HTTPS",
 									},
+									"retry": schema.Int32Attribute{
+										Optional:    true,
+										Description: "The retry count for server down detection, available only for TCP/HTTP/HTTPS",
+										Validators: []validator.Int32{
+											int32validator.Between(1, 5),
+										},
+									},
+									"connect_timeout": schema.Int32Attribute{
+										Optional:    true,
+										Description: "The timeout in seconds for health checks, available only for TCP/HTTP/HTTPS",
+										Validators: []validator.Int32{
+											int32validator.Between(1, 30),
+										},
+									},
 									"enabled": schema.BoolAttribute{
 										Optional:    true,
 										Computed:    true,
@@ -414,6 +428,10 @@ func expandLoadBalancerVIPs(model *dsrLBResourceModel) []*iaas.LoadBalancerVirtu
 					Path:         s.Path.ValueString(),
 					ResponseCode: iaastypes.StringNumber(int(s.Status.ValueInt32())),
 				},
+			}
+			if s.Protocol.ValueString() != iaastypes.LoadBalancerHealthCheckProtocols.Ping.String() {
+				server.HealthCheck.Retry = iaastypes.StringNumber(int(s.Retry.ValueInt32()))
+				server.HealthCheck.ConnectTimeout = iaastypes.StringNumber(int(s.ConnectTimeout.ValueInt32()))
 			}
 			servers = append(servers, server)
 		}

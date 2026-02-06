@@ -125,6 +125,8 @@ Required:
 
 Optional:
 
+- `connect_timeout` (Number) The timeout in seconds for health checks, available only for TCP/HTTP/HTTPS
 - `enabled` (Boolean) The flag to enable as destination of load balancing
 - `path` (String) The path used when checking by HTTP/HTTPS
+- `retry` (Number) The retry count for server down detection, available only for TCP/HTTP/HTTPS
 - `status` (Number) The response code to expect when checking by HTTP/HTTPS

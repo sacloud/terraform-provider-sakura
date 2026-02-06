@@ -110,6 +110,14 @@ func (r *dsrLBDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 										Computed:    true,
 										Description: "The response code to expect when checking by HTTP/HTTPS",
 									},
+									"retry": schema.Int32Attribute{
+										Computed:    true,
+										Description: "The retry count for server down detection, available only for TCP/HTTP/HTTPS",
+									},
+									"connect_timeout": schema.Int32Attribute{
+										Computed:    true,
+										Description: "The timeout in seconds for health checks, available only for TCP/HTTP/HTTPS",
+									},
 									"enabled": schema.BoolAttribute{
 										Computed:    true,
 										Description: "The flag to enable as destination of load balancing",

@@ -65,8 +65,10 @@ Read-Only:
 
 Read-Only:
 
+- `connect_timeout` (Number) The timeout in seconds for health checks, available only for TCP/HTTP/HTTPS
 - `enabled` (Boolean) The flag to enable as destination of load balancing
 - `ip_address` (String) The IP address of the destination server
 - `path` (String) The path used when checking by HTTP/HTTPS
 - `protocol` (String) The protocol used for health checks. This will be one of [`http`/`https`/`tcp`/`ping`]
+- `retry` (Number) The retry count for server down detection, available only for TCP/HTTP/HTTPS
 - `status` (Number) The response code to expect when checking by HTTP/HTTPS

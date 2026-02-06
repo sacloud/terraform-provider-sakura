@@ -28,11 +28,13 @@ type dsrLBNetworkInterfaceModel struct {
 }
 
 type dsrLBServerModel struct {
-	IPAddress types.String `tfsdk:"ip_address"`
-	Protocol  types.String `tfsdk:"protocol"`
-	Path      types.String `tfsdk:"path"`
-	Status    types.Int32  `tfsdk:"status"`
-	Enabled   types.Bool   `tfsdk:"enabled"`
+	IPAddress      types.String `tfsdk:"ip_address"`
+	Protocol       types.String `tfsdk:"protocol"`
+	Path           types.String `tfsdk:"path"`
+	Status         types.Int32  `tfsdk:"status"`
+	Retry          types.Int32  `tfsdk:"retry"`
+	ConnectTimeout types.Int32  `tfsdk:"connect_timeout"`
+	Enabled        types.Bool   `tfsdk:"enabled"`
 }
 
 type dsrLBVIPModel struct {
@@ -102,6 +104,19 @@ func flattenVIPs(lb *iaas.LoadBalancer) []dsrLBVIPModel {
 			} else {
 				server.Status = types.Int32Value(int32(s.HealthCheck.ResponseCode))
 			}
+
+			// pingではRetry/ConnectTimeoutは空になる
+			if s.HealthCheck.Retry.Int() == 0 {
+				server.Retry = types.Int32Null()
+			} else {
+				server.Retry = types.Int32Value(int32(s.HealthCheck.Retry))
+			}
+			if s.HealthCheck.ConnectTimeout.Int() == 0 {
+				server.ConnectTimeout = types.Int32Null()
+			} else {
+				server.ConnectTimeout = types.Int32Value(int32(s.HealthCheck.ConnectTimeout))
+			}
+
 			servers = append(servers, server)
 		}
 		vipModel := dsrLBVIPModel{

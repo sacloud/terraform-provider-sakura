@@ -56,10 +56,14 @@ func TestAccSakuraDSRLB_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "vip.0.server.0.protocol", "http"),
 					resource.TestCheckResourceAttr(resourceName, "vip.0.server.0.path", "/ping.html"),
 					resource.TestCheckResourceAttr(resourceName, "vip.0.server.0.status", "200"),
+					resource.TestCheckResourceAttr(resourceName, "vip.0.server.0.retry", "3"),
+					resource.TestCheckResourceAttr(resourceName, "vip.0.server.0.connect_timeout", "10"),
 					resource.TestCheckResourceAttr(resourceName, "vip.0.server.1.ip_address", "192.168.11.52"),
 					resource.TestCheckResourceAttr(resourceName, "vip.0.server.1.protocol", "http"),
 					resource.TestCheckResourceAttr(resourceName, "vip.0.server.1.path", "/ping.html"),
 					resource.TestCheckResourceAttr(resourceName, "vip.0.server.1.status", "200"),
+					resource.TestCheckResourceAttr(resourceName, "vip.0.server.1.retry", "5"),
+					resource.TestCheckResourceAttr(resourceName, "vip.0.server.1.connect_timeout", "20"),
 					resource.TestCheckResourceAttr(resourceName, "vip.1.vip", "192.168.11.202"),
 					resource.TestCheckResourceAttr(resourceName, "vip.1.port", "443"),
 					resource.TestCheckResourceAttr(resourceName, "vip.1.delay_loop", "20"),
@@ -258,12 +262,16 @@ resource "sakura_dsr_lb" "foobar" {
       protocol   = "http"
       path       = "/ping.html"
       status     = 200
+      retry      = 3
+      connect_timeout = 10
     },
     {
       ip_address  = "192.168.11.52"
       protocol    = "http"
       path        = "/ping.html"
       status      = 200
+      retry      = 5
+      connect_timeout = 20
     }]
   },
   {
