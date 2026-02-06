@@ -73,6 +73,7 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "server.0.port", "80"),
 					resource.TestCheckResourceAttr(resourceName, "server.0.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "server.0.group", "group1"),
+					resource.TestCheckResourceAttr(resourceName, "server.0.tls_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.host", "usacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.path", "/path"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.source_ips", "192.0.2.1,192.0.2.2"),
@@ -134,6 +135,7 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "server.0.port", "443"),
 					resource.TestCheckResourceAttr(resourceName, "server.0.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "server.0.group", "group2"),
+					resource.TestCheckResourceAttr(resourceName, "server.0.tls_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.host", "upd.usacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.path", "/path-upd"),
 					resource.TestCheckResourceAttr(resourceName, "rule.0.source_ips", "192.0.2.11,192.0.2.12"),
@@ -230,10 +232,12 @@ func TestAccImportSakuraEnhancedLB_basic(t *testing.T) {
 			"server.0.ip_address":      ip0,
 			"server.0.port":            "80",
 			"server.0.enabled":         "true",
+			"server.0.tls_enabled":     "true",
 			"server.1.ip_address":      ip1,
 			"server.1.port":            "80",
 			"server.1.enabled":         "true",
 			"server.1.group":           "group1",
+			"server.1.tls_enabled":     "false",
 			"rule.0.action":            "forward",
 			"rule.0.host":              "www.usacloud.jp",
 			"rule.0.source_ips":        "192.0.2.1,192.0.2.2",
@@ -308,9 +312,10 @@ resource "sakura_enhanced_lb" "foobar" {
   }]
 
   server = [{
-    ip_address = sakura_server.foobar.ip_address
-    port       = 80
-    group      = "group1"
+    ip_address  = sakura_server.foobar.ip_address
+    port        = 80
+    group       = "group1"
+    tls_enabled = true
   }]
 
   rule = [{
@@ -372,9 +377,10 @@ resource "sakura_enhanced_lb" "foobar" {
   }]
 
   server = [{
-    ip_address = sakura_server.foobar.ip_address
-    port       = 443
-    group      = "group2"
+    ip_address  = sakura_server.foobar.ip_address
+    port        = 443
+    group       = "group2"
+    tls_enabled = false
   }]
 
   rule = [{
@@ -422,6 +428,7 @@ resource "sakura_enhanced_lb" "foobar" {
   server = [{
     ip_address = "{{ .arg1 }}"
     port       = 80
+    tls_enabled = true
   },
   {
     ip_address = "{{ .arg2 }}"

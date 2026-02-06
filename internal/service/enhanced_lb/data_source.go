@@ -239,6 +239,10 @@ func (d *enhancedLBDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 							Computed:    true,
 							Description: "The flag to enable as destination of load balancing",
 						},
+						"tls_enabled": schema.BoolAttribute{
+							Computed:    true,
+							Description: "The flag to enable TLS/SSL for communication with the destination server",
+						},
 					},
 				},
 			},

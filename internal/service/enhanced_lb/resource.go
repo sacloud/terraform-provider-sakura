@@ -357,6 +357,12 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 							Description: "The flag to enable as destination of load balancing",
 							Default:     booldefault.StaticBool(true),
 						},
+						"tls_enabled": schema.BoolAttribute{
+							Optional:    true,
+							Computed:    true,
+							Description: "The flag to enable TLS/SSL for communication with the destination server",
+							Default:     booldefault.StaticBool(false),
+						},
 					},
 				},
 			},

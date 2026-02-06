@@ -243,6 +243,7 @@ Optional:
 
 - `enabled` (Boolean) The flag to enable as destination of load balancing
 - `group` (String) The name of load balancing group. This is used when using rule-based load balancing. The length of this value must be in the range [`1`-`10`]
+- `tls_enabled` (Boolean) The flag to enable TLS/SSL for communication with the destination server
 
 
 <a id="nestedatt--sorry_server"></a>

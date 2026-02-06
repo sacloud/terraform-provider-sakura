@@ -69,10 +69,11 @@ type enhancedLBSorryServerModel struct {
 }
 
 type enhancedLBServerModel struct {
-	IPAddress types.String `tfsdk:"ip_address"`
-	Port      types.Int32  `tfsdk:"port"`
-	Group     types.String `tfsdk:"group"`
-	Enabled   types.Bool   `tfsdk:"enabled"`
+	IPAddress  types.String `tfsdk:"ip_address"`
+	Port       types.Int32  `tfsdk:"port"`
+	Group      types.String `tfsdk:"group"`
+	Enabled    types.Bool   `tfsdk:"enabled"`
+	TLSEnabled types.Bool   `tfsdk:"tls_enabled"`
 }
 
 type enhancedLBRuleModel struct {
@@ -243,10 +244,11 @@ func flattenEnhancedLBServers(elb *iaas.ProxyLB) []enhancedLBServerModel {
 	var results []enhancedLBServerModel
 	for _, server := range elb.Servers {
 		results = append(results, enhancedLBServerModel{
-			IPAddress: types.StringValue(server.IPAddress),
-			Port:      types.Int32Value(int32(server.Port)),
-			Enabled:   types.BoolValue(server.Enabled),
-			Group:     types.StringValue(server.ServerGroup), // TODO: Only Optional?
+			IPAddress:  types.StringValue(server.IPAddress),
+			Port:       types.Int32Value(int32(server.Port)),
+			Enabled:    types.BoolValue(server.Enabled),
+			Group:      types.StringValue(server.ServerGroup), // TODO: Only Optional?
+			TLSEnabled: types.BoolValue(server.ProxySSL),
 		})
 	}
 	return results
