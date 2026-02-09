@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -65,6 +66,27 @@ func TestAccSakuraNFS_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "network_interface.netmask", "24"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.gateway", "192.168.11.1"),
 					resource.TestCheckNoResourceAttr(resourceName, "icon_id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraNFS_invalidPlan(t *testing.T) {
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraNFSDestroy,
+			test.CheckSakuravSwitchDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraNFS_invalidPlan, rand),
+				ExpectError: regexp.MustCompile(
+					`Create: Plan ID not found`,
 				),
 			},
 		},
@@ -168,3 +190,23 @@ resource "sakura_nfs" "foobar" {
   description = "description-upd"
   tags        = ["tag1-upd" , "tag2-upd"]
 }`
+
+const testAccSakuraNFS_invalidPlan = `
+resource "sakura_vswitch" "foobar" {
+  name = "{{ .arg0 }}"
+}
+resource "sakura_nfs" "foobar" {
+  name = "{{ .arg0 }}"
+
+  # invalid plan
+  plan = "hdd"
+  size = "10"
+
+  network_interface = {
+    vswitch_id = sakura_vswitch.foobar.id
+    ip_address = "192.168.11.101"
+    netmask    = 24
+    gateway    = "192.168.11.1"
+  }
+}
+`

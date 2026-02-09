@@ -134,6 +134,10 @@ func (r *nfsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		resp.Diagnostics.AddError("Create: Expand Error", err.Error())
 		return
 	}
+	if planID.IsEmpty() {
+		resp.Diagnostics.AddError("Create: Plan ID not found", "failed to find NFS plan ID")
+		return
+	}
 
 	nfsOp := iaas.NewNFSOp(r.client)
 	builder := &setup.RetryableSetup{
