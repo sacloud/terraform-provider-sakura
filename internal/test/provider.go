@@ -43,8 +43,8 @@ func init() {
 
 func AccPreCheck(t *testing.T) {
 	requiredEnvs := []string{
-		"SAKURACLOUD_ACCESS_TOKEN",
-		"SAKURACLOUD_ACCESS_TOKEN_SECRET",
+		"SAKURA_ACCESS_TOKEN",
+		"SAKURA_ACCESS_TOKEN_SECRET",
 	}
 
 	for _, env := range requiredEnvs {
@@ -53,15 +53,15 @@ func AccPreCheck(t *testing.T) {
 		}
 	}
 
-	if v := os.Getenv("SAKURACLOUD_ZONE"); v == "" {
-		os.Setenv("SAKURACLOUD_ZONE", testDefaultTargetZone) //nolint:errcheck,gosec
+	if v := os.Getenv("SAKURA_ZONE"); v == "" {
+		os.Setenv("SAKURA_ZONE", testDefaultTargetZone) //nolint:errcheck,gosec
 	}
 
-	if v := os.Getenv("SAKURACLOUD_RETRY_MAX"); v == "" {
-		os.Setenv("SAKURACLOUD_RETRY_MAX", testDefaultAPIRetryMax) //nolint:errcheck,gosec
+	if v := os.Getenv("SAKURA_RETRY_MAX"); v == "" {
+		os.Setenv("SAKURA_RETRY_MAX", testDefaultAPIRetryMax) //nolint:errcheck,gosec
 	}
 
-	if v := os.Getenv("SAKURACLOUD_RATE_LIMIT"); v == "" {
-		os.Setenv("SAKURACLOUD_RATE_LIMIT", testDefaultAPIRateLimit) //nolint:errcheck,gosec
+	if v := os.Getenv("SAKURA_RATE_LIMIT"); v == "" {
+		os.Setenv("SAKURA_RATE_LIMIT", testDefaultAPIRateLimit) //nolint:errcheck,gosec
 	}
 }
