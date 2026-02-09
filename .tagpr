@@ -47,3 +47,5 @@
 	releaseBranch = main
 	versionFile = version/version.go
 	release = draft
+	majorLabels = sacloud-major
+	minorLabels = sacloud-minor
