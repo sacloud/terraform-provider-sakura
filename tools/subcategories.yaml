@@ -17,6 +17,7 @@ Storage and Data:
 Database:
   - database
   - database_read_replica
+  - enhanced_db
   - nosql
   - nosql_additional_nodes
 Networking:

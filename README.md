@@ -21,7 +21,6 @@ v2からまだ移植できていないリソースのリストになります。
 - archive_share
 - cdrom
 - certificate_authority
-- enhanced_db
 - esme
 - ipv4_ptr
 - mobile_gateway

@@ -512,6 +512,10 @@ resource "sakura_dns_record" "record2" {
   }]
 ```
 
+### enhanced_db
+
+`password`からwrite-only版の`password_wo`/`password_wo_version`に変更されました。
+
 ### enhanced_lb(proxylb in v2)
 
 `health_check` / `sorry_server` / `syslog`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
