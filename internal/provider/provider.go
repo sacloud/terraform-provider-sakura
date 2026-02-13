@@ -270,6 +270,8 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		iam.NewAuthDataSource,
 		iam.NewFolderDataSource,
 		iam.NewGroupDataSource,
+		iam.NewIdRoleDataSource,
+		iam.NewRoleDataSource,
 		icon.NewIconDataSource,
 		internet.NewInternetDataSource,
 		kms.NewKmsDataSource,
