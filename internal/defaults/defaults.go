@@ -8,4 +8,5 @@ const (
 	RetryMax            = 10
 	APIRequestTimeout   = 300
 	APIRequestRateLimit = 10
+	DefaultProfileName  = "default"
 )
