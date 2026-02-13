@@ -26,7 +26,7 @@ func TestAccSakuraIAMSSO_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraIAMProjectDestroy,
+		CheckDestroy:             testCheckSakuraIAMSSODestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraIAMSSO_basic, rand),

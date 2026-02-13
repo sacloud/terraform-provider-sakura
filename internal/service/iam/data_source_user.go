@@ -141,7 +141,7 @@ func (d *userDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 func filterIAMUserByName(keys []v1.User, name string) (*v1.User, error) {
 	match := slices.Collect(func(yield func(v1.User) bool) {
 		for _, v := range keys {
-			if name != string(v.Name) {
+			if name != v.Name {
 				continue
 			}
 			if !yield(v) {

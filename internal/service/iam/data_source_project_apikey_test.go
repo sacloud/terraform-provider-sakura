@@ -42,7 +42,8 @@ func TestAccSakuraDataSourceIAMProjectApiKey_Basic(t *testing.T) {
 	})
 }
 
-var testAccCheckSakuraDataSourceIAMProjectApiKeyConfig = `
+//nolint:gosec
+const testAccCheckSakuraDataSourceIAMProjectApiKeyConfig = `
 resource "sakura_iam_project_apikey" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"

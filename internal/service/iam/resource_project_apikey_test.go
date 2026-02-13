@@ -122,6 +122,7 @@ func testCheckSakuraIAMProjectApiKeyDestroy(s *terraform.State) error {
 	return nil
 }
 
+//nolint:gosec
 const testAccSakuraIAMProjectApiKey_basic = `
 resource "sakura_iam_project_apikey" "foobar" {
   name = "{{ .arg0 }}"
@@ -131,6 +132,7 @@ resource "sakura_iam_project_apikey" "foobar" {
 }
 `
 
+//nolint:gosec
 const testAccSakuraIAMProjectApiKey_update = `
 resource "sakura_iam_project_apikey" "foobar" {
   name = "{{ .arg0 }}-upd"

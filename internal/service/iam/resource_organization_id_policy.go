@@ -176,7 +176,6 @@ func getOrgIDPolicy(ctx context.Context, client *v1.Client, diags *diag.Diagnost
 	if err != nil {
 		diags.AddError("API Error", fmt.Sprintf("failed to read IAM Organization ID Policy: %s", err))
 		return nil
-
 	}
 	return res
 }

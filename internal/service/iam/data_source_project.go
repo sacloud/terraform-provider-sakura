@@ -153,7 +153,7 @@ func filterIAMProjectByName(keys []v1.Project, name string) (*v1.Project, error)
 func filterIAMProjectByCode(keys []v1.Project, code string) (*v1.Project, error) {
 	match := slices.Collect(func(yield func(v1.Project) bool) {
 		for _, v := range keys {
-			if code != string(v.Code) {
+			if code != v.Code {
 				continue
 			}
 			if !yield(v) {

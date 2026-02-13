@@ -40,7 +40,7 @@ func (model *idPolicyBaseModel) updateState(bindings []v1.IdPolicy) {
 		}
 		for _, p := range b.Principals {
 			bModel.Principals = append(bModel.Principals, idPolicyPrincipalModel{
-				Type: types.StringValue(string(p.Type.Value)),
+				Type: types.StringValue(p.Type.Value),
 				ID:   types.StringValue(strconv.Itoa(p.ID.Value)),
 			})
 		}

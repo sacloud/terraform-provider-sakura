@@ -35,8 +35,8 @@ func (m authPasswordModel) AttributeTypes() map[string]attr.Type {
 }
 
 type authConditionsModel struct {
-	//IPRestriction        *authIPRestrictionModel       `tfsdk:"ip_restriction"`
-	//DatetimeRestriction  *authDatetimeRestrictionModel `tfsdk:"datetime_restriction"`
+	// IPRestriction        *authIPRestrictionModel       `tfsdk:"ip_restriction"`
+	// DatetimeRestriction  *authDatetimeRestrictionModel `tfsdk:"datetime_restriction"`
 	IPRestriction        types.Object `tfsdk:"ip_restriction"`
 	DatetimeRestriction  types.Object `tfsdk:"datetime_restriction"`
 	RequireTwoFactorAuth types.Bool   `tfsdk:"require_two_factor_auth"`
@@ -136,11 +136,4 @@ func (model *authBaseModel) updateState(pp *v1.PasswordPolicy, ac *v1.AuthCondit
 	} else {
 		model.Conditions = types.ObjectNull(authConditionsModel{}.AttributeTypes())
 	}
-}
-
-func flattenDatetimeRestrictionField(dt v1.NilDateTime) types.String {
-	if dt.IsNull() {
-		return types.StringNull()
-	}
-	return types.StringValue(dt.Value.String())
 }

@@ -99,7 +99,7 @@ func (d *folderDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 func filterIAMFolderByName(keys []v1.Folder, name string) (*v1.Folder, error) {
 	match := slices.Collect(func(yield func(v1.Folder) bool) {
 		for _, v := range keys {
-			if name != string(v.Name) {
+			if name != v.Name {
 				continue
 			}
 			if !yield(v) {

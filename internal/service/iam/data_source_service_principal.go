@@ -99,7 +99,7 @@ func (d *servicePrincipalDataSource) Read(ctx context.Context, req datasource.Re
 func filterIAMServicePrincipalByName(keys []v1.ServicePrincipal, name string) (*v1.ServicePrincipal, error) {
 	match := slices.Collect(func(yield func(v1.ServicePrincipal) bool) {
 		for _, v := range keys {
-			if name != string(v.Name) {
+			if name != v.Name {
 				continue
 			}
 			if !yield(v) {

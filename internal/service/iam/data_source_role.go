@@ -78,6 +78,6 @@ func (d *roleDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	data.ID = types.StringValue(res.ID)
 	data.Name = types.StringValue(res.Name)
 	data.Description = types.StringValue(res.Description)
-	data.Category = types.StringValue(string(res.Category))
+	data.Category = types.StringValue(res.Category)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

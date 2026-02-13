@@ -95,7 +95,7 @@ func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 func filterIAMGroupByName(keys []v1.Group, name string) (*v1.Group, error) {
 	match := slices.Collect(func(yield func(v1.Group) bool) {
 		for _, v := range keys {
-			if name != string(v.Name) {
+			if name != v.Name {
 				continue
 			}
 			if !yield(v) {

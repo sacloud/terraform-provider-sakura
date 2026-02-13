@@ -122,7 +122,7 @@ func (d *ssoDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 func filterIAMSSOByName(keys []v1.SSOProfile, name string) (*v1.SSOProfile, error) {
 	match := slices.Collect(func(yield func(v1.SSOProfile) bool) {
 		for _, v := range keys {
-			if name != string(v.Name) {
+			if name != v.Name {
 				continue
 			}
 			if !yield(v) {

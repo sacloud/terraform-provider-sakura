@@ -117,7 +117,7 @@ func (d *projectApiKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 func filterIAMProjectApiKeyByName(keys []v1.ProjectApiKey, name string) (*v1.ProjectApiKey, error) {
 	match := slices.Collect(func(yield func(v1.ProjectApiKey) bool) {
 		for _, v := range keys {
-			if name != string(v.Name) {
+			if name != v.Name {
 				continue
 			}
 			if !yield(v) {
