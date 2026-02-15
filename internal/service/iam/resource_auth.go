@@ -163,7 +163,7 @@ func (r *authResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages an IAM Auth.",
+		MarkdownDescription: "Manages an IAM Authentication settings.",
 	}
 }
 

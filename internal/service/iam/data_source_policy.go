@@ -96,6 +96,7 @@ func (d *policyDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 				},
 			},
 		},
+		MarkdownDescription: "Get information about an existing IAM Policy.",
 	}
 }
 

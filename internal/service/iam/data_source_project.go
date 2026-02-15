@@ -7,12 +7,10 @@ import (
 	"context"
 	"fmt"
 	"slices"
-	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iam-api-go"
 	"github.com/sacloud/iam-api-go/apis/project"
 	v1 "github.com/sacloud/iam-api-go/apis/v1"
@@ -46,14 +44,7 @@ func (d *projectDataSource) Configure(ctx context.Context, req datasource.Config
 }
 
 type projectDataSourceModel struct {
-	ID             types.String `tfsdk:"id"`
-	Name           types.String `tfsdk:"name"`
-	Code           types.String `tfsdk:"code"`
-	Description    types.String `tfsdk:"description"`
-	Status         types.String `tfsdk:"status"`
-	ParentFolderID types.String `tfsdk:"parent_folder_id"`
-	CreatedAt      types.String `tfsdk:"created_at"`
-	UpdatedAt      types.String `tfsdk:"updated_at"`
+	projectBaseModel
 }
 
 func (d *projectDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -78,6 +69,7 @@ func (d *projectDataSource) Schema(ctx context.Context, req datasource.SchemaReq
 			"created_at": common.SchemaDataSourceCreatedAt("IAM Project"),
 			"updated_at": common.SchemaDataSourceUpdatedAt("IAM Project"),
 		},
+		MarkdownDescription: "Get information about an existing IAM Project.",
 	}
 }
 
@@ -95,7 +87,7 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		perPage := 100 // TODO: Proper pagination if needed
 		projects, err := projectOp.List(ctx, project.ListParams{PerPage: &perPage})
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list IAM Service Principal resources: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list IAM Project resources: %s", err))
 			return
 		}
 		if utils.IsKnown(data.Code) {
@@ -110,23 +102,12 @@ func (d *projectDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	} else {
 		res, err = projectOp.Read(ctx, utils.MustAtoI(data.ID.ValueString()))
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Service Principal resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Project resource[%s]: %s", data.ID.ValueString(), err))
 			return
 		}
 	}
 
-	data.ID = types.StringValue(strconv.Itoa(res.ID))
-	data.Name = types.StringValue(res.Name)
-	data.Code = types.StringValue(res.Code)
-	data.Description = types.StringValue(res.Description)
-	data.Status = types.StringValue(string(res.Status))
-	if res.ParentFolderID.IsNull() {
-		data.ParentFolderID = types.StringNull()
-	} else {
-		data.ParentFolderID = types.StringValue(strconv.Itoa(res.ParentFolderID.Value))
-	}
-	data.CreatedAt = types.StringValue(res.CreatedAt)
-	data.UpdatedAt = types.StringValue(res.UpdatedAt)
+	data.updateState(res)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 

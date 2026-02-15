@@ -59,6 +59,7 @@ func (d *servicePrincipalDataSource) Schema(ctx context.Context, req datasource.
 			"created_at": common.SchemaDataSourceCreatedAt("IAM Service Principal"),
 			"updated_at": common.SchemaDataSourceUpdatedAt("IAM Service Principal"),
 		},
+		MarkdownDescription: "Get information about an existing IAM Service Principal.",
 	}
 }
 
@@ -87,7 +88,7 @@ func (d *servicePrincipalDataSource) Read(ctx context.Context, req datasource.Re
 	} else {
 		res, err = spOp.Read(ctx, utils.MustAtoI(data.ID.ValueString()))
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Service Principal resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Service Principal resource[%s]: %s", data.ID.ValueString(), err))
 			return
 		}
 	}

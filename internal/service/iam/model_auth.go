@@ -35,8 +35,6 @@ func (m authPasswordModel) AttributeTypes() map[string]attr.Type {
 }
 
 type authConditionsModel struct {
-	// IPRestriction        *authIPRestrictionModel       `tfsdk:"ip_restriction"`
-	// DatetimeRestriction  *authDatetimeRestrictionModel `tfsdk:"datetime_restriction"`
 	IPRestriction        types.Object `tfsdk:"ip_restriction"`
 	DatetimeRestriction  types.Object `tfsdk:"datetime_restriction"`
 	RequireTwoFactorAuth types.Bool   `tfsdk:"require_two_factor_auth"`

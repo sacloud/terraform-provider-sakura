@@ -92,7 +92,7 @@ func (r *ssoResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages an IAM SSO.",
+		MarkdownDescription: "Manages an IAM SSO profile.",
 	}
 }
 

@@ -261,8 +261,6 @@ github.com/sacloud/iaas-api-go/trace/otel v0.0.0-20251222225644-7df65ab7d2cf h1:
 github.com/sacloud/iaas-api-go/trace/otel v0.0.0-20251222225644-7df65ab7d2cf/go.mod h1:eWB6gHmmot5h4oS9ZWeO3ty1nbF+TmBeiusb43nJHpU=
 github.com/sacloud/iaas-service-go v1.22.1 h1:0YgSrpU6a0y+EdTwYVYqjXzgAivcLt004cP8HCMoQo8=
 github.com/sacloud/iaas-service-go v1.22.1/go.mod h1:Y6Atlbd6r2G9vO84xKDvhV5jZtsJw7zolFOX1oa8Lfs=
-github.com/sacloud/iam-api-go v0.1.0 h1:S57GIZR5L4WDLh5MknIXd5z5GSd82sT6CQ1J+FJxg3E=
-github.com/sacloud/iam-api-go v0.1.0/go.mod h1:P4/qbNQ9cThyvf68wxeAwv1bTXQRIRQXobylh5Yd+p8=
 github.com/sacloud/iam-api-go v0.2.0 h1:lAzK7hPaf/flCzolX6YYmY5nYtGQaR8h7w9Fra7zdBE=
 github.com/sacloud/iam-api-go v0.2.0/go.mod h1:8qiBDobulUuldyjSvbchVzYi+UIcyHodr7guumvJARQ=
 github.com/sacloud/kms-api-go v0.3.1 h1:3cFJksswx/k2V44l7xojrtk7XORNrO21rLtwINH1PJE=
@@ -273,8 +271,6 @@ github.com/sacloud/object-storage-api-go v0.0.12 h1:sIjUrMSlxT5OPYuDv9tXF0NM1FJ8
 github.com/sacloud/object-storage-api-go v0.0.12/go.mod h1:7qJ6OqXkuTIHpVICaK/VzlHpjnTiBqzCRb1VKL4QOEI=
 github.com/sacloud/packages-go v0.0.12 h1:MKeZNN3FQn1heqUSRBrbZw89YusZA1n4kammjMFZYvQ=
 github.com/sacloud/packages-go v0.0.12/go.mod h1:XNF5MCTWcHo9NiqWnYctVbASSSZR3ZOmmQORIzcurJ8=
-github.com/sacloud/saclient-go v0.2.7 h1:oUduqQhlD5KBAWRCza3vc3Mhp1aFZCgr6/IKtVe3KIc=
-github.com/sacloud/saclient-go v0.2.7/go.mod h1:ptSkxJdkQxTROIWUHP4WCeHzltXahj0bWxwwfUxxftI=
 github.com/sacloud/saclient-go v0.3.1 h1:s9Yx4arEgsoIWkULO9s3gNv03XRGR0eNOQ9z6iI1iWE=
 github.com/sacloud/saclient-go v0.3.1/go.mod h1:OLit87m1GmGwFwlaoQwF2UWyaad4Pa2jfPeVgx91s4s=
 github.com/sacloud/secretmanager-api-go v0.3.1 h1:71Bxt/WxtYfilkj35pD5pauy9zYYEQkF09bturYq1jM=

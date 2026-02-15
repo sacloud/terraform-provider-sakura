@@ -85,6 +85,7 @@ func (d *orgIDPolicyDataSource) Schema(ctx context.Context, req datasource.Schem
 				},
 			},
 		},
+		MarkdownDescription: "Get information about an existing IAM Organization ID Policy.",
 	}
 }
 
@@ -98,7 +99,7 @@ func (d *orgIDPolicyDataSource) Read(ctx context.Context, req datasource.ReadReq
 	op := iam.NewIDPolicyOp(d.client)
 	res, err := op.ReadOrganizationIdPolicy(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Role resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Organization ID Policy resource: %s", err))
 		return
 	}
 

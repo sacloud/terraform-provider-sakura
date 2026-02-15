@@ -55,6 +55,7 @@ func (d *groupDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 			"created_at":  common.SchemaDataSourceCreatedAt("IAM Group"),
 			"updated_at":  common.SchemaDataSourceUpdatedAt("IAM Group"),
 		},
+		MarkdownDescription: "Get information about an existing IAM Group.",
 	}
 }
 
@@ -83,7 +84,7 @@ func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	} else {
 		res, err = groupOp.Read(ctx, utils.MustAtoI(data.ID.ValueString()))
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Group resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Group resource[%s]: %s", data.ID.ValueString(), err))
 			return
 		}
 	}

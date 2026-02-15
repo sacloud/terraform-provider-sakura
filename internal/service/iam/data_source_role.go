@@ -58,6 +58,7 @@ func (d *roleDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				Description: "The category of the IAM Role",
 			},
 		},
+		MarkdownDescription: "Get information about an existing IAM Role.",
 	}
 }
 
@@ -71,7 +72,7 @@ func (d *roleDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	roleOp := iam.NewIAMRoleOp(d.client)
 	res, err := roleOp.Read(ctx, data.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Role resource: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Role resource[%s]: %s", data.ID.ValueString(), err))
 		return
 	}
 

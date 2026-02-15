@@ -103,6 +103,7 @@ func (d *authDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 				},
 			},
 		},
+		MarkdownDescription: "Get information about the IAM Authentication settings.",
 	}
 }
 

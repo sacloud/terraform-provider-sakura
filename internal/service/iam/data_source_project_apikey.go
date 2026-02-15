@@ -77,6 +77,7 @@ func (d *projectApiKeyDataSource) Schema(ctx context.Context, req datasource.Sch
 			"created_at": common.SchemaDataSourceCreatedAt("IAM Project API Key"),
 			"updated_at": common.SchemaDataSourceUpdatedAt("IAM Project API Key"),
 		},
+		MarkdownDescription: "Get information about an existing IAM Project API Key.",
 	}
 }
 
@@ -105,7 +106,7 @@ func (d *projectApiKeyDataSource) Read(ctx context.Context, req datasource.ReadR
 	} else {
 		res, err = paKeyOp.Read(ctx, utils.MustAtoI(data.ID.ValueString()))
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Project API Key resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Project API Key resource[%s]: %s", data.ID.ValueString(), err))
 			return
 		}
 	}

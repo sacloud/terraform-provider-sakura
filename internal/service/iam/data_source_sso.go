@@ -82,6 +82,7 @@ func (d *ssoDataSource) Schema(ctx context.Context, req datasource.SchemaRequest
 			"created_at": common.SchemaDataSourceCreatedAt("IAM SSO"),
 			"updated_at": common.SchemaDataSourceUpdatedAt("IAM SSO"),
 		},
+		MarkdownDescription: "Get information about an existing IAM SSO profile.",
 	}
 }
 
@@ -99,7 +100,7 @@ func (d *ssoDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		perPage := 100 // TODO: Proper pagination if needed
 		ssos, err := ssoOp.List(ctx, nil, &perPage)
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list IAM Service Principal resources: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list IAM SSO resources: %s", err))
 			return
 		}
 		res, err = filterIAMSSOByName(ssos.Items, data.Name.ValueString())
@@ -110,7 +111,7 @@ func (d *ssoDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	} else {
 		res, err = ssoOp.Read(ctx, utils.MustAtoI(data.ID.ValueString()))
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Service Principal resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM SSO resource[%s]: %s", data.ID.ValueString(), err))
 			return
 		}
 	}

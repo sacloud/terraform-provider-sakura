@@ -59,6 +59,7 @@ func (d *folderDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			"created_at": common.SchemaDataSourceCreatedAt("IAM Folder"),
 			"updated_at": common.SchemaDataSourceUpdatedAt("IAM Folder"),
 		},
+		MarkdownDescription: "Get information about an existing IAM Folder.",
 	}
 }
 
@@ -87,7 +88,7 @@ func (d *folderDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	} else {
 		res, err = folderOp.Read(ctx, utils.MustAtoI(data.ID.ValueString()))
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Folder resource: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM Folder resource[%s]: %s", data.ID.ValueString(), err))
 			return
 		}
 	}

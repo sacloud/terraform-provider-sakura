@@ -118,7 +118,7 @@ func (d *userDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		perPage := 100 // TODO: Proper pagination if needed
 		users, err := userOp.List(ctx, user.ListParams{PerPage: &perPage})
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list IAM Users: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list IAM User resources: %s", err))
 			return
 		}
 		res, err = filterIAMUserByName(users.Items, data.Name.ValueString())
@@ -129,7 +129,7 @@ func (d *userDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	} else {
 		res, err = userOp.Read(ctx, utils.MustAtoI(data.ID.ValueString()))
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM User: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM User resource[%s]: %s", data.ID.ValueString(), err))
 			return
 		}
 	}
