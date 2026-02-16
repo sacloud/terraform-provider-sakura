@@ -40,6 +40,8 @@ import (
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
+	"github.com/sacloud/workflows-api-go"
+	workflowsapi "github.com/sacloud/workflows-api-go/apis/v1"
 )
 
 const (
@@ -102,6 +104,7 @@ type APIClient struct {
 	DedicatedStorageClient           *dedicatedstorageapi.Client
 	ApigwClient                      *apigwapi.Client
 	SecurityControlClient            *secconapi.Client
+	WorkflowsClient                  *workflowsapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -327,6 +330,10 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 	if err != nil {
 		return nil, err
 	}
+	workflowsClient, err := workflows.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -347,6 +354,7 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 		DedicatedStorageClient:           dedicatedStorageClient,
 		ApigwClient:                      apigwClient,
 		SecurityControlClient:            secconClient,
+		WorkflowsClient:                  workflowsClient,
 	}, nil
 }
 
