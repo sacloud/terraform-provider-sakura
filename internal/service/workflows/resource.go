@@ -325,6 +325,9 @@ func (r *workflowResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, state.Timeouts, common.Timeout5min)
+	defer cancel()
+
 	workflowOp := workflows.NewWorkflowOp(r.client)
 	revisionOp := workflows.NewRevisionOp(r.client)
 
@@ -380,6 +383,9 @@ func (r *workflowResource) Delete(ctx context.Context, req resource.DeleteReques
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
+	defer cancel()
 
 	workflowOp := workflows.NewWorkflowOp(r.client)
 	err := workflowOp.Delete(ctx, state.ID.ValueString())
