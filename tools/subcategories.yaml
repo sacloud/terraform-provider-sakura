@@ -29,6 +29,7 @@ Networking:
   - enhanced_lb_acme
   - gslb
   - internet
+  - ipv4_ptr
   - local_router
   - packet_filter
   - packet_filter_rules
