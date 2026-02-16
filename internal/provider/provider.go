@@ -277,6 +277,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		sw1tch.NewSwitchDataSource,
 		vswitch.NewvSwitchDataSource,
 		vpn_router.NewVPNRouterDataSource,
+		workflows.NewWorkflowsDataSource,
 		zone.NewZoneDataSource,
 		// ...他のデータソースも同様に追加...
 	}

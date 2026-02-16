@@ -6,6 +6,7 @@ package workflows
 import (
 	"errors"
 	"fmt"
+	"sort"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -161,6 +162,21 @@ func (model *workflowBaseModel) updateStateFromCreated(data *v1.CreateWorkflowCr
 }
 
 func (model *workflowBaseModel) updateRevisionsState(data []v1.ListWorkflowRevisionsOKRevisionsItem) error {
+	// NOTE: 作成順でソートしておく。data sourceの場合にレスポンスの順序が保証されていないために意図しない順序でステートに保存されるのを防ぐ
+	sort.Slice(data, func(i, j int) bool {
+		return data[i].CreatedAt.Before(data[j].CreatedAt)
+	})
+
+	// NOTE: data_sourceの場合stateにrevisionsがないため、IDのリストだけセットし後続の更新処理でステート書き込みが行われるようにしておく
+	if len(model.Revisions) == 0 {
+		model.Revisions = make([]*workflowsRevisionModel, 0, len(data))
+		for _, rev := range data {
+			model.Revisions = append(model.Revisions, &workflowsRevisionModel{
+				ID: types.StringValue(strconv.Itoa(rev.RevisionId)),
+			})
+		}
+	}
+
 	for _, rev := range data {
 		found := false
 		for _, revState := range model.Revisions {
