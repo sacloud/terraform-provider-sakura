@@ -36,6 +36,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/gslb"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/icon"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/internet"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/ipv4_ptr"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/kms"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/local_router"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/nfs"
@@ -316,6 +317,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		gslb.NewGSLBResource,
 		icon.NewIconResource,
 		internet.NewInternetResource,
+		ipv4_ptr.NewIPv4PtrResource,
 		kms.NewKMSResource,
 		local_router.NewLocalRouterResource,
 		nfs.NewNFSResource,
