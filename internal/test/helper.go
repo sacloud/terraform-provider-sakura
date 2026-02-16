@@ -33,6 +33,17 @@ func SkipIfEnvIsNotSet(t *testing.T, key ...string) {
 		}
 	}
 }
+func SkipIfIAMEnvIsNotSet(t *testing.T) {
+	if os.Getenv("SAKURA_PRIVATE_KEY") == "" && os.Getenv("SAKURA_PRIVATE_KEY_PATH") == "" {
+		t.Skip("Environment variable SAKURA_PRIVATE_KEY or SAKURA_PRIVATE_KEY_PATH is not set")
+	}
+
+	for _, k := range []string{"SAKURA_SERVICE_PRINCIPAL_ID", "SAKURA_SERVICE_PRINCIPAL_KEY_ID"} {
+		if os.Getenv(k) == "" {
+			t.Skipf("Environment valiable %q is not set", k)
+		}
+	}
+}
 
 func SkipIfZoneIsDummy(t *testing.T) {
 	if zone := envvar.StringFromEnvMulti([]string{"SAKURA_ZONE", "SAKURACLOUD_ZONE"}, ""); zone == "tk1v" {

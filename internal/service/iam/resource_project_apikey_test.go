@@ -20,6 +20,7 @@ import (
 )
 
 func TestAccSakuraIAMProjectApiKey_basic(t *testing.T) {
+	test.SkipIfIAMEnvIsNotSet(t)
 	// 単にプロジェクトを作るだけでは権限が足りないので、あらかじめ十分な権限を持ったプロジェクトを指定する
 	test.SkipIfEnvIsNotSet(t, "SAKURA_IAM_PROJECT_ID")
 

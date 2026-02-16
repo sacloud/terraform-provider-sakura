@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccSakuraDataSourceIAMPolicy_Basic(t *testing.T) {
+	test.SkipIfIAMEnvIsNotSet(t)
+
 	resourceName := "data.sakura_iam_policy.foobar"
 	rand := test.RandomName()
 

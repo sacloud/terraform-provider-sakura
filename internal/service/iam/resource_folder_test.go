@@ -19,6 +19,8 @@ import (
 )
 
 func TestAccSakuraIAMFolder_basic(t *testing.T) {
+	test.SkipIfIAMEnvIsNotSet(t)
+
 	resourceName1 := "sakura_iam_folder.foobar1"
 	resourceName2 := "sakura_iam_folder.foobar2"
 	rand := test.RandomName()

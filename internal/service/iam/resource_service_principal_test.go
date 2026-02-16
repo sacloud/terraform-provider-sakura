@@ -19,6 +19,8 @@ import (
 )
 
 func TestAccSakuraIAMServicePrincipal_basic(t *testing.T) {
+	test.SkipIfIAMEnvIsNotSet(t)
+
 	resourceName := "sakura_iam_service_principal.foobar"
 	rand := test.RandomName()
 

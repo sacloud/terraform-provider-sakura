@@ -11,8 +11,9 @@ import (
 )
 
 func TestAccSakuraIAMAuth_basic(t *testing.T) {
-	resourceName := "sakura_iam_auth.foobar"
+	test.SkipIfIAMEnvIsNotSet(t)
 
+	resourceName := "sakura_iam_auth.foobar"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
