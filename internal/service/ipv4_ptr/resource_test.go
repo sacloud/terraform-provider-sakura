@@ -39,7 +39,7 @@ func TestAccSakuraIPv4Ptr_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraCloudIPv4PtrDestroy,
+		CheckDestroy:             testCheckSakuraIPv4PtrDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: test.BuildConfigWithArgs(testAccCheckSakuraIPv4PtrConfig_basic, rand, testDomain),
@@ -93,7 +93,7 @@ func testCheckSakuraIPv4PtrExists(n string, ip *iaas.IPAddress) resource.TestChe
 	}
 }
 
-func testCheckSakuraCloudIPv4PtrDestroy(s *terraform.State) error {
+func testCheckSakuraIPv4PtrDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	ipAddrOp := iaas.NewIPAddressOp(client)
 

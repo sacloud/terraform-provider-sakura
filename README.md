@@ -22,7 +22,6 @@ v2からまだ移植できていないリソースのリストになります。
 - cdrom
 - certificate_authority
 - esme
-- ipv4_ptr
 - mobile_gateway
 - sim
 - webaccel
