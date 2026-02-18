@@ -333,6 +333,8 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		sw1tch.NewSwitchDataSource,
 		vswitch.NewvSwitchDataSource,
 		vpn_router.NewVPNRouterDataSource,
+		workflows.NewWorkflowsDataSource,
+		workflows.NewWorkflowsRevisionAliasDataSource,
 		workflows.NewPlanDataSource,
 		workflows.NewSubscriptionDataSource,
 		zone.NewZoneDataSource,
@@ -427,6 +429,8 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		sw1tch.NewSwitchResource,
 		vswitch.NewvSwitchResource,
 		vpn_router.NewVPNRouterResource,
+		workflows.NewWorkflowsResource,
+		workflows.NewWorkflowsRevisionAliasResource,
 		workflows.NewSubscriptionResource,
 		// ...他のリソースも同様に追加...
 	}
