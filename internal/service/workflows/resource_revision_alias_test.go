@@ -18,8 +18,6 @@ import (
 	v1 "github.com/sacloud/workflows-api-go/apis/v1"
 )
 
-// TODO: add a test for creating new revision after creating alias for the latest_revision. It'll be UB if the alias still points to the old revision or not. If it does, we need to update the alias to point to the new revision.
-
 func TestAccSakuraResourceWorkflowsRevisionAlias_basic(t *testing.T) {
 	resourceName := "sakura_workflows_revision_alias.foobar"
 	rand := test.RandomName()
@@ -77,6 +75,44 @@ func TestAccSakuraResourceWorkflowsRevisionAlias_validation(t *testing.T) {
 			{
 				Config:      testAccSakuraWorkflowsRevisionAlias_invalidAlias,
 				ExpectError: regexp.MustCompile(`Revision alias validation failed:`),
+			},
+		},
+	})
+}
+
+func TestAccSakuraResourceWorkflowsRevisionAlias_workflowUpdate(t *testing.T) {
+	resourceName := "sakura_workflows_revision_alias.foobar"
+	workflowResourceName := "sakura_workflows.foobar"
+	rand := test.RandomName()
+
+	var workflow v1.GetWorkflowOKWorkflow
+	var revisionAlias v1.GetWorkflowRevisionsOKRevision
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraWorkflowsDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraWorkflowsRevisionAlias_workflowUpdate_step1, rand, sampleRunbookV1Escaped),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraWorkflowsExists(workflowResourceName, &workflow),
+					testCheckSakuraWorkflowsRevisionAliasExists(resourceName, &revisionAlias),
+					resource.TestCheckResourceAttrPair(resourceName, "workflow_id", workflowResourceName, "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "revision_id", workflowResourceName, "latest_revision.id"),
+					resource.TestCheckResourceAttr(resourceName, "alias", "stable"),
+				),
+			},
+			// TODO: fix error
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraWorkflowsRevisionAlias_workflowUpdate_step2, rand, sampleRunbookV2Terraform),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraWorkflowsExists(workflowResourceName, &workflow),
+					testCheckSakuraWorkflowsRevisionAliasExists(resourceName, &revisionAlias),
+					resource.TestCheckResourceAttrPair(resourceName, "workflow_id", workflowResourceName, "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "revision_id", workflowResourceName, "latest_revision.id"),
+					resource.TestCheckResourceAttr(resourceName, "alias", "stable"),
+				),
 			},
 		},
 	})
@@ -216,5 +252,60 @@ resource "sakura_workflows_revision_alias" "foobar" {
   workflow_id = "foobar"
   revision_id = "1"
   alias       = "./+_-"
+}
+`
+
+const testAccSakuraWorkflowsRevisionAlias_workflowUpdate_step1 = `
+data "sakura_workflows_plan" "foobar" {
+  name = "200K"
+}
+
+resource "sakura_workflows_subscription" "foobar" {
+  plan_id = data.sakura_workflows_plan.foobar.id
+}
+
+resource "sakura_workflows" "foobar" {
+  subscription_id = sakura_workflows_subscription.foobar.id
+  name            = "{{ .arg0 }}"
+  publish         = false
+  logging         = false
+
+  latest_revision = {
+    runbook = <<-EOF
+{{ .arg1 }}EOF
+  }
+}
+
+resource "sakura_workflows_revision_alias" "foobar" {
+  workflow_id = sakura_workflows.foobar.id
+  revision_id = sakura_workflows.foobar.latest_revision.id
+  alias       = "stable"
+}
+`
+
+const testAccSakuraWorkflowsRevisionAlias_workflowUpdate_step2 = `
+data "sakura_workflows_plan" "foobar" {
+  name = "200K"
+}
+
+resource "sakura_workflows_subscription" "foobar" {
+  plan_id = data.sakura_workflows_plan.foobar.id
+}
+
+resource "sakura_workflows" "foobar" {
+  subscription_id = sakura_workflows_subscription.foobar.id
+  name            = "{{ .arg0 }}"
+  publish         = false
+  logging         = false
+
+  latest_revision = {
+    runbook = yamlencode({{ .arg1 }})
+  }
+}
+
+resource "sakura_workflows_revision_alias" "foobar" {
+  workflow_id = sakura_workflows.foobar.id
+  revision_id = sakura_workflows.foobar.latest_revision.id
+  alias       = "stable"
 }
 `
