@@ -28,3 +28,9 @@ resource "sakura_workflows" "foobar" {
   }
 }
 
+resource "sakura_workflows_revision_alias" "foobar" {
+  workflow_id = sakura_workflows.foobar.id
+  revision_id = sakura_workflows.foobar.latest_revision.id
+  alias       = "stable"
+}
+

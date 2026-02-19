@@ -9,9 +9,11 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
@@ -61,6 +63,9 @@ func (r *workflowResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"subscription_id": schema.StringAttribute{
 				Required:    true,
 				Description: desc.Sprintf("The subscription ID of the %s.", resourceName),
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+				},
 			},
 			// NOTE: 独自のバリデーションルールがあるので、common.SchemaResourceName() は使わない
 			"name": schema.StringAttribute{
