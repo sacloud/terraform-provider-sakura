@@ -26,9 +26,10 @@ type workflowRevisionAliasResource struct {
 }
 
 var (
-	_ resource.Resource                = &workflowRevisionAliasResource{}
-	_ resource.ResourceWithConfigure   = &workflowRevisionAliasResource{}
-	_ resource.ResourceWithImportState = &workflowRevisionAliasResource{}
+	_ resource.Resource                   = &workflowRevisionAliasResource{}
+	_ resource.ResourceWithConfigure      = &workflowRevisionAliasResource{}
+	_ resource.ResourceWithImportState    = &workflowRevisionAliasResource{}
+	_ resource.ResourceWithValidateConfig = &workflowRevisionAliasResource{}
 )
 
 func NewWorkflowsRevisionAliasResource() resource.Resource {
@@ -91,10 +92,23 @@ func (r *workflowRevisionAliasResource) ImportState(ctx context.Context, req res
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-// TODO: add config validation
-// - SDK validation. alias has special regex validation on SDK
-// - wanna validate ids with length.
-// - revision_id should be string type but parsable to int.
+func (r *workflowRevisionAliasResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config workflowRevisionAliasResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	aliasReq := config.toUpdateRequest()
+	if err := aliasReq.Validate(); err != nil {
+		resp.Diagnostics.AddAttributeError(
+			path.Root("alias"),
+			"Invalid workflows revision alias",
+			fmt.Sprintf("Revision alias validation failed: %s", err),
+		)
+		return
+	}
+}
 
 func (r *workflowRevisionAliasResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
 	var plan workflowRevisionAliasResourceModel
@@ -117,9 +131,7 @@ func (r *workflowRevisionAliasResource) Create(ctx context.Context, req resource
 	}
 
 	revisionOp := workflows.NewRevisionOp(r.client)
-	rev, err := revisionOp.UpdateAlias(ctx, plan.WorkflowID.ValueString(), revisionID, v1.UpdateWorkflowRevisionAliasReq{
-		RevisionAlias: plan.Alias.ValueString(),
-	})
+	rev, err := revisionOp.UpdateAlias(ctx, plan.WorkflowID.ValueString(), revisionID, plan.toUpdateRequest())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Create: API Error",
@@ -185,9 +197,7 @@ func (r *workflowRevisionAliasResource) Update(ctx context.Context, req resource
 	}
 
 	revisionOp := workflows.NewRevisionOp(r.client)
-	rev, err := revisionOp.UpdateAlias(ctx, plan.WorkflowID.ValueString(), revisionID, v1.UpdateWorkflowRevisionAliasReq{
-		RevisionAlias: plan.Alias.ValueString(),
-	})
+	rev, err := revisionOp.UpdateAlias(ctx, plan.WorkflowID.ValueString(), revisionID, plan.toUpdateRequest())
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Update: API Error",

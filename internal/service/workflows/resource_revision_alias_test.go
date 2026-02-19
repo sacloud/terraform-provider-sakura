@@ -75,8 +75,8 @@ func TestAccSakuraResourceWorkflowsRevisionAlias_validation(t *testing.T) {
 				ExpectError: regexp.MustCompile(`Attribute revision_id needs to be a string representation of an integer.`),
 			},
 			{
-				Config:      testAccSakuraWorkflowsRevisionAlias_emptyAlias,
-				ExpectError: regexp.MustCompile(`Attribute alias string length must be at least 1, got: 0`),
+				Config:      testAccSakuraWorkflowsRevisionAlias_invalidAlias,
+				ExpectError: regexp.MustCompile(`Revision alias validation failed:`),
 			},
 		},
 	})
@@ -211,10 +211,10 @@ resource "sakura_workflows_revision_alias" "foobar" {
 }
 `
 
-const testAccSakuraWorkflowsRevisionAlias_emptyAlias = `
+const testAccSakuraWorkflowsRevisionAlias_invalidAlias = `
 resource "sakura_workflows_revision_alias" "foobar" {
   workflow_id = "foobar"
   revision_id = "1"
-  alias       = ""
+  alias       = "./+_-"
 }
 `
