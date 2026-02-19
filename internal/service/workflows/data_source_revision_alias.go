@@ -74,7 +74,7 @@ func (d *workflowRevisionAliasDataSource) Schema(ctx context.Context, req dataso
 				Description: desc.Sprintf("The alias name of the %s.", resourceName),
 			},
 		},
-		MarkdownDescription: "Get information about an existing Workflow Revision Alias.",
+		MarkdownDescription: "Get information about an existing Workflows Revision Alias.",
 	}
 }
 
