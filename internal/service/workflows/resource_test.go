@@ -39,6 +39,7 @@ func TestAccSakuraResourceWorkflows_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
+					resource.TestCheckResourceAttrPair(resourceName, "subscription_id", "sakura_workflows_subscription.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "latest_revision.runbook", sampleRunbookV1),
 					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.created_at"),
@@ -55,6 +56,7 @@ func TestAccSakuraResourceWorkflows_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "logging", "true"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag2"),
+					resource.TestCheckResourceAttrPair(resourceName, "subscription_id", "sakura_workflows_subscription.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "latest_revision.runbook", sampleRunbookV2),
 					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.id"),
 					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.created_at"),
@@ -173,12 +175,21 @@ const sampleRunbookV2Terraform = `{
 var sampleRunbookV1Escaped = strings.ReplaceAll(sampleRunbookV1, "$", "$$")
 
 var testAccSakuraWorkflows_basic = `
+data "sakura_workflows_plan" "foobar" {
+  name = "200K"
+}
+
+resource "sakura_workflows_subscription" "foobar" {
+  plan_id = data.sakura_workflows_plan.foobar.id
+}
+
 resource "sakura_workflows" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-  publish     = false
-  logging     = false
-  tags        = ["tag1", "tag2"]
+  subscription_id = sakura_workflows_subscription.foobar.id
+  name            = "{{ .arg0 }}"
+  description     = "description"
+  publish         = false
+  logging         = false
+  tags            = ["tag1", "tag2"]
 
   latest_revision = {
     runbook = <<-EOF
@@ -187,12 +198,21 @@ resource "sakura_workflows" "foobar" {
 }`
 
 var testAccSakuraWorkflows_update = `
+data "sakura_workflows_plan" "foobar" {
+  name = "200K"
+}
+
+resource "sakura_workflows_subscription" "foobar" {
+  plan_id = data.sakura_workflows_plan.foobar.id
+}
+
 resource "sakura_workflows" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description-updated"
-  publish     = true
-  logging     = true
-  tags        = ["tag2"]
+  subscription_id = sakura_workflows_subscription.foobar.id
+  name            = "{{ .arg0 }}"
+  description     = "description-updated"
+  publish         = true
+  logging         = true
+  tags            = ["tag2"]
 
   latest_revision = {
     runbook = yamlencode({{ .arg1 }})

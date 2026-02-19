@@ -58,6 +58,10 @@ func (r *workflowResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 		Attributes: map[string]schema.Attribute{
 			"id":   common.SchemaResourceId(resourceName),
 			"tags": common.SchemaResourceTags(resourceName),
+			"subscription_id": schema.StringAttribute{
+				Required:    true,
+				Description: desc.Sprintf("The subscription ID of the %s.", resourceName),
+			},
 			// NOTE: 独自のバリデーションルールがあるので、common.SchemaResourceName() は使わない
 			"name": schema.StringAttribute{
 				Required:    true,

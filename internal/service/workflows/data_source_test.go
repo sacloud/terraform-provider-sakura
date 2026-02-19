@@ -38,6 +38,7 @@ func TestAccSakuraDataSourceWorkflows_basic(t *testing.T) {
 					resource.TestCheckResourceAttrPair(resourceName, "latest_revision.id", "sakura_workflows.foobar", "latest_revision.id"),
 					resource.TestCheckResourceAttrPair(resourceName, "latest_revision.created_at", "sakura_workflows.foobar", "latest_revision.created_at"),
 					resource.TestCheckResourceAttrPair(resourceName, "latest_revision.updated_at", "sakura_workflows.foobar", "latest_revision.updated_at"),
+					resource.TestCheckResourceAttrPair(resourceName, "subscription_id", "sakura_workflows_subscription.foobar", "id"),
 				),
 			},
 		},
@@ -45,12 +46,21 @@ func TestAccSakuraDataSourceWorkflows_basic(t *testing.T) {
 }
 
 var testAccSakuraDataSourceWorkflows_basic = `
+data "sakura_workflows_plan" "foobar" {
+  name = "200K"
+}
+
+resource "sakura_workflows_subscription" "foobar" {
+  plan_id = data.sakura_workflows_plan.foobar.id
+}
+
 resource "sakura_workflows" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-  publish     = false
-  logging     = false
-  tags        = ["tag1", "tag2"]
+  subscription_id = sakura_workflows_subscription.foobar.id
+  name            = "{{ .arg0 }}"
+  description     = "description"
+  publish         = false
+  logging         = false
+  tags            = ["tag1", "tag2"]
 
   latest_revision = {
     runbook = yamlencode({{ .arg1 }})
@@ -58,5 +68,6 @@ resource "sakura_workflows" "foobar" {
 }
 
 data "sakura_workflows" "foobar" {
-  id = sakura_workflows.foobar.id
+  subscription_id = sakura_workflows_subscription.foobar.id
+  id              = sakura_workflows.foobar.id
 }`

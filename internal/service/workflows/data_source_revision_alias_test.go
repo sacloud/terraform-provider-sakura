@@ -48,10 +48,19 @@ func TestAccSakuraDataSourceWorkflowsRevisionAlias_basic(t *testing.T) {
 }
 
 const testAccSakuraDataSourceWorkflowsRevisionAlias_basic = `
+data "sakura_workflows_plan" "foobar" {
+  name = "200K"
+}
+
+resource "sakura_workflows_subscription" "foobar" {
+  plan_id = data.sakura_workflows_plan.foobar.id
+}
+
 resource "sakura_workflows" "foobar" {
-  name    = "{{ .arg0 }}"
-  publish = false
-  logging = false
+  subscription_id = sakura_workflows_subscription.foobar.id
+  name            = "{{ .arg0 }}"
+  publish         = false
+  logging         = false
 
   latest_revision = {
     runbook = yamlencode({{ .arg1 }})
@@ -71,10 +80,19 @@ data "sakura_workflows_revision_alias" "foobar" {
 `
 
 const testAccSakuraDataSourceWorkflowsRevisionAlias_update = `
+data "sakura_workflows_plan" "foobar" {
+  name = "200K"
+}
+
+resource "sakura_workflows_subscription" "foobar" {
+  plan_id = data.sakura_workflows_plan.foobar.id
+}
+
 resource "sakura_workflows" "foobar" {
-  name    = "{{ .arg0 }}"
-  publish = false
-  logging = false
+  subscription_id = sakura_workflows_subscription.foobar.id
+  name            = "{{ .arg0 }}"
+  publish         = false
+  logging         = false
 
   latest_revision = {
     runbook = yamlencode({{ .arg1 }})

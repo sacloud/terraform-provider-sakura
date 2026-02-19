@@ -16,6 +16,7 @@ import (
 type workflowBaseModel struct {
 	common.SakuraBaseModel
 
+	SubscriptionID     types.String `tfsdk:"subscription_id"`
 	Publish            types.Bool   `tfsdk:"publish"`
 	Logging            types.Bool   `tfsdk:"logging"`
 	ServicePrincipalID types.String `tfsdk:"service_principal_id"`
