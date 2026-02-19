@@ -13,47 +13,34 @@ Manages a Workflow.
 ## Example Usage
 
 ```terraform
-resource "sakura_workflows" "foobar" {
-  name        = "sample-workflow"
-  description = "description"
-  publish     = true
-  logging     = true
-  tags        = ["tag1", "tag2"]
+data "sakura_workflows_subscription" "foobar" {}
 
-  revisions = [
-    {
-      runbook = <<-EOF
-meta:
-  description: サンプルワークフローv1
-args:
-  sample:
-    type: number
-    description: サンプル引数
-steps:
-  result:
-    return: $${args.sample}
-EOF
-    },
-    {
-      alias = "v2"
-      runbook = yamlencode({
-        meta = {
-          description = "サンプルワークフローv2"
+resource "sakura_workflows" "foobar" {
+  subscription_id = data.sakura_workflows_subscription.foobar.id
+  name            = "sample-workflow"
+  description     = "description"
+  publish         = false
+  logging         = false
+  tags            = ["tag1", "tag2"]
+
+  latest_revision = {
+    runbook = yamlencode({
+      meta = {
+        description = "サンプルワークフロー"
+      }
+      args = {
+        sample = {
+          type        = "number"
+          description = "サンプル引数"
         }
-        args = {
-          sample = {
-            type        = "number"
-            description = "サンプル引数"
-          }
+      }
+      steps = {
+        result = {
+          return = "$${args.sample * 2}"
         }
-        steps = {
-          result = {
-            return = "$${args.sample * 2}"
-          }
-        }
-      })
-    },
-  ]
+      }
+    })
+  }
 }
 ```
 
@@ -66,6 +53,7 @@ EOF
 - `logging` (Boolean) Whether logging is enabled for the Workflows.
 - `name` (String) The name of the Workflows.
 - `publish` (Boolean) Whether the Workflows is published.
+- `subscription_id` (String) The subscription ID of the Workflows.
 
 ### Optional
 

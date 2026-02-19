@@ -1,3 +1,7 @@
+data "sakura_workflows_subscription" "foobar" {}
+
 data "sakura_workflows" "foobar" {
-  id = "workflow-id"
+  subscription_id = data.sakura_workflows_subscription.foobar.id
+  id              = "workflow-id"
 }
+
