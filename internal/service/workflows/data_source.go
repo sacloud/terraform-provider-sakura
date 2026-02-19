@@ -53,6 +53,10 @@ func (d *workflowsDataSource) Schema(ctx context.Context, req datasource.SchemaR
 			"name":        common.SchemaDataSourceName(resourceName),
 			"description": common.SchemaDataSourceDescription(resourceName),
 			"tags":        common.SchemaDataSourceTags(resourceName),
+			"subscription_id": schema.StringAttribute{
+				Required:    true,
+				Description: desc.Sprintf("The subscription ID of the %s.", resourceName),
+			},
 			"publish": schema.BoolAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("Whether the %s is published.", resourceName),
