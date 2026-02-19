@@ -82,7 +82,7 @@ func (d *subscriptionDataSource) Schema(ctx context.Context, req datasource.Sche
 				Description: desc.Sprintf("The last update timestamp of the %s.", resourceName),
 			},
 		},
-		MarkdownDescription: "Get information about a current Workflow Subscription.",
+		MarkdownDescription: "Get information about a current Workflows Subscription.",
 	}
 }
 

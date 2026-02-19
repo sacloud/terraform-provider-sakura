@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	"github.com/sacloud/workflows-api-go"
@@ -54,11 +56,7 @@ func (r *workflowsSubscriptionResource) Schema(ctx context.Context, req resource
 
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			// NOTE: updateでもIDが変わるようなので、common.SchemaResourceIdは使わない(UseStateForUnknownと実態が合わない)
-			"id": schema.StringAttribute{
-				Computed:    true,
-				Description: desc.Sprintf("The ID of the %s.", resourceName),
-			},
+			"id": common.SchemaResourceId(resourceName),
 			"account_id": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The account ID of the %s.", resourceName),
@@ -70,6 +68,10 @@ func (r *workflowsSubscriptionResource) Schema(ctx context.Context, req resource
 			"plan_id": schema.StringAttribute{
 				Required:    true,
 				Description: desc.Sprintf("The plan ID of the %s.", resourceName),
+				// NOTE: updateでもIDが変わる(課金設定毎にIDが払い出される)ようなので、plan_idの変更でRequiresReplace
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplace(),
+				},
 			},
 			"plan_name": schema.StringAttribute{
 				Computed:    true,
@@ -91,7 +93,7 @@ func (r *workflowsSubscriptionResource) Schema(ctx context.Context, req resource
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages a current Workflow Subscription. Only one subscription can exist at a time. If a subscription already configured, it will be overwritten by the configuration in terraform.",
+		MarkdownDescription: "Manages a current Workflows Subscription. Only one subscription can exist at a time. If a subscription already configured, it will be overwritten by the configuration in terraform.",
 	}
 }
 
@@ -188,8 +190,6 @@ func (r *workflowsSubscriptionResource) Delete(ctx context.Context, req resource
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Workflows Subscription: %s", err))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
 
 func (r *workflowsSubscriptionResource) setSubscription(ctx context.Context, plan workflowsSubscriptionResourceModel) error {
