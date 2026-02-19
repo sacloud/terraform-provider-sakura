@@ -83,7 +83,7 @@ func (r *workflowRevisionAliasResource) Schema(ctx context.Context, _ resource.S
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages a Workflow Revision Alias.",
+		MarkdownDescription: "Manages a Workflows Revision Alias.",
 	}
 }
 
@@ -229,6 +229,4 @@ func (r *workflowRevisionAliasResource) Delete(ctx context.Context, req resource
 		)
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }

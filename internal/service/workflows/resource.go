@@ -269,6 +269,4 @@ func (r *workflowResource) Delete(ctx context.Context, req resource.DeleteReques
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Workflow: %s", err))
 		return
 	}
-
-	resp.State.RemoveResource(ctx)
 }
