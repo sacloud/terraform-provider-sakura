@@ -98,7 +98,7 @@ func (d *workflowPlanDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 				Description: desc.Sprintf("The overage price per unit of the %s.", resourceName),
 			},
 		},
-		MarkdownDescription: "Get information about a Workflow Plan.",
+		MarkdownDescription: "Get information about a Workflows Plan.",
 	}
 }
 
