@@ -5,6 +5,8 @@ package sakura
 
 import (
 	"context"
+	"os"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
@@ -178,6 +180,16 @@ func (p *sakuraProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 }
 
 func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	endpoints := make(map[string]string)
+	for _, e := range os.Environ() {
+		if strings.HasPrefix(e, common.EndpointsEnvVar) {
+			parts := strings.SplitN(e, "=", 2)
+			if len(parts) == 2 {
+				serviceKey := strings.TrimPrefix(parts[0], common.EndpointsEnvVar)
+				endpoints[serviceKey] = parts[1]
+			}
+		}
+	}
 	envConf := &common.Config{
 		Profile:               envvar.StringFromEnvMulti([]string{"SAKURA_PROFILE", "SAKURACLOUD_PROFILE"}, ""),
 		AccessToken:           envvar.StringFromEnvMulti([]string{"SAKURA_ACCESS_TOKEN", "SAKURACLOUD_ACCESS_TOKEN"}, ""),
@@ -195,6 +207,7 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		APIRequestTimeout:     envvar.IntFromEnvMulti([]string{"SAKURA_API_REQUEST_TIMEOUT", "SAKURACLOUD_API_REQUEST_TIMEOUT"}, 0),
 		APIRequestRateLimit:   envvar.IntFromEnvMulti([]string{"SAKURA_RATE_LIMIT", "SAKURACLOUD_RATE_LIMIT"}, 0),
 		Zones:                 envvar.StringSliceFromEnvMulti([]string{"SAKURA_ZONES", "SAKURACLOUD_ZONES"}, nil),
+		Endpoints:             endpoints,
 	}
 
 	var config sakuraProviderModel
