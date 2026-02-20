@@ -34,6 +34,11 @@ func SkipIfEnvIsNotSet(t *testing.T, key ...string) {
 	}
 }
 func SkipIfIAMEnvIsNotSet(t *testing.T) {
+	// IAMのテストは組織・ユーザの権限等を変更する可能性があるため、明示的に環境変数をセットしている場合のみ実行する
+	if os.Getenv("SAKURA_ENABLE_IAM_TEST") == "" {
+		t.Skip("Environment variable SAKURA_ENABLE_IAM_TEST is not set")
+	}
+
 	if os.Getenv("SAKURA_PRIVATE_KEY") == "" && os.Getenv("SAKURA_PRIVATE_KEY_PATH") == "" {
 		t.Skip("Environment variable SAKURA_PRIVATE_KEY or SAKURA_PRIVATE_KEY_PATH is not set")
 	}
