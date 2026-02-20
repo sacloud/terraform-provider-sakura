@@ -72,7 +72,7 @@ type Config struct {
 	ServicePrincipalID    string
 	ServicePrincipalKeyID string
 	ServicePrivateKey     string
-	ServicePrivateKeyPath string `json:"PrivateKeyPEMPath,omitempty"`
+	ServicePrivateKeyPath string
 	Zone                  string
 	Zones                 []string
 	DefaultZone           string

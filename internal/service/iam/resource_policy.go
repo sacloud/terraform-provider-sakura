@@ -19,6 +19,7 @@ import (
 	v1 "github.com/sacloud/iam-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
 type policyResource struct {
@@ -63,7 +64,7 @@ func (r *policyResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 		Attributes: map[string]schema.Attribute{
 			"target": schema.StringAttribute{
 				Required:    true,
-				Description: "The target of the IAM Policy",
+				Description: desc.Sprintf("The target of the IAM Policy. This must be one of %s.", []string{targetProject, targetFolder, targetOrg}),
 				Validators: []validator.String{
 					stringvalidator.OneOf(targetProject, targetFolder, targetOrg),
 				},
