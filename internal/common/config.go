@@ -14,7 +14,6 @@ import (
 
 	"github.com/hashicorp/go-multierror"
 	client "github.com/sacloud/api-client-go"
-	"github.com/sacloud/api-client-go/profile"
 	"github.com/sacloud/apigw-api-go"
 	apigwapi "github.com/sacloud/apigw-api-go/apis/v1"
 	"github.com/sacloud/apprun-api-go"
@@ -26,6 +25,8 @@ import (
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/api"
 	"github.com/sacloud/iaas-api-go/helper/query"
+	"github.com/sacloud/iam-api-go"
+	iamapi "github.com/sacloud/iam-api-go/apis/v1"
 	kms "github.com/sacloud/kms-api-go"
 	kmsapi "github.com/sacloud/kms-api-go/apis/v1"
 	nosql "github.com/sacloud/nosql-api-go"
@@ -65,21 +66,25 @@ var (
 
 // Config type of SakuraCloud Config
 type Config struct {
-	Profile             string
-	AccessToken         string
-	AccessTokenSecret   string
-	Zone                string
-	Zones               []string
-	DefaultZone         string
-	TraceMode           string
-	AcceptLanguage      string
-	APIRootURL          string
-	RetryMax            int
-	RetryWaitMin        int
-	RetryWaitMax        int
-	APIRequestTimeout   int
-	APIRequestRateLimit int
-	TerraformVersion    string
+	Profile               string
+	AccessToken           string
+	AccessTokenSecret     string
+	ServicePrincipalID    string
+	ServicePrincipalKeyID string
+	ServicePrivateKey     string
+	ServicePrivateKeyPath string
+	Zone                  string
+	Zones                 []string
+	DefaultZone           string
+	TraceMode             string
+	AcceptLanguage        string
+	APIRootURL            string
+	RetryMax              int
+	RetryWaitMin          int
+	RetryWaitMax          int
+	APIRequestTimeout     int
+	APIRequestRateLimit   int
+	TerraformVersion      string
 }
 
 // APIClient for SakuraCloud API
@@ -102,6 +107,7 @@ type APIClient struct {
 	DedicatedStorageClient           *dedicatedstorageapi.Client
 	ApigwClient                      *apigwapi.Client
 	SecurityControlClient            *secconapi.Client
+	IamClient                        *iamapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -121,6 +127,18 @@ func (c *Config) FillWith(other *Config) {
 	}
 	if c.AccessTokenSecret == "" {
 		c.AccessTokenSecret = other.AccessTokenSecret
+	}
+	if c.ServicePrincipalID == "" {
+		c.ServicePrincipalID = other.ServicePrincipalID
+	}
+	if c.ServicePrincipalKeyID == "" {
+		c.ServicePrincipalKeyID = other.ServicePrincipalKeyID
+	}
+	if c.ServicePrivateKey == "" {
+		c.ServicePrivateKey = other.ServicePrivateKey
+	}
+	if c.ServicePrivateKeyPath == "" {
+		c.ServicePrivateKeyPath = other.ServicePrivateKeyPath
 	}
 	if c.Zone == "" {
 		c.Zone = other.Zone
@@ -176,50 +194,106 @@ func (c *Config) FillWithDefault() {
 }
 
 func (c *Config) LoadFromProfile() (*Config, error) {
+	profileOp := saclient.NewProfileOp(os.Environ())
+	var attrs map[string]any
 	if c.Profile == "" {
-		if name, err := profile.CurrentName(); err != nil {
-			c.Profile = profile.DefaultProfileName
+		if name, err := profileOp.GetCurrentName(); err != nil {
+			if profile, err := profileOp.Read(defaults.DefaultProfileName); err != nil {
+				return &Config{}, nil
+			} else {
+				c.Profile = defaults.DefaultProfileName
+				attrs = profile.Attributes
+			}
 		} else {
-			c.Profile = name
+			if profile, err := profileOp.Read(name); err != nil {
+				return nil, fmt.Errorf("failed to load profile[%s]: %s", name, err)
+			} else {
+				c.Profile = name
+				attrs = profile.Attributes
+			}
+		}
+	} else {
+		if profile, err := profileOp.Read(c.Profile); err != nil {
+			return nil, fmt.Errorf("failed to load profile[%s]: %s", c.Profile, err)
+		} else {
+			attrs = profile.Attributes
 		}
 	}
-	if c.Profile != profile.DefaultProfileName {
-		log.Printf("[DEBUG] using profile %q", c.Profile)
+
+	conf := &Config{}
+	if v, ok := attrs["AccessToken"].(string); ok {
+		conf.AccessToken = v
+	}
+	if v, ok := attrs["AccessTokenSecret"].(string); ok {
+		conf.AccessTokenSecret = v
+	}
+	if v, ok := attrs["ServicePrincipalID"].(string); ok {
+		conf.ServicePrincipalID = v
+	}
+	if v, ok := attrs["ServicePrincipalKeyID"].(string); ok {
+		conf.ServicePrincipalKeyID = v
+	}
+	if v, ok := attrs["PrivateKeyPEMPath"].(string); ok {
+		conf.ServicePrivateKeyPath = v
+	}
+	if v, ok := attrs["Zone"].(string); ok {
+		conf.Zone = v
+	}
+	if v, ok := attrs["Zones"].([]string); ok {
+		conf.Zones = v
+	}
+	if v, ok := attrs["DefaultZone"].(string); ok {
+		conf.DefaultZone = v
+	}
+	if v, ok := attrs["TraceMode"].(string); ok {
+		conf.TraceMode = v
+	}
+	if v, ok := attrs["AcceptLanguage"].(string); ok {
+		conf.AcceptLanguage = v
+	}
+	if v, ok := attrs["APIRootURL"].(string); ok {
+		conf.APIRootURL = v
+	}
+	if v, ok := attrs["RetryMax"].(int); ok {
+		conf.RetryMax = v
+	}
+	if v, ok := attrs["RetryWaitMin"].(int); ok {
+		conf.RetryWaitMin = v
+	}
+	if v, ok := attrs["RetryWaitMax"].(int); ok {
+		conf.RetryWaitMax = v
+	}
+	if v, ok := attrs["HTTPRequestTimeout"].(int); ok {
+		conf.APIRequestTimeout = v
+	}
+	if v, ok := attrs["HTTPRequestRateLimit"].(int); ok {
+		conf.APIRequestRateLimit = v
 	}
 
-	pcv := &profile.ConfigValue{}
-	if err := profile.Load(c.Profile, pcv); err != nil {
-		return nil, fmt.Errorf("loading profile %q is failed: %s", c.Profile, err)
-	}
-
-	return &Config{
-		AccessToken:         pcv.AccessToken,
-		AccessTokenSecret:   pcv.AccessTokenSecret,
-		Zone:                pcv.Zone,
-		Zones:               pcv.Zones,
-		TraceMode:           pcv.TraceMode,
-		AcceptLanguage:      pcv.AcceptLanguage,
-		APIRootURL:          pcv.APIRootURL,
-		RetryMax:            pcv.RetryMax,
-		RetryWaitMin:        pcv.RetryWaitMin,
-		RetryWaitMax:        pcv.RetryWaitMax,
-		APIRequestTimeout:   pcv.HTTPRequestTimeout,
-		APIRequestRateLimit: pcv.HTTPRequestRateLimit,
-	}, nil
+	return conf, nil
 }
 
 func (c *Config) validate() error {
 	var err error
-	if c.AccessToken == "" {
-		err = multierror.Append(err, errors.New("AccessToken is required"))
-	}
-	if c.AccessTokenSecret == "" {
-		err = multierror.Append(err, errors.New("AccessTokenSecret is required"))
+	if c.ServicePrivateKey != "" || c.ServicePrivateKeyPath != "" {
+		if c.ServicePrincipalID == "" {
+			err = multierror.Append(err, errors.New("service_principal_id is required when service_private_key or service_private_key_path is specified"))
+		}
+		if c.ServicePrincipalKeyID == "" {
+			err = multierror.Append(err, errors.New("service_principal_key_id is required when service_private_key or service_private_key_path is specified"))
+		}
+	} else {
+		if c.AccessToken == "" {
+			err = multierror.Append(err, errors.New("token is required"))
+		}
+		if c.AccessTokenSecret == "" {
+			err = multierror.Append(err, errors.New("secret is required"))
+		}
 	}
 	return err
 }
 
-func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APIClient, error) {
+func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if profileConf, err := c.LoadFromProfile(); err != nil {
 		return nil, err
 	} else {
@@ -290,6 +364,11 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 		TraceAPI:    enableAPITrace,
 	})
 
+	theClient := &saclient.Client{}
+	if err := theClient.SetEnviron(c.createSaclientEnvConfig()); err != nil {
+		return nil, fmt.Errorf("failed to create Sakura client via Envvars: %s", err.Error())
+	}
+
 	zones := c.Zones
 	if len(zones) == 0 {
 		zones = iaas.SakuraCloudZones
@@ -327,6 +406,10 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 	if err != nil {
 		return nil, err
 	}
+	iamClient, err := iam.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -347,6 +430,7 @@ func (c *Config) NewClient(envConf *Config, theClient *saclient.Client) (*APICli
 		DedicatedStorageClient:           dedicatedStorageClient,
 		ApigwClient:                      apigwClient,
 		SecurityControlClient:            secconClient,
+		IamClient:                        iamClient,
 	}, nil
 }
 
@@ -364,4 +448,64 @@ func terraformUserAgent(version string) string {
 	}
 
 	return ua
+}
+
+// saclient.Clientには内部storageのパラメータ群を直接設定する方法が現状ないので環境変数経由で設定する。
+// profile -> 環境変数 -> TFファイルを全て適用した設定値を渡す
+func (c *Config) createSaclientEnvConfig() []string {
+	var envs []string
+
+	if c.Profile != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_PROFILE=%s", c.Profile))
+	}
+	if c.AccessToken != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_ACCESS_TOKEN=%s", c.AccessToken))
+	}
+	if c.AccessTokenSecret != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_ACCESS_TOKEN_SECRET=%s", c.AccessTokenSecret))
+	}
+	if c.ServicePrincipalID != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_SERVICE_PRINCIPAL_ID=%s", c.ServicePrincipalID))
+	}
+	if c.ServicePrincipalKeyID != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_SERVICE_PRINCIPAL_KEY_ID=%s", c.ServicePrincipalKeyID))
+	}
+	if c.ServicePrivateKey != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_PRIVATE_KEY=%s", c.ServicePrivateKey))
+	}
+	if c.ServicePrivateKeyPath != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_PRIVATE_KEY_PATH=%s", c.ServicePrivateKeyPath))
+	}
+	if c.Zone != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_ZONE=%s", c.Zone))
+	}
+	if c.DefaultZone != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_DEFAULT_ZONE=%s", c.DefaultZone))
+	}
+	if len(c.Zones) > 0 {
+		envs = append(envs, fmt.Sprintf("SAKURA_ZONES=%s", strings.Join(c.Zones, ",")))
+	}
+	if c.APIRootURL != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_API_ROOT_URL=%s", c.APIRootURL))
+	}
+	if c.RetryMax > 0 {
+		envs = append(envs, fmt.Sprintf("SAKURA_RETRY_MAX=%d", c.RetryMax))
+	}
+	if c.RetryWaitMax > 0 {
+		envs = append(envs, fmt.Sprintf("SAKURA_RETRY_WAIT_MAX=%d", c.RetryWaitMax))
+	}
+	if c.RetryWaitMin > 0 {
+		envs = append(envs, fmt.Sprintf("SAKURA_RETRY_WAIT_MIN=%d", c.RetryWaitMin))
+	}
+	if c.APIRequestTimeout > 0 {
+		envs = append(envs, fmt.Sprintf("SAKURA_API_REQUEST_TIMEOUT=%d", c.APIRequestTimeout))
+	}
+	if c.APIRequestRateLimit > 0 {
+		envs = append(envs, fmt.Sprintf("SAKURA_RATE_LIMIT=%d", c.APIRequestRateLimit))
+	}
+	if c.TraceMode != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_TRACE=%s", c.TraceMode))
+	}
+
+	return envs
 }
