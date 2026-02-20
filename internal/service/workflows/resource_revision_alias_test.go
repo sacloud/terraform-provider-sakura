@@ -103,7 +103,6 @@ func TestAccSakuraResourceWorkflowsRevisionAlias_workflowUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "alias", "stable"),
 				),
 			},
-			// TODO: fix error
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraWorkflowsRevisionAlias_workflowUpdate_step2, rand, sampleRunbookV2Terraform),
 				Check: resource.ComposeTestCheckFunc(
