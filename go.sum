@@ -243,8 +243,8 @@ github.com/sacloud/apprun-api-go v0.6.0 h1:8/HAu6Vw2a01dCIRkaqrXw/U27wsLy8vekTDf
 github.com/sacloud/apprun-api-go v0.6.0/go.mod h1:H400OqgfgYclHSO8m5ihPEgUdWnPVinnVlAaMksXS14=
 github.com/sacloud/autoscaler v0.19.3 h1:FkBxc0mE8fvaWiOiz+TpFAT1TX8DRLXs8prsqaM2MF0=
 github.com/sacloud/autoscaler v0.19.3/go.mod h1:jTeHzdZHrWd/2mYtgEyyFDTqHu0EbMPNDzwj7mdl0MA=
-github.com/sacloud/cloudhsm-api-go v0.2.0 h1:ESBNWN1ZhwXOAwUCdzcnVe8JWXlJOK306MBoNoDs/cA=
-github.com/sacloud/cloudhsm-api-go v0.2.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
+github.com/sacloud/cloudhsm-api-go v0.3.0 h1:qu/Imaqn+Lmf3/rKjwMdyz25cdusLwGXpH3PATNWrbw=
+github.com/sacloud/cloudhsm-api-go v0.3.0/go.mod h1:9/bfcNlkQceB3QIwE3/d1Mc6B3aWUeycBEtAyl3nLaE=
 github.com/sacloud/dedicated-storage-api-go v0.0.3 h1:i8P8y6XaZUNqKUd0TBDIqzixBQ9okaa8Ui2K79icTts=
 github.com/sacloud/dedicated-storage-api-go v0.0.3/go.mod h1:/kzVyzGfSz7/ZzQ24gnvN1pgdyqlq0ba91irEEkbroI=
 github.com/sacloud/eventbus-api-go v0.5.2 h1:RsPJqWKl7nsNyGH0yYrsHCbv7YBiNOTaTrAzUVypu6A=
