@@ -122,6 +122,9 @@ func (c *APIClient) GetZones() []string {
 }
 
 func (c *Config) FillWith(other *Config) {
+	if c.Profile == "" {
+		c.Profile = other.Profile
+	}
 	if c.AccessToken == "" {
 		c.AccessToken = other.AccessToken
 	}
@@ -239,8 +242,16 @@ func (c *Config) LoadFromProfile() (*Config, error) {
 	if v, ok := attrs["Zone"].(string); ok {
 		conf.Zone = v
 	}
-	if v, ok := attrs["Zones"].([]string); ok {
-		conf.Zones = v
+	if v, ok := attrs["Zones"].([]any); ok {
+		zones := make([]string, 0, len(v))
+		for _, item := range v {
+			s, ok := item.(string)
+			if !ok {
+				return nil, fmt.Errorf("invalid type for Zones element: %T", item)
+			}
+			zones = append(zones, s)
+		}
+		conf.Zones = zones
 	}
 	if v, ok := attrs["DefaultZone"].(string); ok {
 		conf.DefaultZone = v
@@ -254,20 +265,20 @@ func (c *Config) LoadFromProfile() (*Config, error) {
 	if v, ok := attrs["APIRootURL"].(string); ok {
 		conf.APIRootURL = v
 	}
-	if v, ok := attrs["RetryMax"].(int); ok {
-		conf.RetryMax = v
+	if v, ok := attrs["RetryMax"].(float64); ok {
+		conf.RetryMax = int(v)
 	}
-	if v, ok := attrs["RetryWaitMin"].(int); ok {
-		conf.RetryWaitMin = v
+	if v, ok := attrs["RetryWaitMin"].(float64); ok {
+		conf.RetryWaitMin = int(v)
 	}
-	if v, ok := attrs["RetryWaitMax"].(int); ok {
-		conf.RetryWaitMax = v
+	if v, ok := attrs["RetryWaitMax"].(float64); ok {
+		conf.RetryWaitMax = int(v)
 	}
-	if v, ok := attrs["HTTPRequestTimeout"].(int); ok {
-		conf.APIRequestTimeout = v
+	if v, ok := attrs["HTTPRequestTimeout"].(float64); ok {
+		conf.APIRequestTimeout = int(v)
 	}
-	if v, ok := attrs["HTTPRequestRateLimit"].(int); ok {
-		conf.APIRequestRateLimit = v
+	if v, ok := attrs["HTTPRequestRateLimit"].(float64); ok {
+		conf.APIRequestRateLimit = int(v)
 	}
 
 	return conf, nil
