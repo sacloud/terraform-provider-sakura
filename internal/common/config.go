@@ -48,7 +48,10 @@ const (
 	traceAPI  = "api"
 )
 
-const uaEnvVar = "SAKURACLOUD_APPEND_USER_AGENT"
+const (
+	uaEnvVar        = "SAKURACLOUD_APPEND_USER_AGENT"
+	EndpointsEnvVar = "SAKURA_ENDPOINTS_"
+)
 
 const (
 	Zone                = "is1b"
@@ -85,6 +88,7 @@ type Config struct {
 	APIRequestTimeout     int
 	APIRequestRateLimit   int
 	TerraformVersion      string
+	Endpoints             map[string]string
 }
 
 // APIClient for SakuraCloud API
@@ -172,6 +176,9 @@ func (c *Config) FillWith(other *Config) {
 	}
 	if c.APIRequestRateLimit == 0 && other.APIRequestRateLimit > 0 {
 		c.APIRequestRateLimit = other.APIRequestRateLimit
+	}
+	if len(c.Endpoints) == 0 && len(other.Endpoints) > 0 {
+		c.Endpoints = other.Endpoints
 	}
 }
 
@@ -268,6 +275,9 @@ func (c *Config) LoadFromProfile() (*Config, error) {
 	}
 	if v, ok := attrs["HTTPRequestRateLimit"].(int); ok {
 		conf.APIRequestRateLimit = v
+	}
+	if v, ok := attrs["Endpoints"].(map[string]string); ok {
+		conf.Endpoints = v
 	}
 
 	return conf, nil
@@ -505,6 +515,11 @@ func (c *Config) createSaclientEnvConfig() []string {
 	}
 	if c.TraceMode != "" {
 		envs = append(envs, fmt.Sprintf("SAKURA_TRACE=%s", c.TraceMode))
+	}
+	if len(c.Endpoints) > 0 {
+		for k, v := range c.Endpoints {
+			envs = append(envs, fmt.Sprintf("%s%s=%s", EndpointsEnvVar, strings.ToUpper(k), v))
+		}
 	}
 
 	return envs
