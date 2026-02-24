@@ -384,7 +384,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		zones = iaas.SakuraCloudZones
 	}
 
-	kmsClient, err := kms.NewClient(client.WithOptions(callerOptions))
+	kmsClient, err := kms.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
