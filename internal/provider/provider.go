@@ -50,6 +50,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/server"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_monitor"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_mq"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_notification"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/ssh_key"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/subnet"
 	sw1tch "github.com/sacloud/terraform-provider-sakura/internal/service/switch"
@@ -272,6 +273,8 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		server.NewServerDataSource,
 		simple_monitor.NewSimpleMonitorDataSource,
 		simple_mq.NewSimpleMQDataSource,
+		simple_notification.NewDestinationDataSource,
+		simple_notification.NewGroupDataSource,
 		ssh_key.NewSSHKeyDataSource,
 		subnet.NewSubnetDataSource,
 		sw1tch.NewSwitchDataSource,
@@ -340,6 +343,8 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		server.NewServerResource,
 		simple_monitor.NewSimpleMonitorResource,
 		simple_mq.NewSimpleMQResource,
+		simple_notification.NewDestinationResource,
+		simple_notification.NewGroupResource,
 		ssh_key.NewSSHKeyResource,
 		subnet.NewSubnetResource,
 		sw1tch.NewSwitchResource,

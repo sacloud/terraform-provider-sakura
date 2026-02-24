@@ -52,6 +52,8 @@ Application Integration:
   - eventbus_trigger
   - simple_mq
   - workflows
+  - simple_notification_destination 
+  - simple_notification_group 
 Monitoring:
   - simple_monitor
   - monitoring_suite
