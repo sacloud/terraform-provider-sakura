@@ -211,3 +211,17 @@ func SchemaResourceEncryptionDisk(name string) schema.Attribute {
 		},
 	}
 }
+
+func SchemaResourceCreatedAt(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Computed:    true,
+		Description: desc.Sprintf("The creation timestamp of the %s", name),
+	}
+}
+
+func SchemaResourceUpdatedAt(name string) schema.Attribute {
+	return schema.StringAttribute{
+		Computed:    true,
+		Description: desc.Sprintf("The last update timestamp of the %s", name),
+	}
+}

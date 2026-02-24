@@ -65,11 +65,24 @@ Security:
   - kms
   - secret_manager
   - secret_manager_secret
+Container and Image:
+  - container_registry
+Platform:
+  - iam_auth
+  - iam_folder
+  - iam_group
+  - iam_id_role
+  - iam_organization_id_policy
+  - iam_policy
+  - iam_project
+  - iam_project_apikey
+  - iam_role
+  - iam_service_principal
+  - iam_sso
+  - iam_user
   - security_control_activation
   - security_control_automated_action
   - security_control_evaluation_rule
-Container and Image:
-  - container_registry
 Misc:
   - auto_backup
   - auto_scale
