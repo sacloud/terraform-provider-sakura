@@ -12,6 +12,7 @@ import (
 
 	"github.com/sacloud/api-client-go/profile"
 	"github.com/sacloud/iaas-api-go"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	"github.com/stretchr/testify/require"
@@ -22,8 +23,8 @@ func initTestProfileDir() func() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	os.Setenv("SAKURACLOUD_PROFILE_DIR", wd) //nolint
 	profileDir := filepath.Join(wd, ".usacloud")
+	os.Setenv("SAKURACLOUD_PROFILE_DIR", profileDir) //nolint
 	if _, err := os.Stat(profileDir); err == nil {
 		os.RemoveAll(profileDir) //nolint
 	}
@@ -36,43 +37,49 @@ func initTestProfileDir() func() {
 func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 	defer initTestProfileDir()()
 
-	defaultProfile := &profile.ConfigValue{
-		AccessToken:          "token",
-		AccessTokenSecret:    "secret",
-		Zone:                 "dummy1",
-		Zones:                []string{"dummy1", "dummy2"},
-		UserAgent:            "dummy-ua",
-		AcceptLanguage:       "ja-JP",
-		RetryMax:             1,
-		RetryWaitMin:         2,
-		RetryWaitMax:         3,
-		StatePollingTimeout:  4,
-		StatePollingInterval: 5,
-		HTTPRequestTimeout:   6,
-		HTTPRequestRateLimit: 7,
-		APIRootURL:           "dummy",
-		TraceMode:            "dummy",
-		FakeMode:             true,
-		FakeStorePath:        "dummy",
+	defaultProfile := &saclient.Profile{
+		Name: "default",
+		Attributes: map[string]any{
+			"AccessToken":          "token",
+			"AccessTokenSecret":    "secret",
+			"Zone":                 "dummy1",
+			"Zones":                []string{"dummy1", "dummy2"},
+			"UserAgent":            "dummy-ua",
+			"AcceptLanguage":       "ja-JP",
+			"RetryMax":             1,
+			"RetryWaitMin":         2,
+			"RetryWaitMax":         3,
+			"StatePollingTimeout":  4,
+			"StatePollingInterval": 5,
+			"HTTPRequestTimeout":   6,
+			"HTTPRequestRateLimit": 7,
+			"APIRootURL":           "dummy",
+			"TraceMode":            "dummy",
+			"FakeMode":             true,
+			"FakeStorePath":        "dummy",
+		},
 	}
-	testProfile := &profile.ConfigValue{
-		AccessToken:          "testtoken",
-		AccessTokenSecret:    "testsecret",
-		Zone:                 "test",
-		Zones:                []string{"test1", "test2"},
-		UserAgent:            "test-ua",
-		AcceptLanguage:       "ja-JP",
-		RetryMax:             7,
-		RetryWaitMin:         6,
-		RetryWaitMax:         5,
-		StatePollingTimeout:  4,
-		StatePollingInterval: 3,
-		HTTPRequestTimeout:   2,
-		HTTPRequestRateLimit: 1,
-		APIRootURL:           "test",
-		TraceMode:            "test",
-		FakeMode:             false,
-		FakeStorePath:        "test",
+	testProfile := &saclient.Profile{
+		Name: "test",
+		Attributes: map[string]any{
+			"AccessToken":          "testtoken",
+			"AccessTokenSecret":    "testsecret",
+			"Zone":                 "test",
+			"Zones":                []string{"test1", "test2"},
+			"UserAgent":            "test-ua",
+			"AcceptLanguage":       "ja-JP",
+			"RetryMax":             7,
+			"RetryWaitMin":         6,
+			"RetryWaitMax":         5,
+			"StatePollingTimeout":  4,
+			"StatePollingInterval": 3,
+			"HTTPRequestTimeout":   2,
+			"HTTPRequestRateLimit": 1,
+			"APIRootURL":           "test",
+			"TraceMode":            "test",
+			"FakeMode":             false,
+			"FakeStorePath":        "test",
+		},
 	}
 
 	// プロファイル指定なし & デフォルトプロファイルなし
@@ -83,7 +90,7 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 	cases := []struct {
 		scenario       string
 		in             *common.Config
-		profiles       map[string]*profile.ConfigValue
+		profiles       map[string]*saclient.Profile
 		expect         *common.Config
 		currentProfile string
 		err            error
@@ -98,9 +105,9 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 				APIRequestTimeout:   defaults.APIRequestTimeout,
 				APIRequestRateLimit: defaults.APIRequestRateLimit,
 			},
-			profiles: map[string]*profile.ConfigValue{},
+			profiles: map[string]*saclient.Profile{},
 			expect: &common.Config{
-				Profile:             "default",
+				Profile:             "",
 				Zone:                defaults.Zone,
 				Zones:               iaas.SakuraCloudZones,
 				RetryMax:            defaults.RetryMax,
@@ -113,25 +120,25 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 			in: &common.Config{
 				Profile: "",
 			},
-			profiles: map[string]*profile.ConfigValue{
+			profiles: map[string]*saclient.Profile{
 				"default": defaultProfile,
 				"test":    testProfile,
 			},
 			currentProfile: "test",
 			expect: &common.Config{
 				Profile:             "test",
-				AccessToken:         testProfile.AccessToken,
-				AccessTokenSecret:   testProfile.AccessTokenSecret,
-				Zone:                testProfile.Zone,
-				Zones:               testProfile.Zones,
-				TraceMode:           testProfile.TraceMode,
-				AcceptLanguage:      testProfile.AcceptLanguage,
-				APIRootURL:          testProfile.APIRootURL,
-				RetryMax:            testProfile.RetryMax,
-				RetryWaitMin:        testProfile.RetryWaitMin,
-				RetryWaitMax:        testProfile.RetryWaitMax,
-				APIRequestTimeout:   testProfile.HTTPRequestTimeout,
-				APIRequestRateLimit: testProfile.HTTPRequestRateLimit,
+				AccessToken:         testProfile.Attributes["AccessToken"].(string),
+				AccessTokenSecret:   testProfile.Attributes["AccessTokenSecret"].(string),
+				Zone:                testProfile.Attributes["Zone"].(string),
+				Zones:               testProfile.Attributes["Zones"].([]string),
+				TraceMode:           testProfile.Attributes["TraceMode"].(string),
+				AcceptLanguage:      testProfile.Attributes["AcceptLanguage"].(string),
+				APIRootURL:          testProfile.Attributes["APIRootURL"].(string),
+				RetryMax:            testProfile.Attributes["RetryMax"].(int),
+				RetryWaitMin:        testProfile.Attributes["RetryWaitMin"].(int),
+				RetryWaitMax:        testProfile.Attributes["RetryWaitMax"].(int),
+				APIRequestTimeout:   testProfile.Attributes["HTTPRequestTimeout"].(int),
+				APIRequestRateLimit: testProfile.Attributes["HTTPRequestRateLimit"].(int),
 			},
 		},
 		{
@@ -142,7 +149,7 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 				AccessTokenSecret: "secret",
 				Zone:              "is1c",
 			},
-			profiles: map[string]*profile.ConfigValue{
+			profiles: map[string]*saclient.Profile{
 				"default": defaultProfile,
 				"test":    testProfile,
 			},
@@ -152,15 +159,15 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 				AccessToken:         "token",
 				AccessTokenSecret:   "secret",
 				Zone:                "is1c",
-				Zones:               testProfile.Zones,
-				TraceMode:           testProfile.TraceMode,
-				AcceptLanguage:      testProfile.AcceptLanguage,
-				APIRootURL:          testProfile.APIRootURL,
-				RetryMax:            testProfile.RetryMax,
-				RetryWaitMin:        testProfile.RetryWaitMin,
-				RetryWaitMax:        testProfile.RetryWaitMax,
-				APIRequestTimeout:   testProfile.HTTPRequestTimeout,
-				APIRequestRateLimit: testProfile.HTTPRequestRateLimit,
+				Zones:               testProfile.Attributes["Zones"].([]string),
+				TraceMode:           testProfile.Attributes["TraceMode"].(string),
+				AcceptLanguage:      testProfile.Attributes["AcceptLanguage"].(string),
+				APIRootURL:          testProfile.Attributes["APIRootURL"].(string),
+				RetryMax:            testProfile.Attributes["RetryMax"].(int),
+				RetryWaitMin:        testProfile.Attributes["RetryWaitMin"].(int),
+				RetryWaitMax:        testProfile.Attributes["RetryWaitMax"].(int),
+				APIRequestTimeout:   testProfile.Attributes["HTTPRequestTimeout"].(int),
+				APIRequestRateLimit: testProfile.Attributes["HTTPRequestRateLimit"].(int),
 			},
 		},
 		{
@@ -173,21 +180,21 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 				APIRequestTimeout:   defaults.APIRequestTimeout,
 				APIRequestRateLimit: defaults.APIRequestRateLimit,
 			},
-			profiles: map[string]*profile.ConfigValue{
+			profiles: map[string]*saclient.Profile{
 				"default": defaultProfile,
 			},
 			expect: &common.Config{
 				Profile:             "default",
-				AccessToken:         defaultProfile.AccessToken,
-				AccessTokenSecret:   defaultProfile.AccessTokenSecret,
+				AccessToken:         defaultProfile.Attributes["AccessToken"].(string),
+				AccessTokenSecret:   defaultProfile.Attributes["AccessTokenSecret"].(string),
 				Zone:                defaults.Zone,
 				Zones:               iaas.SakuraCloudZones,
-				TraceMode:           defaultProfile.TraceMode,
-				AcceptLanguage:      defaultProfile.AcceptLanguage,
-				APIRootURL:          defaultProfile.APIRootURL,
+				TraceMode:           defaultProfile.Attributes["TraceMode"].(string),
+				AcceptLanguage:      defaultProfile.Attributes["AcceptLanguage"].(string),
+				APIRootURL:          defaultProfile.Attributes["APIRootURL"].(string),
 				RetryMax:            defaults.RetryMax,
-				RetryWaitMin:        defaultProfile.RetryWaitMin,
-				RetryWaitMax:        defaultProfile.RetryWaitMax,
+				RetryWaitMin:        defaultProfile.Attributes["RetryWaitMin"].(int),
+				RetryWaitMax:        defaultProfile.Attributes["RetryWaitMax"].(int),
 				APIRequestTimeout:   defaults.APIRequestTimeout,
 				APIRequestRateLimit: defaults.APIRequestRateLimit,
 			},
@@ -202,23 +209,23 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 				APIRequestTimeout:   0,
 				APIRequestRateLimit: 0,
 			},
-			profiles: map[string]*profile.ConfigValue{
+			profiles: map[string]*saclient.Profile{
 				"default": defaultProfile,
 			},
 			expect: &common.Config{
 				Profile:             "default",
-				AccessToken:         defaultProfile.AccessToken,
-				AccessTokenSecret:   defaultProfile.AccessTokenSecret,
-				Zone:                defaultProfile.Zone,
-				Zones:               defaultProfile.Zones,
-				TraceMode:           defaultProfile.TraceMode,
-				AcceptLanguage:      defaultProfile.AcceptLanguage,
-				APIRootURL:          defaultProfile.APIRootURL,
-				RetryMax:            defaultProfile.RetryMax,
-				RetryWaitMin:        defaultProfile.RetryWaitMin,
-				RetryWaitMax:        defaultProfile.RetryWaitMax,
-				APIRequestTimeout:   defaultProfile.HTTPRequestTimeout,
-				APIRequestRateLimit: defaultProfile.HTTPRequestRateLimit,
+				AccessToken:         defaultProfile.Attributes["AccessToken"].(string),
+				AccessTokenSecret:   defaultProfile.Attributes["AccessTokenSecret"].(string),
+				Zone:                defaultProfile.Attributes["Zone"].(string),
+				Zones:               defaultProfile.Attributes["Zones"].([]string),
+				TraceMode:           defaultProfile.Attributes["TraceMode"].(string),
+				AcceptLanguage:      defaultProfile.Attributes["AcceptLanguage"].(string),
+				APIRootURL:          defaultProfile.Attributes["APIRootURL"].(string),
+				RetryMax:            defaultProfile.Attributes["RetryMax"].(int),
+				RetryWaitMin:        defaultProfile.Attributes["RetryWaitMin"].(int),
+				RetryWaitMax:        defaultProfile.Attributes["RetryWaitMax"].(int),
+				APIRequestTimeout:   defaultProfile.Attributes["HTTPRequestTimeout"].(int),
+				APIRequestRateLimit: defaultProfile.Attributes["HTTPRequestRateLimit"].(int),
 			},
 		},
 		{
@@ -238,7 +245,7 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 				APIRequestTimeout:   8080,
 				APIRequestRateLimit: 8080,
 			},
-			profiles: map[string]*profile.ConfigValue{
+			profiles: map[string]*saclient.Profile{
 				"default": defaultProfile,
 			},
 			expect: &common.Config{
@@ -262,13 +269,13 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 			in: &common.Config{
 				Profile: "test",
 			},
-			profiles: map[string]*profile.ConfigValue{
+			profiles: map[string]*saclient.Profile{
 				"default": defaultProfile,
 			},
 			expect: &common.Config{
 				Profile: "test",
 			},
-			err: errors.New(`loading profile "test" is failed: profile "test" is not exists`),
+			err: errors.New(`failed to load profile[test]: API Error - failed to open test/config.json: openat test/config.json: no such file or directory`),
 		},
 		{
 			scenario: "Profile name specified with normal profile",
@@ -280,22 +287,22 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 				APIRequestTimeout:   defaults.APIRequestTimeout,
 				APIRequestRateLimit: defaults.APIRequestRateLimit,
 			},
-			profiles: map[string]*profile.ConfigValue{
+			profiles: map[string]*saclient.Profile{
 				"default": defaultProfile,
 				"test":    testProfile,
 			},
 			expect: &common.Config{
 				Profile:             "test",
-				AccessToken:         testProfile.AccessToken,
-				AccessTokenSecret:   testProfile.AccessTokenSecret,
+				AccessToken:         testProfile.Attributes["AccessToken"].(string),
+				AccessTokenSecret:   testProfile.Attributes["AccessTokenSecret"].(string),
 				Zone:                defaults.Zone,
 				Zones:               iaas.SakuraCloudZones,
-				TraceMode:           testProfile.TraceMode,
-				AcceptLanguage:      testProfile.AcceptLanguage,
-				APIRootURL:          testProfile.APIRootURL,
+				TraceMode:           testProfile.Attributes["TraceMode"].(string),
+				AcceptLanguage:      testProfile.Attributes["AcceptLanguage"].(string),
+				APIRootURL:          testProfile.Attributes["APIRootURL"].(string),
 				RetryMax:            defaults.RetryMax,
-				RetryWaitMin:        testProfile.RetryWaitMin,
-				RetryWaitMax:        testProfile.RetryWaitMax,
+				RetryWaitMin:        testProfile.Attributes["RetryWaitMin"].(int),
+				RetryWaitMax:        testProfile.Attributes["RetryWaitMax"].(int),
 				APIRequestTimeout:   defaults.APIRequestTimeout,
 				APIRequestRateLimit: defaults.APIRequestRateLimit,
 			},
@@ -305,23 +312,24 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 			in: &common.Config{
 				Profile: "test",
 			},
-			profiles: map[string]*profile.ConfigValue{
-				"test": testProfile,
+			profiles: map[string]*saclient.Profile{
+				"default": defaultProfile,
+				"test":    testProfile,
 			},
 			expect: &common.Config{
 				Profile:             "test",
-				AccessToken:         testProfile.AccessToken,
-				AccessTokenSecret:   testProfile.AccessTokenSecret,
-				Zone:                testProfile.Zone,
-				Zones:               testProfile.Zones,
-				TraceMode:           testProfile.TraceMode,
-				AcceptLanguage:      testProfile.AcceptLanguage,
-				APIRootURL:          testProfile.APIRootURL,
-				RetryMax:            testProfile.RetryMax,
-				RetryWaitMin:        testProfile.RetryWaitMin,
-				RetryWaitMax:        testProfile.RetryWaitMax,
-				APIRequestTimeout:   testProfile.HTTPRequestTimeout,
-				APIRequestRateLimit: testProfile.HTTPRequestRateLimit,
+				AccessToken:         testProfile.Attributes["AccessToken"].(string),
+				AccessTokenSecret:   testProfile.Attributes["AccessTokenSecret"].(string),
+				Zone:                testProfile.Attributes["Zone"].(string),
+				Zones:               testProfile.Attributes["Zones"].([]string),
+				TraceMode:           testProfile.Attributes["TraceMode"].(string),
+				AcceptLanguage:      testProfile.Attributes["AcceptLanguage"].(string),
+				APIRootURL:          testProfile.Attributes["APIRootURL"].(string),
+				RetryMax:            testProfile.Attributes["RetryMax"].(int),
+				RetryWaitMin:        testProfile.Attributes["RetryWaitMin"].(int),
+				RetryWaitMax:        testProfile.Attributes["RetryWaitMax"].(int),
+				APIRequestTimeout:   testProfile.Attributes["HTTPRequestTimeout"].(int),
+				APIRequestRateLimit: testProfile.Attributes["HTTPRequestRateLimit"].(int),
 			},
 		},
 	}
@@ -329,18 +337,22 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.scenario, func(t *testing.T) {
 			initTestProfileDir()
-			for profileName, profileValue := range tt.profiles {
-				if err := profile.Save(profileName, profileValue); err != nil {
+			profileOp := saclient.NewProfileOp(os.Environ())
+
+			for _, profileValue := range tt.profiles {
+				if err := profileOp.Create(profileValue); err != nil {
 					t.Fatal(err)
 				}
 			}
 
-			currentProfile := tt.currentProfile
-			if tt.currentProfile == "" {
-				currentProfile = profile.DefaultProfileName
-			}
-			if err := profile.SetCurrentName(currentProfile); err != nil {
-				t.Fatal(err)
+			if len(tt.profiles) > 0 {
+				currentProfile := tt.currentProfile
+				if tt.currentProfile == "" {
+					currentProfile = profile.DefaultProfileName
+				}
+				if err := profileOp.SetCurrentName(currentProfile); err != nil {
+					t.Fatal(err)
+				}
 			}
 
 			cfg, err := tt.in.LoadFromProfile()
