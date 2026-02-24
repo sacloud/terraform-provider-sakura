@@ -172,7 +172,7 @@ func (r *workflowResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	// NOTE: createWorkflowで作ったrevisionのIDはレスポンスに無いため、まとめて一覧取得しステートに保存
+	// NOTE: createWorkflowで作ったrevisionのIDはレスポンスに無いため、リビジョンの一覧取得にて確認しステートに保存
 	revisionOp := workflows.NewRevisionOp(r.client)
 	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflow.ID})
 	if err != nil {

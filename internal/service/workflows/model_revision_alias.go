@@ -4,6 +4,8 @@
 package workflows
 
 import (
+	"strconv"
+
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1 "github.com/sacloud/workflows-api-go/apis/v1"
 )
@@ -21,18 +23,24 @@ func (model *workflowRevisionAliasBaseModel) toUpdateRequest() v1.UpdateWorkflow
 }
 
 func (model *workflowRevisionAliasBaseModel) updateStateFromCreated(data *v1.UpdateWorkflowRevisionAliasOKRevision) {
+	model.WorkflowID = types.StringValue(data.WorkflowId)
+	model.RevisionID = types.StringValue(strconv.Itoa(data.RevisionId))
 	if val, ok := data.RevisionAlias.Get(); ok {
 		model.Alias = types.StringValue(val)
 	}
 }
 
 func (model *workflowRevisionAliasBaseModel) updateStateFromRead(data *v1.GetWorkflowRevisionsOKRevision) {
+	model.WorkflowID = types.StringValue(data.WorkflowId)
+	model.RevisionID = types.StringValue(strconv.Itoa(data.RevisionId))
 	if val, ok := data.RevisionAlias.Get(); ok {
 		model.Alias = types.StringValue(val)
 	}
 }
 
 func (model *workflowRevisionAliasBaseModel) updateStateFromUpdated(data *v1.UpdateWorkflowRevisionAliasOKRevision) {
+	model.WorkflowID = types.StringValue(data.WorkflowId)
+	model.RevisionID = types.StringValue(strconv.Itoa(data.RevisionId))
 	if val, ok := data.RevisionAlias.Get(); ok {
 		model.Alias = types.StringValue(val)
 	}
