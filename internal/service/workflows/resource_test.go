@@ -114,16 +114,14 @@ func testCheckSakuraWorkflowsExists(n string, workflow *v1.GetWorkflowOKWorkflow
 			return errors.New("no Workflow ID is set")
 		}
 
-		client := test.AccClientGetter()
-		workflowOp := workflows.NewWorkflowOp(client.WorkflowsClient)
+		workflowOp := workflows.NewWorkflowOp(test.AccClientGetter().WorkflowsClient)
 
 		foundWorkflow, err := workflowOp.Read(context.Background(), rs.Primary.ID)
 		if err != nil {
 			return err
 		}
 
-		foundID := foundWorkflow.ID
-		if foundID != rs.Primary.ID {
+		if foundWorkflow.ID != rs.Primary.ID {
 			return fmt.Errorf("not found Workflow: %s", rs.Primary.ID)
 		}
 

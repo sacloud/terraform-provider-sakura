@@ -7,7 +7,6 @@ import (
 	"context"
 	"fmt"
 	"regexp"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -18,6 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	"github.com/sacloud/workflows-api-go"
 	v1 "github.com/sacloud/workflows-api-go/apis/v1"
@@ -126,15 +126,7 @@ func (r *workflowRevisionAliasResource) Create(ctx context.Context, req resource
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	revisionIDStr := plan.RevisionID.ValueString()
-	revisionID, err := strconv.Atoi(revisionIDStr)
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("revision_id"),
-			"Create: validation error",
-			"Invalid revision_id format. Expected an integer value.")
-		return
-	}
+	revisionID := utils.MustAtoI(plan.RevisionID.ValueString())
 
 	revisionOp := workflows.NewRevisionOp(r.client)
 	rev, err := revisionOp.UpdateAlias(ctx, plan.WorkflowID.ValueString(), revisionID, plan.toUpdateRequest())
@@ -157,15 +149,7 @@ func (r *workflowRevisionAliasResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	revisionIDStr := state.RevisionID.ValueString()
-	revisionID, err := strconv.Atoi(revisionIDStr)
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("revision_id"),
-			"Read: Validation error",
-			"Invalid revision_id format. Expected an integer value.")
-		return
-	}
+	revisionID := utils.MustAtoI(state.RevisionID.ValueString())
 
 	revisionOp := workflows.NewRevisionOp(r.client)
 	rev, err := revisionOp.Read(ctx, state.WorkflowID.ValueString(), revisionID)
@@ -192,15 +176,7 @@ func (r *workflowRevisionAliasResource) Update(ctx context.Context, req resource
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	revisionIDStr := plan.RevisionID.ValueString()
-	revisionID, err := strconv.Atoi(revisionIDStr)
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("revision_id"),
-			"Update: validation error",
-			"Invalid revision_id format. Expected an integer value.")
-		return
-	}
+	revisionID := utils.MustAtoI(plan.RevisionID.ValueString())
 
 	revisionOp := workflows.NewRevisionOp(r.client)
 	rev, err := revisionOp.UpdateAlias(ctx, plan.WorkflowID.ValueString(), revisionID, plan.toUpdateRequest())
@@ -226,15 +202,7 @@ func (r *workflowRevisionAliasResource) Delete(ctx context.Context, req resource
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	revisionIDStr := state.RevisionID.ValueString()
-	revisionID, err := strconv.Atoi(revisionIDStr)
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("revision_id"),
-			"Delete: validation error",
-			"Invalid revision_id format. Expected an integer value.")
-		return
-	}
+	revisionID := utils.MustAtoI(state.RevisionID.ValueString())
 
 	revisionOp := workflows.NewRevisionOp(r.client)
 

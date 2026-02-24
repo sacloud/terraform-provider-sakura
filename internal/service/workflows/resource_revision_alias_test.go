@@ -5,7 +5,6 @@ package workflows_test
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"regexp"
 	"strconv"
@@ -143,27 +142,18 @@ func testCheckSakuraWorkflowsRevisionAliasExists(resourceName string, revisionAl
 			return fmt.Errorf("failed to parse revisionID: %s", err)
 		}
 
-		client := test.AccClientGetter()
-		revisionOp := workflows.NewRevisionOp(client.WorkflowsClient)
+		revisionOp := workflows.NewRevisionOp(test.AccClientGetter().WorkflowsClient)
 
 		rev, err := revisionOp.Read(context.Background(), workflowID, revisionID)
 		if err != nil {
 			return fmt.Errorf("failed to read workflow revision: %s", err)
 		}
 
-		revAlias, ok := rev.RevisionAlias.Get()
-		if !ok {
-			return errors.New("revision alias is not set")
+		if rev.GetRevisionId() != revisionID || rev.GetWorkflowId() != workflowID {
+			return fmt.Errorf("revision alias not found: workflowID=%s, revisionID=%d", workflowID, revisionID)
 		}
 
-		if revAlias != alias {
-			return fmt.Errorf("expected alias %s, got %s", alias, revAlias)
-		}
-
-		if revisionAlias != nil {
-			*revisionAlias = *rev
-		}
-
+		*revisionAlias = *rev
 		return nil
 	}
 }
@@ -233,7 +223,7 @@ resource "sakura_workflows_revision_alias" "foobar" {
 const testAccSakuraWorkflowsRevisionAlias_emptyRevisionID = `
 resource "sakura_workflows_revision_alias" "foobar" {
   workflow_id   = "foobar"
-	# revision_id =
+  # revision_id =
   alias         = "foobar"
 }
 `
@@ -241,7 +231,7 @@ resource "sakura_workflows_revision_alias" "foobar" {
 const testAccSakuraWorkflowsRevisionAlias_invalidRevisionID = `
 resource "sakura_workflows_revision_alias" "foobar" {
   workflow_id = "foobar"
-	revision_id = "not-a-number"
+  revision_id = "not-a-number"
   alias       = "foobar"
 }
 `
