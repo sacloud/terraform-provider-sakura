@@ -1,5 +1,13 @@
 # Changelog
 
+## [v3.5.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.4.0...v3.5.0) - 2026-02-24
+- Add ipv4_ptr resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/122
+- Add IAM resources by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/121
+- iam: Add SAKURA_ENABLE_IAM_TEST to control IAM test run or not by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/127
+- provider: Add endpoints envvar / profile support by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/128
+- Unify profile handling in tests with saclient-go and fix config profile loading by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/132
+- kms: Update kms-api-go to v0.4.0 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/133
+
 ## [v3.4.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.3.0...v3.4.0) - 2026-02-10
 - sakura_enhanced_lb: add servers.tls_enabled field by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/112
 - sakura_server: increase timeouts to 20 minutes by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/115
