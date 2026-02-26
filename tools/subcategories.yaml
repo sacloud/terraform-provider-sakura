@@ -51,7 +51,8 @@ Application Integration:
   - eventbus_schedule
   - eventbus_trigger
   - simple_mq
-  - workflows
+  - workflows_plan
+  - workflows_subscription
 Monitoring:
   - simple_monitor
   - monitoring_suite

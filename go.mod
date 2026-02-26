@@ -34,6 +34,7 @@ require (
 	github.com/sacloud/secretmanager-api-go v0.3.1
 	github.com/sacloud/security-control-api-go v0.2.2
 	github.com/sacloud/simplemq-api-go v0.4.0
+	github.com/sacloud/workflows-api-go v0.3.0
 	github.com/stretchr/testify v1.11.1
 )
 
