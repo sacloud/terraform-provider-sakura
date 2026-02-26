@@ -733,6 +733,9 @@ func (r *vpnRouterResource) Read(ctx context.Context, req resource.ReadRequest, 
 
 	sid := state.ID.ValueString()
 	vpnRouter := getRouter(ctx, r.client, zone, common.SakuraCloudID(sid), &req.State, &resp.Diagnostics)
+	if vpnRouter == nil {
+		return
+	}
 
 	if rmResource, err := state.updateState(ctx, r.client, zone, vpnRouter); err != nil {
 		if rmResource {
