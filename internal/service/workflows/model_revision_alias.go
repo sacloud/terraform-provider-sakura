@@ -22,26 +22,16 @@ func (model *workflowRevisionAliasBaseModel) toUpdateRequest() v1.UpdateWorkflow
 	}
 }
 
-func (model *workflowRevisionAliasBaseModel) updateStateFromCreated(data *v1.UpdateWorkflowRevisionAliasOKRevision) {
-	model.WorkflowID = types.StringValue(data.WorkflowId)
-	model.RevisionID = types.StringValue(strconv.Itoa(data.RevisionId))
-	if val, ok := data.RevisionAlias.Get(); ok {
-		model.Alias = types.StringValue(val)
-	}
+type revisionData interface {
+	GetWorkflowId() string
+	GetRevisionId() int
+	GetRevisionAlias() v1.OptString
 }
 
-func (model *workflowRevisionAliasBaseModel) updateStateFromRead(data *v1.GetWorkflowRevisionsOKRevision) {
-	model.WorkflowID = types.StringValue(data.WorkflowId)
-	model.RevisionID = types.StringValue(strconv.Itoa(data.RevisionId))
-	if val, ok := data.RevisionAlias.Get(); ok {
-		model.Alias = types.StringValue(val)
-	}
-}
-
-func (model *workflowRevisionAliasBaseModel) updateStateFromUpdated(data *v1.UpdateWorkflowRevisionAliasOKRevision) {
-	model.WorkflowID = types.StringValue(data.WorkflowId)
-	model.RevisionID = types.StringValue(strconv.Itoa(data.RevisionId))
-	if val, ok := data.RevisionAlias.Get(); ok {
+func updateRevisionAliasState[T revisionData](model *workflowRevisionAliasBaseModel, data T) {
+	model.WorkflowID = types.StringValue(data.GetWorkflowId())
+	model.RevisionID = types.StringValue(strconv.Itoa(data.GetRevisionId()))
+	if val, ok := data.GetRevisionAlias().Get(); ok {
 		model.Alias = types.StringValue(val)
 	}
 }
