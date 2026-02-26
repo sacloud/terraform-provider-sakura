@@ -96,14 +96,8 @@ func (r *workflowResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Computed:    true,
 				Description: desc.Sprintf("The concurrency mode of the %s.", resourceName),
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: desc.Sprintf("The creation timestamp of the %s.", resourceName),
-			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: desc.Sprintf("The last update timestamp of the %s.", resourceName),
-			},
+			"created_at": common.SchemaResourceCreatedAt(resourceName),
+			"updated_at": common.SchemaResourceUpdatedAt(resourceName),
 			"latest_revision": schema.SingleNestedAttribute{
 				Required: true,
 				Attributes: map[string]schema.Attribute{
@@ -115,14 +109,8 @@ func (r *workflowResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 						Required:    true,
 						Description: "The runbook definition of the revision.",
 					},
-					"created_at": schema.StringAttribute{
-						Computed:    true,
-						Description: "The creation timestamp of the revision.",
-					},
-					"updated_at": schema.StringAttribute{
-						Computed:    true,
-						Description: "The last update timestamp of the revision.",
-					},
+					"created_at": common.SchemaResourceCreatedAt(resourceName),
+					"updated_at": common.SchemaResourceUpdatedAt(resourceName),
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

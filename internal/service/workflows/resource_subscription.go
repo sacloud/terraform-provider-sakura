@@ -81,14 +81,8 @@ func (r *workflowsSubscriptionResource) Schema(ctx context.Context, req resource
 				Computed:    true,
 				Description: desc.Sprintf("The activate from timestamp of the %s.", resourceName),
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: desc.Sprintf("The creation timestamp of the %s.", resourceName),
-			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: desc.Sprintf("The last update timestamp of the %s.", resourceName),
-			},
+			"created_at": common.SchemaResourceCreatedAt(resourceName),
+			"updated_at": common.SchemaResourceUpdatedAt(resourceName),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
