@@ -138,7 +138,7 @@ func (r *workflowRevisionAliasResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	plan.updateStateFromCreated(rev)
+	updateRevisionAliasState(&plan.workflowRevisionAliasBaseModel, rev)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -161,19 +161,18 @@ func (r *workflowRevisionAliasResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	state.updateStateFromRead(rev)
+	updateRevisionAliasState(&state.workflowRevisionAliasBaseModel, rev)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *workflowRevisionAliasResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, state workflowRevisionAliasResourceModel
+	var plan workflowRevisionAliasResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutUpdate(ctx, state.Timeouts, common.Timeout5min)
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
 	revisionID := utils.MustAtoI(plan.RevisionID.ValueString())
@@ -188,7 +187,7 @@ func (r *workflowRevisionAliasResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	plan.updateStateFromUpdated(rev)
+	updateRevisionAliasState(&plan.workflowRevisionAliasBaseModel, rev)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

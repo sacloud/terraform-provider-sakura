@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	v1 "github.com/sacloud/workflows-api-go/apis/v1"
 )
 
@@ -199,7 +200,7 @@ func extractTagNames(tags any) []string {
 }
 
 func workflowCreateTagsFromTf(tags types.Set) []v1.CreateWorkflowReqTagsItem {
-	if tags.IsNull() || tags.IsUnknown() {
+	if !utils.IsKnown(tags) {
 		return nil
 	}
 
@@ -214,7 +215,7 @@ func workflowCreateTagsFromTf(tags types.Set) []v1.CreateWorkflowReqTagsItem {
 }
 
 func workflowUpdateTagsFromTf(tags types.Set) []v1.UpdateWorkflowReqTagsItem {
-	if tags.IsNull() || tags.IsUnknown() {
+	if !utils.IsKnown(tags) {
 		return nil
 	}
 

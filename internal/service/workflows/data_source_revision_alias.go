@@ -6,16 +6,16 @@ package workflows
 import (
 	"context"
 	"fmt"
-	"regexp"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 	"github.com/sacloud/workflows-api-go"
 	v1 "github.com/sacloud/workflows-api-go/apis/v1"
 )
@@ -66,7 +66,10 @@ func (d *workflowRevisionAliasDataSource) Schema(ctx context.Context, req dataso
 				Description: desc.Sprintf("The revision ID of the %s.", resourceName),
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
-					stringvalidator.RegexMatches(regexp.MustCompile(`^\d+$`), "needs to be a string representation of an integer."),
+					sacloudvalidator.StringFuncValidator(func(value string) error {
+						_, err := strconv.Atoi(value)
+						return err
+					}),
 				},
 			},
 			"alias": datasourceSchema.StringAttribute{
@@ -85,25 +88,8 @@ func (d *workflowRevisionAliasDataSource) Read(ctx context.Context, req datasour
 		return
 	}
 
-	workflowID := data.WorkflowID.ValueString()
-	if workflowID == "" {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("workflow_id"),
-			"Read: Attribute Error",
-			"'workflow_id' must be specified.",
-		)
-		return
-	}
-
-	revisionIDStr := data.RevisionID.ValueString()
-	revisionID, err := strconv.Atoi(revisionIDStr)
-	if err != nil {
-		resp.Diagnostics.AddAttributeError(
-			path.Root("revision_id"),
-			"Read: Validation error",
-			"Invalid revision_id format. Expected an integer value.")
-		return
-	}
+	// validatorで数値であることは保証されているため、エラーは発生しない前提
+	revisionID := utils.MustAtoI(data.RevisionID.ValueString())
 
 	revisionOp := workflows.NewRevisionOp(d.client)
 	rev, err := revisionOp.Read(ctx, data.WorkflowID.ValueString(), revisionID)
@@ -115,6 +101,6 @@ func (d *workflowRevisionAliasDataSource) Read(ctx context.Context, req datasour
 		return
 	}
 
-	data.updateStateFromRead(rev)
+	updateRevisionAliasState(&data.workflowRevisionAliasBaseModel, rev)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

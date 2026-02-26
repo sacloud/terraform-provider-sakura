@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	"github.com/sacloud/workflows-api-go"
 	v1 "github.com/sacloud/workflows-api-go/apis/v1"
@@ -102,7 +103,7 @@ func (d *workflowsDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 
-	if data.ID.IsNull() {
+	if !utils.IsKnown(data.ID) {
 		resp.Diagnostics.AddError("Read: Attribute Error", "'id' must be specified.")
 		return
 	}
