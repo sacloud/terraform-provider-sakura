@@ -567,6 +567,10 @@ func (r *serverResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	serverOp := iaas.NewServerOp(r.client)
 	server := getServer(ctx, r.client, zone, common.SakuraCloudID(sid), &resp.State, &resp.Diagnostics)
+	if server == nil {
+		return
+	}
+
 	if server.InstanceStatus.IsUp() {
 		if err := power.ShutdownServer(ctx, serverOp, zone, server.ID, state.ForceShutdown.ValueBool()); err != nil {
 			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to stop Server[%s]: %s", server.ID, err))
@@ -589,6 +593,7 @@ func getServer(ctx context.Context, client *common.APIClient, zone string, id ia
 			return nil
 		}
 		diags.AddError("API Read Error", fmt.Sprintf("failed to read Server[%s]: %s", id, err))
+		return nil
 	}
 
 	return server
