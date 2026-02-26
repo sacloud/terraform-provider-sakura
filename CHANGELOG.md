@@ -1,5 +1,8 @@
 # Changelog
 
+## [v3.5.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.5.0...v3.5.1) - 2026-02-26
+- Fix missing nil check by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/135
+
 ## [v3.5.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.4.0...v3.5.0) - 2026-02-24
 - Add ipv4_ptr resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/122
 - Add IAM resources by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/121
