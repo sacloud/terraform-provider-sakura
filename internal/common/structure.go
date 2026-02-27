@@ -211,6 +211,14 @@ func IntToInt64(i int) int64 {
 	return int64(i)
 }
 
+func ToInt32[I ~int | ~int32 | ~int64](s I) int32 {
+	return int32(s)
+}
+
+func ToInt64[I ~int | ~int32 | ~int64](s I) int64 {
+	return int64(s)
+}
+
 func ToString[S ~string](s S) string {
 	return string(s)
 }
