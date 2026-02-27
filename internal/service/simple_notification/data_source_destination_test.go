@@ -41,7 +41,6 @@ resource "sakura_simple_notification_destination" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
-  icon_id     = "112901627732"
   type        = "email"
   value       = "hoge@hogehoge.com"
 }
