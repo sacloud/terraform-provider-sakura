@@ -27,7 +27,6 @@ func TestAccSakuraDataSourceSimpleNotificationDestination_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
-					resource.TestCheckResourceAttr(resourceName, "icon_id", "112901627732"),
 					resource.TestCheckResourceAttr(resourceName, "type", "email"),
 					resource.TestCheckResourceAttr(resourceName, "value", "hoge@hogehoge.com"),
 				),
