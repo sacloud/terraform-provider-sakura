@@ -135,7 +135,6 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	defer cancel()
 
 	groupOp := simplenotification.NewGroupOp(r.client)
-
 	res, err := groupOp.Update(ctx, plan.ID.ValueString(), makegroupUpdateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update SimpleNotification group[%s]: %s", plan.ID.String(), err))
@@ -160,7 +159,6 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	defer cancel()
 
 	groupOp := simplenotification.NewGroupOp(r.client)
-
 	if err := groupOp.Delete(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete SimpleNotification group[%s]: %s", state.ID.String(), err))
 		return
@@ -168,7 +166,6 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 }
 
 func makegroupCreateRequest(d *groupResourceModel) v1.PostCommonServiceItemRequest {
-
 	destinations := common.TlistToStringsOrDefault(d.Destinations)
 
 	req := v1.PostCommonServiceItemRequest{
