@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package simple_notification
@@ -8,9 +8,11 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	simplenotification "github.com/sacloud/simple-notification-api-go"
 	v1 "github.com/sacloud/simple-notification-api-go/apis/v1"
@@ -61,6 +63,9 @@ func (r *groupResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 				Required:    true,
 				ElementType: types.StringType,
 				Description: desc.Sprintf("The ProcessConfiguration ID of the %s.", resourceName),
+				Validators: []validator.List{
+					listvalidator.SizeAtLeast(1),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
@@ -107,7 +112,6 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 
 	groupOp := simplenotification.NewGroupOp(r.client)
 	res, err := groupOp.Read(ctx, state.ID.ValueString())
-
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read SimpleNotification group: %s", err))
 		return
@@ -156,19 +160,16 @@ func (r *groupResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	defer cancel()
 
 	groupOp := simplenotification.NewGroupOp(r.client)
-	id := common.SakuraCloudID(state.ID.ValueString())
 
-	if err := groupOp.Delete(ctx, id.String()); err != nil {
+	if err := groupOp.Delete(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete SimpleNotification group[%s]: %s", state.ID.String(), err))
 		return
 	}
 }
 
 func makegroupCreateRequest(d *groupResourceModel) v1.PostCommonServiceItemRequest {
-	destinations := make([]string, len(d.Destinations))
-	for i, dest := range d.Destinations {
-		destinations[i] = dest.ValueString()
-	}
+
+	destinations := common.TlistToStringsOrDefault(d.Destinations)
 
 	req := v1.PostCommonServiceItemRequest{
 		CommonServiceItem: v1.PostCommonServiceItemRequestCommonServiceItem{
@@ -189,10 +190,7 @@ func makegroupCreateRequest(d *groupResourceModel) v1.PostCommonServiceItemReque
 }
 
 func makegroupUpdateRequest(d *groupResourceModel) v1.PutCommonServiceItemRequest {
-	destinations := make([]string, len(d.Destinations))
-	for i, dest := range d.Destinations {
-		destinations[i] = dest.ValueString()
-	}
+	destinations := common.TlistToStringsOrDefault(d.Destinations)
 	req := v1.PutCommonServiceItemRequest{
 		CommonServiceItem: v1.PutCommonServiceItemRequestCommonServiceItem{
 			Name:        d.Name.ValueString(),
