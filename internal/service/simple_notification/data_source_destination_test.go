@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package simple_notification_test
@@ -26,7 +26,6 @@ func TestAccSakuraDataSourceSimpleNotificationDestination_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
-					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "icon_id", "112901627732"),
 					resource.TestCheckResourceAttr(resourceName, "type", "email"),

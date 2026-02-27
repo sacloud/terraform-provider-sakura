@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package simple_notification
@@ -10,12 +10,10 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	simplenotification "github.com/sacloud/simple-notification-api-go"
 	v1 "github.com/sacloud/simple-notification-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
-	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
 type DestinationDataSource struct {
@@ -59,14 +57,6 @@ func (d *DestinationDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 			"type": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The type of the %s.", resourceName),
-				Validators: []validator.String{
-					sacloudvalidator.StringFuncValidator(func(v string) error {
-						if err := v1.CommonServiceItemDestinationSettingsType(v).Validate(); err != nil {
-							return fmt.Errorf("invalid operator: %s", v)
-						}
-						return nil
-					}),
-				},
 			},
 			"value": schema.StringAttribute{
 				Computed:    true,

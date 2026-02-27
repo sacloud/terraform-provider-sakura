@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package simple_notification_test
@@ -40,7 +40,6 @@ resource "sakura_simple_notification_destination" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
-  icon_id     = "112901627732"
   type        = "email"
   value       = "hoge@hogehoge.com"
 }
