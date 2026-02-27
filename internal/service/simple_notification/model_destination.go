@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package simple_notification
@@ -21,10 +21,16 @@ type destinationBaseModel struct {
 func (model *destinationBaseModel) updateState(data *v1.CommonServiceItem) error {
 	model.UpdateBaseState(data.ID, data.Name, data.Description, data.Tags)
 
-	if iconID := data.Icon.Value.ID; iconID != "" {
-		model.IconID = types.StringValue(iconID)
-	} else {
+	icon, ok := data.Icon.Get()
+	if !ok {
+		return errors.New("invalid icon for Destination")
+	}
+
+	if icon.GetID() == "" {
+		// icon_id is empty string when not set, so set null in that case
 		model.IconID = types.StringNull()
+	} else {
+		model.IconID = types.StringValue(icon.GetID())
 	}
 
 	ds, ok := data.Settings.GetCommonServiceItemDestinationSettings()
