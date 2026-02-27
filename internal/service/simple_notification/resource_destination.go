@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package simple_notification
@@ -98,11 +98,6 @@ func (r *destinationResource) Create(ctx context.Context, req resource.CreateReq
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	if err := v1.CommonServiceItemDestinationSettingsType(plan.Type.ValueString()).Validate(); err != nil {
-		resp.Diagnostics.AddError("Create: Validation Error", fmt.Sprintf("invalid type for SimpleNotification Destination: %s", err))
-		return
-	}
-
 	destinationOp := simplenotification.NewDestinationOp(r.client)
 	res, err := destinationOp.Create(ctx, makeDestinationCreateRequest(&plan))
 	if err != nil {
@@ -126,7 +121,6 @@ func (r *destinationResource) Read(ctx context.Context, req resource.ReadRequest
 
 	destinationOp := simplenotification.NewDestinationOp(r.client)
 	res, err := destinationOp.Read(ctx, state.ID.ValueString())
-
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read SimpleNotification Destination: %s", err))
 		return
@@ -150,7 +144,6 @@ func (r *destinationResource) Update(ctx context.Context, req resource.UpdateReq
 	defer cancel()
 
 	destinationOp := simplenotification.NewDestinationOp(r.client)
-
 	res, err := destinationOp.Update(ctx, plan.ID.ValueString(), makeDestinationUpdateRequest(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update SimpleNotification Destination[%s]: %s", plan.ID.String(), err))
@@ -175,9 +168,7 @@ func (r *destinationResource) Delete(ctx context.Context, req resource.DeleteReq
 	defer cancel()
 
 	destinationOp := simplenotification.NewDestinationOp(r.client)
-	id := common.SakuraCloudID(state.ID.ValueString())
-
-	if err := destinationOp.Delete(ctx, id.String()); err != nil {
+	if err := destinationOp.Delete(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete SimpleNotification Destination[%s]: %s", state.ID.String(), err))
 		return
 	}
