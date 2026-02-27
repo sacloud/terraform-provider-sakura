@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package simple_notification
@@ -13,7 +13,7 @@ import (
 
 type groupBaseModel struct {
 	common.SakuraBaseModel
-	Destinations []types.String `tfsdk:"destinations"`
+	Destinations types.List `tfsdk:"destinations"`
 }
 
 func (model *groupBaseModel) updateState(data *v1.CommonServiceItem) error {
@@ -23,9 +23,6 @@ func (model *groupBaseModel) updateState(data *v1.CommonServiceItem) error {
 	if !ok {
 		return errors.New("invalid settings for Group")
 	}
-	model.Destinations = make([]types.String, len(gr.Destinations))
-	for i, d := range gr.Destinations {
-		model.Destinations[i] = types.StringValue(d)
-	}
+	model.Destinations = common.StringsToTlist(gr.Destinations)
 	return nil
 }
