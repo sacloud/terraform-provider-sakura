@@ -37,6 +37,8 @@ import (
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
 	seccon "github.com/sacloud/security-control-api-go"
 	secconapi "github.com/sacloud/security-control-api-go/apis/v1"
+	simple_notification "github.com/sacloud/simple-notification-api-go"
+	simple_notification_api "github.com/sacloud/simple-notification-api-go/apis/v1"
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
@@ -112,6 +114,7 @@ type APIClient struct {
 	ApigwClient                      *apigwapi.Client
 	SecurityControlClient            *secconapi.Client
 	IamClient                        *iamapi.Client
+	SimpleNotificationClient         *simple_notification_api.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -431,6 +434,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	simpleNotificationClient, err := simple_notification.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -452,6 +459,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		ApigwClient:                      apigwClient,
 		SecurityControlClient:            secconClient,
 		IamClient:                        iamClient,
+		SimpleNotificationClient:         simpleNotificationClient,
 	}, nil
 }
 
