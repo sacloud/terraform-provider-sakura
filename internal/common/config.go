@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/sacloud/addon-api-go"
+	addonapi "github.com/sacloud/addon-api-go/apis/v1"
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/apigw-api-go"
 	apigwapi "github.com/sacloud/apigw-api-go/apis/v1"
@@ -112,6 +114,7 @@ type APIClient struct {
 	ApigwClient                      *apigwapi.Client
 	SecurityControlClient            *secconapi.Client
 	IamClient                        *iamapi.Client
+	AddonClient                      *addonapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -431,6 +434,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	addonClient, err := addon.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -452,6 +459,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		ApigwClient:                      apigwClient,
 		SecurityControlClient:            secconClient,
 		IamClient:                        iamClient,
+		AddonClient:                      addonClient,
 	}, nil
 }
 
