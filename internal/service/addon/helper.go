@@ -83,7 +83,7 @@ func loweredLocation(value string) string {
 	return strings.Join(words, "")
 }
 
-func getCDNLocationAndProfile(data map[string]any) (string, v1.FrontDoorProfile, error) {
+func getFrontDoorLocationAndProfile(data map[string]any) (string, v1.FrontDoorProfile, error) {
 	var profile v1.FrontDoorProfile
 	location, ok := data["location"].(string)
 	if !ok || location == "" {
@@ -108,7 +108,7 @@ func getCDNLocationAndProfile(data map[string]any) (string, v1.FrontDoorProfile,
 
 func getFrontDoorEndpoint(data map[string]any) (v1.FrontDoorEndpoint, error) {
 	var endpoint v1.FrontDoorEndpoint
-	hostName, hostHeader, patterns, err := getCDNFamilyValues(data)
+	hostName, hostHeader, patterns, err := getFrontDoorFamilyValues(data)
 	if err != nil {
 		return endpoint, err
 	}
@@ -118,7 +118,7 @@ func getFrontDoorEndpoint(data map[string]any) (v1.FrontDoorEndpoint, error) {
 	return endpoint, nil
 }
 
-func getCDNFamilyValues(data map[string]any) (string, string, []string, error) {
+func getFrontDoorFamilyValues(data map[string]any) (string, string, []string, error) {
 	patterns := []string{}
 	endpoints, ok := data["endpoints"].([]any)
 	if !ok || len(endpoints) == 0 {
@@ -170,13 +170,13 @@ func getCDNFamilyValues(data map[string]any) (string, string, []string, error) {
 	return hostName, hostHeader, patterns, nil
 }
 
-func decodeCDNFamilyResponse[T interface {
+func decodeFrontDoorFamilyResponse[T interface {
 	SetLocation(val string)
 	SetProfile(val v1.FrontDoorProfile)
 	SetEndpoint(val v1.FrontDoorEndpoint)
 }](resp *v1.GetResourceResponse, result T) error {
 	if resp == nil || len(resp.Data) == 0 {
-		return errors.New("got invalid response from Addon CDN API")
+		return errors.New("got invalid response from Addon's FrontDoor related API")
 	}
 
 	var data map[string]any
@@ -184,7 +184,7 @@ func decodeCDNFamilyResponse[T interface {
 		return err
 	}
 
-	location, profile, err := getCDNLocationAndProfile(data)
+	location, profile, err := getFrontDoorLocationAndProfile(data)
 	if err != nil {
 		return err
 	}
@@ -231,7 +231,7 @@ func waitDeployment(ctx context.Context, name string, read func(context.Context,
 	}
 }
 
-func waitCDNRouteDeployment(ctx context.Context, read func(context.Context, string) (*v1.GetResourceResponse, error), id string) error {
+func waitFrontDoorDeployment(ctx context.Context, read func(context.Context, string) (*v1.GetResourceResponse, error), id string) error {
 	errCount := 0
 	waitCtx, cancel := context.WithTimeout(ctx, 10*time.Minute)
 	defer cancel()
@@ -239,13 +239,13 @@ func waitCDNRouteDeployment(ctx context.Context, read func(context.Context, stri
 	for {
 		select {
 		case <-waitCtx.Done():
-			return fmt.Errorf("timeout exceeded for Addon CDN[%s] ready check: %s", id, waitCtx.Err())
+			return fmt.Errorf("timeout exceeded for Addon FrontDoor related API[%s] ready check: %s", id, waitCtx.Err())
 		default:
 			res, err := read(ctx, id)
 			if err != nil {
 				errCount += 1
 				if errCount > 5 {
-					return fmt.Errorf("exceeds 5 retry limit during Addon CDN[%s] ready check: %w", id, err)
+					return fmt.Errorf("exceeds 5 retry limit during Addon FrontDoor related API[%s] ready check: %w", id, err)
 				}
 				time.Sleep(10 * time.Second)
 				continue
@@ -253,7 +253,7 @@ func waitCDNRouteDeployment(ctx context.Context, read func(context.Context, stri
 
 			var data map[string]any
 			if err := json.Unmarshal(res.Data, &data); err != nil {
-				return fmt.Errorf("failed to decode Addon CDN[%s] response: %w", id, err)
+				return fmt.Errorf("failed to decode Addon FrontDoor related API[%s] response: %w", id, err)
 			}
 			if len(data["endpoints"].([]any)) > 0 && len(data["endpoints"].([]any)[0].(map[string]any)["routes"].([]any)) > 0 {
 				return nil

@@ -5,8 +5,6 @@ package addon
 
 import (
 	"context"
-	"encoding/json"
-	"errors"
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -125,7 +123,7 @@ func (r *ddosResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	if err := waitCDNRouteDeployment(ctx, op.Read, id); err != nil {
+	if err := waitFrontDoorDeployment(ctx, op.Read, id); err != nil {
 		resp.Diagnostics.AddError("Create: Resource Error", fmt.Sprintf("failed to wait for Addon DDoS[%s] deployment ready: %s", id, err))
 		return
 	}
@@ -169,7 +167,7 @@ func (r *ddosResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	var body v1.DdosRequestBody
-	err := decodeCDNFamilyResponse(result, &body)
+	err := decodeFrontDoorFamilyResponse(result, &body)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: Decode Error", fmt.Sprintf("failed to decode Addon DDoS[%s] response: %s", state.ID.ValueString(), err))
 		return
@@ -200,30 +198,4 @@ func (r *ddosResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Addon DDoS[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
-}
-
-func decodeDDoSResponse(resp *v1.GetResourceResponse) (v1.DdosRequestBody, error) {
-	var result v1.DdosRequestBody
-	if resp == nil || len(resp.Data) == 0 {
-		return result, errors.New("got invalid response from Addon CDN API")
-	}
-
-	var data map[string]any
-	if err := json.Unmarshal(resp.Data, &data); err != nil {
-		return result, err
-	}
-
-	location, profile, err := getCDNLocationAndProfile(data)
-	if err != nil {
-		return result, err
-	}
-	endpoint, err := getFrontDoorEndpoint(data)
-	if err != nil {
-		return result, err
-	}
-	result.Location = location
-	result.Profile = profile
-	result.Endpoint = endpoint
-
-	return result, nil
 }

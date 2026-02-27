@@ -86,7 +86,7 @@ func (d *cdnDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	}
 
 	var body v1.NetworkRequestBody
-	err := decodeCDNFamilyResponse(result, &body)
+	err := decodeFrontDoorFamilyResponse(result, &body)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: Decode Error", fmt.Sprintf("failed to decode Addon CDN[%s] response: %s", id, err))
 		return

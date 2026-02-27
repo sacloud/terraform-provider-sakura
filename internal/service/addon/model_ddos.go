@@ -21,7 +21,7 @@ type ddosBaseModel struct {
 
 func (model *ddosBaseModel) updateState(id, deploymentName, url string, body *v1.DdosRequestBody) {
 	model.ID = types.StringValue(id)
-	//model.Location = types.StringValue(body.Location)
+	// model.Location = types.StringValue(body.Location)
 	model.PricingLevel = types.Int32Value(int32(body.Profile.Level))
 	model.Patterns = common.StringsToTlist(body.Endpoint.Route.Patterns)
 	model.Origin = &frontDoorOriginModel{

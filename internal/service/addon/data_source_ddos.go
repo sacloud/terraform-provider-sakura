@@ -86,7 +86,7 @@ func (d *ddosDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	}
 
 	var body v1.DdosRequestBody
-	err := decodeCDNFamilyResponse(result, &body)
+	err := decodeFrontDoorFamilyResponse(result, &body)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: Decode Error", fmt.Sprintf("failed to decode Addon DDoS[%s] response: %s", id, err))
 		return

@@ -86,7 +86,7 @@ func (d *wafDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	}
 
 	var body v1.WafRequestBody
-	err := decodeCDNFamilyResponse(result, &body)
+	err := decodeFrontDoorFamilyResponse(result, &body)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: Decode Error", fmt.Sprintf("failed to decode Addon WAF[%s] response: %s", id, err))
 		return
