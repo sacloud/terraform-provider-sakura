@@ -164,15 +164,16 @@ func (r *workflowResource) Create(ctx context.Context, req resource.CreateReques
 	revisionOp := workflows.NewRevisionOp(r.client)
 	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflow.ID})
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to list created Workflow revisions: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to list created Workflow[%s] revisions: %s", workflow.ID, err))
+		return
+	}
+	if len(revisions.Revisions) == 0 {
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to list created Workflow[%s] revisions: no error but revisions are empty. Workflows API something went wrong", workflow.ID))
 		return
 	}
 
 	plan.updateStateFromCreated(workflow)
-	if err := plan.updateRevisionsState(revisions.Revisions); err != nil {
-		resp.Diagnostics.AddError("Create: State Error", fmt.Sprintf("failed to update revisions state: %s", err))
-		return
-	}
+	plan.updateRevisionsState(revisions.Revisions)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -195,15 +196,16 @@ func (r *workflowResource) Read(ctx context.Context, req resource.ReadRequest, r
 	revisionOp := workflows.NewRevisionOp(r.client)
 	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflow.ID})
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Workflow revisions: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Workflow[%s] revisions: %s", workflow.ID, err))
+		return
+	}
+	if len(revisions.Revisions) == 0 {
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Workflow[%s] revisions: no error but revisions are empty. Workflows API something went wrong", workflow.ID))
 		return
 	}
 
 	state.updateState(workflow)
-	if err := state.updateRevisionsState(revisions.Revisions); err != nil {
-		resp.Diagnostics.AddError("Read: State Error", fmt.Sprintf("failed to update revisions state: %s", err))
-		return
-	}
+	state.updateRevisionsState(revisions.Revisions)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }

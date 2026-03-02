@@ -118,15 +118,16 @@ func (d *workflowsDataSource) Read(ctx context.Context, req datasource.ReadReque
 	revisionOp := workflows.NewRevisionOp(d.client)
 	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflow.ID})
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list workflow revisions: %s", err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Workflow[%s] revisions: %s", workflow.ID, err))
+		return
+	}
+	if len(revisions.Revisions) == 0 {
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Workflow[%s] revisions: no error but revisions are empty. Workflows API something went wrong", workflow.ID))
 		return
 	}
 
 	data.updateState(workflow)
-	if err := data.updateRevisionsState(revisions.Revisions); err != nil {
-		resp.Diagnostics.AddError("Read: State Error", fmt.Sprintf("failed to update revisions state: %s", err))
-		return
-	}
+	data.updateRevisionsState(revisions.Revisions)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
