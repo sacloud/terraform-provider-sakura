@@ -73,14 +73,8 @@ func (d *subscriptionDataSource) Schema(ctx context.Context, req datasource.Sche
 				Computed:    true,
 				Description: desc.Sprintf("The activate from timestamp of the %s.", resourceName),
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: desc.Sprintf("The creation timestamp of the %s.", resourceName),
-			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: desc.Sprintf("The last update timestamp of the %s.", resourceName),
-			},
+			"created_at": common.SchemaDataSourceCreatedAt(resourceName),
+			"updated_at": common.SchemaDataSourceUpdatedAt(resourceName),
 		},
 		MarkdownDescription: "Get information about a current Workflows Subscription.",
 	}
