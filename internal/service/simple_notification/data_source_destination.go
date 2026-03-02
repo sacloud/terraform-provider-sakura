@@ -6,13 +6,13 @@ package simple_notification
 import (
 	"context"
 	"fmt"
-	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	simplenotification "github.com/sacloud/simple-notification-api-go"
 	v1 "github.com/sacloud/simple-notification-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
@@ -93,14 +93,7 @@ func (d *DestinationDataSource) Read(ctx context.Context, req datasource.ReadReq
 			continue
 		}
 
-		tagsMatched := true
-		for _, tagToFind := range tags {
-			if slices.Contains(dest.Tags, tagToFind) {
-				continue
-			}
-			tagsMatched = false
-			break
-		}
+		tagsMatched := utils.IsTagsMatched(tags, dest.Tags)
 		if !tagsMatched {
 			continue
 		}
