@@ -38,7 +38,16 @@ Networking:
   - vswitch
   - vpn_router
 Application Integration:
-  - addon
+  - addon_ai
+  - addon_cdn
+  - addon_datalake
+  - addon_ddos
+  - addon_dwh
+  - addon_etl
+  - addon_query
+  - addon_search
+  - addon_streaming
+  - addon_waf
   - apigw_cert
   - apigw_domain
   - apigw_group
