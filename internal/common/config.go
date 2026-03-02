@@ -43,6 +43,8 @@ import (
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
+	"github.com/sacloud/workflows-api-go"
+	workflowsapi "github.com/sacloud/workflows-api-go/apis/v1"
 )
 
 const (
@@ -114,6 +116,7 @@ type APIClient struct {
 	ApigwClient                      *apigwapi.Client
 	SecurityControlClient            *secconapi.Client
 	IamClient                        *iamapi.Client
+	WorkflowsClient                  *workflowsapi.Client
 	SimpleNotificationClient         *simple_notification_api.Client
 }
 
@@ -379,7 +382,8 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 			func(req *http.Request) error {
 				req.Header.Set("X-Sakura-Bigint-As-Int", "0")
 				return nil
-			}},
+			},
+		},
 	}
 	caller := api.NewCallerWithOptions(&api.CallerOptions{
 		Options:     callerOptions,
@@ -434,6 +438,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	workflowsClient, err := workflows.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 	simpleNotificationClient, err := simple_notification.NewClient(theClient)
 	if err != nil {
 		return nil, err
@@ -459,6 +467,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		ApigwClient:                      apigwClient,
 		SecurityControlClient:            secconClient,
 		IamClient:                        iamClient,
+		WorkflowsClient:                  workflowsClient,
 		SimpleNotificationClient:         simpleNotificationClient,
 	}, nil
 }

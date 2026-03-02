@@ -20,7 +20,7 @@ require (
 	github.com/sacloud/apprun-api-go v0.6.0
 	github.com/sacloud/autoscaler v0.19.3
 	github.com/sacloud/cloudhsm-api-go v0.2.0
-	github.com/sacloud/dedicated-storage-api-go v0.0.3
+	github.com/sacloud/dedicated-storage-api-go v0.1.0
 	github.com/sacloud/eventbus-api-go v0.5.2
 	github.com/sacloud/go-http v0.1.9
 	github.com/sacloud/iaas-api-go v1.25.0
@@ -35,6 +35,7 @@ require (
 	github.com/sacloud/security-control-api-go v0.2.2
 	github.com/sacloud/simple-notification-api-go v0.3.0
 	github.com/sacloud/simplemq-api-go v0.4.0
+	github.com/sacloud/workflows-api-go v0.3.0
 	github.com/stretchr/testify v1.11.1
 )
 

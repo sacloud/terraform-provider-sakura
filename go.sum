@@ -245,8 +245,8 @@ github.com/sacloud/autoscaler v0.19.3 h1:FkBxc0mE8fvaWiOiz+TpFAT1TX8DRLXs8prsqaM
 github.com/sacloud/autoscaler v0.19.3/go.mod h1:jTeHzdZHrWd/2mYtgEyyFDTqHu0EbMPNDzwj7mdl0MA=
 github.com/sacloud/cloudhsm-api-go v0.2.0 h1:ESBNWN1ZhwXOAwUCdzcnVe8JWXlJOK306MBoNoDs/cA=
 github.com/sacloud/cloudhsm-api-go v0.2.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
-github.com/sacloud/dedicated-storage-api-go v0.0.3 h1:i8P8y6XaZUNqKUd0TBDIqzixBQ9okaa8Ui2K79icTts=
-github.com/sacloud/dedicated-storage-api-go v0.0.3/go.mod h1:/kzVyzGfSz7/ZzQ24gnvN1pgdyqlq0ba91irEEkbroI=
+github.com/sacloud/dedicated-storage-api-go v0.1.0 h1:rEQVtWG3FTZ7cGw6j/fTz81VBM4rT0K2myLq+ah3nh8=
+github.com/sacloud/dedicated-storage-api-go v0.1.0/go.mod h1:m8DWoOkdFtpxbLgIdr6S7fd1W6/7EY8fR59OIOdqiSY=
 github.com/sacloud/eventbus-api-go v0.5.2 h1:RsPJqWKl7nsNyGH0yYrsHCbv7YBiNOTaTrAzUVypu6A=
 github.com/sacloud/eventbus-api-go v0.5.2/go.mod h1:P9fBLdnPvdZR95VGrixV6CNwl6ZbGZvmeZk/COkY0YA=
 github.com/sacloud/ftps v1.2.0 h1:7UlSWd7cnm1J+sANz7IiBV9ffVcS+4g6ZV5UHVVbvaw=
@@ -281,6 +281,8 @@ github.com/sacloud/simple-notification-api-go v0.3.0 h1:txporbiluz/7nKxyYZ0vlcIS
 github.com/sacloud/simple-notification-api-go v0.3.0/go.mod h1:sCDnlmrbFy59aXpaZW0qC1PRAldXLATn5gXelJtcqpU=
 github.com/sacloud/simplemq-api-go v0.4.0 h1:N/b4pHsok6/STiYe+nihE9AdelLVVInhkXzF3bd+onM=
 github.com/sacloud/simplemq-api-go v0.4.0/go.mod h1:TINCXZQRt6qfccD2VNTfA1cXGqqXU6eJukCdZe9kfKc=
+github.com/sacloud/workflows-api-go v0.3.0 h1:Ugq8RSyDF7mpL5hy6dqM9FfumXXe00Ofke+cWl3dnBs=
+github.com/sacloud/workflows-api-go v0.3.0/go.mod h1:qv5JuIBrNmK7N98h/ojhyIHomgzPglGGuHHZ5kBvadw=
 github.com/segmentio/asm v1.2.1 h1:DTNbBqs57ioxAD4PrArqftgypG4/qNpXoJx8TVXxPR0=
 github.com/segmentio/asm v1.2.1/go.mod h1:BqMnlJP91P8d+4ibuonYZw9mfnzI9HfxselHZr5aAcs=
 github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 h1:n661drycOFuPLCN3Uc8sB6B/s6Z4t2xvBgU1htSHuq8=
