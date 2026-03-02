@@ -274,7 +274,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 							"version": schema.StringAttribute{
 								Optional:    true,
 								Computed:    true,
-								Default:     stringdefault.StaticString("4.1.9"),
+								Default:     stringdefault.StaticString("4.1.10"),
 								Description: "Version of database engine used by NoSQL appliance.",
 								Validators: []validator.String{
 									stringvalidator.RegexMatches(regexp.MustCompile(`^\d+\.\d+\.\d+$`), "invalid database version"),
