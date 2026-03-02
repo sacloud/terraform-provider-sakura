@@ -108,10 +108,8 @@ func (model *workflowBaseModel) updateStateFromCreated(data *v1.CreateWorkflowCr
 	model.UpdatedAt = types.StringValue(data.UpdatedAt.String())
 }
 
-func (model *workflowBaseModel) updateRevisionsState(data []v1.ListWorkflowRevisionsOKRevisionsItem) error {
-	if len(data) == 0 {
-		return fmt.Errorf("no revisions found for workflow ID: %s", model.ID.ValueString())
-	}
+func (model *workflowBaseModel) updateRevisionsState(data []v1.ListWorkflowRevisionsOKRevisionsItem) {
+	// NOTE: 呼び出し側でlen(data) > 0を保証している。
 
 	// NOTE: 作成順でソートしておく。最初の値がlatest
 	sort.Slice(data, func(i, j int) bool {
@@ -125,7 +123,6 @@ func (model *workflowBaseModel) updateRevisionsState(data []v1.ListWorkflowRevis
 		CreatedAt: types.StringValue(latestRevision.CreatedAt.String()),
 		UpdatedAt: types.StringValue(latestRevision.UpdatedAt.String()),
 	}
-	return nil
 }
 
 func (model *workflowBaseModel) updateStateFromUpdated(data *v1.UpdateWorkflowOKWorkflow) {
