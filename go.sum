@@ -245,8 +245,8 @@ github.com/sacloud/autoscaler v0.19.3 h1:FkBxc0mE8fvaWiOiz+TpFAT1TX8DRLXs8prsqaM
 github.com/sacloud/autoscaler v0.19.3/go.mod h1:jTeHzdZHrWd/2mYtgEyyFDTqHu0EbMPNDzwj7mdl0MA=
 github.com/sacloud/cloudhsm-api-go v0.2.0 h1:ESBNWN1ZhwXOAwUCdzcnVe8JWXlJOK306MBoNoDs/cA=
 github.com/sacloud/cloudhsm-api-go v0.2.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
-github.com/sacloud/dedicated-storage-api-go v0.0.3 h1:i8P8y6XaZUNqKUd0TBDIqzixBQ9okaa8Ui2K79icTts=
-github.com/sacloud/dedicated-storage-api-go v0.0.3/go.mod h1:/kzVyzGfSz7/ZzQ24gnvN1pgdyqlq0ba91irEEkbroI=
+github.com/sacloud/dedicated-storage-api-go v0.1.0 h1:rEQVtWG3FTZ7cGw6j/fTz81VBM4rT0K2myLq+ah3nh8=
+github.com/sacloud/dedicated-storage-api-go v0.1.0/go.mod h1:m8DWoOkdFtpxbLgIdr6S7fd1W6/7EY8fR59OIOdqiSY=
 github.com/sacloud/eventbus-api-go v0.5.2 h1:RsPJqWKl7nsNyGH0yYrsHCbv7YBiNOTaTrAzUVypu6A=
 github.com/sacloud/eventbus-api-go v0.5.2/go.mod h1:P9fBLdnPvdZR95VGrixV6CNwl6ZbGZvmeZk/COkY0YA=
 github.com/sacloud/ftps v1.2.0 h1:7UlSWd7cnm1J+sANz7IiBV9ffVcS+4g6ZV5UHVVbvaw=
