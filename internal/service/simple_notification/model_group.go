@@ -4,8 +4,6 @@
 package simple_notification
 
 import (
-	"errors"
-
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1 "github.com/sacloud/simple-notification-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -19,10 +17,7 @@ type groupBaseModel struct {
 func (model *groupBaseModel) updateState(data *v1.CommonServiceItem) error {
 	model.UpdateBaseState(data.ID, data.Name, data.Description, data.Tags)
 
-	gr, ok := data.Settings.GetCommonServiceItemGroupSettings()
-	if !ok {
-		return errors.New("invalid settings for Group")
-	}
+	gr, _ := data.Settings.GetGroupSettings()
 	model.Destinations = common.StringsToTlist(gr.Destinations)
 	return nil
 }
