@@ -57,6 +57,7 @@ import (
 	sw1tch "github.com/sacloud/terraform-provider-sakura/internal/service/switch"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/vpn_router"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/vswitch"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/workflows"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/zone"
 )
 
@@ -318,6 +319,8 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		sw1tch.NewSwitchDataSource,
 		vswitch.NewvSwitchDataSource,
 		vpn_router.NewVPNRouterDataSource,
+		workflows.NewPlanDataSource,
+		workflows.NewSubscriptionDataSource,
 		zone.NewZoneDataSource,
 		// ...他のデータソースも同様に追加...
 	}
@@ -396,6 +399,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		sw1tch.NewSwitchResource,
 		vswitch.NewvSwitchResource,
 		vpn_router.NewVPNRouterResource,
+		workflows.NewSubscriptionResource,
 		// ...他のリソースも同様に追加...
 	}
 }
