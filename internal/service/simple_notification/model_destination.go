@@ -33,7 +33,7 @@ func (model *destinationBaseModel) updateState(data *v1.CommonServiceItem) error
 		model.IconID = types.StringValue(icon.GetID())
 	}
 	// Type and Value are required fields, so it's safe to ignore the second return value of Get() here
-	ds, _ := data.Settings.GetCommonServiceItemDestinationSettings()
+	ds, _ := data.Settings.GetDestinationSettings()
 	model.Type = types.StringValue(string(ds.Type))
 	model.Value = types.StringValue(ds.Value)
 
