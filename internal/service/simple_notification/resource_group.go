@@ -96,10 +96,7 @@ func (r *groupResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	if err := plan.updateState(&res.CommonServiceItem); err != nil {
-		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update SimpleNotification group[%s] state: %s", plan.ID.String(), err))
-		return
-	}
+	plan.updateState(&res.CommonServiceItem)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -117,10 +114,7 @@ func (r *groupResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		return
 	}
 
-	if err := state.updateState(&res.CommonServiceItem); err != nil {
-		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update SimpleNotification group[%s] state: %s", state.ID.String(), err))
-		return
-	}
+	state.updateState(&res.CommonServiceItem)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -141,10 +135,7 @@ func (r *groupResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	if err := plan.updateState(&res.CommonServiceItem); err != nil {
-		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update SimpleNotification group[%s] state: %s", plan.ID.String(), err))
-		return
-	}
+	plan.updateState(&res.CommonServiceItem)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
