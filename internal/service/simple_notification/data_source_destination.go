@@ -16,24 +16,24 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
-type DestinationDataSource struct {
+type destinationDataSource struct {
 	client *v1.Client
 }
 
 var (
-	_ datasource.DataSource              = &DestinationDataSource{}
-	_ datasource.DataSourceWithConfigure = &DestinationDataSource{}
+	_ datasource.DataSource              = &destinationDataSource{}
+	_ datasource.DataSourceWithConfigure = &destinationDataSource{}
 )
 
 func NewDestinationDataSource() datasource.DataSource {
-	return &DestinationDataSource{}
+	return &destinationDataSource{}
 }
 
-func (d *DestinationDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *destinationDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_simple_notification_destination"
 }
 
-func (d *DestinationDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *destinationDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -41,11 +41,11 @@ func (d *DestinationDataSource) Configure(ctx context.Context, req datasource.Co
 	d.client = apiclient.SimpleNotificationClient
 }
 
-type DestinationDataSourceModel struct {
+type destinationDataSourceModel struct {
 	destinationBaseModel
 }
 
-func (d *DestinationDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *destinationDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	const resourceName = "SimpleNotification Destination"
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -67,8 +67,8 @@ func (d *DestinationDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 	}
 }
 
-func (d *DestinationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data DestinationDataSourceModel
+func (d *destinationDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data destinationDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -81,8 +81,8 @@ func (d *DestinationDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	DestinationOp := simplenotification.NewDestinationOp(d.client)
-	destListRes, err := DestinationOp.List(ctx)
+	destinationOp := simplenotification.NewDestinationOp(d.client)
+	destListRes, err := destinationOp.List(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list SimpleNotification ProcessConfiguration resources: %s", err))
 		return

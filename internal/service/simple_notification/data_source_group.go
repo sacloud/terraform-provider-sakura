@@ -17,24 +17,24 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
-type GroupDataSource struct {
+type groupDataSource struct {
 	client *v1.Client
 }
 
 var (
-	_ datasource.DataSource              = &GroupDataSource{}
-	_ datasource.DataSourceWithConfigure = &GroupDataSource{}
+	_ datasource.DataSource              = &groupDataSource{}
+	_ datasource.DataSourceWithConfigure = &groupDataSource{}
 )
 
 func NewGroupDataSource() datasource.DataSource {
-	return &GroupDataSource{}
+	return &groupDataSource{}
 }
 
-func (d *GroupDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+func (d *groupDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_simple_notification_group"
 }
 
-func (d *GroupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *groupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -42,11 +42,11 @@ func (d *GroupDataSource) Configure(ctx context.Context, req datasource.Configur
 	d.client = apiclient.SimpleNotificationClient
 }
 
-type GroupDataSourceModel struct {
+type groupDataSourceModel struct {
 	groupBaseModel
 }
 
-func (d *GroupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *groupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	const resourceName = "SimpleNotification Group"
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -64,8 +64,8 @@ func (d *GroupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 	}
 }
 
-func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data GroupDataSourceModel
+func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data groupDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -78,8 +78,8 @@ func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 		return
 	}
 
-	GroupOp := simplenotification.NewGroupOp(d.client)
-	destListRes, err := GroupOp.List(ctx)
+	groupOp := simplenotification.NewGroupOp(d.client)
+	destListRes, err := groupOp.List(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list SimpleNotification ProcessConfiguration resources: %s", err))
 		return
@@ -95,10 +95,8 @@ func (d *GroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 			continue
 		}
 
-		if err := data.updateState(&dest); err != nil {
-			resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update SimpleNotification Group[%s] state: %s", data.ID.String(), err))
-			return
-		}
+		data.updateState(&dest)
+
 		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 		return
 	}
