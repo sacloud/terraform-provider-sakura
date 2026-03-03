@@ -415,7 +415,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	nosqlClient, err := nosql.NewClient(client.WithOptions(callerOptions))
+	nosqlClient, err := nosql.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
@@ -423,7 +423,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	apigwClient, err := apigw.NewClient(client.WithOptions(callerOptions))
+	apigwClient, err := apigw.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
@@ -453,7 +453,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,
 		EventBusClient:                   eventbusClient,
-		AppRunClient:                     &apprun.Client{Options: callerOptions},
+		AppRunClient:                     &apprun.Client{Saclient: theClient},
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
 		NosqlClient:                      nosqlClient,
 		DedicatedStorageClient:           dedicatedStorageClient,
