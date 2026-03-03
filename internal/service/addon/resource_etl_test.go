@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccSakuraAddonETL_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "sakura_addon_etl.foobar"
 
 	var etl v1.GetResourceResponse

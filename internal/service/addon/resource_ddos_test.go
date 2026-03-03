@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccSakuraAddonDDoS_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "sakura_addon_ddos.foobar"
 
 	var ddos v1.GetResourceResponse

@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccSakuraAddonDataLake_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "sakura_addon_datalake.foobar"
 
 	var datalake v1.GetResourceResponse

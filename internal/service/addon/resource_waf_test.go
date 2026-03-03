@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccSakuraAddonWAF_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "sakura_addon_waf.foobar"
 
 	var waf v1.GetResourceResponse

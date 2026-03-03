@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccSakuraAddonCDN_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "sakura_addon_cdn.foobar"
 
 	var cdn v1.GetResourceResponse

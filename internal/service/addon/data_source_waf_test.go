@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccSakuraDataSourceAddonWAF_Basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "data.sakura_addon_waf.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -21,7 +23,7 @@ func TestAccSakuraDataSourceAddonWAF_Basic(t *testing.T) {
 				Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceAddonWAFConfig),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
-					resource.TestCheckNoResourceAttr(resourceName, "location"),
+					resource.TestCheckResourceAttr(resourceName, "location", "japaneast"),
 					resource.TestCheckResourceAttr(resourceName, "pricing_level", "1"),
 					resource.TestCheckResourceAttr(resourceName, "patterns.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "patterns.0", "/*"),

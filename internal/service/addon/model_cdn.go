@@ -21,8 +21,10 @@ type cdnBaseModel struct {
 
 func (model *cdnBaseModel) updateState(id, deploymentName, url string, body *v1.NetworkRequestBody) {
 	model.ID = types.StringValue(id)
-	// japaneast等のLocationを指定しても、APIのレスポンスでは"Global"になるため、Locationは固定値で設定する
-	// model.Location = types.StringValue(body.Location)
+	// Locationを指定しても、Frontdoor関連サービスのAPIレスポンスでは"Global"になるため、Locationは固定値で設定する
+	// 現状はjapaneastのみなのでそれを設定。将来的にはリソースグループのLocationをAPIレスポンスから取得して設定するように変更する
+	// ddos/wafも同様
+	model.Location = types.StringValue("japaneast")
 	model.PricingLevel = types.Int32Value(int32(body.Profile.Level))
 	model.Patterns = common.StringsToTlist(body.Endpoint.Route.Patterns)
 	model.Origin = &frontDoorOriginModel{

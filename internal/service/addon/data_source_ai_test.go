@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccSakuraDataSourceAddonAI_Basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "data.sakura_addon_ai.foobar"
 
 	resource.Test(t, resource.TestCase{

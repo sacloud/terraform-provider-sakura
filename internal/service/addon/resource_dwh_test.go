@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccSakuraAddonDWH_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "sakura_addon_dwh.foobar"
 
 	var dwh v1.GetResourceResponse

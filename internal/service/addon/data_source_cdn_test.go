@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccSakuraDataSourceAddonCDN_Basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "data.sakura_addon_cdn.foobar"
 
 	resource.Test(t, resource.TestCase{
@@ -21,7 +23,7 @@ func TestAccSakuraDataSourceAddonCDN_Basic(t *testing.T) {
 				Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceAddonCDNConfig),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
-					resource.TestCheckNoResourceAttr(resourceName, "location"),
+					resource.TestCheckResourceAttr(resourceName, "location", "japaneast"),
 					resource.TestCheckResourceAttr(resourceName, "pricing_level", "1"),
 					resource.TestCheckResourceAttr(resourceName, "patterns.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "patterns.0", "/*"),

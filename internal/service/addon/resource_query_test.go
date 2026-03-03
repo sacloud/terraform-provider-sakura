@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccSakuraAddonQuery_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "sakura_addon_query.foobar"
 
 	var query v1.GetResourceResponse

@@ -11,6 +11,8 @@ import (
 )
 
 func TestAccSakuraDataSourceAddonSearch_Basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "data.sakura_addon_search.foobar"
 	rand := test.RandomName()
 

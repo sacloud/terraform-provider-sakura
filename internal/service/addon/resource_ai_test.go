@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccSakuraAddonAI_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "sakura_addon_ai.foobar"
 
 	var ai v1.GetResourceResponse

@@ -17,6 +17,8 @@ import (
 )
 
 func TestAccSakuraAddonStreaming_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
 	resourceName := "sakura_addon_streaming.foobar"
 
 	var streaming v1.GetResourceResponse
