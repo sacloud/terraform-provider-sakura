@@ -14,10 +14,9 @@ type groupBaseModel struct {
 	Destinations types.List `tfsdk:"destinations"`
 }
 
-func (model *groupBaseModel) updateState(data *v1.CommonServiceItem) error {
+func (model *groupBaseModel) updateState(data *v1.CommonServiceItem) {
 	model.UpdateBaseState(data.ID, data.Name, data.Description, data.Tags)
 
 	gr, _ := data.Settings.GetGroupSettings()
 	model.Destinations = common.StringsToTlist(gr.Destinations)
-	return nil
 }
