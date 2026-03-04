@@ -56,6 +56,7 @@ Application Integration:
   - simple_notification_group 
   - workflows_plan
   - workflows_subscription
+  - simple_notification_routing 
 Monitoring:
   - simple_monitor
   - monitoring_suite
