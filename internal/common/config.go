@@ -417,7 +417,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	eventbusClient, err := eventbus.NewClient(client.WithOptions(callerOptions))
+	eventbusClient, err := eventbus.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
