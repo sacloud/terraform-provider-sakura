@@ -14,7 +14,7 @@ import (
 )
 
 type objectStorageBucketDataSource struct {
-	client *objectstorage.Client
+	fedClient *objectstorage.FedClient
 }
 
 var (
@@ -35,7 +35,7 @@ func (d *objectStorageBucketDataSource) Configure(ctx context.Context, req datas
 	if apiclient == nil {
 		return
 	}
-	d.client = apiclient.ObjectStorageClient
+	d.fedClient = apiclient.ObjectStorageFedClient
 }
 
 type objectStorageBucketDataSourceModel struct {

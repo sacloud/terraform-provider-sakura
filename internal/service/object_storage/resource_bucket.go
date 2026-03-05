@@ -18,11 +18,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	objectstorage "github.com/sacloud/object-storage-api-go"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
 type objectStorageBucketResource struct {
-	client *objectstorage.Client
+	fedClient *objectstorage.FedClient
+	saClient  saclient.ClientAPI
 }
 
 var (
@@ -44,7 +46,8 @@ func (r *objectStorageBucketResource) Configure(ctx context.Context, req resourc
 	if apiclient == nil {
 		return
 	}
-	r.client = apiclient.ObjectStorageClient
+	r.fedClient = apiclient.ObjectStorageFedClient
+	r.saClient = apiclient.SaClient
 }
 
 type objectStorageBucketResourceModel struct {
@@ -107,14 +110,20 @@ func (r *objectStorageBucketResource) Create(ctx context.Context, req resource.C
 	defer cancel()
 
 	siteId := plan.SiteID.ValueString()
-	bucketAPI := objectstorage.NewBucketOp(r.client)
-	bucket, err := bucketAPI.Create(ctx, siteId, plan.Name.ValueString())
+	siteClient, err := objectstorage.NewSiteClient(r.saClient, siteId)
+	if err != nil {
+		resp.Diagnostics.AddError("Create: Client Error", fmt.Sprintf("failed to create Object Storage site client: %s", err))
+		return
+	}
+
+	bucketAPI := objectstorage.NewBucketOp(r.fedClient, siteClient)
+	bucket, err := bucketAPI.Create(ctx, &objectstorage.BucketCreateParams{Bucket: plan.Name.ValueString(), SiteId: siteId})
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Object Storage Bucket: %s", err))
 		return
 	}
 
-	plan.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, bucket.Name))
+	plan.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, bucket.Name.Value))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -161,8 +170,14 @@ func (r *objectStorageBucketResource) Delete(ctx context.Context, req resource.D
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	bucketAPI := objectstorage.NewBucketOp(r.client)
-	if err := bucketAPI.Delete(ctx, state.SiteID.ValueString(), state.Name.ValueString()); err != nil {
+	siteClient, err := objectstorage.NewSiteClient(r.saClient, state.SiteID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Delete: Client Error", fmt.Sprintf("failed to create Object Storage site client: %s", err.Error()))
+		return
+	}
+
+	bucketAPI := objectstorage.NewBucketOp(r.fedClient, siteClient)
+	if err := bucketAPI.Delete(ctx, state.Name.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Object Storage Bucket: %s", err))
 		return
 	}

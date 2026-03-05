@@ -12,12 +12,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	objectstorage "github.com/sacloud/object-storage-api-go"
-	v1 "github.com/sacloud/object-storage-api-go/apis/v1"
+	v2 "github.com/sacloud/object-storage-api-go/apis/v2"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
 type objectStorageSiteDataSource struct {
-	client *objectstorage.Client
+	fedClient *objectstorage.FedClient
+	saClient  saclient.ClientAPI
 }
 
 var (
@@ -38,7 +40,8 @@ func (d *objectStorageSiteDataSource) Configure(ctx context.Context, req datasou
 	if apiclient == nil {
 		return
 	}
-	d.client = apiclient.ObjectStorageClient
+	d.fedClient = apiclient.ObjectStorageFedClient
+	d.saClient = apiclient.SaClient
 }
 
 type objectStorageSiteDataSourceModel struct {
@@ -138,50 +141,53 @@ func (d *objectStorageSiteDataSource) Read(ctx context.Context, req datasource.R
 		return
 	}
 
-	var site *v1.Cluster
+	var site *v2.ModelCluster
 	var err error
 	if data.ID.ValueString() == "" && data.DisplayName.ValueString() == "" {
-		site, err = getSite(d.client, ctx, "isk01", "")
+		site, err = getSite(d.fedClient, ctx, "isk01", "")
 	} else {
-		site, err = getSite(d.client, ctx, data.ID.ValueString(), data.DisplayName.ValueString())
+		site, err = getSite(d.fedClient, ctx, data.ID.ValueString(), data.DisplayName.ValueString())
 	}
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object storage site: %s", err.Error()))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object storage site: %s", err))
 		return
 	}
-	statusOp := objectstorage.NewSiteStatusOp(d.client)
-	status, err := statusOp.Read(ctx, site.Id)
+
+	siteID := site.ID.Value
+	siteClient, err := objectstorage.NewSiteClient(d.saClient, siteID)
+	if err != nil {
+		resp.Diagnostics.AddError("Read: Client Error", fmt.Sprintf("failed to create object storage site client: %s", err))
+		return
+	}
+
+	statusOp := objectstorage.NewSiteStatusOp(siteClient)
+	status, err := statusOp.Read(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to get object storage site status: %s", err.Error()))
 		return
 	}
 
-	data.ID = types.StringValue(site.Id)
-	data.DisplayName = types.StringValue(site.DisplayName)
-	data.DisplayOrder = types.Int32Value(int32(site.DisplayOrder))
-	data.Endpoint = types.StringValue(site.EndpointBase)
-	data.IamEndpoint = types.StringValue(site.IamEndpoint)
-	data.S3Endpoint = types.StringValue(site.S3Endpoint)
-	data.ApiZone = common.StringsToTset(site.ApiZone)
+	data.ID = types.StringValue(siteID)
+	data.DisplayName = types.StringValue(site.DisplayName.Value)
+	data.DisplayOrder = types.Int32Value(int32(site.DisplayOrder.Value))
+	data.Endpoint = types.StringValue(site.EndpointBase.Value)
+	data.IamEndpoint = types.StringValue(site.IamEndpoint.Value)
+	data.S3Endpoint = types.StringValue(site.S3Endpoint.Value)
+	data.Region = types.StringValue(site.Region.Value)
+	data.ApiZone = common.StringsToTset(site.APIZone)
 	data.StorageZone = common.StringsToTset(site.StorageZone)
+	statusCodeValue := status.StatusCode.Value
 	data.Status = &objectStorageSiteStatusModel{
-		AcceptNew: types.BoolValue(status.AcceptNew),
-		Message:   types.StringValue(status.Message),
-		StartedAt: types.StringValue(status.StartedAt.String()),
-		Code:      types.Int64Value(int64(status.StatusCode.Id)),
-		Status:    types.StringValue(status.StatusCode.Status),
+		AcceptNew: types.BoolValue(status.AcceptNew.Value),
+		Message:   types.StringValue(status.Message.Value),
+		StartedAt: types.StringValue(status.StartedAt.Value.String()),
+		Code:      types.Int64Value(int64(statusCodeValue.ID.Value)),
+		Status:    types.StringValue(statusCodeValue.Status.Value),
 	}
-	// After update object-storage-api-go, it will be set properly from API.
-	if site.Id == "isk01" {
-		data.Region = types.StringValue("jp-north-1")
-	} else {
-		data.Region = types.StringValue("jp-east-1")
-	}
-
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func getSite(client *objectstorage.Client, ctx context.Context, id string, displayName string) (*v1.Cluster, error) {
+func getSite(client *objectstorage.FedClient, ctx context.Context, id string, displayName string) (*v2.ModelCluster, error) {
 	siteOp := objectstorage.NewSiteOp(client)
 
 	if id != "" {
@@ -195,9 +201,9 @@ func getSite(client *objectstorage.Client, ctx context.Context, id string, displ
 		if err != nil {
 			return nil, err
 		}
-		for _, s := range sites {
-			if strings.HasPrefix(s.DisplayName, displayName) || strings.HasPrefix(s.DisplayNameJa, displayName) || strings.HasPrefix(s.DisplayNameEnUs, displayName) {
-				return s, nil
+		for i, s := range sites {
+			if strings.HasPrefix(s.DisplayName.Value, displayName) || strings.HasPrefix(s.DisplayNameJa.Value, displayName) || strings.HasPrefix(s.DisplayNameEnUs.Value, displayName) {
+				return &sites[i], nil
 			}
 		}
 	}
