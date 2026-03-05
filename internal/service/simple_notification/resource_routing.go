@@ -234,3 +234,14 @@ func makeRoutingUpdateRequest(d *routingResourceModel) v1.PutCommonServiceItemRe
 	}
 	return req
 }
+
+func expandMatchLabels(models []matchLabelModel) []v1.RoutingSettingsMatchLabelsItem {
+	result := make([]v1.RoutingSettingsMatchLabelsItem, len(models))
+	for i, ml := range models {
+		result[i] = v1.RoutingSettingsMatchLabelsItem{
+			Name:  ml.Name.ValueString(),
+			Value: ml.Value.ValueString(),
+		}
+	}
+	return result
+}
