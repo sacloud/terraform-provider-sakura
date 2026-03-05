@@ -19,7 +19,6 @@ func TestAccSakuraSimpleNotificationRouting_basic(t *testing.T) {
 	resourceName := "sakura_simple_notification_routing.foobar"
 	rand := test.RandomName()
 	randSourceID := test.RandStringFromCharSet(11, "123456789")
-	t.Log("randSourceID: " + randSourceID)
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
