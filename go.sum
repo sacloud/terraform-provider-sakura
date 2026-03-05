@@ -239,14 +239,12 @@ github.com/sacloud/api-client-go v0.3.5 h1:0ALibvbC+6MBhN7t61k+RhguhiEQ8+NejqBjq
 github.com/sacloud/api-client-go v0.3.5/go.mod h1:akdcCOl6wszywa0YQ5X8cMnNgWTm+7N4EneODTdiH48=
 github.com/sacloud/apigw-api-go v0.3.0 h1:dxrV2L6/SNdRM0dLJm+p9d40bOWopVYmykD8TAJL1qY=
 github.com/sacloud/apigw-api-go v0.3.0/go.mod h1:YtaZ7lYtjwI4PrnrVvYStQEjrb2lTbyac/L95giqApg=
-github.com/sacloud/apprun-api-go v0.6.0 h1:8/HAu6Vw2a01dCIRkaqrXw/U27wsLy8vekTDfrUN5MM=
-github.com/sacloud/apprun-api-go v0.6.0/go.mod h1:H400OqgfgYclHSO8m5ihPEgUdWnPVinnVlAaMksXS14=
 github.com/sacloud/apprun-api-go v0.6.1 h1:tZDEaWkH5OQIeZSrWHKIcG8HR19jZy4E/6FZIEIMSMw=
 github.com/sacloud/apprun-api-go v0.6.1/go.mod h1:0Bo4+cXtj/MDalhf4JMTA+CnvutdMcHsyl2TS+d9qKA=
 github.com/sacloud/autoscaler v0.19.3 h1:FkBxc0mE8fvaWiOiz+TpFAT1TX8DRLXs8prsqaM2MF0=
 github.com/sacloud/autoscaler v0.19.3/go.mod h1:jTeHzdZHrWd/2mYtgEyyFDTqHu0EbMPNDzwj7mdl0MA=
-github.com/sacloud/cloudhsm-api-go v0.2.0 h1:ESBNWN1ZhwXOAwUCdzcnVe8JWXlJOK306MBoNoDs/cA=
-github.com/sacloud/cloudhsm-api-go v0.2.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
+github.com/sacloud/cloudhsm-api-go v0.3.0 h1:qu/Imaqn+Lmf3/rKjwMdyz25cdusLwGXpH3PATNWrbw=
+github.com/sacloud/cloudhsm-api-go v0.3.0/go.mod h1:9/bfcNlkQceB3QIwE3/d1Mc6B3aWUeycBEtAyl3nLaE=
 github.com/sacloud/dedicated-storage-api-go v0.1.0 h1:rEQVtWG3FTZ7cGw6j/fTz81VBM4rT0K2myLq+ah3nh8=
 github.com/sacloud/dedicated-storage-api-go v0.1.0/go.mod h1:m8DWoOkdFtpxbLgIdr6S7fd1W6/7EY8fR59OIOdqiSY=
 github.com/sacloud/eventbus-api-go v0.5.2 h1:RsPJqWKl7nsNyGH0yYrsHCbv7YBiNOTaTrAzUVypu6A=
