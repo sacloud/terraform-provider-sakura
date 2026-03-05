@@ -1,0 +1,105 @@
+// Copyright 2016-2026 The terraform-provider-sakura Authors
+// SPDX-License-Identifier: Apache-2.0
+
+package simple_notification
+
+import (
+	"context"
+	"fmt"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	simplenotification "github.com/sacloud/simple-notification-api-go"
+	v1 "github.com/sacloud/simple-notification-api-go/apis/v1"
+	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+)
+
+type groupDataSource struct {
+	client *v1.Client
+}
+
+var (
+	_ datasource.DataSource              = &groupDataSource{}
+	_ datasource.DataSourceWithConfigure = &groupDataSource{}
+)
+
+func NewGroupDataSource() datasource.DataSource {
+	return &groupDataSource{}
+}
+
+func (d *groupDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_simple_notification_group"
+}
+
+func (d *groupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
+		return
+	}
+	d.client = apiclient.SimpleNotificationClient
+}
+
+type groupDataSourceModel struct {
+	groupBaseModel
+}
+
+func (d *groupDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	const resourceName = "SimpleNotification Group"
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id":          common.SchemaDataSourceId(resourceName),
+			"name":        common.SchemaDataSourceName(resourceName),
+			"description": common.SchemaDataSourceDescription(resourceName),
+			"tags":        common.SchemaDataSourceTags(resourceName),
+			"destinations": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: desc.Sprintf("The destinations of the %s.", resourceName),
+			},
+		},
+		MarkdownDescription: "Get information about an existing SimpleNotification Group.",
+	}
+}
+
+func (d *groupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data groupDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	name := data.Name.ValueString()
+	tags := common.TsetToStrings(data.Tags)
+	if name == "" && len(tags) == 0 {
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'name' or 'tags' must be specified.")
+		return
+	}
+
+	groupOp := simplenotification.NewGroupOp(d.client)
+	destListRes, err := groupOp.List(ctx)
+	if err != nil {
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list SimpleNotification ProcessConfiguration resources: %s", err))
+		return
+	}
+
+	for _, dest := range destListRes.CommonServiceItems {
+		if name != "" && dest.Name != name {
+			continue
+		}
+
+		tagsMatched := utils.IsTagsMatched(tags, dest.Tags)
+		if !tagsMatched {
+			continue
+		}
+
+		data.updateState(&dest)
+
+		resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+		return
+	}
+
+	resp.Diagnostics.AddError("Read: Search Error", fmt.Sprintf("failed to find any SimpleNotification Group resources with name=%q and tags=%v", name, tags))
+}
