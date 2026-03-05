@@ -1,5 +1,14 @@
 # Changelog
 
+## [v3.6.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.5.1...v3.6.0) - 2026-03-05
+- nosql: Update version to 4.1.10 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/137
+- ci: bump Songmu/tagpr from 1.11.1 to 1.17.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/129
+- go: bump github.com/sacloud/dedicated-storage-api-go from 0.0.3 to 0.1.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/131
+- Workflows課金プランのresource & data_sourceの追加 by @a2not in https://github.com/sacloud/terraform-provider-sakura/pull/124
+- Update api clients to use saclient by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/140
+- feat: add simple_notification group and destination by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/134
+- Add addon by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/139
+
 ## [v3.5.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.5.0...v3.5.1) - 2026-02-26
 - Fix missing nil check by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/135
 
