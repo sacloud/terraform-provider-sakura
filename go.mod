@@ -1,6 +1,6 @@
 module github.com/sacloud/terraform-provider-sakura
 
-go 1.25.5
+go 1.25.7
 
 require (
 	github.com/goccy/go-yaml v1.19.2
@@ -113,6 +113,7 @@ require (
 	github.com/prometheus/common v0.65.0 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
+	github.com/sacloud/addon-api-go v0.0.1 // indirect
 	github.com/sacloud/ftps v1.2.0 // indirect
 	github.com/sacloud/go-otelsetup v0.5.0 // indirect
 	github.com/sacloud/iaas-api-go/trace/otel v0.0.0-20251222225644-7df65ab7d2cf // indirect
