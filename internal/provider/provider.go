@@ -18,6 +18,7 @@ import (
 	"github.com/sacloud/packages-go/envvar"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/addon"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apigw"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_shared"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
@@ -255,6 +256,16 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 
 func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.DataSource {
 	return []func() datasource.DataSource{
+		addon.NewAIDataSource,
+		addon.NewCDNDataSource,
+		addon.NewDataLakeDataSource,
+		addon.NewDDoSDataSource,
+		addon.NewDWHDataSource,
+		addon.NewETLDataSource,
+		addon.NewQueryDataSource,
+		addon.NewSearchDataSource,
+		addon.NewStreamingDataSource,
+		addon.NewWAFDataSource,
 		apprun_shared.NewApprunSharedDataSource,
 		apigw.NewApigwCertDataSource,
 		apigw.NewApigwDomainDataSource,
@@ -332,6 +343,16 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 
 func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
+		addon.NewAIResource,
+		addon.NewCDNResource,
+		addon.NewDataLakeResource,
+		addon.NewDDoSResource,
+		addon.NewDWHResource,
+		addon.NewETLResource,
+		addon.NewQueryResource,
+		addon.NewSearchResource,
+		addon.NewStreamingResource,
+		addon.NewWAFResource,
 		apprun_shared.NewApprunSharedResource,
 		apigw.NewApigwCertResource,
 		apigw.NewApigwDomainResource,

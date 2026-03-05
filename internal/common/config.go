@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package common
@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-multierror"
+	"github.com/sacloud/addon-api-go"
+	addonapi "github.com/sacloud/addon-api-go/apis/v1"
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/apigw-api-go"
 	apigwapi "github.com/sacloud/apigw-api-go/apis/v1"
@@ -116,6 +118,7 @@ type APIClient struct {
 	ApigwClient                      *apigwapi.Client
 	SecurityControlClient            *secconapi.Client
 	IamClient                        *iamapi.Client
+	AddonClient                      *addonapi.Client
 	WorkflowsClient                  *workflowsapi.Client
 	SimpleNotificationClient         *simple_notification_api.Client
 }
@@ -418,7 +421,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	nosqlClient, err := nosql.NewClient(client.WithOptions(callerOptions))
+	nosqlClient, err := nosql.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
@@ -426,7 +429,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	apigwClient, err := apigw.NewClient(client.WithOptions(callerOptions))
+	apigwClient, err := apigw.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
@@ -436,6 +439,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	}
 	iamClient, err := iam.NewClient(theClient)
 	if err != nil {
+		return nil, err
+	}
+	addonClient, err := addon.NewClient(theClient)
+  if err != nil {
 		return nil, err
 	}
 	workflowsClient, err := workflows.NewClient(theClient)
@@ -460,13 +467,14 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,
 		EventBusClient:                   eventbusClient,
-		AppRunClient:                     &apprun.Client{Options: callerOptions},
+		AppRunClient:                     &apprun.Client{Saclient: theClient},
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
 		NosqlClient:                      nosqlClient,
 		DedicatedStorageClient:           dedicatedStorageClient,
 		ApigwClient:                      apigwClient,
 		SecurityControlClient:            secconClient,
 		IamClient:                        iamClient,
+		AddonClient:                      addonClient,
 		WorkflowsClient:                  workflowsClient,
 		SimpleNotificationClient:         simpleNotificationClient,
 	}, nil

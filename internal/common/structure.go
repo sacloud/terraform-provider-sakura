@@ -211,6 +211,16 @@ func IntToInt64(i int) int64 {
 	return int64(i)
 }
 
+// int/int64からの変換はデータの欠損が発生する可能性があるため、利用する側で注意すること
+// sakuraのAPIにはint32で十分な値でもint/int64で定義されているものがあるためサポートしている
+func ToInt32[I ~int | ~int32 | ~int64](s I) int32 {
+	return int32(s)
+}
+
+func ToInt64[I ~int | ~int32 | ~int64](s I) int64 {
+	return int64(s)
+}
+
 func ToString[S ~string](s S) string {
 	return string(s)
 }
