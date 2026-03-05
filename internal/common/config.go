@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package common
@@ -43,6 +43,8 @@ import (
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
+	"github.com/sacloud/workflows-api-go"
+	workflowsapi "github.com/sacloud/workflows-api-go/apis/v1"
 )
 
 const (
@@ -115,6 +117,7 @@ type APIClient struct {
 	SecurityControlClient            *secconapi.Client
 	IamClient                        *iamapi.Client
 	AddonClient                      *addonapi.Client
+	WorkflowsClient                  *workflowsapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -379,7 +382,8 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 			func(req *http.Request) error {
 				req.Header.Set("X-Sakura-Bigint-As-Int", "0")
 				return nil
-			}},
+			},
+		},
 	}
 	caller := api.NewCallerWithOptions(&api.CallerOptions{
 		Options:     callerOptions,
@@ -414,7 +418,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	nosqlClient, err := nosql.NewClient(client.WithOptions(callerOptions))
+	nosqlClient, err := nosql.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
@@ -422,7 +426,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	apigwClient, err := apigw.NewClient(client.WithOptions(callerOptions))
+	apigwClient, err := apigw.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
@@ -435,6 +439,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		return nil, err
 	}
 	addonClient, err := addon.NewClient(theClient)
+  if err != nil {
+		return nil, err
+	}
+	workflowsClient, err := workflows.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}
@@ -452,7 +460,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,
 		EventBusClient:                   eventbusClient,
-		AppRunClient:                     &apprun.Client{Options: callerOptions},
+		AppRunClient:                     &apprun.Client{Saclient: theClient},
 		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
 		NosqlClient:                      nosqlClient,
 		DedicatedStorageClient:           dedicatedStorageClient,
@@ -460,6 +468,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		SecurityControlClient:            secconClient,
 		IamClient:                        iamClient,
 		AddonClient:                      addonClient,
+		WorkflowsClient:                  workflowsClient,
 	}, nil
 }
 
