@@ -24,6 +24,20 @@ func (model *objectStorageBucketBaseModel) updateState(name, siteId string) {
 	model.SiteID = types.StringValue(siteId)
 }
 
+type objectStorageBucketEncryptionBaseModel struct {
+	ID       types.String `tfsdk:"id"`
+	Bucket   types.String `tfsdk:"bucket"`
+	SiteID   types.String `tfsdk:"site_id"`
+	KmsKeyID types.String `tfsdk:"kms_key_id"`
+}
+
+func (model *objectStorageBucketEncryptionBaseModel) updateState(siteId, bucket, keyId string) {
+	model.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, bucket))
+	model.Bucket = types.StringValue(bucket)
+	model.SiteID = types.StringValue(siteId)
+	model.KmsKeyID = types.StringValue(keyId)
+}
+
 type objectStorageS3CompatModel struct {
 	ID        types.String `tfsdk:"id"`
 	Region    types.String `tfsdk:"region"`
