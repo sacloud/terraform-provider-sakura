@@ -10,7 +10,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraDataSourceObjectStorage_basic(t *testing.T) {
+func TestAccSakuraDataSourceObjectStorageSite_basic(t *testing.T) {
 	resourceName := "data.sakura_object_storage_site.foobar"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
