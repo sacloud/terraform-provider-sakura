@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package object_storage
@@ -97,12 +97,12 @@ func (r *objectStorageBucketReplicationConfigResource) ImportState(ctx context.C
 
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError("Import Error",
-			fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {site_id}_{name}: %s", req.ID))
+			fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {site_id}_{bucket}: %s", req.ID))
 		return
 	}
 
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("site_id"), parts[0])...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("source_bucket"), parts[1])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("bucket"), parts[1])...)
 }
 
 func (r *objectStorageBucketReplicationConfigResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -155,7 +155,7 @@ func (r *objectStorageBucketReplicationConfigResource) Read(ctx context.Context,
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read replication settings for Object Storage Bucket[%s]: %s", src, err))
 		return
 	} else {
-		dst = string(res.DestBucket.Name.Value)
+		dst = res.DestBucket.Name.Value
 	}
 
 	state.updateState(siteId, src, dst)
