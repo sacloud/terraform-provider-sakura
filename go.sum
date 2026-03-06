@@ -269,6 +269,8 @@ github.com/sacloud/nosql-api-go v0.3.0 h1:pyrrldQerNsvEVdm+m9oZ3ao+y7a9SgCHaanOS
 github.com/sacloud/nosql-api-go v0.3.0/go.mod h1:A025O6HVlTJxRek7UlYAAcErFQr/Tqur36FEC4QBAqA=
 github.com/sacloud/object-storage-api-go v0.1.0 h1:xaClhQAioCV4OMbCX82dVeIM0H4y75cqsOTRiwgiEbs=
 github.com/sacloud/object-storage-api-go v0.1.0/go.mod h1:iOOxj6pG5/nGqZZh5GPEZQgMzbg6zOvOJ/2c91mJndQ=
+github.com/sacloud/object-storage-api-go v0.1.1 h1:lgAIonpmVEbUbeiOQ3IRH9XXS5U8fbw6n9N0GEe5f2U=
+github.com/sacloud/object-storage-api-go v0.1.1/go.mod h1:uluq6oc/T21x72K45upbW1eMk+Z+LJHJbCto7HhxJJk=
 github.com/sacloud/packages-go v0.0.12 h1:MKeZNN3FQn1heqUSRBrbZw89YusZA1n4kammjMFZYvQ=
 github.com/sacloud/packages-go v0.0.12/go.mod h1:XNF5MCTWcHo9NiqWnYctVbASSSZR3ZOmmQORIzcurJ8=
 github.com/sacloud/saclient-go v0.3.1 h1:s9Yx4arEgsoIWkULO9s3gNv03XRGR0eNOQ9z6iI1iWE=
