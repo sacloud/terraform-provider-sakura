@@ -12,6 +12,18 @@ import (
 	ver "github.com/sacloud/terraform-provider-sakura/version"
 )
 
+type objectStorageBucketBaseModel struct {
+	ID     types.String `tfsdk:"id"`
+	Name   types.String `tfsdk:"name"`
+	SiteID types.String `tfsdk:"site_id"`
+}
+
+func (model *objectStorageBucketBaseModel) updateState(name, siteId string) {
+	model.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, name))
+	model.Name = types.StringValue(name)
+	model.SiteID = types.StringValue(siteId)
+}
+
 type objectStorageS3CompatModel struct {
 	ID        types.String `tfsdk:"id"`
 	Region    types.String `tfsdk:"region"`

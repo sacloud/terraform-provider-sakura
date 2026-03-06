@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	objectstorage "github.com/sacloud/object-storage-api-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
@@ -39,9 +38,7 @@ func (d *objectStorageBucketDataSource) Configure(ctx context.Context, req datas
 }
 
 type objectStorageBucketDataSourceModel struct {
-	ID     types.String `tfsdk:"id"`
-	Name   types.String `tfsdk:"name"`
-	SiteID types.String `tfsdk:"site_id"`
+	objectStorageBucketBaseModel
 }
 
 func (d *objectStorageBucketDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -68,8 +65,11 @@ func (d *objectStorageBucketDataSource) Read(ctx context.Context, req datasource
 		return
 	}
 
+	name := data.Name.ValueString()
+	siteId := data.SiteID.ValueString()
+
 	// TODO: APIを呼び出しての存在チェック。現状はobject-storage-api-goにAPIがないため未実装
 
-	data.ID = types.StringValue(data.Name.ValueString())
+	data.updateState(name, siteId)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

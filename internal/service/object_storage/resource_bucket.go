@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	objectstorage "github.com/sacloud/object-storage-api-go"
 	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -51,9 +50,7 @@ func (r *objectStorageBucketResource) Configure(ctx context.Context, req resourc
 }
 
 type objectStorageBucketResourceModel struct {
-	ID       types.String   `tfsdk:"id"`
-	Name     types.String   `tfsdk:"name"`
-	SiteID   types.String   `tfsdk:"site_id"`
+	objectStorageBucketBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
@@ -123,7 +120,7 @@ func (r *objectStorageBucketResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	plan.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, bucket.Name.Value))
+	plan.updateState(bucket.Name.Value, siteId)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -138,10 +135,8 @@ func (r *objectStorageBucketResource) Read(ctx context.Context, req resource.Rea
 	siteId := state.SiteID.ValueString()
 
 	// 将来的にはBucketの情報をAPIから取得して状態に反映
-	state.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, name))
-	state.Name = types.StringValue(name)
-	state.SiteID = types.StringValue(siteId)
 
+	state.updateState(name, siteId)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
