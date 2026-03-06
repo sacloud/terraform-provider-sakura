@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package object_storage
@@ -11,6 +11,46 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
 )
+
+type objectStorageBucketBaseModel struct {
+	ID     types.String `tfsdk:"id"`
+	Name   types.String `tfsdk:"name"`
+	SiteID types.String `tfsdk:"site_id"`
+}
+
+func (model *objectStorageBucketBaseModel) updateState(name, siteId string) {
+	model.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, name))
+	model.Name = types.StringValue(name)
+	model.SiteID = types.StringValue(siteId)
+}
+
+type objectStorageBucketEncryptionBaseModel struct {
+	ID       types.String `tfsdk:"id"`
+	Bucket   types.String `tfsdk:"bucket"`
+	SiteID   types.String `tfsdk:"site_id"`
+	KmsKeyID types.String `tfsdk:"kms_key_id"`
+}
+
+func (model *objectStorageBucketEncryptionBaseModel) updateState(siteId, bucket, keyId string) {
+	model.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, bucket))
+	model.Bucket = types.StringValue(bucket)
+	model.SiteID = types.StringValue(siteId)
+	model.KmsKeyID = types.StringValue(keyId)
+}
+
+type objectStorageBucketReplicationBaseModel struct {
+	ID                types.String `tfsdk:"id"`
+	Bucket            types.String `tfsdk:"bucket"`
+	SiteID            types.String `tfsdk:"site_id"`
+	DestinationBucket types.String `tfsdk:"destination_bucket"`
+}
+
+func (model *objectStorageBucketReplicationBaseModel) updateState(siteId, bucket, dst string) {
+	model.ID = types.StringValue(fmt.Sprintf("%s_%s", siteId, bucket))
+	model.Bucket = types.StringValue(bucket)
+	model.SiteID = types.StringValue(siteId)
+	model.DestinationBucket = types.StringValue(dst)
+}
 
 type objectStorageS3CompatModel struct {
 	ID        types.String `tfsdk:"id"`

@@ -15,6 +15,7 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
 	github.com/minio/minio-go/v7 v7.0.98
 	github.com/mitchellh/go-homedir v1.1.0
+	github.com/sacloud/addon-api-go v0.0.1
 	github.com/sacloud/api-client-go v0.3.5
 	github.com/sacloud/apigw-api-go v0.3.0
 	github.com/sacloud/apprun-api-go v0.6.1
@@ -22,13 +23,12 @@ require (
 	github.com/sacloud/cloudhsm-api-go v0.2.0
 	github.com/sacloud/dedicated-storage-api-go v0.1.0
 	github.com/sacloud/eventbus-api-go v0.5.2
-	github.com/sacloud/go-http v0.1.9
 	github.com/sacloud/iaas-api-go v1.25.0
 	github.com/sacloud/iaas-service-go v1.22.1
 	github.com/sacloud/iam-api-go v0.2.0
 	github.com/sacloud/kms-api-go v0.4.0
 	github.com/sacloud/nosql-api-go v0.3.0
-	github.com/sacloud/object-storage-api-go v0.0.12
+	github.com/sacloud/object-storage-api-go v0.1.1
 	github.com/sacloud/packages-go v0.0.12
 	github.com/sacloud/saclient-go v0.3.1
 	github.com/sacloud/secretmanager-api-go v0.3.1
@@ -113,8 +113,8 @@ require (
 	github.com/prometheus/common v0.65.0 // indirect
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
-	github.com/sacloud/addon-api-go v0.0.1 // indirect
 	github.com/sacloud/ftps v1.2.0 // indirect
+	github.com/sacloud/go-http v0.1.9 // indirect
 	github.com/sacloud/go-otelsetup v0.5.0 // indirect
 	github.com/sacloud/iaas-api-go/trace/otel v0.0.0-20251222225644-7df65ab7d2cf // indirect
 	github.com/segmentio/asm v1.2.1 // indirect

@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package object_storage
@@ -6,6 +6,7 @@ package object_storage
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -16,13 +17,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	objectstorage "github.com/sacloud/object-storage-api-go"
-	v1 "github.com/sacloud/object-storage-api-go/apis/v1"
+	v2 "github.com/sacloud/object-storage-api-go/apis/v2"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
-	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type objectStoragePermissionResource struct {
-	client *objectstorage.Client
+	saClient saclient.ClientAPI
 }
 
 var (
@@ -44,7 +45,7 @@ func (r *objectStoragePermissionResource) Configure(ctx context.Context, req res
 	if apiclient == nil {
 		return
 	}
-	r.client = apiclient.ObjectStorageClient
+	r.saClient = apiclient.SaClient
 }
 
 type objectStoragePermissionResourceModel struct {
@@ -129,25 +130,29 @@ func (r *objectStoragePermissionResource) Create(ctx context.Context, req resour
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	permissionOp := objectstorage.NewPermissionOp(r.client)
-	permission, err := permissionOp.Create(ctx, plan.SiteID.ValueString(), &v1.CreatePermissionParams{
-		BucketControls: getBucketControls(&plan),
-		DisplayName:    v1.DisplayName(plan.Name.ValueString()),
-	})
+	siteClient, err := objectstorage.NewSiteClient(r.saClient, plan.SiteID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Create: Client Error", fmt.Sprintf("failed to create Object Storage site client: %s", err.Error()))
+		return
+	}
+
+	permissionOp := objectstorage.NewPermissionOp(siteClient)
+	permission, err := permissionOp.Create(ctx, plan.Name.ValueString(), getBucketControls(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Object Storage Permission: %s", err.Error()))
 		return
 	}
 
-	accessKey, err := permissionOp.CreateAccessKey(ctx, plan.SiteID.ValueString(), permission.Id.Int64())
+	permissionID := strconv.FormatInt(int64(permission.ID.Value), 10)
+	accessKey, err := permissionOp.CreateAccessKey(ctx, permissionID)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Object Storage Permission Access Key: %s", err.Error()))
 		return
 	}
 
-	plan.ID = types.StringValue(permission.Id.String())
-	plan.AccessKey = types.StringValue(accessKey.Id.String())
-	plan.SecretKey = types.StringValue(accessKey.Secret.String())
+	plan.ID = types.StringValue(permissionID)
+	plan.AccessKey = types.StringValue(string(accessKey.ID.Value))
+	plan.SecretKey = types.StringValue(string(accessKey.Secret.Value))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -159,20 +164,26 @@ func (r *objectStoragePermissionResource) Read(ctx context.Context, req resource
 		return
 	}
 
-	permissionOp := objectstorage.NewPermissionOp(r.client)
-	permission, err := permissionOp.Read(ctx, state.SiteID.ValueString(), utils.MustAtoInt64(state.ID.ValueString()))
+	siteClient, err := objectstorage.NewSiteClient(r.saClient, state.SiteID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Read: Client Error", fmt.Sprintf("failed to create Object Storage site client: %s", err.Error()))
+		return
+	}
+
+	permissionOp := objectstorage.NewPermissionOp(siteClient)
+	permission, err := permissionOp.Read(ctx, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Object Storage Permission: %s", err.Error()))
 		return
 	}
 
-	state.Name = types.StringValue(permission.DisplayName.String())
+	state.Name = types.StringValue(string(permission.DisplayName.Value))
 	state.BucketControls = make([]*objectStorageBucketControlModel, 0, len(permission.BucketControls))
 	for _, bc := range permission.BucketControls {
 		state.BucketControls = append(state.BucketControls, &objectStorageBucketControlModel{
-			Bucket:   types.StringValue(bc.BucketName.String()),
-			CanRead:  types.BoolValue(bool(bc.CanRead)),
-			CanWrite: types.BoolValue(bool(bc.CanWrite)),
+			Bucket:   types.StringValue(string(bc.BucketName.Value)),
+			CanRead:  types.BoolValue(bool(bc.CanRead.Value)),
+			CanWrite: types.BoolValue(bool(bc.CanWrite.Value)),
 		})
 	}
 
@@ -189,11 +200,14 @@ func (r *objectStoragePermissionResource) Update(ctx context.Context, req resour
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	permissionOp := objectstorage.NewPermissionOp(r.client)
-	_, err := permissionOp.Update(ctx, plan.SiteID.ValueString(), utils.MustAtoInt64(plan.ID.ValueString()), &v1.UpdatePermissionParams{
-		BucketControls: getBucketControls(&plan),
-		DisplayName:    v1.DisplayName(plan.Name.ValueString()),
-	})
+	siteClient, err := objectstorage.NewSiteClient(r.saClient, plan.SiteID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Update: Client Error", fmt.Sprintf("failed to create Object Storage site client: %s", err.Error()))
+		return
+	}
+
+	permissionOp := objectstorage.NewPermissionOp(siteClient)
+	_, err = permissionOp.Update(ctx, plan.ID.ValueString(), plan.Name.ValueString(), getBucketControls(&plan))
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Object Storage Permission: %s", err.Error()))
 		return
@@ -214,20 +228,26 @@ func (r *objectStoragePermissionResource) Delete(ctx context.Context, req resour
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout20min)
 	defer cancel()
 
-	permissionOp := objectstorage.NewPermissionOp(r.client)
-	if err := permissionOp.Delete(ctx, state.SiteID.ValueString(), utils.MustAtoInt64(state.ID.ValueString())); err != nil {
+	siteClient, err := objectstorage.NewSiteClient(r.saClient, state.SiteID.ValueString())
+	if err != nil {
+		resp.Diagnostics.AddError("Delete: Client Error", fmt.Sprintf("failed to create Object Storage site client: %s", err.Error()))
+		return
+	}
+
+	permissionOp := objectstorage.NewPermissionOp(siteClient)
+	if err := permissionOp.Delete(ctx, state.ID.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Object Storage Permission: %s", err.Error()))
 		return
 	}
 }
 
-func getBucketControls(model *objectStoragePermissionResourceModel) []v1.BucketControl {
-	bucketControls := make([]v1.BucketControl, 0, len(model.BucketControls))
+func getBucketControls(model *objectStoragePermissionResourceModel) v2.BucketControls {
+	bucketControls := make(v2.BucketControls, 0, len(model.BucketControls))
 	for _, bc := range model.BucketControls {
-		bucketControls = append(bucketControls, v1.BucketControl{
-			BucketName: v1.BucketName(bc.Bucket.ValueString()),
-			CanRead:    v1.CanRead(bc.CanRead.ValueBool()),
-			CanWrite:   v1.CanWrite(bc.CanWrite.ValueBool()),
+		bucketControls = append(bucketControls, v2.BucketControlsItem{
+			BucketName: v2.NewOptBucketName(v2.BucketName(bc.Bucket.ValueString())),
+			CanRead:    v2.NewOptCanRead(v2.CanRead(bc.CanRead.ValueBool())),
+			CanWrite:   v2.NewOptCanWrite(v2.CanWrite(bc.CanWrite.ValueBool())),
 		})
 	}
 	return bucketControls

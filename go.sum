@@ -50,8 +50,6 @@ github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S
 github.com/fsnotify/fsnotify v1.9.0/go.mod h1:8jBTzvmWwFyi3Pb8djgCCO5IBqzKJ/Jwo8TRcHyHii0=
 github.com/gabriel-vasile/mimetype v1.4.8 h1:FfZ3gj38NjllZIeJAmMhr+qKL8Wu+nOoI3GqacKw1NM=
 github.com/gabriel-vasile/mimetype v1.4.8/go.mod h1:ByKUIKGjh1ODkGM1asKUbQZOLGrPjydw3hYPU2YU9t8=
-github.com/getlantern/deepcopy v0.0.0-20160317154340-7f45deb8130a h1:yU/FENpkHYISWsQrbr3pcZOBj0EuRjPzNc1+dTCLu44=
-github.com/getlantern/deepcopy v0.0.0-20160317154340-7f45deb8130a/go.mod h1:AEugkNu3BjBxyz958nJ5holD9PRjta6iprcoUauDbU4=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/go-faster/errors v0.7.1 h1:MkJTnDoEdi9pDabt1dpWf7AA8/BaSYZqibYyhZ20AYg=
@@ -241,8 +239,6 @@ github.com/sacloud/api-client-go v0.3.5 h1:0ALibvbC+6MBhN7t61k+RhguhiEQ8+NejqBjq
 github.com/sacloud/api-client-go v0.3.5/go.mod h1:akdcCOl6wszywa0YQ5X8cMnNgWTm+7N4EneODTdiH48=
 github.com/sacloud/apigw-api-go v0.3.0 h1:dxrV2L6/SNdRM0dLJm+p9d40bOWopVYmykD8TAJL1qY=
 github.com/sacloud/apigw-api-go v0.3.0/go.mod h1:YtaZ7lYtjwI4PrnrVvYStQEjrb2lTbyac/L95giqApg=
-github.com/sacloud/apprun-api-go v0.6.0 h1:8/HAu6Vw2a01dCIRkaqrXw/U27wsLy8vekTDfrUN5MM=
-github.com/sacloud/apprun-api-go v0.6.0/go.mod h1:H400OqgfgYclHSO8m5ihPEgUdWnPVinnVlAaMksXS14=
 github.com/sacloud/apprun-api-go v0.6.1 h1:tZDEaWkH5OQIeZSrWHKIcG8HR19jZy4E/6FZIEIMSMw=
 github.com/sacloud/apprun-api-go v0.6.1/go.mod h1:0Bo4+cXtj/MDalhf4JMTA+CnvutdMcHsyl2TS+d9qKA=
 github.com/sacloud/autoscaler v0.19.3 h1:FkBxc0mE8fvaWiOiz+TpFAT1TX8DRLXs8prsqaM2MF0=
@@ -271,8 +267,10 @@ github.com/sacloud/kms-api-go v0.4.0 h1:F1/Cw7W2h6B/HWsoPDI7xMZkzFKphfVTBOHYh6DT
 github.com/sacloud/kms-api-go v0.4.0/go.mod h1:OSJD0mlzdZQXJPLbhBlAIthwxHISjWXhy9gHvUxieC0=
 github.com/sacloud/nosql-api-go v0.3.0 h1:pyrrldQerNsvEVdm+m9oZ3ao+y7a9SgCHaanOSvlNXo=
 github.com/sacloud/nosql-api-go v0.3.0/go.mod h1:A025O6HVlTJxRek7UlYAAcErFQr/Tqur36FEC4QBAqA=
-github.com/sacloud/object-storage-api-go v0.0.12 h1:sIjUrMSlxT5OPYuDv9tXF0NM1FJ81GgyCofhdisikUc=
-github.com/sacloud/object-storage-api-go v0.0.12/go.mod h1:7qJ6OqXkuTIHpVICaK/VzlHpjnTiBqzCRb1VKL4QOEI=
+github.com/sacloud/object-storage-api-go v0.1.0 h1:xaClhQAioCV4OMbCX82dVeIM0H4y75cqsOTRiwgiEbs=
+github.com/sacloud/object-storage-api-go v0.1.0/go.mod h1:iOOxj6pG5/nGqZZh5GPEZQgMzbg6zOvOJ/2c91mJndQ=
+github.com/sacloud/object-storage-api-go v0.1.1 h1:lgAIonpmVEbUbeiOQ3IRH9XXS5U8fbw6n9N0GEe5f2U=
+github.com/sacloud/object-storage-api-go v0.1.1/go.mod h1:uluq6oc/T21x72K45upbW1eMk+Z+LJHJbCto7HhxJJk=
 github.com/sacloud/packages-go v0.0.12 h1:MKeZNN3FQn1heqUSRBrbZw89YusZA1n4kammjMFZYvQ=
 github.com/sacloud/packages-go v0.0.12/go.mod h1:XNF5MCTWcHo9NiqWnYctVbASSSZR3ZOmmQORIzcurJ8=
 github.com/sacloud/saclient-go v0.3.1 h1:s9Yx4arEgsoIWkULO9s3gNv03XRGR0eNOQ9z6iI1iWE=
