@@ -22,7 +22,7 @@ require (
 	github.com/sacloud/autoscaler v0.19.3
 	github.com/sacloud/cloudhsm-api-go v0.2.0
 	github.com/sacloud/dedicated-storage-api-go v0.1.0
-	github.com/sacloud/eventbus-api-go v0.6.0
+	github.com/sacloud/eventbus-api-go v0.6.1
 	github.com/sacloud/go-http v0.1.9
 	github.com/sacloud/iaas-api-go v1.25.0
 	github.com/sacloud/iaas-service-go v1.22.1
