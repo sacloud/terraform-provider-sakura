@@ -17,6 +17,7 @@ func TestAccSakuraSecurityControlEvaluationRule_basic(t *testing.T) {
 	resourceName1 := "sakura_security_control_evaluation_rule.foobar1"
 	resourceName2 := "sakura_security_control_evaluation_rule.foobar2"
 	resourceName3 := "sakura_security_control_evaluation_rule.foobar3"
+	resourceName4 := "sakura_security_control_evaluation_rule.foobar4"
 	id := os.Getenv("SAKURA_SERVICE_PRINCIPAL_ID")
 
 	resource.Test(t, resource.TestCase{
@@ -43,6 +44,14 @@ func TestAccSakuraSecurityControlEvaluationRule_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName3, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName3, "iam_roles_required.#", "1"),
 					resource.TestCheckResourceAttr(resourceName3, "no_action_on_delete", "false"),
+					resource.TestCheckResourceAttr(resourceName4, "id", "objectstorage-bucket-encryption-enabled"),
+					resource.TestCheckResourceAttr(resourceName4, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName4, "parameters.service_principal_id", id),
+					resource.TestCheckResourceAttr(resourceName4, "parameters.targets.#", "2"),
+					resource.TestCheckResourceAttr(resourceName4, "parameters.targets.0", "isk01"),
+					resource.TestCheckResourceAttr(resourceName4, "parameters.targets.1", "tky01"),
+					resource.TestCheckResourceAttr(resourceName4, "iam_roles_required.#", "1"),
+					resource.TestCheckResourceAttr(resourceName4, "no_action_on_delete", "false"),
 				),
 			},
 			{
@@ -62,6 +71,12 @@ func TestAccSakuraSecurityControlEvaluationRule_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName3, "enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName3, "iam_roles_required.#", "1"),
 					resource.TestCheckResourceAttr(resourceName3, "no_action_on_delete", "true"),
+					resource.TestCheckResourceAttr(resourceName4, "id", "objectstorage-bucket-encryption-enabled"),
+					resource.TestCheckResourceAttr(resourceName4, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName4, "parameters.service_principal_id", id),
+					resource.TestCheckResourceAttr(resourceName4, "parameters.targets.#", "0"),
+					resource.TestCheckResourceAttr(resourceName4, "iam_roles_required.#", "1"),
+					resource.TestCheckResourceAttr(resourceName4, "no_action_on_delete", "true"),
 				),
 			},
 		},
@@ -93,7 +108,16 @@ resource "sakura_security_control_evaluation_rule" "foobar3" {
   enabled = true
   no_action_on_delete = false
 }
-`
+
+resource "sakura_security_control_evaluation_rule" "foobar4" {
+  id      = "objectstorage-bucket-encryption-enabled"
+  enabled = true
+  no_action_on_delete = false
+  parameters = {
+    service_principal_id = "{{ .arg0 }}"
+    targets = ["isk01", "tky01"]
+  }
+}`
 
 const testAccSakuraSecurityControlEvaluationRule_update = `
 resource "sakura_security_control_evaluation_rule" "foobar1" {
@@ -119,4 +143,14 @@ resource "sakura_security_control_evaluation_rule" "foobar3" {
   id      = "addon-threat-detections"
   enabled = false
   no_action_on_delete = true
+}
+
+resource "sakura_security_control_evaluation_rule" "foobar4" {
+  id      = "objectstorage-bucket-encryption-enabled"
+  enabled = false
+  no_action_on_delete = true
+  parameters = {
+    service_principal_id = "{{ .arg0 }}"
+    targets = []
+  }
 }`
