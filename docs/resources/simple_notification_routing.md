@@ -13,6 +13,22 @@ Manages SimpleNotification routing.
 ## Example Usage
 
 ```terraform
+resource "sakura_simple_notification_destination" "foobar" {
+    name = "foobar"
+    description = "description"
+    tags = ["foo","bar"]
+    type = "email"
+    value ="foobar@example.com"
+}
+
+
+resource "sakura_simple_notification_group" "foobar" {
+    name = "foobar"
+    description = "description"
+    tags = ["foo","bar"]
+    destinations = [sakura_simple_notification_destination.foobar.id]
+}
+
 resource "sakura_simple_notification_routing" "foobar" {
   name            = "foobar" 
   description     = "description"
@@ -31,8 +47,8 @@ resource "sakura_simple_notification_routing" "foobar" {
 
 - `match_labels` (Attributes List) The type of the SimpleNotification Routing. (see [below for nested schema](#nestedatt--match_labels))
 - `name` (String) The name of the SimpleNotification Routing.
-- `source_id` (String) The value of the SimpleNotification Routing.
-- `target_group_id` (String) The value of the SimpleNotification Routing.
+- `source_id` (String) The value of service SimpleNotification Routing.
+- `target_group_id` (String) The value of the simple_notification_group id for the SimpleNotification Routing.
 
 ### Optional
 
