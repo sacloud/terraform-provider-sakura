@@ -404,6 +404,8 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		object_storage.NewObjectStorageBucketResource,
 		object_storage.NewObjectStorageBucketCorsResource,
 		object_storage.NewObjectStorageBucketVersioningResource,
+		object_storage.NewObjectStorageBucketEncryptionConfigResource,
+		object_storage.NewObjectStorageBucketReplicationConfigResource,
 		object_storage.NewObjectStorageObjectResource,
 		object_storage.NewObjectStoragePermissionResource,
 		packet_filter.NewPacketFilterResource,

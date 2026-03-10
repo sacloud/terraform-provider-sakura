@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -23,7 +22,6 @@ import (
 	dedicatedstorageapi "github.com/sacloud/dedicated-storage-api-go/apis/v1"
 	"github.com/sacloud/eventbus-api-go"
 	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
-	saht "github.com/sacloud/go-http"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/api"
 	"github.com/sacloud/iaas-api-go/helper/query"
@@ -107,12 +105,13 @@ type APIClient struct {
 	databaseWaitAfterCreateDuration  time.Duration
 	vpcRouterWaitAfterCreateDuration time.Duration
 	CallerOptions                    *client.Options
+	SaClient                         *saclient.Client
 	AppRunClient                     *apprun.Client
 	KmsClient                        *kmsapi.Client
 	SecretManagerClient              *smapi.Client
 	SimpleMqClient                   *queue.Client
 	EventBusClient                   *eventbus_api.Client
-	ObjectStorageClient              *objectstorage.Client
+	ObjectStorageFedClient           *objectstorage.FedClient
 	NosqlClient                      *nosqlapi.Client
 	DedicatedStorageClient           *dedicatedstorageapi.Client
 	ApigwClient                      *apigwapi.Client
@@ -370,24 +369,6 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		UserAgent:            ua,
 		Trace:                enableHTTPTrace,
 	}
-	callerOptionsWithoutBigInt := &client.Options{
-		AccessToken:          c.AccessToken,
-		AccessTokenSecret:    c.AccessTokenSecret,
-		AcceptLanguage:       c.AcceptLanguage,
-		HttpRequestTimeout:   c.APIRequestTimeout,
-		HttpRequestRateLimit: c.APIRequestRateLimit,
-		RetryMax:             c.RetryMax,
-		RetryWaitMax:         c.RetryWaitMax,
-		RetryWaitMin:         c.RetryWaitMin,
-		UserAgent:            ua,
-		Trace:                enableHTTPTrace,
-		RequestCustomizers: []saht.RequestCustomizer{
-			func(req *http.Request) error {
-				req.Header.Set("X-Sakura-Bigint-As-Int", "0")
-				return nil
-			},
-		},
-	}
 	caller := api.NewCallerWithOptions(&api.CallerOptions{
 		Options:     callerOptions,
 		APIRootURL:  c.APIRootURL,
@@ -442,7 +423,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		return nil, err
 	}
 	addonClient, err := addon.NewClient(theClient)
-  if err != nil {
+	if err != nil {
 		return nil, err
 	}
 	workflowsClient, err := workflows.NewClient(theClient)
@@ -450,6 +431,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		return nil, err
 	}
 	simpleNotificationClient, err := simple_notification.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
+	fedClient, err := objectstorage.NewFedClient(theClient)
 	if err != nil {
 		return nil, err
 	}
@@ -463,12 +448,13 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		databaseWaitAfterCreateDuration:  databaseWaitAfterCreateDuration,
 		vpcRouterWaitAfterCreateDuration: vpcRouterWaitAfterCreateDuration,
 		CallerOptions:                    callerOptions,
+		SaClient:                         theClient,
 		KmsClient:                        kmsClient,
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,
 		EventBusClient:                   eventbusClient,
 		AppRunClient:                     &apprun.Client{Saclient: theClient},
-		ObjectStorageClient:              &objectstorage.Client{Options: callerOptionsWithoutBigInt},
+		ObjectStorageFedClient:           fedClient,
 		NosqlClient:                      nosqlClient,
 		DedicatedStorageClient:           dedicatedStorageClient,
 		ApigwClient:                      apigwClient,

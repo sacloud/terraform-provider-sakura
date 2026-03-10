@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package object_storage_test
@@ -10,7 +10,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraDataSourceObjectStorage_basic(t *testing.T) {
+func TestAccSakuraDataSourceObjectStorageSite_basic(t *testing.T) {
 	resourceName := "data.sakura_object_storage_site.foobar"
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },

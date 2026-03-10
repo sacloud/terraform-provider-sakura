@@ -11,6 +11,8 @@ Storage and Data:
   - object_storage_bucket
   - object_storage_bucket_cors
   - object_storage_bucket_versioning
+  - object_storage_bucket_encryption_config
+  - object_storage_bucket_replication_config
   - object_storage_object
   - object_storage_permission
   - object_storage_site
