@@ -47,8 +47,8 @@ resource "sakura_simple_notification_routing" "foobar" {
 
 - `match_labels` (Attributes List) The type of the SimpleNotification Routing. (see [below for nested schema](#nestedatt--match_labels))
 - `name` (String) The name of the SimpleNotification Routing.
-- `source_id` (String) The value of service SimpleNotification Routing.
-- `target_group_id` (String) The value of the simple_notification_group id for the SimpleNotification Routing.
+- `source_id` (String) The ID of the service that generates notifications. Available IDs can be retrieved via the API
+- `target_group_id` (String) The value of the simple_notification_group id
 
 ### Optional
 

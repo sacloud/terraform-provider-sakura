@@ -77,11 +77,11 @@ func (r *routingResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 			},
 			"source_id": schema.StringAttribute{
 				Required:    true,
-				Description: desc.Sprintf("The value of service %s.", resourceName),
+				Description: desc.Sprintf("The ID of the service that generates notifications. Available IDs can be retrieved via the API"),
 			},
 			"target_group_id": schema.StringAttribute{
 				Required:    true,
-				Description: desc.Sprintf("The value of the simple_notification_group id for the %s.", resourceName),
+				Description: desc.Sprintf("The value of the simple_notification_group id"),
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
