@@ -22,7 +22,8 @@ require (
 	github.com/sacloud/autoscaler v0.19.3
 	github.com/sacloud/cloudhsm-api-go v0.2.0
 	github.com/sacloud/dedicated-storage-api-go v0.1.0
-	github.com/sacloud/eventbus-api-go v0.5.2
+	github.com/sacloud/eventbus-api-go v0.6.1
+	github.com/sacloud/go-http v0.1.9
 	github.com/sacloud/iaas-api-go v1.25.0
 	github.com/sacloud/iaas-service-go v1.22.1
 	github.com/sacloud/iam-api-go v0.2.0
@@ -114,7 +115,6 @@ require (
 	github.com/prometheus/procfs v0.16.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/sacloud/ftps v1.2.0 // indirect
-	github.com/sacloud/go-http v0.1.9 // indirect
 	github.com/sacloud/go-otelsetup v0.5.0 // indirect
 	github.com/sacloud/iaas-api-go/trace/otel v0.0.0-20251222225644-7df65ab7d2cf // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
@@ -140,14 +140,14 @@ require (
 	go.uber.org/ratelimit v0.3.1 // indirect
 	go.uber.org/zap v1.27.1 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.47.0 // indirect
+	golang.org/x/crypto v0.48.0 // indirect
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
-	golang.org/x/mod v0.32.0 // indirect
-	golang.org/x/net v0.49.0 // indirect
+	golang.org/x/mod v0.33.0 // indirect
+	golang.org/x/net v0.50.0 // indirect
 	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.40.0 // indirect
-	golang.org/x/text v0.33.0 // indirect
-	golang.org/x/tools v0.41.0 // indirect
+	golang.org/x/sys v0.41.0 // indirect
+	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/tools v0.42.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20250804133106-a7a43d27e69b // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20250804133106-a7a43d27e69b // indirect
