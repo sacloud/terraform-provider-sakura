@@ -38,10 +38,10 @@ resource "sakura_workflows_subscription" "foobar" {
 - `account_id` (String) The account ID of the Workflows Subscription.
 - `activate_from` (String) The activate from timestamp of the Workflows Subscription.
 - `contract_id` (String) The contract ID of the Workflows Subscription.
-- `created_at` (String) The creation timestamp of the Workflows Subscription.
+- `created_at` (String) The creation timestamp of the Workflows Subscription
 - `id` (String) The ID of the Workflows Subscription.
 - `plan_name` (String) The plan name of the Workflows Subscription.
-- `updated_at` (String) The last update timestamp of the Workflows Subscription.
+- `updated_at` (String) The last update timestamp of the Workflows Subscription
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

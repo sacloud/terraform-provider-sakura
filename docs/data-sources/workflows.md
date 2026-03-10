@@ -37,20 +37,20 @@ data "sakura_workflows" "foobar" {
 ### Read-Only
 
 - `concurrency_mode` (String) The concurrency mode of the Workflows.
-- `created_at` (String) The creation timestamp of the Workflows.
+- `created_at` (String) The creation timestamp of the Workflows
 - `description` (String) The description of the Workflows.
 - `latest_revision` (Attributes) (see [below for nested schema](#nestedatt--latest_revision))
 - `logging` (Boolean) Whether logging is enabled for the Workflows.
 - `publish` (Boolean) Whether the Workflows is published.
 - `service_principal_id` (String) The service principal id of the Workflows.
-- `updated_at` (String) The last update timestamp of the Workflows.
+- `updated_at` (String) The last update timestamp of the Workflows
 
 <a id="nestedatt--latest_revision"></a>
 ### Nested Schema for `latest_revision`
 
 Read-Only:
 
-- `created_at` (String) The creation timestamp of the revision.
+- `created_at` (String) The creation timestamp of the Workflows
 - `id` (String) The ID of the revision.
 - `runbook` (String) The runbook definition of the revision.
-- `updated_at` (String) The last update timestamp of the revision.
+- `updated_at` (String) The last update timestamp of the Workflows
