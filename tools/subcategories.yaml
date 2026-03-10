@@ -68,6 +68,7 @@ Application Integration:
   - workflows_revision_alias
   - workflows_plan
   - workflows_subscription
+  - simple_notification_routing 
 Monitoring:
   - simple_monitor
   - monitoring_suite
