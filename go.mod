@@ -13,7 +13,7 @@ require (
 	github.com/hashicorp/terraform-plugin-go v0.30.0
 	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-testing v1.14.0
-	github.com/minio/minio-go/v7 v7.0.98
+	github.com/minio/minio-go/v7 v7.0.99
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sacloud/addon-api-go v0.0.1
 	github.com/sacloud/api-client-go v0.3.5
