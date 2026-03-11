@@ -243,8 +243,8 @@ github.com/sacloud/apprun-api-go v0.6.1 h1:tZDEaWkH5OQIeZSrWHKIcG8HR19jZy4E/6FZI
 github.com/sacloud/apprun-api-go v0.6.1/go.mod h1:0Bo4+cXtj/MDalhf4JMTA+CnvutdMcHsyl2TS+d9qKA=
 github.com/sacloud/autoscaler v0.19.3 h1:FkBxc0mE8fvaWiOiz+TpFAT1TX8DRLXs8prsqaM2MF0=
 github.com/sacloud/autoscaler v0.19.3/go.mod h1:jTeHzdZHrWd/2mYtgEyyFDTqHu0EbMPNDzwj7mdl0MA=
-github.com/sacloud/cloudhsm-api-go v0.2.0 h1:ESBNWN1ZhwXOAwUCdzcnVe8JWXlJOK306MBoNoDs/cA=
-github.com/sacloud/cloudhsm-api-go v0.2.0/go.mod h1:oxGigYTQrw3i99aUwQK1j2Frej767C6DBLewJvqtLss=
+github.com/sacloud/cloudhsm-api-go v0.4.0 h1:KllahNlmgL4Ukat32b+Iody6GFKsYR2uqUtsF4G4opc=
+github.com/sacloud/cloudhsm-api-go v0.4.0/go.mod h1:dUZAO6JIIe/xujEV1eg0CpC3kzY+icMxNrXxZAuWvxM=
 github.com/sacloud/dedicated-storage-api-go v0.1.0 h1:rEQVtWG3FTZ7cGw6j/fTz81VBM4rT0K2myLq+ah3nh8=
 github.com/sacloud/dedicated-storage-api-go v0.1.0/go.mod h1:m8DWoOkdFtpxbLgIdr6S7fd1W6/7EY8fR59OIOdqiSY=
 github.com/sacloud/eventbus-api-go v0.6.1 h1:gkJRR/HrXrh4mY1dEyF0ijLJBb6zD0C3MytXH8e8VIY=
@@ -267,14 +267,12 @@ github.com/sacloud/kms-api-go v0.4.0 h1:F1/Cw7W2h6B/HWsoPDI7xMZkzFKphfVTBOHYh6DT
 github.com/sacloud/kms-api-go v0.4.0/go.mod h1:OSJD0mlzdZQXJPLbhBlAIthwxHISjWXhy9gHvUxieC0=
 github.com/sacloud/nosql-api-go v0.3.0 h1:pyrrldQerNsvEVdm+m9oZ3ao+y7a9SgCHaanOSvlNXo=
 github.com/sacloud/nosql-api-go v0.3.0/go.mod h1:A025O6HVlTJxRek7UlYAAcErFQr/Tqur36FEC4QBAqA=
-github.com/sacloud/object-storage-api-go v0.1.0 h1:xaClhQAioCV4OMbCX82dVeIM0H4y75cqsOTRiwgiEbs=
-github.com/sacloud/object-storage-api-go v0.1.0/go.mod h1:iOOxj6pG5/nGqZZh5GPEZQgMzbg6zOvOJ/2c91mJndQ=
 github.com/sacloud/object-storage-api-go v0.1.1 h1:lgAIonpmVEbUbeiOQ3IRH9XXS5U8fbw6n9N0GEe5f2U=
 github.com/sacloud/object-storage-api-go v0.1.1/go.mod h1:uluq6oc/T21x72K45upbW1eMk+Z+LJHJbCto7HhxJJk=
 github.com/sacloud/packages-go v0.0.12 h1:MKeZNN3FQn1heqUSRBrbZw89YusZA1n4kammjMFZYvQ=
 github.com/sacloud/packages-go v0.0.12/go.mod h1:XNF5MCTWcHo9NiqWnYctVbASSSZR3ZOmmQORIzcurJ8=
-github.com/sacloud/saclient-go v0.3.1 h1:s9Yx4arEgsoIWkULO9s3gNv03XRGR0eNOQ9z6iI1iWE=
-github.com/sacloud/saclient-go v0.3.1/go.mod h1:OLit87m1GmGwFwlaoQwF2UWyaad4Pa2jfPeVgx91s4s=
+github.com/sacloud/saclient-go v0.3.2 h1:naQow/P7gYP4rozN//I0iCwq5PyzV/3WsK4JIhvtUIo=
+github.com/sacloud/saclient-go v0.3.2/go.mod h1:I9CiH5bYOOu6wgLpdv9yl+JW80qafEFca0VqoSEAYpE=
 github.com/sacloud/secretmanager-api-go v0.3.1 h1:71Bxt/WxtYfilkj35pD5pauy9zYYEQkF09bturYq1jM=
 github.com/sacloud/secretmanager-api-go v0.3.1/go.mod h1:eSMKWniJrPbaOWWv66AJgubXOoR6ZAOt8uIZo/5BJF8=
 github.com/sacloud/security-control-api-go v0.2.2 h1:cdQT/IqBWM10qm4PWaB89Cvu6u5Hbcgk1Aa5Mqc2q40=
