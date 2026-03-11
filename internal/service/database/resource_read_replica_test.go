@@ -120,6 +120,9 @@ func TestAccImportSakuraDatabaseReadReplica_basic(t *testing.T) {
 				ImportState:       true,
 				ImportStateCheck:  checkFn,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"replica_user_password_wo_version",
+				},
 			},
 		},
 	})
@@ -179,6 +182,8 @@ resource "sakura_database" "foobar" {
 
 resource "sakura_database_read_replica" "foobar" {
   master_id    = sakura_database.foobar.id
+  replica_user_password_wo = "{{ .arg1 }}"
+  replica_user_password_wo_version = 1
   network_interface = {
     ip_address   = "192.168.151.111"
   }
@@ -228,6 +233,8 @@ resource "sakura_database" "foobar" {
 
 resource "sakura_database_read_replica" "foobar" {
   master_id = sakura_database.foobar.id
+  replica_user_password_wo = "{{ .arg1 }}"
+  replica_user_password_wo_version = 1
   network_interface = {
     ip_address   = "192.168.151.111"
   }
@@ -245,11 +252,9 @@ resource "sakura_vswitch" "foobar" {
     name = "{{ .arg0 }}"
 }
 
-/*
 resource "sakura_kms" "foobar" {
   name = "{{ .arg0 }}"
 }
-  */
 
 resource "sakura_database" "foobar" {
   database_type = "postgres"
@@ -273,12 +278,14 @@ resource "sakura_database" "foobar" {
 
 resource "sakura_database_read_replica" "foobar" {
   master_id    = sakura_database.foobar.id
+  replica_user_password_wo = "{{ .arg1 }}"
+  replica_user_password_wo_version = 1
   network_interface = {
     ip_address = "192.168.152.111"
   }
   disk = {
     encryption_algorithm = "aes256_xts"
-    kms_key_id           = "113701764033" //sakura_kms.foobar.id
+    kms_key_id           = sakura_kms.foobar.id
   }
   name         = "{{ .arg0 }}"
   description  = "description"

@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -55,12 +56,14 @@ func (r *databaseReadReplicaResource) Configure(ctx context.Context, req resourc
 
 type databaseReadReplicaResourceModel struct {
 	common.SakuraBaseModel
-	IconID           types.String                   `tfsdk:"icon_id"`
-	Zone             types.String                   `tfsdk:"zone"`
-	MasterID         types.String                   `tfsdk:"master_id"`
-	NetworkInterface *databaseNetworkInterfaceModel `tfsdk:"network_interface"`
-	Disk             types.Object                   `tfsdk:"disk"`
-	Timeouts         timeouts.Value                 `tfsdk:"timeouts"`
+	IconID                       types.String                   `tfsdk:"icon_id"`
+	Zone                         types.String                   `tfsdk:"zone"`
+	MasterID                     types.String                   `tfsdk:"master_id"`
+	ReplicaUserPasswordWo        types.String                   `tfsdk:"replica_user_password_wo"`
+	ReplicaUserPasswordWoVersion types.Int32                    `tfsdk:"replica_user_password_wo_version"`
+	NetworkInterface             *databaseNetworkInterfaceModel `tfsdk:"network_interface"`
+	Disk                         types.Object                   `tfsdk:"disk"`
+	Timeouts                     timeouts.Value                 `tfsdk:"timeouts"`
 }
 
 func (r *databaseReadReplicaResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -80,6 +83,22 @@ func (r *databaseReadReplicaResource) Schema(ctx context.Context, _ resource.Sch
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
+				},
+			},
+			"replica_user_password_wo": schema.StringAttribute{
+				Required:    true,
+				WriteOnly:   true,
+				Description: "The password of user that processing a replication",
+				Validators: []validator.String{
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("replica_user_password_wo_version")),
+				},
+			},
+			"replica_user_password_wo_version": schema.Int32Attribute{
+				Optional:    true,
+				Description: "The version of the replica_user_password_wo field. This value must be greater than 0 when set. Increment this when changing password.",
+				Validators: []validator.Int32{
+					int32validator.AtLeast(1),
+					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("replica_user_password_wo")),
 				},
 			},
 			"network_interface": schema.SingleNestedAttribute{
@@ -148,8 +167,9 @@ func (r *databaseReadReplicaResource) ImportState(ctx context.Context, req resou
 }
 
 func (r *databaseReadReplicaResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan databaseReadReplicaResourceModel
+	var plan, config databaseReadReplicaResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -162,7 +182,8 @@ func (r *databaseReadReplicaResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	builder, err := expandDatabaseReadReplicaBuilder(ctx, &plan, r.client, zone)
+	replicaPassword := config.ReplicaUserPasswordWo.ValueString()
+	builder, err := expandDatabaseReadReplicaBuilder(ctx, &plan, replicaPassword, r.client, zone)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: Expand Builder Error", fmt.Sprintf("failed to build Database Read Replica builder: %s", err))
 		return
@@ -206,8 +227,9 @@ func (r *databaseReadReplicaResource) Read(ctx context.Context, req resource.Rea
 }
 
 func (r *databaseReadReplicaResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan databaseReadReplicaResourceModel
+	var plan, config databaseReadReplicaResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -222,7 +244,8 @@ func (r *databaseReadReplicaResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	builder, err := expandDatabaseReadReplicaBuilder(ctx, &plan, r.client, zone)
+	replicaPassword := config.ReplicaUserPasswordWo.ValueString()
+	builder, err := expandDatabaseReadReplicaBuilder(ctx, &plan, replicaPassword, r.client, zone)
 	if err != nil {
 		resp.Diagnostics.AddError("Update: Expand Builder Error", fmt.Sprintf("failed to build Database Read Replica builder: %s", err))
 		return
@@ -304,7 +327,7 @@ func flattenDatabaseReadReplicaNetworkInterface(db *iaas.Database) *databaseNetw
 	}
 }
 
-func expandDatabaseReadReplicaBuilder(ctx context.Context, model *databaseReadReplicaResourceModel, client *common.APIClient, zone string) (*databaseBuilder.Builder, error) {
+func expandDatabaseReadReplicaBuilder(ctx context.Context, model *databaseReadReplicaResourceModel, replicaPassword string, client *common.APIClient, zone string) (*databaseBuilder.Builder, error) {
 	masterID := model.MasterID.ValueString()
 	masterDB, err := iaas.NewDatabaseOp(client).Read(ctx, zone, common.SakuraCloudID(masterID))
 	if err != nil {
@@ -353,7 +376,7 @@ func expandDatabaseReadReplicaBuilder(ctx context.Context, model *databaseReadRe
 			IPAddress:   masterDB.IPAddresses[0],
 			Port:        masterDB.CommonSetting.ServicePort,
 			User:        masterDB.ReplicationSetting.User,
-			Password:    masterDB.ReplicationSetting.Password,
+			Password:    replicaPassword,
 			ApplianceID: masterDB.ID,
 		},
 		Disk:   expandDatabaseDisk(model.Disk),
