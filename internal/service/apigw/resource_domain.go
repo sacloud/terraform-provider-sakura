@@ -73,7 +73,7 @@ func (r *apigwDomainResource) Schema(ctx context.Context, req resource.SchemaReq
 				Optional:    true,
 				Description: "ID of the API Gateway Certificate",
 				Validators: []validator.String{
-					sacloudvalidator.StringFuncValidator(uuid.Validate),
+					sacloudvalidator.UUIDValidator,
 				},
 			},
 			"certificate_name": schema.StringAttribute{
