@@ -1,5 +1,8 @@
 # Changelog
 
+## [v3.6.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.6.0...v3.6.1) - 2026-03-12
+- fix: corrected the description of source_id in the example by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/156
+
 ## [v3.6.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.5.1...v3.6.0) - 2026-03-12
 - nosql: Update version to 4.1.10 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/137
 - ci: bump Songmu/tagpr from 1.11.1 to 1.17.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/129
