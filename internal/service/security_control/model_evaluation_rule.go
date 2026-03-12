@@ -91,6 +91,19 @@ func flattenEvaluationRule(model *evaluationRuleBaseModel, rule *v1.EvaluationRu
 				Targets:            types.ListNull(types.StringType),
 			}
 		}
+	case "objectstorage-bucket-encryption-enabled":
+		r := rule.Rule.OneOf.ObjectStorageBucketEncryptionEnabled
+		model.ID = types.StringValue(string(r.EvaluationRuleId))
+		model.Description = types.StringValue(rule.Description.Value)
+		model.Enabled = types.BoolValue(rule.IsEnabled)
+		model.IamRolesRequired = common.StringsToTset(rule.IamRolesRequired)
+		if rule.IsEnabled {
+			model.Parameters = &evaluationRuleParametersModel{
+				ServicePrincipalID: types.StringValue(r.Parameter.Value.ServicePrincipalId.Value),
+				Targets:            flattenParameterObjectStorageEvaluationTarget(r.Parameter),
+			}
+		}
+
 	case "addon-datalake-no-public-access":
 		r := rule.Rule.OneOf.AddonDatalakeNoPublicAccess
 		model.ID = types.StringValue(string(r.EvaluationRuleId))
@@ -188,10 +201,20 @@ func flattenParameterTargets(targets v1.OptEvaluationRuleParametersZonedEvaluati
 		if len(targets.Value.Zones) == 0 {
 			v, _ := types.ListValue(types.StringType, []attr.Value{})
 			return v
-		} else {
-			return common.StringsToTlist(targets.Value.Zones)
 		}
-	} else {
-		return types.ListNull(types.StringType)
+		return common.StringsToTlist(targets.Value.Zones)
 	}
+	return types.ListNull(types.StringType)
+}
+
+func flattenParameterObjectStorageEvaluationTarget(targets v1.OptEvaluationRuleParametersObjectStorageEvaluationTarget) types.List {
+	if targets.IsSet() {
+		// StringsToTlist内で使われるListValueFromが[]に対してnullを返すため、明示的に空リストの場合の処理を追加
+		if len(targets.Value.Sites) == 0 {
+			v, _ := types.ListValue(types.StringType, []attr.Value{})
+			return v
+		}
+		return common.StringsToTlist(targets.Value.Sites)
+	}
+	return types.ListNull(types.StringType)
 }
