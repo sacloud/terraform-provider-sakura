@@ -20,6 +20,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/addon"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apigw"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_dedicated"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/apprun_shared"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/archive"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/auto_backup"
@@ -274,6 +275,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		apigw.NewApigwServiceDataSource,
 		apigw.NewApigwSubscriptionDataSource,
 		apigw.NewApigwUserDataSource,
+		apprun_dedicated.NewClusterDataSource,
 		apprun_shared.NewApprunSharedDataSource,
 		archive.NewArchiveDataSource,
 		auto_scale.NewAutoScaleDataSource,
@@ -362,6 +364,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		apigw.NewApigwServiceResource,
 		apigw.NewApigwSubscriptionResource,
 		apigw.NewApigwUserResource,
+		apprun_dedicated.NewClusterResource,
 		apprun_shared.NewApprunSharedResource,
 		archive.NewArchiveResource,
 		auto_backup.NewAutoBackupResource,
