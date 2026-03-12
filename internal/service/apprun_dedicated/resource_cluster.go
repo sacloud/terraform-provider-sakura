@@ -1,0 +1,308 @@
+// Copyright 2016-2026 The terraform-provider-sakura Authors
+// SPDX-License-Identifier: Apache-2.0
+
+package apprun_dedicated
+
+import (
+	"context"
+	"fmt"
+	"regexp"
+
+	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
+	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/hashicorp/terraform-plugin-framework/types"
+	cluster "github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
+	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
+	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
+)
+
+type clusterResource struct{ client *v1.Client }
+
+type clusterResourceModel struct {
+	clusterModel
+
+	LetsEncryptEmail types.String   `tfsdk:"lets_encrypt_email"`
+	Timeouts         timeouts.Value `tfsdk:"timeouts"`
+}
+
+var (
+	_ resource.Resource                = &clusterResource{}
+	_ resource.ResourceWithConfigure   = &clusterResource{}
+	_ resource.ResourceWithImportState = &clusterResource{}
+)
+
+func NewClusterResource() resource.Resource { return new(clusterResource) }
+
+func (*clusterResource) Metadata(_ context.Context, req resource.MetadataRequest, res *resource.MetadataResponse) {
+	res.TypeName = req.ProviderTypeName + "_apprun_dedicated_cluster"
+}
+
+func (r *clusterResource) Configure(ctx context.Context, req resource.ConfigureRequest, res *resource.ConfigureResponse) {
+	client := common.GetApiClientFromProvider(req.ProviderData, &res.Diagnostics)
+
+	if client == nil {
+		return
+	}
+
+	r.client = client.AppRunDedicatedClient
+}
+
+var reservedPorts = []int32{
+	5950, 5951, 5952, 5953, 5954, 5955, 5956, 5957, 5958, 5959,
+}
+
+var protocols = func() (ret []string) {
+	var p v1.CreateLoadBalancerPortProtocol
+
+	for _, i := range p.AllValues() {
+		ret = append(ret, string(i))
+	}
+
+	return
+}()
+
+func (*clusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
+	id := common.SchemaResourceId("cluster")
+
+	name := common.SchemaResourceName("cluster").(schema.StringAttribute)
+	name.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
+	name.Validators = []validator.String{
+		stringvalidator.LengthAtLeast(1),
+		stringvalidator.LengthAtMost(20),
+		stringvalidator.RegexMatches(
+			regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
+			"no special characters allowed; alphanumeric and/or hyphens and underscores",
+		),
+	}
+
+	email := schema.StringAttribute{
+		Optional:      true,
+		Description:   "Let'sEncrypt registation email address",
+		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+	}
+
+	spid := schema.StringAttribute{
+		Required:    true,
+		Description: "The service principal ID. This is the principal that invokes the application",
+		Validators: []validator.String{
+			stringvalidator.LengthBetween(12, 12),
+			sacloudvalidator.SakuraIDValidator(),
+		},
+	}
+
+	portno := schema.Int32Attribute{
+		Required:    true,
+		Description: "The port number where the cluster listens for requests",
+		Validators: []validator.Int32{
+			int32validator.AtLeast(1),
+			int32validator.AtMost(65535),
+			int32validator.NoneOf(reservedPorts...),
+		},
+	}
+
+	protocol := schema.StringAttribute{
+		Required:            true,
+		MarkdownDescription: "Either `http`, `https`, or `tcp`",
+		Validators:          []validator.String{stringvalidator.OneOf(protocols...)},
+	}
+
+	nested := schema.NestedAttributeObject{
+		Attributes: map[string]schema.Attribute{
+			"port":     portno,
+			"protocol": protocol,
+		},
+	}
+
+	ports := schema.SetNestedAttribute{
+		Required:      true,
+		Description:   "The list of ports that the cluster listens on (max 5)",
+		NestedObject:  nested,
+		Validators:    []validator.Set{setvalidator.SizeAtMost(5)},
+		PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+	}
+
+	le := schema.BoolAttribute{
+		Computed:    true,
+		Description: "If true the cluster must listen HTTP port 80 because LetsEncrypt challenges there",
+	}
+
+	createdAt := common.SchemaResourceCreatedAt("cluster")
+
+	to := timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true})
+
+	res.Schema = schema.Schema{
+		Description: "Manages an AppRun dedicated cluster",
+		Attributes: map[string]schema.Attribute{
+			"id":                     id,
+			"name":                   name,
+			"service_principal_id":   spid,
+			"lets_encrypt_email":     email,
+			"ports":                  ports,
+			"has_lets_encrypt_email": le,
+			"created_at":             createdAt,
+			"timeouts":               to,
+		},
+	}
+}
+
+func (*clusterResource) ImportState(ctx context.Context, req resource.ImportStateRequest, res *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, res)
+}
+
+func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest, res *resource.CreateResponse) {
+	var plan clusterResourceModel
+	res.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if res.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout20min)
+	defer cancel()
+
+	created, err := r.api().Create(ctx, cluster.CreateParams{
+		Name:               plan.Name.ValueString(),
+		ServicePrincipalID: plan.ServicePrincipalID.ValueString(),
+		LetsEncryptEmail:   plan.LetsEncryptEmail.ValueStringPointer(),
+		Ports:              plan.CreateLoadBalancerPort(),
+	})
+
+	if err != nil {
+		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Dedicated cluster: %s", err))
+		return
+	}
+
+	detail, err := r.api().Read(ctx, created.ClusterID)
+
+	if err != nil {
+		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to read created AppRun Dedicated cluster: %s", err))
+		return
+	}
+
+	plan.updateState(detail)
+	res.Diagnostics.Append(res.State.Set(ctx, &plan)...)
+}
+
+func (r *clusterResource) Read(ctx context.Context, req resource.ReadRequest, res *resource.ReadResponse) {
+	var state clusterResourceModel
+	res.Diagnostics.Append(req.State.Get(ctx, &state)...)
+
+	if res.Diagnostics.HasError() {
+		return
+	}
+
+	detail, err := state.read(ctx, r, &res.Diagnostics)
+
+	if err != nil {
+		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read created AppRun Dedicated cluster: %s", err))
+		return
+	}
+
+	state.updateState(detail)
+	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
+}
+
+func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest, res *resource.UpdateResponse) {
+	var plan clusterResourceModel
+	res.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+
+	if res.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout20min)
+	defer cancel()
+
+	id, err := plan.clusterID()
+
+	if err != nil {
+		res.Diagnostics.AddError("Update: Invalid ID", fmt.Sprintf("failed to parse cluster ID: %s", err))
+		return
+	}
+
+	err = r.api().Update(ctx, id, cluster.UpdateParams{
+		ServicePrincipalID: plan.ServicePrincipalID.ValueString(),
+		LetsEncryptEmail:   plan.LetsEncryptEmail.ValueStringPointer(),
+	})
+
+	if err != nil {
+		res.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read AppRun Dedicated cluster: %s", err))
+		return
+	}
+
+	detail, err := plan.read(ctx, r, &res.Diagnostics)
+
+	if err != nil {
+		res.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read created AppRun Dedicated cluster: %s", err))
+		return
+	}
+
+	plan.updateState(detail)
+	res.Diagnostics.Append(res.State.Set(ctx, &plan)...)
+}
+
+func (r *clusterResource) Delete(ctx context.Context, req resource.DeleteRequest, res *resource.DeleteResponse) {
+	var state clusterResourceModel
+	res.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if res.Diagnostics.HasError() {
+		return
+	}
+
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
+	defer cancel()
+
+	detail, err := state.read(ctx, r, &res.Diagnostics)
+
+	if saclient.IsNotFoundError(err) {
+		res.State.RemoveResource(ctx)
+		return
+	}
+
+	if err != nil {
+		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Dedicated cluster: %s", err))
+		return
+	}
+
+	err = r.api().Delete(ctx, detail.ClusterID)
+
+	if err != nil {
+		res.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete AppRun Dedicated cluster: %s", err))
+		return
+	}
+}
+
+func (r *clusterResource) api() *cluster.ClusterOp { return cluster.NewClusterOp(r.client) }
+
+func (c *clusterResourceModel) CreateLoadBalancerPort() (ret []v1.CreateLoadBalancerPort) {
+	ret = make([]v1.CreateLoadBalancerPort, len(c.Ports))
+
+	for i, j := range c.Ports {
+		ret[i].SetPort(uint16(j.Port.ValueInt32()))
+		ret[i].SetProtocol(v1.CreateLoadBalancerPortProtocol(j.Protocol.ValueString()))
+	}
+
+	return
+}
+
+func (c *clusterResourceModel) read(ctx context.Context, res *clusterResource, d *diag.Diagnostics) (*cluster.ClusterDetail, error) {
+	id, err := c.clusterID()
+
+	if err != nil {
+		d.AddError("Invalid ID", fmt.Sprintf("failed to parse cluster ID: %s", err))
+		return nil, err
+	}
+
+	return res.api().Read(ctx, id)
+}

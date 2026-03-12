@@ -1,5 +1,6 @@
 # based on Sakura Cloud manual: https://manual.sakura.ad.jp/cloud/
 Computing:
+  - apprun_dedicated_cluster
   - apprun_shared
   - server
   - private_host
