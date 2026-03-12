@@ -1,5 +1,28 @@
 # Changelog
 
+## [v3.6.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.5.1...v3.6.0) - 2026-03-12
+- nosql: Update version to 4.1.10 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/137
+- ci: bump Songmu/tagpr from 1.11.1 to 1.17.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/129
+- go: bump github.com/sacloud/dedicated-storage-api-go from 0.0.3 to 0.1.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/131
+- Workflows課金プランのresource & data_sourceの追加 by @a2not in https://github.com/sacloud/terraform-provider-sakura/pull/124
+- Update api clients to use saclient by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/140
+- feat: add simple_notification group and destination by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/134
+- Add addon by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/139
+- EventBus SDK(eventbus-api-go)を更新しsaclient-goクライアントの利用に切り替え by @a2not in https://github.com/sacloud/terraform-provider-sakura/pull/142
+- Update object storage by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/146
+- simplemq-api-goのv0.5.0への更新 by @a2not in https://github.com/sacloud/terraform-provider-sakura/pull/150
+- WorkflowとRevisionAliasのリソースとデータソースを追加 by @a2not in https://github.com/sacloud/terraform-provider-sakura/pull/151
+- Add simple notification routing by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/143
+- go: bump github.com/hashicorp/terraform-plugin-framework from 1.17.0 to 1.18.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/147
+- ci: bump Songmu/tagpr from 1.17.0 to 1.17.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/145
+- ci: bump actions/setup-go from 6.2.0 to 6.3.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/144
+- ci: bump goreleaser/goreleaser-action from 6.4.0 to 7.0.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/130
+- sacloud/iaas-service-go v1.22.3 by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/152
+- ci: bump crazy-max/ghaction-import-gpg from 6.3.0 to 7.0.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/149
+- Update cloudhsm-api-go and migrate CloudHSM client creation to saclient-go by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/153
+- go: bump github.com/minio/minio-go/v7 from 7.0.98 to 7.0.99 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/154
+- security_control_evaluation_rule: add support for object storage bucket encryption evaluation rule by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/148
+
 ## [v3.5.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.5.0...v3.5.1) - 2026-02-26
 - Fix missing nil check by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/135
 
