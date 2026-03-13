@@ -1,9 +1,9 @@
 So an AppRun dedicated's cluster needs a dedicated service principal for its
 own.  Technically speaking we can create one during integration tests.
 
-However "being able to create a service principal" is a stronger priviledge
+However "being able to create a service principal" is a stronger privilege
 than "being able to run an AppRun".  It might be a bad idea to require
-unnecessary strong priviledge every time.
+unnecessary strong privilege every time.
 
 Let's separate that part.  This directory includes a set of working terraform
 configuration files that creates a dedicated project, and a service principal.

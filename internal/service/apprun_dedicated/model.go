@@ -4,10 +4,10 @@
 package apprun_dedicated
 
 import (
-	"time"
+	"context"
 
-	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
@@ -54,28 +54,64 @@ var clusterAttrs = attrTypes{
 }
 
 func (c *clusterModel) updateState(d *cluster.ClusterDetail) {
-	c.ID = types.StringValue(uuid.UUID(d.ClusterID).String())
+	c.ID = uuid2StringValue(d.ClusterID)
 	c.Name = types.StringValue(d.Name)
 	c.ServicePrincipalID = types.StringValue(d.ServicePrincipalID)
 	c.HasLetsEncryptEmail = types.BoolValue(d.HasLetsEncryptEmail)
-	c.CreatedAt = types.StringValue(time.Unix(common.ToInt64(d.Created), 0).Format(time.RFC822))
+	c.CreatedAt = intoRFC2822(d.Created)
 	c.Ports = common.MapTo(d.Ports, func(p v1.ReadLoadBalancerPort) (q portModel) {
 		q.updateState(&p)
 		return
 	})
 }
 
-func (c *clusterModel) clusterID() (ret v1.ClusterID, err error) {
-	u, err := uuid.Parse(c.ID.ValueString())
+func (c *clusterModel) clusterID() (v1.ClusterID, error) { return intoUUID[v1.ClusterID](c.ID) }
 
-	if err == nil {
-		ret = v1.ClusterID(u)
-	}
+////////////////////////////////////////////////////////////////
+
+type certModel struct {
+	ID        types.String `tfsdk:"id"`
+	ClusterID types.String `tfsdk:"cluster_id"`
+	Name      types.String `tfsdk:"name"`
+	CN        types.String `tfsdk:"common_name"`
+	SAN       types.Set    `tfsdk:"subject_alternative_names"`
+	NotBefore types.String `tfsdk:"not_before"`
+	NotAfter  types.String `tfsdk:"not_after"`
+	CreatedAt types.String `tfsdk:"created_at"`
+	UpdatedAt types.String `tfsdk:"updated_at"`
+}
+
+var certAttrs = attrTypes{
+	"id":                        types.StringType,
+	"cluster_id":                types.StringType,
+	"name":                      types.StringType,
+	"common_name":               types.StringType,
+	"subject_alternative_names": types.SetType{ElemType: types.StringType},
+	"not_before":                types.StringType,
+	"not_after":                 types.StringType,
+	"created_at":                types.StringType,
+	"updated_at":                types.StringType,
+}
+
+func (c *certModel) updateState(ctx context.Context, d *v1.ReadCertificate, clusterID v1.ClusterID) (ret diag.Diagnostics) {
+	c.ID = uuid2StringValue(d.CertificateID)
+	c.ClusterID = uuid2StringValue(clusterID)
+	c.Name = types.StringValue(d.Name)
+	c.CN = types.StringValue(d.CommonName)
+	c.NotBefore = intoRFC2822(d.NotBeforeSec)
+	c.NotAfter = intoRFC2822(d.NotAfterSec)
+	c.CreatedAt = intoRFC2822(d.Created)
+	c.UpdatedAt = intoRFC2822(d.Updated)
+	c.SAN, ret = types.SetValueFrom(ctx, types.StringType, common.MapTo(d.SubjectAlternativeNames, types.StringValue))
 
 	return
 }
 
+func (c *certModel) certID() (v1.CertificateID, error) { return intoUUID[v1.CertificateID](c.ID) }
+func (c *certModel) clusterID() (v1.ClusterID, error)  { return intoUUID[v1.ClusterID](c.ClusterID) }
+
 ////////////////////////////////////////////////////////////////
 
-func (portModel) AttributeTypes() attrTypes    { return portAttrs }
-func (clusterModel) AttributeTypes() attrTypes { return clusterAttrs }
+func (portModel) AttributeTypes() attrTypes        { return portAttrs }
+func (clusterModel) AttributeTypes() attrTypes     { return clusterAttrs }
+func (certModel) AttributeTypes() attrTypes        { return certAttrs }
