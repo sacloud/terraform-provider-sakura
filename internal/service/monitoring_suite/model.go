@@ -103,10 +103,6 @@ type optString interface {
 	Or(string) string
 }
 
-func optStringToType(value optString) types.String {
-	return types.StringValue(value.Or(""))
-}
-
 type optBool interface {
 	Get() (bool, bool)
 }
@@ -190,7 +186,7 @@ func updateTraceStorageState(model *traceStorageBaseModel, storage *monitoringsu
 		model.IconID = types.StringNull()
 	}
 	model.AccountID = types.StringValue(storage.GetAccountID())
-	model.ResourceID = types.Int64Value(int64(storage.GetResourceID()))
+	model.ResourceID = types.Int64Value(storage.GetResourceID())
 	model.RetentionPeriodDays = types.Int64Value(int64(storage.GetRetentionPeriodDays()))
 	model.CreatedAt = types.StringValue(storage.GetCreatedAt().String())
 	model.Tags = common.StringsToTset(storage.GetTags())
