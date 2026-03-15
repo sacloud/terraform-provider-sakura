@@ -42,6 +42,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/ipv4_ptr"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/kms"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/local_router"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/monitoring_suite"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/nfs"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/nosql"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/object_storage"
@@ -310,6 +311,12 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		internet.NewInternetDataSource,
 		kms.NewKmsDataSource,
 		local_router.NewLocalRouterDataSource,
+		monitoring_suite.NewLogStorageDataSource,
+		monitoring_suite.NewLogStorageAccessKeyDataSource,
+		monitoring_suite.NewMetricsStorageDataSource,
+		monitoring_suite.NewMetricsStorageAccessKeyDataSource,
+		monitoring_suite.NewTraceStorageDataSource,
+		monitoring_suite.NewTraceStorageAccessKeyDataSource,
 		nfs.NewNFSDataSource,
 		nosql.NewNosqlDataSource,
 		object_storage.NewObjectStorageSiteDataSource,
@@ -401,6 +408,12 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		ipv4_ptr.NewIPv4PtrResource,
 		kms.NewKMSResource,
 		local_router.NewLocalRouterResource,
+		monitoring_suite.NewLogStorageResource,
+		monitoring_suite.NewLogStorageAccessKeyResource,
+		monitoring_suite.NewMetricsStorageResource,
+		monitoring_suite.NewMetricsStorageAccessKeyResource,
+		monitoring_suite.NewTraceStorageResource,
+		monitoring_suite.NewTraceStorageAccessKeyResource,
 		nfs.NewNFSResource,
 		nosql.NewNosqlResource,
 		nosql.NewNosqlAdditionalNodesResource,
