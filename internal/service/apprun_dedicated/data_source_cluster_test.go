@@ -5,6 +5,7 @@ package apprun_dedicated_test
 
 import (
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -14,7 +15,13 @@ import (
 
 func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_APPRUN_DEDICATED_TEST")
+	test.SkipIfEnvIsNotSet(t, "SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
 	test.SkipIfFakeModeEnabled(t)
+
+	spid := os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
+	if spid == "" {
+		t.Fatalf("need valid SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID environment variable")
+	}
 
 	t.Run("find by id", func(t *testing.T) {
 		resourceName := "data.sakura_apprun_dedicated_cluster.main"
@@ -25,7 +32,7 @@ func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
 				{
-					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigById, name),
+					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigById, name, spid),
 					Check: resource.ComposeTestCheckFunc(
 						test.CheckSakuraDataSourceExists(resourceName),
 						resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tfacc-%s", name)),
@@ -49,7 +56,7 @@ func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 			Steps: []resource.TestStep{
 				{
-					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigByName, name),
+					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigByName, name, spid),
 					Check: resource.ComposeTestCheckFunc(
 						test.CheckSakuraDataSourceExists(resourceName),
 						resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tfacc-%s", name)),
@@ -66,41 +73,9 @@ func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 }
 
 var testAccCheckSakuraDataSourceApprunDedicatedClusterConfigById = `
-resource "sakura_iam_project" "main" {
-  name = "tfacc-{{ .arg0 }}"
-  code = "code{{ .arg0 }}"
-  description = "Terraform Apprun Dedicated Test Project"
-}
-
-resource "sakura_iam_service_principal" "main" {
-  project_id  = sakura_iam_project.main.id
-  name        = "tfacc-{{ .arg0 }}"
-  description = "Service Principal for Apprun Dedicated API integration tests"
-}
-
-resource "sakura_iam_policy" "main" {
-  target    = "project"
-  target_id = sakura_iam_project.main.id
-
-  bindings = [
-    {
-      role = {
-        type = "preset"
-        id   = "resource-creator"
-      }
-      principals = [
-        {
-          type = "service-principal"
-          id   = sakura_iam_service_principal.main.id
-        }
-      ]
-    }
-  ]
-}
-
 resource "sakura_apprun_dedicated_cluster" "main" {
   name                 = "tfacc-{{ .arg0 }}"
-  service_principal_id = sakura_iam_service_principal.main.id
+  service_principal_id = "{{ .arg1 }}"
 
   ports = [
     {
@@ -120,41 +95,9 @@ data "sakura_apprun_dedicated_cluster" "main" {
 `
 
 var testAccCheckSakuraDataSourceApprunDedicatedClusterConfigByName = `
-resource "sakura_iam_project" "main" {
-  name = "tfacc-{{ .arg0 }}"
-  code = "code{{ .arg0 }}"
-  description = "Terraform Apprun Dedicated Test Project"
-}
-
-resource "sakura_iam_service_principal" "main" {
-  project_id  = sakura_iam_project.main.id
-  name        = "tfacc-{{ .arg0 }}"
-  description = "Service Principal for Apprun Dedicated API integration tests"
-}
-
-resource "sakura_iam_policy" "main" {
-  target    = "project"
-  target_id = sakura_iam_project.main.id
-
-  bindings = [
-    {
-      role = {
-        type = "preset"
-        id   = "resource-creator"
-      }
-      principals = [
-        {
-          type = "service-principal"
-          id   = sakura_iam_service_principal.main.id
-        }
-      ]
-    }
-  ]
-}
-
 resource "sakura_apprun_dedicated_cluster" "main" {
   name                 = "tfacc-{{ .arg0 }}"
-  service_principal_id = sakura_iam_service_principal.main.id
+  service_principal_id = "{{ .arg1 }}"
 
   ports = [
     {
