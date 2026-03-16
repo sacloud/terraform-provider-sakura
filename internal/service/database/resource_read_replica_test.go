@@ -121,7 +121,7 @@ func TestAccImportSakuraDatabaseReadReplica_basic(t *testing.T) {
 				ImportStateCheck:  checkFn,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"replica_user_password_wo_version",
+					"replica_password_wo_version",
 				},
 			},
 		},
@@ -182,8 +182,8 @@ resource "sakura_database" "foobar" {
 
 resource "sakura_database_read_replica" "foobar" {
   master_id    = sakura_database.foobar.id
-  replica_user_password_wo = "{{ .arg1 }}"
-  replica_user_password_wo_version = 1
+  replica_password_wo = "{{ .arg1 }}"
+  replica_password_wo_version = 1
   network_interface = {
     ip_address   = "192.168.151.111"
   }
@@ -233,8 +233,8 @@ resource "sakura_database" "foobar" {
 
 resource "sakura_database_read_replica" "foobar" {
   master_id = sakura_database.foobar.id
-  replica_user_password_wo = "{{ .arg1 }}"
-  replica_user_password_wo_version = 1
+  replica_password_wo = "{{ .arg1 }}"
+  replica_password_wo_version = 1
   network_interface = {
     ip_address   = "192.168.151.111"
   }
@@ -278,8 +278,8 @@ resource "sakura_database" "foobar" {
 
 resource "sakura_database_read_replica" "foobar" {
   master_id    = sakura_database.foobar.id
-  replica_user_password_wo = "{{ .arg1 }}"
-  replica_user_password_wo_version = 1
+  replica_password_wo = "{{ .arg1 }}"
+  replica_password_wo_version = 1
   network_interface = {
     ip_address = "192.168.152.111"
   }

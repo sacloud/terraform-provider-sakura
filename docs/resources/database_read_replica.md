@@ -23,8 +23,8 @@ resource "sakura_kms" "foobar" {
 
 resource "sakura_database_read_replica" "foobar" {
   master_id                 = data.sakura_database.master.id
-  replica_user_password_wo     = "your-replica-password"
-  replica_user_password_wo_version = 1
+  replica_password_wo     = "your-replica-password"
+  replica_password_wo_version = 1
   network_interface = {
     ip_address = "192.168.11.111"
   }
@@ -50,14 +50,14 @@ resource "sakura_database_read_replica" "foobar" {
 - `master_id` (String) The id of the replication master database.
 - `name` (String) The name of the Database Read Replica.
 - `network_interface` (Attributes) (see [below for nested schema](#nestedatt--network_interface))
-- `replica_user_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of user that processing a replication
+- `replica_password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password of user that processing a replication
 
 ### Optional
 
 - `description` (String) The description of the Database Read Replica. The length of this value must be in the range [`1`-`512`]
 - `disk` (Attributes) (see [below for nested schema](#nestedatt--disk))
 - `icon_id` (String) The icon id to attach to the Database Read Replica
-- `replica_user_password_wo_version` (Number) The version of the replica_user_password_wo field. This value must be greater than 0 when set. Increment this when changing password.
+- `replica_password_wo_version` (Number) The version of the replica_password_wo field. This value must be greater than 0 when set. Increment this when changing password.
 - `tags` (Set of String) The tags of the Database Read Replica.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `zone` (String) The name of zone that the Database Read Replica will be created (e.g. `is1a`, `tk1a`)

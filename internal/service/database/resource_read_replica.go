@@ -59,8 +59,8 @@ type databaseReadReplicaResourceModel struct {
 	IconID                       types.String                   `tfsdk:"icon_id"`
 	Zone                         types.String                   `tfsdk:"zone"`
 	MasterID                     types.String                   `tfsdk:"master_id"`
-	ReplicaUserPasswordWo        types.String                   `tfsdk:"replica_user_password_wo"`
-	ReplicaUserPasswordWoVersion types.Int32                    `tfsdk:"replica_user_password_wo_version"`
+	ReplicaPasswordWO        types.String                   `tfsdk:"replica_password_wo"`
+	ReplicaPasswordWOVersion types.Int32                    `tfsdk:"replica_password_wo_version"`
 	NetworkInterface             *databaseNetworkInterfaceModel `tfsdk:"network_interface"`
 	Disk                         types.Object                   `tfsdk:"disk"`
 	Timeouts                     timeouts.Value                 `tfsdk:"timeouts"`
@@ -85,20 +85,20 @@ func (r *databaseReadReplicaResource) Schema(ctx context.Context, _ resource.Sch
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"replica_user_password_wo": schema.StringAttribute{
+			"replica_password_wo": schema.StringAttribute{
 				Required:    true,
 				WriteOnly:   true,
 				Description: "The password of user that processing a replication",
 				Validators: []validator.String{
-					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("replica_user_password_wo_version")),
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("replica_password_wo_version")),
 				},
 			},
-			"replica_user_password_wo_version": schema.Int32Attribute{
+			"replica_password_wo_version": schema.Int32Attribute{
 				Optional:    true,
-				Description: "The version of the replica_user_password_wo field. This value must be greater than 0 when set. Increment this when changing password.",
+				Description: "The version of the replica_password_wo field. This value must be greater than 0 when set. Increment this when changing password.",
 				Validators: []validator.Int32{
 					int32validator.AtLeast(1),
-					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("replica_user_password_wo")),
+					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("replica_password_wo")),
 				},
 			},
 			"network_interface": schema.SingleNestedAttribute{
@@ -182,7 +182,7 @@ func (r *databaseReadReplicaResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	replicaPassword := config.ReplicaUserPasswordWo.ValueString()
+	replicaPassword := config.ReplicaPasswordWO.ValueString()
 	builder, err := expandDatabaseReadReplicaBuilder(ctx, &plan, replicaPassword, r.client, zone)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: Expand Builder Error", fmt.Sprintf("failed to build Database Read Replica builder: %s", err))
@@ -244,7 +244,7 @@ func (r *databaseReadReplicaResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	replicaPassword := config.ReplicaUserPasswordWo.ValueString()
+	replicaPassword := config.ReplicaPasswordWO.ValueString()
 	builder, err := expandDatabaseReadReplicaBuilder(ctx, &plan, replicaPassword, r.client, zone)
 	if err != nil {
 		resp.Diagnostics.AddError("Update: Expand Builder Error", fmt.Sprintf("failed to build Database Read Replica builder: %s", err))
