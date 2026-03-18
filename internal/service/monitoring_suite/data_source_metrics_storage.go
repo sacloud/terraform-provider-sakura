@@ -1,0 +1,174 @@
+// Copyright 2016-2026 The terraform-provider-sakura Authors
+// SPDX-License-Identifier: Apache-2.0
+
+package monitoring_suite
+
+import (
+	"context"
+	"fmt"
+	"slices"
+
+	"github.com/hashicorp/terraform-plugin-framework/datasource"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
+	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
+	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
+)
+
+type metricsStorageDataSource struct {
+	client *monitoringsuiteapi.Client
+}
+
+var (
+	_ datasource.DataSource              = &metricsStorageDataSource{}
+	_ datasource.DataSourceWithConfigure = &metricsStorageDataSource{}
+)
+
+func NewMetricsStorageDataSource() datasource.DataSource {
+	return &metricsStorageDataSource{}
+}
+
+func (d *metricsStorageDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_metrics_storage"
+}
+
+func (d *metricsStorageDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
+	if apiclient == nil {
+		return
+	}
+	d.client = apiclient.MonitoringSuiteClient
+}
+
+type metricsStorageDataSourceModel struct {
+	metricsStorageBaseModel
+}
+
+func (d *metricsStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		Attributes: map[string]schema.Attribute{
+			"id":          common.SchemaDataSourceId("Monitoring Suite Metrics Storage"),
+			"name":        common.SchemaDataSourceName("Monitoring Suite Metrics Storage"),
+			"description": common.SchemaDataSourceDescription("Monitoring Suite Metrics Storage"),
+			"tags":        common.SchemaDataSourceTags("Monitoring Suite Metrics Storage"),
+			"icon_id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The icon ID of the metrics storage.",
+			},
+			"account_id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The account ID of the metrics storage.",
+			},
+			"resource_id": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The resource ID of the metrics storage.",
+			},
+			"is_system": schema.BoolAttribute{
+				Computed:    true,
+				Description: "The flag to indicate whether this is a system metrics storage.",
+			},
+			"created_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The creation timestamp of the metrics storage.",
+			},
+			"updated_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The update timestamp of the metrics storage.",
+			},
+			"endpoints": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: "The endpoints of the metrics storage.",
+				Attributes: map[string]schema.Attribute{
+					"address": schema.StringAttribute{
+						Computed:    true,
+						Description: "The address of the metrics storage endpoint.",
+					},
+				},
+			},
+			"usage": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: "The usage of the metrics storage.",
+				Attributes: map[string]schema.Attribute{
+					"metrics_routings": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The number of metrics routings.",
+					},
+					"alert_rules": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The number of alert rules.",
+					},
+					"log_measure_rules": schema.Int64Attribute{
+						Computed:    true,
+						Description: "The number of log measure rules.",
+					},
+				},
+			},
+		},
+		MarkdownDescription: "Get information about an existing Monitoring Suite metrics storage.",
+	}
+}
+
+func (d *metricsStorageDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data metricsStorageDataSourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	id := data.ID.ValueString()
+	name := data.Name.ValueString()
+	tags := common.TsetToStrings(data.Tags)
+	if id == "" && name == "" && len(tags) == 0 {
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id', 'name', or 'tags' must be specified.")
+		return
+	}
+
+	op := monitoringsuite.NewMetricsStorageOp(d.client)
+	var storage *monitoringsuiteapi.MetricsStorage
+	var err error
+	if id != "" {
+		storage, err = op.Read(ctx, id)
+		if err != nil {
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read metrics storage[%s]: %s", id, err))
+			return
+		}
+	} else {
+		storages, err := op.List(ctx, monitoringsuite.MetricsStorageListParams{})
+		if err != nil {
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list metrics storage resources: %s", err))
+			return
+		}
+		storage, err = filterMetricsStorageByNameAndTags(storages, name, tags)
+		if err != nil {
+			resp.Diagnostics.AddError("Read: Search Error", err.Error())
+			return
+		}
+	}
+
+	updateMetricsStorageState(&data.metricsStorageBaseModel, storage)
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func filterMetricsStorageByNameAndTags(storages []monitoringsuiteapi.MetricsStorage, name string, tags []string) (*monitoringsuiteapi.MetricsStorage, error) {
+	match := slices.Collect(func(yield func(monitoringsuiteapi.MetricsStorage) bool) {
+		for _, storage := range storages {
+			if name != "" && storage.Name.Or("") != name {
+				continue
+			}
+			if len(tags) > 0 && !utils.IsTagsMatched(tags, storage.Tags) {
+				continue
+			}
+			if !yield(storage) {
+				return
+			}
+		}
+	})
+	if len(match) == 0 {
+		return nil, fmt.Errorf("no result")
+	}
+	if len(match) > 1 {
+		return nil, fmt.Errorf("multiple metrics storages found with the same condition. name=%q tags=%v", name, tags)
+	}
+	return &match[0], nil
+}
