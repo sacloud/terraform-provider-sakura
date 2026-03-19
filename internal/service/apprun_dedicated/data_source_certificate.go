@@ -7,19 +7,15 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	cert "github.com/sacloud/apprun-dedicated-api-go/apis/certificate"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
-	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
-type certDataSource struct{ client *v1.Client }
+type certDataSource struct{ dataSourceClient }
 type certDataSourceModel struct{ certModel }
 
 var (
@@ -27,51 +23,16 @@ var (
 	_ datasource.DataSourceWithConfigure = &certDataSource{}
 )
 
-func NewCertDataSource() datasource.DataSource { return new(certDataSource) }
-
-func (*certDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, res *datasource.MetadataResponse) {
-	res.TypeName = req.ProviderTypeName + "_apprun_dedicated_certificate"
+func NewCertDataSource() datasource.DataSource {
+	return &certDataSource{dataSourceNamed("certificate")}
 }
 
-func (d *certDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, res *datasource.ConfigureResponse) {
-	client := common.GetApiClientFromProvider(req.ProviderData, &res.Diagnostics)
+func (d *certDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
+	id := d.schemaID()
 
-	if client == nil {
-		return
-	}
+	name := d.schemaName()
 
-	d.client = client.AppRunDedicatedClient
-}
-
-func (*certDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	id := common.SchemaDataSourceId("certificate").(schema.StringAttribute)
-	id.Required = false
-	id.Optional = true
-	id.Computed = true
-	id.Validators = []validator.String{
-		stringvalidator.ExactlyOneOf(
-			path.MatchRoot("id"),
-			path.MatchRoot("name"),
-		),
-		sacloudvalidator.UUIDValidator,
-	}
-
-	name := common.SchemaDataSourceName("certificate").(schema.StringAttribute)
-	name.Required = false
-	name.Optional = true
-	name.Computed = true
-	name.Validators = []validator.String{
-		stringvalidator.ExactlyOneOf(
-			path.MatchRoot("id"),
-			path.MatchRoot("name"),
-		),
-	}
-
-	clusterID := schema.StringAttribute{
-		Required:    true,
-		Description: "The cluster ID that the certificate belongs to",
-		Validators:  []validator.String{sacloudvalidator.UUIDValidator},
-	}
+	clusterID := d.schemaClusterID()
 
 	commonName := schema.StringAttribute{
 		Computed:    true,
