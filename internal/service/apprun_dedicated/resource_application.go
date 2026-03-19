@@ -99,7 +99,7 @@ func (r *appResource) Create(ctx context.Context, req resource.CreateRequest, re
 	defer cancel()
 
 	api := r.api()
-	created, err := api.Create(ctx, plan.Name.ValueString(), clusterID)
+	created, err := api.Create(ctx, plan.intoCreate(), clusterID)
 
 	if err != nil {
 		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Dedicated application: %s", err))
@@ -168,7 +168,7 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 		defer cancel()
 
-		err = api.Update(ctx, appID, plan.ActiveVersion.ValueInt32Pointer())
+		err = api.Update(ctx, appID, plan.intoUpdate())
 
 		if err != nil {
 			res.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update AppRun Dedicated application: %s", err))
@@ -218,3 +218,5 @@ func (r *appResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 }
 
 func (r *appResource) api() *app.ApplicationOp { return app.NewApplicationOp(r.client) }
+func (c *appResourceModel) intoCreate() string { return c.Name.ValueString() }
+func (c *appResourceModel) intoUpdate() *int32 { return c.ActiveVersion.ValueInt32Pointer() }

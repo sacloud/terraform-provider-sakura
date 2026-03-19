@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	cert "github.com/sacloud/apprun-dedicated-api-go/apis/certificate"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
@@ -94,21 +95,20 @@ func (d *certDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 
 	var certID *v1.CertificateID
 	var clusterID *v1.ClusterID
+	var ds diag.Diagnostics
 
 	if state.ID.IsNull() {
-		// Lookup by name
-		clusterID, certID = d.byName(ctx, req, res, &state)
+		clusterID, certID, ds = state.byName(ctx, d)
 	} else {
-		// Lookup by ID
-		clusterID, certID = d.byID(ctx, req, res, &state)
+		clusterID, certID, ds = state.byId(ctx, d)
 	}
+	res.Diagnostics.Append(ds...)
 
-	if certID == nil || clusterID == nil {
+	if ds.HasError() {
 		return
 	}
 
-	api := d.api(*clusterID)
-	detail, err := api.Read(ctx, *certID)
+	detail, err := d.api(*clusterID).Read(ctx, *certID)
 
 	if err != nil {
 		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Dedicated certificate: %s", err))
@@ -124,49 +124,50 @@ func (d *certDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (d *certDataSource) byID(ctx context.Context, req datasource.ReadRequest, res *datasource.ReadResponse, state *certDataSourceModel) (*v1.ClusterID, *v1.CertificateID) {
+func (state *certDataSourceModel) byId(context.Context, *certDataSource) (*v1.ClusterID, *v1.CertificateID, diag.Diagnostics) {
+	var d diag.Diagnostics
 	certID, err := state.certID()
 
 	if err != nil {
-		res.Diagnostics.AddError("Read: Invalid ID", fmt.Sprintf("failed to parse certificate ID: %s", err))
+		d.AddError("Read: Invalid ID", fmt.Sprintf("failed to parse certificate ID: %s", err))
 	}
 
 	clusterID, err := state.clusterID()
 
 	if err != nil {
-		res.Diagnostics.AddError("Read: Invalid Cluster ID", fmt.Sprintf("failed to parse cluster ID: %s", err))
+		d.AddError("Read: Invalid Cluster ID", fmt.Sprintf("failed to parse cluster ID: %s", err))
 	}
 
-	return &clusterID, &certID
+	return &clusterID, &certID, d
 }
 
-func (d *certDataSource) byName(ctx context.Context, req datasource.ReadRequest, res *datasource.ReadResponse, state *certDataSourceModel) (*v1.ClusterID, *v1.CertificateID) {
+func (state *certDataSourceModel) byName(ctx context.Context, r *certDataSource) (_ *v1.ClusterID, _ *v1.CertificateID, d diag.Diagnostics) {
 	clusterID, err := state.clusterID()
 
 	if err != nil {
-		res.Diagnostics.AddError("Read: Invalid Cluster ID", fmt.Sprintf("failed to parse cluster ID: %s", err))
-		return nil, nil
+		d.AddError("Read: Invalid Cluster ID", fmt.Sprintf("failed to parse certificate ID: %s", err))
+		return
 	}
 
-	api := d.api(clusterID)
+	api := r.api(clusterID)
 	certs, err := listed(func(cursor *v1.CertificateID) ([]v1.ReadCertificate, *v1.CertificateID, error) {
 		return api.List(ctx, 10, cursor)
 	})
 
 	if err != nil {
-		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list AppRun Dedicated certificates: %s", err))
-		return nil, nil
+		d.AddError("Read: API Error", fmt.Sprintf("failed to list AppRun Dedicated certificates: %s", err))
+		return
 	}
 
 	name := state.Name.ValueString()
 	for _, i := range certs {
 		if i.Name == name {
-			return &clusterID, &i.CertificateID
+			return &clusterID, &i.CertificateID, d
 		}
 	}
 
-	res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("certificate with name %q not found", name))
-	return nil, nil
+	d.AddError("Read: API Error", fmt.Sprintf("certificate with name %q not found", name))
+	return
 }
 
 func (d *certDataSource) api(clusterID v1.ClusterID) *cert.CertificateOp {

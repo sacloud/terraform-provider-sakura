@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	app "github.com/sacloud/apprun-dedicated-api-go/apis/application"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 )
@@ -73,14 +74,17 @@ func (d *appDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	}
 
 	var appID *v1.ApplicationID
+	var ds diag.Diagnostics
 
 	if state.ID.IsNull() {
 		// Lookup by name
-		appID = d.byName(ctx, req, res, &state)
+		appID, ds = state.byName(ctx, d)
 	} else {
 		// Lookup by ID
-		appID = d.byID(ctx, req, res, &state)
+		appID, ds = state.byId(ctx, d)
 	}
+
+	res.Diagnostics.Append(ds...)
 
 	if appID == nil {
 		return
@@ -97,33 +101,36 @@ func (d *appDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (d *appDataSource) byID(ctx context.Context, req datasource.ReadRequest, res *datasource.ReadResponse, state *appDataSourceModel) *v1.ApplicationID {
+func (state *appDataSourceModel) byId(context.Context, *appDataSource) (ret *v1.ApplicationID, d diag.Diagnostics) {
 	appID, err := state.applicationID()
 
 	if err != nil {
-		res.Diagnostics.AddError("Read: Invalid ID", fmt.Sprintf("failed to parse application ID: %s", err))
+		d.AddError("Read: Invalid ID", fmt.Sprintf("failed to parse application ID: %s", err))
+		return
 	}
 
-	return &appID
+	ret = &appID
+	return
 }
 
-func (d *appDataSource) byName(ctx context.Context, req datasource.ReadRequest, res *datasource.ReadResponse, state *appDataSourceModel) *v1.ApplicationID {
+func (state *appDataSourceModel) byName(ctx context.Context, d *appDataSource) (ret *v1.ApplicationID, ds diag.Diagnostics) {
 	apps, err := listed(func(c *string) ([]v1.ReadApplicationDetail, *string, error) { return d.api().List(ctx, 10, c) })
 
 	if err != nil {
-		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list AppRun Dedicated applications: %s", err))
-		return nil
+		ds.AddError("Read: API Error", fmt.Sprintf("failed to list AppRun Dedicated applications: %s", err))
+		return
 	}
 
 	name := state.Name.ValueString()
 	for _, i := range apps {
 		if i.Name == name {
-			return &i.ApplicationID
+			ret = &i.ApplicationID
+			return
 		}
 	}
 
-	res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("application with name %q not found", name))
-	return nil
+	ds.AddError("Read: API Error", fmt.Sprintf("application with name %q not found", name))
+	return
 }
 
 func (r *appDataSource) api() *app.ApplicationOp { return app.NewApplicationOp(r.client) }

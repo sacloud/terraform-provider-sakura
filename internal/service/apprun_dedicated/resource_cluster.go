@@ -109,7 +109,7 @@ func (r *clusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 		Description: "If true the cluster must listen HTTP port 80 because LetsEncrypt challenges there",
 	}
 
-	createdAt := common.SchemaResourceCreatedAt("cluster")
+	createdAt := r.schemaCreatedAt()
 
 	to := timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true})
 
@@ -143,16 +143,7 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout20min)
 	defer cancel()
 
-	created, err := r.api().Create(ctx, cluster.CreateParams{
-		Name:               plan.Name.ValueString(),
-		ServicePrincipalID: plan.ServicePrincipalID.ValueString(),
-		LetsEncryptEmail:   plan.LetsEncryptEmail.ValueStringPointer(),
-		Ports: common.MapTo(plan.Ports, func(p portModel) (q v1.CreateLoadBalancerPort) {
-			q.SetPort(uint16(p.Port.ValueInt32()))
-			q.SetProtocol(v1.CreateLoadBalancerPortProtocol(p.Protocol.ValueString()))
-			return
-		}),
-	})
+	created, err := r.api().Create(ctx, plan.intoCreate())
 
 	if err != nil {
 		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Dedicated cluster: %s", err))
@@ -207,10 +198,7 @@ func (r *clusterResource) Update(ctx context.Context, req resource.UpdateRequest
 		return
 	}
 
-	err = r.api().Update(ctx, id, cluster.UpdateParams{
-		ServicePrincipalID: plan.ServicePrincipalID.ValueString(),
-		LetsEncryptEmail:   plan.LetsEncryptEmail.ValueStringPointer(),
-	})
+	err = r.api().Update(ctx, id, plan.intoUpdate())
 
 	if err != nil {
 		res.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read AppRun Dedicated cluster: %s", err))
@@ -270,4 +258,22 @@ func (c *clusterResourceModel) read(ctx context.Context, res *clusterResource, d
 	}
 
 	return res.api().Read(ctx, id)
+}
+
+func (c *clusterResourceModel) intoCreate() (ret cluster.CreateParams) {
+	ret.Name = c.Name.ValueString()
+	ret.ServicePrincipalID = c.ServicePrincipalID.ValueString()
+	ret.LetsEncryptEmail = c.LetsEncryptEmail.ValueStringPointer()
+	ret.Ports = common.MapTo(c.Ports, func(p portModel) (q v1.CreateLoadBalancerPort) {
+		q.SetPort(uint16(p.Port.ValueInt32()))
+		q.SetProtocol(v1.CreateLoadBalancerPortProtocol(p.Protocol.ValueString()))
+		return
+	})
+	return
+}
+
+func (c *clusterResourceModel) intoUpdate() (ret cluster.UpdateParams) {
+	ret.ServicePrincipalID = c.ServicePrincipalID.ValueString()
+	ret.LetsEncryptEmail = c.LetsEncryptEmail.ValueStringPointer()
+	return
 }

@@ -155,12 +155,7 @@ func (r *certResource) Create(ctx context.Context, req resource.CreateRequest, r
 	defer cancel()
 
 	api := r.api(clusterID)
-	created, err := api.Create(ctx, cert.CreateParams{
-		Name:                       plan.Name.ValueString(),
-		CertificatePEM:             plan.CertificatePEM.ValueString(),
-		PrivateKeyPEM:              config.PrivateKeyPEM.ValueString(),
-		IntermediateCertificatePEM: plan.IntermediateCertificatePEM.ValueStringPointer(),
-	})
+	created, err := api.Create(ctx, plan.intoCreate(&config))
 
 	if err != nil {
 		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Dedicated certificate: %s", err))
@@ -240,12 +235,7 @@ func (r *certResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	defer cancel()
 
 	api := r.api(clusterID)
-	err = api.Update(ctx, certID, cert.UpdateParams{
-		Name:                       plan.Name.ValueString(),
-		CertificatePEM:             plan.CertificatePEM.ValueString(),
-		PrivateKeyPEM:              config.PrivateKeyPEM.ValueString(),
-		IntermediateCertificatePEM: plan.IntermediateCertificatePEM.ValueStringPointer(),
-	})
+	err = api.Update(ctx, certID, plan.intoUpdate(&config))
 
 	if err != nil {
 		res.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update AppRun Dedicated certificate: %s", err))
@@ -304,4 +294,20 @@ func (r *certResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 
 func (c *certResource) api(id v1.ClusterID) cert.CertificateAPI {
 	return cert.NewCertificateOp(c.client, id)
+}
+
+func (plan *certResourceModel) intoCreate(config *certResourceModel) (ret cert.CreateParams) {
+	ret.Name = plan.Name.ValueString()
+	ret.CertificatePEM = plan.CertificatePEM.ValueString()
+	ret.PrivateKeyPEM = config.PrivateKeyPEM.ValueString()
+	ret.IntermediateCertificatePEM = plan.IntermediateCertificatePEM.ValueStringPointer()
+	return
+}
+
+func (plan *certResourceModel) intoUpdate(config *certResourceModel) (ret cert.UpdateParams) {
+	ret.Name = plan.Name.ValueString()
+	ret.CertificatePEM = plan.CertificatePEM.ValueString()
+	ret.PrivateKeyPEM = config.PrivateKeyPEM.ValueString()
+	ret.IntermediateCertificatePEM = plan.IntermediateCertificatePEM.ValueStringPointer()
+	return
 }

@@ -3,6 +3,7 @@ Computing:
   - apprun_dedicated_cluster
   - apprun_dedicated_certificate
   - apprun_dedicated_application
+  - apprun_dedicated_version
   - apprun_shared
   - server
   - private_host

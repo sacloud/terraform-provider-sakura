@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -90,14 +91,20 @@ func (d *clusterDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	}
 
 	var id *v1.ClusterID
+	var ds diag.Diagnostics
 
 	if state.ID.IsNull() {
-		id = d.byName(ctx, req, res, &state)
+		id, ds = state.byName(ctx, d)
 	} else {
-		id = d.byId(ctx, req, res, &state)
+		id, ds = state.byId(ctx, d)
 	}
+	res.Diagnostics.Append(ds...)
 
 	if id == nil {
+		return
+	}
+
+	if ds.HasError() {
 		return
 	}
 
@@ -117,34 +124,36 @@ func (d *clusterDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (d *clusterDataSource) byId(ctx context.Context, req datasource.ReadRequest, res *datasource.ReadResponse, state *clusterDataSourceModel) *v1.ClusterID {
+func (state *clusterDataSourceModel) byId(context.Context, *clusterDataSource) (ret *v1.ClusterID, d diag.Diagnostics) {
 	id, err := state.clusterID()
 
 	if err != nil {
-		res.Diagnostics.AddError("Read: Invalid ID", fmt.Sprintf("failed to parse cluster ID: %s", err))
-		return nil
+		d.AddError("Read: Invalid ID", fmt.Sprintf("failed to parse cluster ID: %s", err))
+		return
 	}
 
-	return &id
+	ret = &id
+	return
 }
 
-func (d *clusterDataSource) byName(ctx context.Context, req datasource.ReadRequest, res *datasource.ReadResponse, state *clusterDataSourceModel) *v1.ClusterID {
+func (state *clusterDataSourceModel) byName(ctx context.Context, d *clusterDataSource) (ret *v1.ClusterID, ds diag.Diagnostics) {
 	list, err := listed(func(c *v1.ClusterID) ([]cluster.ClusterDetail, *v1.ClusterID, error) { return d.api().List(ctx, 10, c) })
 
 	if err != nil {
-		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Dedicated cluster: %s", err))
-		return nil
+		ds.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Dedicated cluster: %s", err))
+		return
 	}
 
 	name := state.Name.ValueString()
 	for _, i := range list {
 		if i.Name == name {
-			return &i.ClusterID
+			ret = &i.ClusterID
+			return
 		}
 	}
 
-	res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("cluster with name %q not found", name))
-	return nil
+	ds.AddError("Read: API Error", fmt.Sprintf("cluster with name %q not found", name))
+	return
 }
 
 func (r *clusterDataSource) api() *cluster.ClusterOp { return cluster.NewClusterOp(r.client) }
