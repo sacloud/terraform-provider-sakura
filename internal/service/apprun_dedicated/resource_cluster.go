@@ -28,7 +28,7 @@ import (
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
-type clusterResource struct{ client *v1.Client }
+type clusterResource struct{ resourceClient }
 
 type clusterResourceModel struct {
 	clusterModel
@@ -43,39 +43,19 @@ var (
 	_ resource.ResourceWithImportState = &clusterResource{}
 )
 
-func NewClusterResource() resource.Resource { return new(clusterResource) }
-
-func (*clusterResource) Metadata(_ context.Context, req resource.MetadataRequest, res *resource.MetadataResponse) {
-	res.TypeName = req.ProviderTypeName + "_apprun_dedicated_cluster"
-}
-
-func (r *clusterResource) Configure(ctx context.Context, req resource.ConfigureRequest, res *resource.ConfigureResponse) {
-	client := common.GetApiClientFromProvider(req.ProviderData, &res.Diagnostics)
-
-	if client == nil {
-		return
-	}
-
-	r.client = client.AppRunDedicatedClient
-}
+func NewClusterResource() resource.Resource { return &clusterResource{resourceNamed("cluster")} }
 
 var reservedPorts = []int32{
 	5950, 5951, 5952, 5953, 5954, 5955, 5956, 5957, 5958, 5959,
 }
 
-func (*clusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
-	id := common.SchemaResourceId("cluster")
+func (r *clusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
+	id := r.schemaID()
 
-	name := common.SchemaResourceName("cluster").(schema.StringAttribute)
-	name.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
-	name.Validators = []validator.String{
-		stringvalidator.LengthAtLeast(1),
-		stringvalidator.LengthAtMost(20),
-		stringvalidator.RegexMatches(
-			regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
-			"no special characters allowed; alphanumeric and/or hyphens and underscores",
-		),
-	}
+	name := r.schemaName(stringvalidator.RegexMatches(
+		regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
+		"no special characters allowed; alphanumeric and/or hyphens and underscores",
+	))
 
 	email := schema.StringAttribute{
 		Optional:      true,
@@ -96,8 +76,7 @@ func (*clusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 		Required:    true,
 		Description: "The port number where the cluster listens for requests",
 		Validators: []validator.Int32{
-			int32validator.AtLeast(1),
-			int32validator.AtMost(65535),
+			int32validator.Between(1, 65535),
 			int32validator.NoneOf(reservedPorts...),
 		},
 	}

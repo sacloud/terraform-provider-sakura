@@ -7,18 +7,14 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
-	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
-type clusterDataSource struct{ client *v1.Client }
+type clusterDataSource struct{ dataSourceClient }
 type clusterDataSourceModel struct{ clusterModel }
 
 var (
@@ -26,45 +22,14 @@ var (
 	_ datasource.DataSourceWithConfigure = &clusterDataSource{}
 )
 
-func NewClusterDataSource() datasource.DataSource { return new(clusterDataSource) }
-
-func (*clusterDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, res *datasource.MetadataResponse) {
-	res.TypeName = req.ProviderTypeName + "_apprun_dedicated_cluster"
+func NewClusterDataSource() datasource.DataSource {
+	return &clusterDataSource{dataSourceNamed("cluster")}
 }
 
-func (d *clusterDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, res *datasource.ConfigureResponse) {
-	client := common.GetApiClientFromProvider(req.ProviderData, &res.Diagnostics)
+func (d *clusterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
+	id := d.schemaID()
 
-	if client == nil {
-		return
-	}
-
-	d.client = client.AppRunDedicatedClient
-}
-
-func (*clusterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	id := common.SchemaDataSourceId("cluster").(schema.StringAttribute)
-	id.Required = false
-	id.Optional = true
-	id.Computed = true
-	id.Validators = []validator.String{
-		stringvalidator.ExactlyOneOf(
-			path.MatchRoot("id"),
-			path.MatchRoot("name"),
-		),
-		sacloudvalidator.UUIDValidator,
-	}
-
-	name := common.SchemaDataSourceName("cluster").(schema.StringAttribute)
-	name.Required = false
-	name.Optional = true
-	name.Computed = true
-	id.Validators = []validator.String{
-		stringvalidator.ExactlyOneOf(
-			path.MatchRoot("id"),
-			path.MatchRoot("name"),
-		),
-	}
+	name := d.schemaName()
 
 	spid := schema.StringAttribute{
 		Computed:    true,
@@ -99,7 +64,7 @@ func (*clusterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 		MarkdownDescription: "If true the cluster must listen HTTP port 80 because LetsEncrypt challenges there",
 	}
 
-	at := common.SchemaDataSourceCreatedAt("cluster")
+	at := d.schemaCreatedAt()
 
 	cluster := schema.Schema{
 		Description: "Information about an AppRun dedicated cluster",

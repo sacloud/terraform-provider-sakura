@@ -23,7 +23,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-type certResource struct{ client *v1.Client }
+type certResource struct{ resourceClient }
 
 type certResourceModel struct {
 	certModel
@@ -40,33 +40,15 @@ var (
 	_ resource.ResourceWithImportState = &certResource{}
 )
 
-func NewCertResource() resource.Resource { return new(certResource) }
+func NewCertResource() resource.Resource { return &certResource{resourceNamed("certificate")} }
 
-func (*certResource) Metadata(_ context.Context, req resource.MetadataRequest, res *resource.MetadataResponse) {
-	res.TypeName = req.ProviderTypeName + "_apprun_dedicated_certificate"
-}
+func (r *certResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
+	id := r.schemaID()
 
-func (r *certResource) Configure(ctx context.Context, req resource.ConfigureRequest, res *resource.ConfigureResponse) {
-	client := common.GetApiClientFromProvider(req.ProviderData, &res.Diagnostics)
-
-	if client == nil {
-		return
-	}
-
-	r.client = client.AppRunDedicatedClient
-}
-
-func (*certResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
-	id := common.SchemaResourceId("certificate")
-
-	name := common.SchemaResourceName("certificate").(schema.StringAttribute)
-	name.Validators = []validator.String{
-		stringvalidator.LengthBetween(1, 20),
-		stringvalidator.RegexMatches(
-			regexp.MustCompile(`^[a-zA-Z0-9_.-]+$`),
-			"no special characters allowed; alphanumeric and/or hyphens, dots and underscores",
-		),
-	}
+	name := r.schemaName(stringvalidator.RegexMatches(
+		regexp.MustCompile(`^[a-zA-Z0-9_.-]+$`),
+		"no special characters allowed; alphanumeric and/or hyphens, dots and underscores",
+	))
 
 	clusterID := common.SchemaResourceId("cluster").(schema.StringAttribute)
 	clusterID.Computed = false
@@ -151,10 +133,6 @@ func (*certResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *
 			"timeouts":                     to,
 		},
 	}
-}
-
-func (*certResource) ImportState(ctx context.Context, req resource.ImportStateRequest, res *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, res)
 }
 
 func (r *certResource) Create(ctx context.Context, req resource.CreateRequest, res *resource.CreateResponse) {
