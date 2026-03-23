@@ -14,6 +14,13 @@ updates:
 
   - package-ecosystem: gomod
     directory: /
+    groups:
+      terraform:
+        patterns:
+          - "github.com/hashicorp/terraform-*"
+      sacloud:
+        patterns:
+          - "github.com/sacloud/*"
     schedule:
       interval: daily
       time: "05:00"
