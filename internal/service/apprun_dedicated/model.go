@@ -470,6 +470,32 @@ func (v *verModel) versionNumber() v1.ApplicationVersionNumber {
 
 ////////////////////////////////////////////////////////////////
 
+type lbServiceClassModel struct {
+	Path      types.String `tfsdk:"path"`
+	Name      types.String `tfsdk:"name"`
+	NodeCount types.Int32  `tfsdk:"node_count"`
+}
+
+func (m *lbServiceClassModel) updateState(class v1.ReadLbServiceClass) {
+	m.Path = types.StringValue(class.Path)
+	m.Name = types.StringValue(class.Name)
+	m.NodeCount = types.Int32Value(int32(class.NodeCount))
+}
+
+////////////////////////////////////////////////////////////////
+
+type workerServiceClassModel struct {
+	Path types.String `tfsdk:"path"`
+	Name types.String `tfsdk:"name"`
+}
+
+func (m *workerServiceClassModel) updateState(class v1.ReadWorkerServiceClass) {
+	m.Path = types.StringValue(class.Path)
+	m.Name = types.StringValue(class.Name)
+}
+
+////////////////////////////////////////////////////////////////
+
 func (portModel) AttributeTypes() attrTypes        { return portAttrs }
 func (clusterModel) AttributeTypes() attrTypes     { return clusterAttrs }
 func (certModel) AttributeTypes() attrTypes        { return certAttrs }
