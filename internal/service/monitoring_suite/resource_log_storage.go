@@ -61,15 +61,12 @@ type logStorageResourceModel struct {
 func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Monitoring Suite Log Storage"),
+			"id": common.SchemaResourceId("Monitoring Suite log storage"),
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The name of the log storage.",
 			},
-			"description": schema.StringAttribute{
-				Optional:    true,
-				Description: "The description of the log storage.",
-			},
+			"description": common.SchemaResourceDescription("Monitoring Suite log storage"),
 			"tags": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
@@ -99,12 +96,12 @@ func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"classification": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Default:     stringdefault.StaticString(string(monitoringsuiteapi.LogStorageCreateClassificationShared)),
+				Default:     stringdefault.StaticString(string(monitoringsuiteapi.LogStorageCreateRequestClassificationShared)),
 				Description: "The bucket classification of the log storage.",
 				Validators: []validator.String{
 					stringvalidator.OneOf(
-						string(monitoringsuiteapi.LogStorageCreateClassificationShared),
-						string(monitoringsuiteapi.LogStorageCreateClassificationSeparated),
+						string(monitoringsuiteapi.LogStorageCreateRequestClassificationShared),
+						string(monitoringsuiteapi.LogStorageCreateRequestClassificationDedicated),
 					),
 				},
 				PlanModifiers: []planmodifier.String{
@@ -174,7 +171,7 @@ func (r *logStorageResource) Create(ctx context.Context, req resource.CreateRequ
 	defer cancel()
 
 	op := monitoringsuite.NewLogsStorageOp(r.client)
-	classification := monitoringsuiteapi.LogStorageCreateClassification(plan.Classification.ValueString())
+	classification := monitoringsuiteapi.LogStorageCreateRequestClassification(plan.Classification.ValueString())
 	created, err := op.Create(ctx, monitoringsuite.LogStorageCreateParams{
 		Name:           plan.Name.ValueString(),
 		Description:    expandOptionalString(plan.Description),

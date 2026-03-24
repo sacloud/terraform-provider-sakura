@@ -54,15 +54,12 @@ type traceStorageResourceModel struct {
 func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Monitoring Suite Trace Storage"),
+			"id": common.SchemaResourceId("Monitoring Suite trace storage"),
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The name of the trace storage.",
 			},
-			"description": schema.StringAttribute{
-				Optional:    true,
-				Description: "The description of the trace storage.",
-			},
+			"description": common.SchemaResourceDescription("Monitoring Suite trace storage"),
 			"tags": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
@@ -88,17 +85,23 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 				Computed:    true,
 				Description: "The creation timestamp of the trace storage.",
 			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The update timestamp of the trace storage.",
-			},
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The endpoints of the trace storage.",
+				Description: "The endpoints of the log storage.",
 				Attributes: map[string]schema.Attribute{
-					"address": schema.StringAttribute{
+					"ingester": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "The address of the trace storage endpoint.",
+						Description: "The ingester endpoint for the log storage.",
+						Attributes: map[string]schema.Attribute{
+							"address": schema.StringAttribute{
+								Computed:    true,
+								Description: "The ingester address for the log storage.",
+							},
+							"insecure": schema.BoolAttribute{
+								Computed:    true,
+								Description: "The flag to indicate whether the ingester uses insecure connection.",
+							},
+						},
 					},
 				},
 			},

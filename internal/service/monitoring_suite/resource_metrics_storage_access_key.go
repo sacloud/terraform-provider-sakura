@@ -58,7 +58,8 @@ type metricsStorageAccessKeyResourceModel struct {
 func (r *metricsStorageAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Monitoring Suite Metrics Storage Access Key"),
+			"id":          common.SchemaResourceId("Monitoring Suite metrics storage access key"),
+			"description": common.SchemaResourceDescription("Monitoring Suite metrics storage access key"),
 			"storage_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The metrics storage ID for the access key.",
@@ -68,10 +69,6 @@ func (r *metricsStorageAccessKeyResource) Schema(ctx context.Context, _ resource
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
-			},
-			"description": schema.StringAttribute{
-				Optional:    true,
-				Description: "The description of the access key.",
 			},
 			"token": schema.StringAttribute{
 				Computed:    true,
@@ -116,7 +113,7 @@ func (r *metricsStorageAccessKeyResource) Create(ctx context.Context, req resour
 		return
 	}
 
-	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription(), key.GetToken(), key.GetSecret().String())
+	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -132,7 +129,7 @@ func (r *metricsStorageAccessKeyResource) Read(ctx context.Context, req resource
 		return
 	}
 
-	updateAccessKeyState(&state.accessKeyBaseModel, state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription(), key.GetToken(), key.GetSecret().String())
+	updateAccessKeyState(&state.accessKeyBaseModel, state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -159,7 +156,7 @@ func (r *metricsStorageAccessKeyResource) Update(ctx context.Context, req resour
 		return
 	}
 
-	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription(), key.GetToken(), key.GetSecret().String())
+	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

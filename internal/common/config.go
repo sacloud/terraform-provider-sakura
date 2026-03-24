@@ -441,13 +441,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	monitoringSuiteClient, err := monitoringsuite.NewClient(
-		client.WithApiKeys(c.AccessToken, c.AccessTokenSecret),
-		client.WithUserAgent(ua),
-		client.WithOptions(callerOptions),
-		client.WithDisableProfile(true),
-		client.WithDisableEnv(true),
-	)
+	monitoringSuiteClient, err := monitoringsuite.NewClient(theClient)
 	if err != nil {
 		return nil, err
 	}

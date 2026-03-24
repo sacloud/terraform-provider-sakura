@@ -57,15 +57,12 @@ type metricsStorageResourceModel struct {
 func (r *metricsStorageResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Monitoring Suite Metrics Storage"),
+			"id": common.SchemaResourceId("Monitoring Suite metrics storage"),
 			"name": schema.StringAttribute{
 				Required:    true,
 				Description: "The name of the metrics storage.",
 			},
-			"description": schema.StringAttribute{
-				Optional:    true,
-				Description: "The description of the metrics storage.",
-			},
+			"description": common.SchemaResourceDescription("Monitoring Suite metrics storage"),
 			"tags": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,

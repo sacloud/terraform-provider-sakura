@@ -58,7 +58,8 @@ type traceStorageAccessKeyResourceModel struct {
 func (r *traceStorageAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Monitoring Suite Trace Storage Access Key"),
+			"id":          common.SchemaResourceId("Monitoring Suite trace storage access key"),
+			"description": common.SchemaResourceDescription("Monitoring Suite trace storage access key"),
 			"storage_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The trace storage ID for the access key.",
@@ -68,10 +69,6 @@ func (r *traceStorageAccessKeyResource) Schema(ctx context.Context, _ resource.S
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
 				},
-			},
-			"description": schema.StringAttribute{
-				Optional:    true,
-				Description: "The description of the access key.",
 			},
 			"token": schema.StringAttribute{
 				Computed:    true,
@@ -116,7 +113,7 @@ func (r *traceStorageAccessKeyResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription(), key.GetToken(), key.GetSecret())
+	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -132,7 +129,7 @@ func (r *traceStorageAccessKeyResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	updateAccessKeyState(&state.accessKeyBaseModel, state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription(), key.GetToken(), key.GetSecret())
+	updateAccessKeyState(&state.accessKeyBaseModel, state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -159,7 +156,7 @@ func (r *traceStorageAccessKeyResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription(), key.GetToken(), key.GetSecret())
+	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
