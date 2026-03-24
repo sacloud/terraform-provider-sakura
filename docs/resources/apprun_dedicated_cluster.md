@@ -37,12 +37,12 @@ resource "sakura_apprun_dedicated_cluster" "main" {
 ### Required
 
 - `name` (String) The name of the cluster.
-- `ports` (Attributes Set) The list of ports that the cluster listens on (max 5) (see [below for nested schema](#nestedatt--ports))
 - `service_principal_id` (String) The service principal ID. This is the principal that invokes the application
 
 ### Optional
 
 - `lets_encrypt_email` (String) Let'sEncrypt registation email address
+- `ports` (Attributes Set) The list of ports that the cluster listens on (max 5) (see [below for nested schema](#nestedatt--ports))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only

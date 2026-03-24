@@ -97,7 +97,7 @@ func (r *clusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 	}
 
 	ports := schema.SetNestedAttribute{
-		Required:      true,
+		Optional:      true,
 		Description:   "The list of ports that the cluster listens on (max 5)",
 		NestedObject:  nested,
 		Validators:    []validator.Set{setvalidator.SizeAtMost(5)},
@@ -269,6 +269,12 @@ func (c *clusterResourceModel) intoCreate() (ret cluster.CreateParams) {
 		q.SetProtocol(v1.CreateLoadBalancerPortProtocol(p.Protocol.ValueString()))
 		return
 	})
+
+	// `ports = []` makes no sense for us, but the API mandates empty array
+	if ret.Ports == nil {
+		ret.Ports = make([]v1.CreateLoadBalancerPort, 0)
+	}
+
 	return
 }
 

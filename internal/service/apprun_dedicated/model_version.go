@@ -186,7 +186,7 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 	v.Cmd, ret = types.ListValueFrom(ctx, types.StringType, common.MapTo(d.Cmd, types.StringValue))
 
 	if ret.HasError() {
-		return
+		return ret
 	}
 
 	v.ExposedPorts = common.MapTo(d.ExposedPorts, func(p version.ExposedPort) (ret exposedPortModel) {
@@ -199,5 +199,5 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 		return
 	})
 
-	return
+	return ret
 }
