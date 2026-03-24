@@ -13,7 +13,6 @@ import (
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
-	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type traceStorageDataSource struct {
@@ -51,11 +50,6 @@ func (d *traceStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 			"id":          common.SchemaDataSourceId("Monitoring Suite trace storage"),
 			"name":        common.SchemaDataSourceName("Monitoring Suite trace storage"),
 			"description": common.SchemaDataSourceDescription("Monitoring Suite trace storage"),
-			"tags":        common.SchemaDataSourceTags("Monitoring Suite trace storage"),
-			"icon_id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The icon ID of the trace storage.",
-			},
 			"account_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The account ID of the trace storage.",
@@ -106,9 +100,8 @@ func (d *traceStorageDataSource) Read(ctx context.Context, req datasource.ReadRe
 
 	id := data.ID.ValueString()
 	name := data.Name.ValueString()
-	tags := common.TsetToStrings(data.Tags)
-	if id == "" && name == "" && len(tags) == 0 {
-		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id', 'name', or 'tags' must be specified.")
+	if id == "" && name == "" {
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id' or 'name' must be specified.")
 		return
 	}
 
@@ -127,24 +120,21 @@ func (d *traceStorageDataSource) Read(ctx context.Context, req datasource.ReadRe
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list trace storage resources: %s", err))
 			return
 		}
-		storage, err = filterTraceStorageByNameAndTags(storages, name, tags)
+		storage, err = filterTraceStorageByName(storages, name)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: Search Error", err.Error())
 			return
 		}
 	}
 
-	updateTraceStorageState(&data.traceStorageBaseModel, storage)
+	data.updateState(storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func filterTraceStorageByNameAndTags(storages []monitoringsuiteapi.TraceStorage, name string, tags []string) (*monitoringsuiteapi.TraceStorage, error) {
+func filterTraceStorageByName(storages []monitoringsuiteapi.TraceStorage, name string) (*monitoringsuiteapi.TraceStorage, error) {
 	match := slices.Collect(func(yield func(monitoringsuiteapi.TraceStorage) bool) {
 		for _, storage := range storages {
-			if name != "" && storage.Name.Or("") != name {
-				continue
-			}
-			if len(tags) > 0 && !utils.IsTagsMatched(tags, storage.Tags) {
+			if storage.Name.Value != name {
 				continue
 			}
 			if !yield(storage) {
@@ -156,7 +146,7 @@ func filterTraceStorageByNameAndTags(storages []monitoringsuiteapi.TraceStorage,
 		return nil, fmt.Errorf("no result")
 	}
 	if len(match) > 1 {
-		return nil, fmt.Errorf("multiple trace storages found with the same condition. name=%q tags=%v", name, tags)
+		return nil, fmt.Errorf("multiple trace storages found with the same condition. name=%q", name)
 	}
 	return &match[0], nil
 }

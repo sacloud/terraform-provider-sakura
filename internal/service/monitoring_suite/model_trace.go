@@ -10,12 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
-	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
 type traceStorageBaseModel struct {
-	common.SakuraBaseModel
-	IconID              types.String `tfsdk:"icon_id"`
+	msBaseModel
 	AccountID           types.String `tfsdk:"account_id"`
 	ResourceID          types.Int64  `tfsdk:"resource_id"`
 	RetentionPeriodDays types.Int64  `tfsdk:"retention_period_days"`
@@ -45,18 +43,12 @@ func (m traceStorageIngesterModel) AttributeTypes() map[string]attr.Type {
 	}
 }
 
-func updateTraceStorageState(model *traceStorageBaseModel, storage *monitoringsuiteapi.TraceStorage) {
-	model.UpdateBaseState(strconv.FormatInt(storage.GetID(), 10), storage.GetName().Value, storage.GetDescription().Value, storage.GetTags())
-	if icon, ok := storage.GetIcon().Get(); ok {
-		model.IconID = stringValueOrNull(icon.GetID())
-	} else {
-		model.IconID = types.StringNull()
-	}
+func (model *traceStorageBaseModel) updateState(storage *monitoringsuiteapi.TraceStorage) {
+	model.updateBaseState(strconv.FormatInt(storage.GetID(), 10), storage.GetName().Value, storage.GetDescription().Value)
 	model.AccountID = types.StringValue(storage.GetAccountID())
 	model.ResourceID = types.Int64Value(storage.GetResourceID())
 	model.RetentionPeriodDays = types.Int64Value(int64(storage.GetRetentionPeriodDays()))
 	model.CreatedAt = types.StringValue(storage.GetCreatedAt().String())
-	model.Tags = common.StringsToTset(storage.GetTags())
 
 	endpoints := storage.GetEndpoints()
 	ingester := endpoints.GetIngester()

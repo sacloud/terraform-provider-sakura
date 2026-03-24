@@ -7,6 +7,18 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
+type msBaseModel struct {
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Description types.String `tfsdk:"description"`
+}
+
+func (model *msBaseModel) updateBaseState(id string, name string, desc string) {
+	model.ID = types.StringValue(id)
+	model.Name = types.StringValue(name)
+	model.Description = types.StringValue(desc)
+}
+
 type accessKeyBaseModel struct {
 	ID          types.String `tfsdk:"id"`
 	StorageID   types.String `tfsdk:"storage_id"`
@@ -15,12 +27,12 @@ type accessKeyBaseModel struct {
 	Secret      types.String `tfsdk:"secret"`
 }
 
-func updateAccessKeyState(model *accessKeyBaseModel, storageID string, uid string, description string, token string, secret string) {
-	model.ID = types.StringValue(uid)
-	model.StorageID = types.StringValue(storageID)
-	model.Description = types.StringValue(description)
-	model.Token = types.StringValue(token)
-	model.Secret = types.StringValue(secret)
+func (m *accessKeyBaseModel) updateState(storageID string, uid string, description string, token string, secret string) {
+	m.ID = types.StringValue(uid)
+	m.StorageID = types.StringValue(storageID)
+	m.Description = types.StringValue(description)
+	m.Token = types.StringValue(token)
+	m.Secret = types.StringValue(secret)
 }
 
 type optInt64 interface {
@@ -48,11 +60,4 @@ func optBoolToType(value optBool) types.Bool {
 		return types.BoolValue(v)
 	}
 	return types.BoolNull()
-}
-
-func stringValueOrNull(value optString) types.String {
-	if v, ok := value.Get(); ok {
-		return types.StringValue(v)
-	}
-	return types.StringNull()
 }

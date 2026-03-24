@@ -13,7 +13,6 @@ import (
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
-	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type metricStorageDataSource struct {
@@ -51,11 +50,6 @@ func (d *metricStorageDataSource) Schema(_ context.Context, _ datasource.SchemaR
 			"id":          common.SchemaDataSourceId("Monitoring Suite metric storage"),
 			"name":        common.SchemaDataSourceName("Monitoring Suite metric storage"),
 			"description": common.SchemaDataSourceDescription("Monitoring Suite metric storage"),
-			"tags":        common.SchemaDataSourceTags("Monitoring Suite metric storage"),
-			"icon_id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The icon ID of the metric storage.",
-			},
 			"account_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The account ID of the metric storage.",
@@ -71,10 +65,6 @@ func (d *metricStorageDataSource) Schema(_ context.Context, _ datasource.SchemaR
 			"created_at": schema.StringAttribute{
 				Computed:    true,
 				Description: "The creation timestamp of the metric storage.",
-			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The update timestamp of the metric storage.",
 			},
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
@@ -118,9 +108,8 @@ func (d *metricStorageDataSource) Read(ctx context.Context, req datasource.ReadR
 
 	id := data.ID.ValueString()
 	name := data.Name.ValueString()
-	tags := common.TsetToStrings(data.Tags)
-	if id == "" && name == "" && len(tags) == 0 {
-		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id', 'name', or 'tags' must be specified.")
+	if id == "" && name == "" {
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id' or 'name' must be specified.")
 		return
 	}
 
@@ -139,24 +128,21 @@ func (d *metricStorageDataSource) Read(ctx context.Context, req datasource.ReadR
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list metrics storage resources: %s", err))
 			return
 		}
-		storage, err = filterMetricsStorageByNameAndTags(storages, name, tags)
+		storage, err = filterMetricsStorageByName(storages, name)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: Search Error", err.Error())
 			return
 		}
 	}
 
-	updateMetricsStorageState(&data.metricStorageBaseModel, storage)
+	data.updateState(storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func filterMetricsStorageByNameAndTags(storages []monitoringsuiteapi.MetricsStorage, name string, tags []string) (*monitoringsuiteapi.MetricsStorage, error) {
+func filterMetricsStorageByName(storages []monitoringsuiteapi.MetricsStorage, name string) (*monitoringsuiteapi.MetricsStorage, error) {
 	match := slices.Collect(func(yield func(monitoringsuiteapi.MetricsStorage) bool) {
 		for _, storage := range storages {
-			if name != "" && storage.Name.Or("") != name {
-				continue
-			}
-			if len(tags) > 0 && !utils.IsTagsMatched(tags, storage.Tags) {
+			if storage.Name.Value != name {
 				continue
 			}
 			if !yield(storage) {
@@ -168,7 +154,7 @@ func filterMetricsStorageByNameAndTags(storages []monitoringsuiteapi.MetricsStor
 		return nil, fmt.Errorf("no result")
 	}
 	if len(match) > 1 {
-		return nil, fmt.Errorf("multiple metric storages found with the same condition. name=%q tags=%v", name, tags)
+		return nil, fmt.Errorf("multiple metric storages found with the same condition. name=%q", name)
 	}
 	return &match[0], nil
 }

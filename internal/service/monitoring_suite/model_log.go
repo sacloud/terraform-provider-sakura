@@ -10,12 +10,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
-	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
 type logStorageBaseModel struct {
-	common.SakuraBaseModel
-	IconID         types.String `tfsdk:"icon_id"`
+	msBaseModel
 	AccountID      types.String `tfsdk:"account_id"`
 	ResourceID     types.Int64  `tfsdk:"resource_id"`
 	IsSystem       types.Bool   `tfsdk:"is_system"`
@@ -60,19 +58,14 @@ func (m logStorageUsageModel) AttributeTypes() map[string]attr.Type {
 	}
 }
 
-func updateLogStorageState(model *logStorageBaseModel, storage *monitoringsuiteapi.LogStorage) {
-	model.UpdateBaseState(strconv.FormatInt(storage.GetID(), 10), storage.GetName().Value, storage.GetDescription().Value, storage.GetTags())
-	if icon, ok := storage.GetIcon().Get(); ok {
-		model.IconID = stringValueOrNull(icon.GetID())
-	} else {
-		model.IconID = types.StringNull()
-	}
+func (model *logStorageBaseModel) updateState(storage *monitoringsuiteapi.LogStorage) {
+	model.updateBaseState(strconv.FormatInt(storage.GetID(), 10), storage.GetName().Value, storage.GetDescription().Value)
 	model.AccountID = types.StringValue(storage.GetAccountID())
 	model.ResourceID = optInt64ToType(storage.GetResourceID())
 	model.IsSystem = types.BoolValue(storage.GetIsSystem())
 	model.ExpireDay = types.Int64Value(int64(storage.GetExpireDay()))
 	model.CreatedAt = types.StringValue(storage.GetCreatedAt().String())
-	model.Tags = common.StringsToTset(storage.GetTags())
+	model.Classification = types.StringValue(string(storage.GetClassification()))
 
 	endpoints := storage.GetEndpoints()
 	ingester := endpoints.GetIngester()

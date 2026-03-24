@@ -98,6 +98,6 @@ func (d *metricStorageAccessKeyDataSource) Read(ctx context.Context, req datasou
 		return
 	}
 
-	updateAccessKeyState(&data.accessKeyBaseModel, data.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
+	data.updateState(data.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

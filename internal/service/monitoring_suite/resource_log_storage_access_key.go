@@ -113,7 +113,7 @@ func (r *logStorageAccessKeyResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
-	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
+	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -129,7 +129,7 @@ func (r *logStorageAccessKeyResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	updateAccessKeyState(&state.accessKeyBaseModel, state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
+	state.updateState(state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -156,7 +156,7 @@ func (r *logStorageAccessKeyResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
+	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

@@ -13,7 +13,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	api "github.com/sacloud/api-client-go"
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
@@ -60,15 +59,6 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 				Description: "The name of the trace storage.",
 			},
 			"description": common.SchemaResourceDescription("Monitoring Suite trace storage"),
-			"tags": schema.SetAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-				Description: "The tags of the trace storage.",
-			},
-			"icon_id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The icon ID of the trace storage.",
-			},
 			"account_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The account ID of the trace storage.",
@@ -87,15 +77,15 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 			},
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The endpoints of the log storage.",
+				Description: "The endpoints of the trace storage.",
 				Attributes: map[string]schema.Attribute{
 					"ingester": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "The ingester endpoint for the log storage.",
+						Description: "The ingester endpoint for the trace storage.",
 						Attributes: map[string]schema.Attribute{
 							"address": schema.StringAttribute{
 								Computed:    true,
-								Description: "The ingester address for the log storage.",
+								Description: "The ingester address for the trace storage.",
 							},
 							"insecure": schema.BoolAttribute{
 								Computed:    true,
@@ -135,7 +125,7 @@ func (r *traceStorageResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
-	updateTraceStorageState(&plan.traceStorageBaseModel, created)
+	plan.updateState(created)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -151,7 +141,7 @@ func (r *traceStorageResource) Read(ctx context.Context, req resource.ReadReques
 		return
 	}
 
-	updateTraceStorageState(&state.traceStorageBaseModel, storage)
+	state.updateState(storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -176,7 +166,7 @@ func (r *traceStorageResource) Update(ctx context.Context, req resource.UpdateRe
 		return
 	}
 
-	updateTraceStorageState(&plan.traceStorageBaseModel, updated)
+	plan.updateState(updated)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

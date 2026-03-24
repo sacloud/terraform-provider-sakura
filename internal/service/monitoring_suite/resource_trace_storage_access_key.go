@@ -113,7 +113,7 @@ func (r *traceStorageAccessKeyResource) Create(ctx context.Context, req resource
 		return
 	}
 
-	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
+	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -129,7 +129,7 @@ func (r *traceStorageAccessKeyResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	updateAccessKeyState(&state.accessKeyBaseModel, state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
+	state.updateState(state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -156,7 +156,7 @@ func (r *traceStorageAccessKeyResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	updateAccessKeyState(&plan.accessKeyBaseModel, plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
+	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

@@ -56,7 +56,7 @@ func TestFilterLogStorageByNameAndTags(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := filterLogStorageByNameAndTags(storages, tc.query, tc.tags)
+			got, err := filterLogStorageByName(storages, tc.query)
 			if tc.wantErr {
 				if err == nil {
 					t.Fatalf("expected error but got nil")
@@ -77,7 +77,7 @@ func TestFilterLogStorageByNameAndTags(t *testing.T) {
 
 	dup := append([]monitoringsuiteapi.LogStorage{}, storages...)
 	dup = append(dup, monitoringsuiteapi.LogStorage{ID: 3, Name: monitoringsuiteapi.NewOptString("alpha"), Tags: []string{"tag1"}})
-	if _, err := filterLogStorageByNameAndTags(dup, "alpha", nil); err == nil {
+	if _, err := filterLogStorageByName(dup, "alpha"); err == nil {
 		t.Fatalf("expected error for duplicate matches")
 	}
 }
@@ -129,7 +129,7 @@ func TestFilterMetricsStorageByNameAndTags(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := filterMetricsStorageByNameAndTags(storages, tc.query, tc.tags)
+			got, err := filterMetricsStorageByName(storages, tc.query)
 			if tc.wantErr {
 				if err == nil {
 					t.Fatalf("expected error but got nil")
@@ -150,7 +150,7 @@ func TestFilterMetricsStorageByNameAndTags(t *testing.T) {
 
 	dup := append([]monitoringsuiteapi.MetricsStorage{}, storages...)
 	dup = append(dup, monitoringsuiteapi.MetricsStorage{ID: 3, Name: monitoringsuiteapi.NewOptString("alpha"), Tags: []string{"tag1"}})
-	if _, err := filterMetricsStorageByNameAndTags(dup, "alpha", nil); err == nil {
+	if _, err := filterMetricsStorageByName(dup, "alpha"); err == nil {
 		t.Fatalf("expected error for duplicate matches")
 	}
 }
@@ -202,7 +202,7 @@ func TestFilterTraceStorageByNameAndTags(t *testing.T) {
 
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {
-			got, err := filterTraceStorageByNameAndTags(storages, tc.query, tc.tags)
+			got, err := filterTraceStorageByName(storages, tc.query)
 			if tc.wantErr {
 				if err == nil {
 					t.Fatalf("expected error but got nil")
@@ -223,7 +223,7 @@ func TestFilterTraceStorageByNameAndTags(t *testing.T) {
 
 	dup := append([]monitoringsuiteapi.TraceStorage{}, storages...)
 	dup = append(dup, monitoringsuiteapi.TraceStorage{ID: 3, Name: monitoringsuiteapi.NewOptString("alpha"), Tags: []string{"tag1"}})
-	if _, err := filterTraceStorageByNameAndTags(dup, "alpha", nil); err == nil {
+	if _, err := filterTraceStorageByName(dup, "alpha"); err == nil {
 		t.Fatalf("expected error for duplicate matches")
 	}
 }

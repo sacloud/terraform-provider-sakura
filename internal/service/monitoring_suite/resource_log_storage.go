@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	api "github.com/sacloud/api-client-go"
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
@@ -67,15 +66,6 @@ func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Description: "The name of the log storage.",
 			},
 			"description": common.SchemaResourceDescription("Monitoring Suite log storage"),
-			"tags": schema.SetAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-				Description: "The tags of the log storage.",
-			},
-			"icon_id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The icon ID of the log storage.",
-			},
 			"account_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The account ID of the log storage.",
@@ -183,7 +173,7 @@ func (r *logStorageResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
-	updateLogStorageState(&plan.logStorageBaseModel, created)
+	plan.updateState(created)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -199,7 +189,7 @@ func (r *logStorageResource) Read(ctx context.Context, req resource.ReadRequest,
 		return
 	}
 
-	updateLogStorageState(&state.logStorageBaseModel, storage)
+	state.updateState(storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -224,7 +214,7 @@ func (r *logStorageResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	updateLogStorageState(&plan.logStorageBaseModel, updated)
+	plan.updateState(updated)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

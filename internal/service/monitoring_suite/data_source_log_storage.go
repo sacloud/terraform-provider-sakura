@@ -13,7 +13,6 @@ import (
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
-	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type logStorageDataSource struct {
@@ -51,11 +50,6 @@ func (d *logStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 			"id":          common.SchemaDataSourceId("Monitoring Suite log storage"),
 			"name":        common.SchemaDataSourceName("Monitoring Suite log storage"),
 			"description": common.SchemaDataSourceDescription("Monitoring Suite log storage"),
-			"tags":        common.SchemaDataSourceTags("Monitoring Suite log storage"),
-			"icon_id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The icon ID of the log storage.",
-			},
 			"account_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The account ID of the log storage.",
@@ -128,9 +122,8 @@ func (d *logStorageDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	id := data.ID.ValueString()
 	name := data.Name.ValueString()
-	tags := common.TsetToStrings(data.Tags)
-	if id == "" && name == "" && len(tags) == 0 {
-		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id', 'name', or 'tags' must be specified.")
+	if id == "" && name == "" {
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'id' or 'name' must be specified.")
 		return
 	}
 
@@ -149,24 +142,21 @@ func (d *logStorageDataSource) Read(ctx context.Context, req datasource.ReadRequ
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list log storage resources: %s", err))
 			return
 		}
-		storage, err = filterLogStorageByNameAndTags(storages, name, tags)
+		storage, err = filterLogStorageByName(storages, name)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: Search Error", err.Error())
 			return
 		}
 	}
 
-	updateLogStorageState(&data.logStorageBaseModel, storage)
+	data.updateState(storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func filterLogStorageByNameAndTags(storages []monitoringsuiteapi.LogStorage, name string, tags []string) (*monitoringsuiteapi.LogStorage, error) {
+func filterLogStorageByName(storages []monitoringsuiteapi.LogStorage, name string) (*monitoringsuiteapi.LogStorage, error) {
 	match := slices.Collect(func(yield func(monitoringsuiteapi.LogStorage) bool) {
 		for _, storage := range storages {
-			if name != "" && storage.Name.Or("") != name {
-				continue
-			}
-			if len(tags) > 0 && !utils.IsTagsMatched(tags, storage.Tags) {
+			if storage.Name.Value != name {
 				continue
 			}
 			if !yield(storage) {
@@ -178,7 +168,7 @@ func filterLogStorageByNameAndTags(storages []monitoringsuiteapi.LogStorage, nam
 		return nil, fmt.Errorf("no result")
 	}
 	if len(match) > 1 {
-		return nil, fmt.Errorf("multiple log storages found with the same condition. name=%q tags=%v", name, tags)
+		return nil, fmt.Errorf("multiple log storages found with the same condition. name=%q", name)
 	}
 	return &match[0], nil
 }

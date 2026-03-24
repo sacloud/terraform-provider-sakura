@@ -16,7 +16,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	api "github.com/sacloud/api-client-go"
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
@@ -63,15 +62,6 @@ func (r *metricStorageResource) Schema(ctx context.Context, _ resource.SchemaReq
 				Description: "The name of the metrics storage.",
 			},
 			"description": common.SchemaResourceDescription("Monitoring Suite metrics storage"),
-			"tags": schema.SetAttribute{
-				ElementType: types.StringType,
-				Computed:    true,
-				Description: "The tags of the metrics storage.",
-			},
-			"icon_id": schema.StringAttribute{
-				Computed:    true,
-				Description: "The icon ID of the metrics storage.",
-			},
 			"account_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The account ID of the metrics storage.",
@@ -92,10 +82,6 @@ func (r *metricStorageResource) Schema(ctx context.Context, _ resource.SchemaReq
 			"created_at": schema.StringAttribute{
 				Computed:    true,
 				Description: "The creation timestamp of the metrics storage.",
-			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The update timestamp of the metrics storage.",
 			},
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
@@ -156,7 +142,7 @@ func (r *metricStorageResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	updateMetricsStorageState(&plan.metricStorageBaseModel, created)
+	plan.updateState(created)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -172,7 +158,7 @@ func (r *metricStorageResource) Read(ctx context.Context, req resource.ReadReque
 		return
 	}
 
-	updateMetricsStorageState(&state.metricStorageBaseModel, storage)
+	state.updateState(storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -197,7 +183,7 @@ func (r *metricStorageResource) Update(ctx context.Context, req resource.UpdateR
 		return
 	}
 
-	updateMetricsStorageState(&plan.metricStorageBaseModel, updated)
+	plan.updateState(updated)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

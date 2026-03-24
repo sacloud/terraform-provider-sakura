@@ -10,19 +10,17 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
-	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
 type metricStorageBaseModel struct {
-	common.SakuraBaseModel
-	IconID     types.String `tfsdk:"icon_id"`
+	msBaseModel
 	AccountID  types.String `tfsdk:"account_id"`
 	ResourceID types.Int64  `tfsdk:"resource_id"`
 	IsSystem   types.Bool   `tfsdk:"is_system"`
 	CreatedAt  types.String `tfsdk:"created_at"`
-	UpdatedAt  types.String `tfsdk:"updated_at"`
 	Endpoints  types.Object `tfsdk:"endpoints"`
 	Usage      types.Object `tfsdk:"usage"`
+	// metrics APIではupdated_atは返却されるが、他のストレージ系リソースでは返却されない。統一するため一旦モデルからは削除する。
 }
 
 type metricStorageEndpointsModel struct {
@@ -49,19 +47,12 @@ func (m metricStorageUsageModel) AttributeTypes() map[string]attr.Type {
 	}
 }
 
-func updateMetricsStorageState(model *metricStorageBaseModel, storage *monitoringsuiteapi.MetricsStorage) {
-	model.UpdateBaseState(strconv.FormatInt(storage.GetID(), 10), storage.GetName().Value, storage.GetDescription().Value, storage.GetTags())
-	if icon, ok := storage.GetIcon().Get(); ok {
-		model.IconID = stringValueOrNull(icon.GetID())
-	} else {
-		model.IconID = types.StringNull()
-	}
+func (model *metricStorageBaseModel) updateState(storage *monitoringsuiteapi.MetricsStorage) {
+	model.updateBaseState(strconv.FormatInt(storage.GetID(), 10), storage.GetName().Value, storage.GetDescription().Value)
 	model.AccountID = types.StringValue(storage.GetAccountID())
 	model.ResourceID = optInt64ToType(storage.GetResourceID())
 	model.IsSystem = types.BoolValue(storage.GetIsSystem())
 	model.CreatedAt = types.StringValue(storage.GetCreatedAt().String())
-	model.UpdatedAt = types.StringValue(storage.GetUpdatedAt().String())
-	model.Tags = common.StringsToTset(storage.GetTags())
 
 	endpoints := storage.GetEndpoints()
 	endpointsModel := &metricStorageEndpointsModel{
