@@ -24,25 +24,25 @@ import (
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
-type metricsStorageAccessKeyResource struct {
+type metricStorageAccessKeyResource struct {
 	client *monitoringsuiteapi.Client
 }
 
 var (
-	_ resource.Resource                = &metricsStorageAccessKeyResource{}
-	_ resource.ResourceWithConfigure   = &metricsStorageAccessKeyResource{}
-	_ resource.ResourceWithImportState = &metricsStorageAccessKeyResource{}
+	_ resource.Resource                = &metricStorageAccessKeyResource{}
+	_ resource.ResourceWithConfigure   = &metricStorageAccessKeyResource{}
+	_ resource.ResourceWithImportState = &metricStorageAccessKeyResource{}
 )
 
-func NewMetricsStorageAccessKeyResource() resource.Resource {
-	return &metricsStorageAccessKeyResource{}
+func NewMetricStorageAccessKeyResource() resource.Resource {
+	return &metricStorageAccessKeyResource{}
 }
 
-func (r *metricsStorageAccessKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_metrics_storage_access_key"
+func (r *metricStorageAccessKeyResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_metric_storage_access_key"
 }
 
-func (r *metricsStorageAccessKeyResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *metricStorageAccessKeyResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -50,12 +50,12 @@ func (r *metricsStorageAccessKeyResource) Configure(ctx context.Context, req res
 	r.client = apiclient.MonitoringSuiteClient
 }
 
-type metricsStorageAccessKeyResourceModel struct {
+type metricStorageAccessKeyResourceModel struct {
 	accessKeyBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *metricsStorageAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *metricStorageAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaResourceId("Monitoring Suite metrics storage access key"),
@@ -86,7 +86,7 @@ func (r *metricsStorageAccessKeyResource) Schema(ctx context.Context, _ resource
 	}
 }
 
-func (r *metricsStorageAccessKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *metricStorageAccessKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	parts := strings.SplitN(req.ID, ",", 2)
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: <storage_id>,<uid>")
@@ -96,8 +96,8 @@ func (r *metricsStorageAccessKeyResource) ImportState(ctx context.Context, req r
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
-func (r *metricsStorageAccessKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan metricsStorageAccessKeyResourceModel
+func (r *metricStorageAccessKeyResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan metricStorageAccessKeyResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -117,8 +117,8 @@ func (r *metricsStorageAccessKeyResource) Create(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *metricsStorageAccessKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state metricsStorageAccessKeyResourceModel
+func (r *metricStorageAccessKeyResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state metricStorageAccessKeyResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -133,8 +133,8 @@ func (r *metricsStorageAccessKeyResource) Read(ctx context.Context, req resource
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *metricsStorageAccessKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan metricsStorageAccessKeyResourceModel
+func (r *metricStorageAccessKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan metricStorageAccessKeyResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -160,8 +160,8 @@ func (r *metricsStorageAccessKeyResource) Update(ctx context.Context, req resour
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *metricsStorageAccessKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state metricsStorageAccessKeyResourceModel
+func (r *metricStorageAccessKeyResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state metricStorageAccessKeyResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return

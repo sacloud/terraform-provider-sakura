@@ -48,10 +48,10 @@ type traceStorageDataSourceModel struct {
 func (d *traceStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("Monitoring Suite Trace Storage"),
-			"name":        common.SchemaDataSourceName("Monitoring Suite Trace Storage"),
-			"description": common.SchemaDataSourceDescription("Monitoring Suite Trace Storage"),
-			"tags":        common.SchemaDataSourceTags("Monitoring Suite Trace Storage"),
+			"id":          common.SchemaDataSourceId("Monitoring Suite trace storage"),
+			"name":        common.SchemaDataSourceName("Monitoring Suite trace storage"),
+			"description": common.SchemaDataSourceDescription("Monitoring Suite trace storage"),
+			"tags":        common.SchemaDataSourceTags("Monitoring Suite trace storage"),
 			"icon_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The icon ID of the trace storage.",

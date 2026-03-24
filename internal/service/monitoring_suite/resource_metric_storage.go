@@ -23,25 +23,25 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-type metricsStorageResource struct {
+type metricStorageResource struct {
 	client *monitoringsuiteapi.Client
 }
 
 var (
-	_ resource.Resource                = &metricsStorageResource{}
-	_ resource.ResourceWithConfigure   = &metricsStorageResource{}
-	_ resource.ResourceWithImportState = &metricsStorageResource{}
+	_ resource.Resource                = &metricStorageResource{}
+	_ resource.ResourceWithConfigure   = &metricStorageResource{}
+	_ resource.ResourceWithImportState = &metricStorageResource{}
 )
 
-func NewMetricsStorageResource() resource.Resource {
-	return &metricsStorageResource{}
+func NewMetricStorageResource() resource.Resource {
+	return &metricStorageResource{}
 }
 
-func (r *metricsStorageResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_metrics_storage"
+func (r *metricStorageResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_metric_storage"
 }
 
-func (r *metricsStorageResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *metricStorageResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -49,12 +49,12 @@ func (r *metricsStorageResource) Configure(ctx context.Context, req resource.Con
 	r.client = apiclient.MonitoringSuiteClient
 }
 
-type metricsStorageResourceModel struct {
-	metricsStorageBaseModel
+type metricStorageResourceModel struct {
+	metricStorageBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *metricsStorageResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *metricStorageResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": common.SchemaResourceId("Monitoring Suite metrics storage"),
@@ -131,12 +131,12 @@ func (r *metricsStorageResource) Schema(ctx context.Context, _ resource.SchemaRe
 	}
 }
 
-func (r *metricsStorageResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *metricStorageResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *metricsStorageResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan metricsStorageResourceModel
+func (r *metricStorageResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan metricStorageResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -156,12 +156,12 @@ func (r *metricsStorageResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 
-	updateMetricsStorageState(&plan.metricsStorageBaseModel, created)
+	updateMetricsStorageState(&plan.metricStorageBaseModel, created)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *metricsStorageResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state metricsStorageResourceModel
+func (r *metricStorageResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state metricStorageResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -172,12 +172,12 @@ func (r *metricsStorageResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	updateMetricsStorageState(&state.metricsStorageBaseModel, storage)
+	updateMetricsStorageState(&state.metricStorageBaseModel, storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *metricsStorageResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan metricsStorageResourceModel
+func (r *metricStorageResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan metricStorageResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -197,12 +197,12 @@ func (r *metricsStorageResource) Update(ctx context.Context, req resource.Update
 		return
 	}
 
-	updateMetricsStorageState(&plan.metricsStorageBaseModel, updated)
+	updateMetricsStorageState(&plan.metricStorageBaseModel, updated)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *metricsStorageResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state metricsStorageResourceModel
+func (r *metricStorageResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state metricStorageResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return

@@ -16,24 +16,24 @@ import (
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
-type metricsStorageAccessKeyDataSource struct {
+type metricStorageAccessKeyDataSource struct {
 	client *monitoringsuiteapi.Client
 }
 
 var (
-	_ datasource.DataSource              = &metricsStorageAccessKeyDataSource{}
-	_ datasource.DataSourceWithConfigure = &metricsStorageAccessKeyDataSource{}
+	_ datasource.DataSource              = &metricStorageAccessKeyDataSource{}
+	_ datasource.DataSourceWithConfigure = &metricStorageAccessKeyDataSource{}
 )
 
-func NewMetricsStorageAccessKeyDataSource() datasource.DataSource {
-	return &metricsStorageAccessKeyDataSource{}
+func NewMetricStorageAccessKeyDataSource() datasource.DataSource {
+	return &metricStorageAccessKeyDataSource{}
 }
 
-func (d *metricsStorageAccessKeyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_metrics_storage_access_key"
+func (d *metricStorageAccessKeyDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_metric_storage_access_key"
 }
 
-func (d *metricsStorageAccessKeyDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *metricStorageAccessKeyDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -41,20 +41,20 @@ func (d *metricsStorageAccessKeyDataSource) Configure(ctx context.Context, req d
 	d.client = apiclient.MonitoringSuiteClient
 }
 
-type metricsStorageAccessKeyDataSourceModel struct {
+type metricStorageAccessKeyDataSourceModel struct {
 	accessKeyBaseModel
 }
 
-func (d *metricsStorageAccessKeyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *metricStorageAccessKeyDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Required:    true,
-				Description: "The UID of the metrics storage access key.",
+				Description: "The UID of the metric storage access key.",
 			},
 			"storage_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The metrics storage ID for the access key.",
+				Description: "The metric storage ID for the access key.",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
@@ -74,12 +74,12 @@ func (d *metricsStorageAccessKeyDataSource) Schema(_ context.Context, _ datasour
 				Description: "The secret of the access key.",
 			},
 		},
-		MarkdownDescription: "Get information about an existing Monitoring Suite metrics storage access key.",
+		MarkdownDescription: "Get information about an existing Monitoring Suite metric storage access key.",
 	}
 }
 
-func (d *metricsStorageAccessKeyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data metricsStorageAccessKeyDataSourceModel
+func (d *metricStorageAccessKeyDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data metricStorageAccessKeyDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -94,7 +94,7 @@ func (d *metricsStorageAccessKeyDataSource) Read(ctx context.Context, req dataso
 	op := monitoringsuite.NewMetricsStorageOp(d.client)
 	key, err := op.ReadKey(ctx, data.StorageID.ValueString(), uid)
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read metrics storage access key[%s]: %s", data.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read metric storage access key[%s]: %s", data.ID.ValueString(), err))
 		return
 	}
 

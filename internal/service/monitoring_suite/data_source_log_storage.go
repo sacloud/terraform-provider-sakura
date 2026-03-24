@@ -48,10 +48,10 @@ type logStorageDataSourceModel struct {
 func (d *logStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("Monitoring Suite Log Storage"),
-			"name":        common.SchemaDataSourceName("Monitoring Suite Log Storage"),
-			"description": common.SchemaDataSourceDescription("Monitoring Suite Log Storage"),
-			"tags":        common.SchemaDataSourceTags("Monitoring Suite Log Storage"),
+			"id":          common.SchemaDataSourceId("Monitoring Suite log storage"),
+			"name":        common.SchemaDataSourceName("Monitoring Suite log storage"),
+			"description": common.SchemaDataSourceDescription("Monitoring Suite log storage"),
+			"tags":        common.SchemaDataSourceTags("Monitoring Suite log storage"),
 			"icon_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The icon ID of the log storage.",

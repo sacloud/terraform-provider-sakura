@@ -16,24 +16,24 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
-type metricsStorageDataSource struct {
+type metricStorageDataSource struct {
 	client *monitoringsuiteapi.Client
 }
 
 var (
-	_ datasource.DataSource              = &metricsStorageDataSource{}
-	_ datasource.DataSourceWithConfigure = &metricsStorageDataSource{}
+	_ datasource.DataSource              = &metricStorageDataSource{}
+	_ datasource.DataSourceWithConfigure = &metricStorageDataSource{}
 )
 
-func NewMetricsStorageDataSource() datasource.DataSource {
-	return &metricsStorageDataSource{}
+func NewMetricStorageDataSource() datasource.DataSource {
+	return &metricStorageDataSource{}
 }
 
-func (d *metricsStorageDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_metrics_storage"
+func (d *metricStorageDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_metric_storage"
 }
 
-func (d *metricsStorageDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *metricStorageDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -41,58 +41,58 @@ func (d *metricsStorageDataSource) Configure(ctx context.Context, req datasource
 	d.client = apiclient.MonitoringSuiteClient
 }
 
-type metricsStorageDataSourceModel struct {
-	metricsStorageBaseModel
+type metricStorageDataSourceModel struct {
+	metricStorageBaseModel
 }
 
-func (d *metricsStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *metricStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("Monitoring Suite Metrics Storage"),
-			"name":        common.SchemaDataSourceName("Monitoring Suite Metrics Storage"),
-			"description": common.SchemaDataSourceDescription("Monitoring Suite Metrics Storage"),
-			"tags":        common.SchemaDataSourceTags("Monitoring Suite Metrics Storage"),
+			"id":          common.SchemaDataSourceId("Monitoring Suite metric storage"),
+			"name":        common.SchemaDataSourceName("Monitoring Suite metric storage"),
+			"description": common.SchemaDataSourceDescription("Monitoring Suite metric storage"),
+			"tags":        common.SchemaDataSourceTags("Monitoring Suite metric storage"),
 			"icon_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The icon ID of the metrics storage.",
+				Description: "The icon ID of the metric storage.",
 			},
 			"account_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the metrics storage.",
+				Description: "The account ID of the metric storage.",
 			},
 			"resource_id": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The resource ID of the metrics storage.",
+				Description: "The resource ID of the metric storage.",
 			},
 			"is_system": schema.BoolAttribute{
 				Computed:    true,
-				Description: "The flag to indicate whether this is a system metrics storage.",
+				Description: "The flag to indicate whether this is a system metric storage.",
 			},
 			"created_at": schema.StringAttribute{
 				Computed:    true,
-				Description: "The creation timestamp of the metrics storage.",
+				Description: "The creation timestamp of the metric storage.",
 			},
 			"updated_at": schema.StringAttribute{
 				Computed:    true,
-				Description: "The update timestamp of the metrics storage.",
+				Description: "The update timestamp of the metric storage.",
 			},
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The endpoints of the metrics storage.",
+				Description: "The endpoints of the metric storage.",
 				Attributes: map[string]schema.Attribute{
 					"address": schema.StringAttribute{
 						Computed:    true,
-						Description: "The address of the metrics storage endpoint.",
+						Description: "The address of the metric storage endpoint.",
 					},
 				},
 			},
 			"usage": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The usage of the metrics storage.",
+				Description: "The usage of the metric storage.",
 				Attributes: map[string]schema.Attribute{
 					"metrics_routings": schema.Int64Attribute{
 						Computed:    true,
-						Description: "The number of metrics routings.",
+						Description: "The number of metric routings.",
 					},
 					"alert_rules": schema.Int64Attribute{
 						Computed:    true,
@@ -105,12 +105,12 @@ func (d *metricsStorageDataSource) Schema(_ context.Context, _ datasource.Schema
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing Monitoring Suite metrics storage.",
+		MarkdownDescription: "Get information about an existing Monitoring Suite metric storage.",
 	}
 }
 
-func (d *metricsStorageDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data metricsStorageDataSourceModel
+func (d *metricStorageDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data metricStorageDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -146,7 +146,7 @@ func (d *metricsStorageDataSource) Read(ctx context.Context, req datasource.Read
 		}
 	}
 
-	updateMetricsStorageState(&data.metricsStorageBaseModel, storage)
+	updateMetricsStorageState(&data.metricStorageBaseModel, storage)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
@@ -168,7 +168,7 @@ func filterMetricsStorageByNameAndTags(storages []monitoringsuiteapi.MetricsStor
 		return nil, fmt.Errorf("no result")
 	}
 	if len(match) > 1 {
-		return nil, fmt.Errorf("multiple metrics storages found with the same condition. name=%q tags=%v", name, tags)
+		return nil, fmt.Errorf("multiple metric storages found with the same condition. name=%q tags=%v", name, tags)
 	}
 	return &match[0], nil
 }
