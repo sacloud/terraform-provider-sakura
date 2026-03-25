@@ -95,3 +95,23 @@ func (model *logStorageBaseModel) updateState(storage *monitoringsuiteapi.LogSto
 		model.Usage = value
 	}
 }
+
+type logRoutingBaseModel struct {
+	ID            types.String `tfsdk:"id"`
+	ResourceID    types.String `tfsdk:"resource_id"`
+	StorageID     types.String `tfsdk:"storage_id"`
+	PublisherCode types.String `tfsdk:"publisher_code"`
+	Variant       types.String `tfsdk:"variant"`
+	CreatedAt     types.String `tfsdk:"created_at"`
+	UpdatedAt     types.String `tfsdk:"updated_at"`
+}
+
+func (model *logRoutingBaseModel) updateState(routing *monitoringsuiteapi.LogRouting) {
+	model.ID = types.StringValue(routing.UID.String())
+	model.ResourceID = types.StringValue(strconv.Itoa(int(routing.ResourceID.Value)))
+	model.StorageID = types.StringValue(strconv.Itoa(int(routing.LogStorage.ID)))
+	model.PublisherCode = types.StringValue(routing.Publisher.Code)
+	model.Variant = types.StringValue(routing.Variant)
+	model.CreatedAt = types.StringValue(routing.CreatedAt.String())
+	model.UpdatedAt = types.StringValue(routing.UpdatedAt.String())
+}
