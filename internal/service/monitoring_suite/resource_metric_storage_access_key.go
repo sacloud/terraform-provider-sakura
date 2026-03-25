@@ -58,11 +58,11 @@ type metricStorageAccessKeyResourceModel struct {
 func (r *metricStorageAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId("Monitoring Suite metrics storage access key"),
-			"description": common.SchemaResourceDescription("Monitoring Suite metrics storage access key"),
+			"id":          common.SchemaResourceId("Monitoring Suite metric storage access key"),
+			"description": common.SchemaResourceDescription("Monitoring Suite metric storage access key"),
 			"storage_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The metrics storage ID for the access key.",
+				Description: "The metric storage ID for the access key.",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
@@ -82,7 +82,7 @@ func (r *metricStorageAccessKeyResource) Schema(ctx context.Context, _ resource.
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
-		MarkdownDescription: "Manages a Monitoring Suite metrics storage access key.",
+		MarkdownDescription: "Manages a Monitoring Suite metric storage access key.",
 	}
 }
 
@@ -109,7 +109,7 @@ func (r *metricStorageAccessKeyResource) Create(ctx context.Context, req resourc
 	op := monitoringsuite.NewMetricsStorageOp(r.client)
 	key, err := op.CreateKey(ctx, plan.StorageID.ValueString(), expandOptionalString(plan.Description))
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create metrics storage access key: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create metric storage access key: %s", err))
 		return
 	}
 
@@ -152,7 +152,7 @@ func (r *metricStorageAccessKeyResource) Update(ctx context.Context, req resourc
 
 	key, err := op.UpdateKey(ctx, plan.StorageID.ValueString(), uid, expandOptionalString(plan.Description))
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update metrics storage access key[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update metric storage access key[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -178,7 +178,7 @@ func (r *metricStorageAccessKeyResource) Delete(ctx context.Context, req resourc
 	}
 
 	if err := op.DeleteKey(ctx, state.StorageID.ValueString(), uid); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete metrics storage access key[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete metric storage access key[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -196,7 +196,7 @@ func getMetricsStorageAccessKey(ctx context.Context, client *monitoringsuiteapi.
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("failed to read metrics storage access key[%s]: %s", uid, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read metric storage access key[%s]: %s", uid, err))
 		return nil
 	}
 	return key

@@ -21,16 +21,16 @@ func (model *msBaseModel) updateBaseState(id string, name string, desc string) {
 
 type accessKeyBaseModel struct {
 	ID          types.String `tfsdk:"id"`
-	StorageID   types.String `tfsdk:"storage_id"`
 	Description types.String `tfsdk:"description"`
+	StorageID   types.String `tfsdk:"storage_id"`
 	Token       types.String `tfsdk:"token"`
 	Secret      types.String `tfsdk:"secret"`
 }
 
 func (m *accessKeyBaseModel) updateState(storageID string, uid string, description string, token string, secret string) {
 	m.ID = types.StringValue(uid)
-	m.StorageID = types.StringValue(storageID)
 	m.Description = types.StringValue(description)
+	m.StorageID = types.StringValue(storageID)
 	m.Token = types.StringValue(token)
 	m.Secret = types.StringValue(secret)
 }

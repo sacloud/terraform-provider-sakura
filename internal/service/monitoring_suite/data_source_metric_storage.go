@@ -54,7 +54,7 @@ func (d *metricStorageDataSource) Schema(_ context.Context, _ datasource.SchemaR
 				Computed:    true,
 				Description: "The account ID of the metric storage.",
 			},
-			"resource_id": schema.Int64Attribute{
+			"resource_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the metric storage.",
 			},
@@ -80,7 +80,7 @@ func (d *metricStorageDataSource) Schema(_ context.Context, _ datasource.SchemaR
 				Computed:    true,
 				Description: "The usage of the metric storage.",
 				Attributes: map[string]schema.Attribute{
-					"metrics_routings": schema.Int64Attribute{
+					"metric_routings": schema.Int64Attribute{
 						Computed:    true,
 						Description: "The number of metric routings.",
 					},
@@ -119,13 +119,13 @@ func (d *metricStorageDataSource) Read(ctx context.Context, req datasource.ReadR
 	if id != "" {
 		storage, err = op.Read(ctx, id)
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read metrics storage[%s]: %s", id, err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read metric storage[%s]: %s", id, err))
 			return
 		}
 	} else {
 		storages, err := op.List(ctx, monitoringsuite.MetricsStorageListParams{})
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list metrics storage resources: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list metric storage resources: %s", err))
 			return
 		}
 		storage, err = filterMetricsStorageByName(storages, name)

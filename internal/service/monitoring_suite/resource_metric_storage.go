@@ -56,50 +56,50 @@ type metricStorageResourceModel struct {
 func (r *metricStorageResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Monitoring Suite metrics storage"),
+			"id": common.SchemaResourceId("Monitoring Suite metric storage"),
 			"name": schema.StringAttribute{
 				Required:    true,
-				Description: "The name of the metrics storage.",
+				Description: "The name of the metric storage.",
 			},
-			"description": common.SchemaResourceDescription("Monitoring Suite metrics storage"),
+			"description": common.SchemaResourceDescription("Monitoring Suite metric storage"),
 			"account_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the metrics storage.",
+				Description: "The account ID of the metric storage.",
 			},
-			"resource_id": schema.Int64Attribute{
+			"resource_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The resource ID of the metrics storage.",
+				Description: "The resource ID of the metric storage.",
 			},
 			"is_system": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
 				Default:     booldefault.StaticBool(false),
-				Description: "The flag to indicate whether this is a system metrics storage.",
+				Description: "The flag to indicate whether this is a system metric storage.",
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"created_at": schema.StringAttribute{
 				Computed:    true,
-				Description: "The creation timestamp of the metrics storage.",
+				Description: "The creation timestamp of the metric storage.",
 			},
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The endpoints of the metrics storage.",
+				Description: "The endpoints of the metric storage.",
 				Attributes: map[string]schema.Attribute{
 					"address": schema.StringAttribute{
 						Computed:    true,
-						Description: "The address of the metrics storage endpoint.",
+						Description: "The address of the metric storage endpoint.",
 					},
 				},
 			},
 			"usage": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The usage of the metrics storage.",
+				Description: "The usage of the metric storage.",
 				Attributes: map[string]schema.Attribute{
-					"metrics_routings": schema.Int64Attribute{
+					"metric_routings": schema.Int64Attribute{
 						Computed:    true,
-						Description: "The number of metrics routings.",
+						Description: "The number of metric routings.",
 					},
 					"alert_rules": schema.Int64Attribute{
 						Computed:    true,
@@ -113,7 +113,7 @@ func (r *metricStorageResource) Schema(ctx context.Context, _ resource.SchemaReq
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
-		MarkdownDescription: "Manages a Monitoring Suite metrics storage.",
+		MarkdownDescription: "Manages a Monitoring Suite metric storage.",
 	}
 }
 
@@ -138,7 +138,7 @@ func (r *metricStorageResource) Create(ctx context.Context, req resource.CreateR
 		IsSystem:    plan.IsSystem.ValueBool(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create metrics storage: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create metric storage: %s", err))
 		return
 	}
 
@@ -179,7 +179,7 @@ func (r *metricStorageResource) Update(ctx context.Context, req resource.UpdateR
 		Description: expandOptionalString(plan.Description),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update metrics storage[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update metric storage[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -199,7 +199,7 @@ func (r *metricStorageResource) Delete(ctx context.Context, req resource.DeleteR
 
 	op := monitoringsuite.NewMetricsStorageOp(r.client)
 	if err := op.Delete(ctx, state.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete metrics storage[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete metric storage[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -212,7 +212,7 @@ func getMetricsStorage(ctx context.Context, client *monitoringsuiteapi.Client, i
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("failed to read metrics storage[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read metric storage[%s]: %s", id, err))
 		return nil
 	}
 	return storage
