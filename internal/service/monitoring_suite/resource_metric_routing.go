@@ -21,8 +21,7 @@ import (
 )
 
 type metricRoutingResource struct {
-	client   *monitoringsuiteapi.Client
-	variants map[string][]string
+	client *monitoringsuiteapi.Client
 }
 
 var (

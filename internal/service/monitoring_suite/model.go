@@ -46,11 +46,6 @@ func optInt64ToType(value optInt64) types.Int64 {
 	return types.Int64Null()
 }
 
-type optString interface {
-	Get() (string, bool)
-	Or(string) string
-}
-
 type optBool interface {
 	Get() (bool, bool)
 }
