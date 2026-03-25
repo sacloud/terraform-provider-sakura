@@ -9,7 +9,7 @@ import (
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 )
 
-func TestFilterLogStorageByNameAndTags(t *testing.T) {
+func TestFilterLogStorageByName(t *testing.T) {
 	storages := []monitoringsuiteapi.LogStorage{
 		{
 			ID:   1,
@@ -33,12 +33,6 @@ func TestFilterLogStorageByNameAndTags(t *testing.T) {
 		{
 			name:   "match by name",
 			query:  "alpha",
-			wantID: 1,
-		},
-		{
-			name:   "match by tags",
-			query:  "",
-			tags:   []string{"tag2"},
 			wantID: 1,
 		},
 		{
@@ -82,7 +76,7 @@ func TestFilterLogStorageByNameAndTags(t *testing.T) {
 	}
 }
 
-func TestFilterMetricsStorageByNameAndTags(t *testing.T) {
+func TestFilterMetricsStorageByName(t *testing.T) {
 	storages := []monitoringsuiteapi.MetricsStorage{
 		{
 			ID:   1,
@@ -106,12 +100,6 @@ func TestFilterMetricsStorageByNameAndTags(t *testing.T) {
 		{
 			name:   "match by name",
 			query:  "alpha",
-			wantID: 1,
-		},
-		{
-			name:   "match by tags",
-			query:  "",
-			tags:   []string{"tag2"},
 			wantID: 1,
 		},
 		{
@@ -155,7 +143,7 @@ func TestFilterMetricsStorageByNameAndTags(t *testing.T) {
 	}
 }
 
-func TestFilterTraceStorageByNameAndTags(t *testing.T) {
+func TestFilterTraceStorageByName(t *testing.T) {
 	storages := []monitoringsuiteapi.TraceStorage{
 		{
 			ID:   1,
@@ -179,12 +167,6 @@ func TestFilterTraceStorageByNameAndTags(t *testing.T) {
 		{
 			name:   "match by name",
 			query:  "alpha",
-			wantID: 1,
-		},
-		{
-			name:   "match by tags",
-			query:  "",
-			tags:   []string{"tag2"},
 			wantID: 1,
 		},
 		{
