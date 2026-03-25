@@ -280,6 +280,8 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		apprun_dedicated.NewAppDataSource,
 		apprun_dedicated.NewVersionDataSource,
 		apprun_dedicated.NewAutoScalingGroupDataSource,
+		apprun_dedicated.NewWorkerNodeDataSource,
+		apprun_dedicated.NewWorkerNodesDataSource,
 		apprun_dedicated.NewLoadBalancerServiceClassesDataSource,
 		apprun_dedicated.NewLoadBalancerServiceClassDataSource,
 		apprun_dedicated.NewWorkerServiceClassesDataSource,

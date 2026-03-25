@@ -33,7 +33,7 @@ data "sakura_apprun_dedicated_application" "by_name" {
 
 ### Required
 
-- `cluster_id` (String) The cluster ID that the certificate belongs to
+- `cluster_id` (String) The cluster ID that the application belongs to
 
 ### Optional
 

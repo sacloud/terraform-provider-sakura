@@ -5,6 +5,7 @@ package apprun_dedicated
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/attr"
@@ -75,10 +76,18 @@ func (d *dataSourceClient) schemaName() (ret dschema.StringAttribute) {
 	return
 }
 
-func (*dataSourceClient) schemaClusterID() dschema.StringAttribute {
+func (d *dataSourceClient) schemaClusterID() dschema.StringAttribute {
 	return dschema.StringAttribute{
 		Required:    true,
-		Description: "The cluster ID that the certificate belongs to",
+		Description: fmt.Sprintf("The cluster ID that the %s belongs to", d.name),
+		Validators:  []validator.String{sacloudvalidator.UUIDValidator},
+	}
+}
+
+func (d *dataSourceClient) schemaASGID() dschema.StringAttribute {
+	return dschema.StringAttribute{
+		Required:    true,
+		Description: fmt.Sprintf("The auto scaling group ID that the %s belongs to", d.name),
 		Validators:  []validator.String{sacloudvalidator.UUIDValidator},
 	}
 }
