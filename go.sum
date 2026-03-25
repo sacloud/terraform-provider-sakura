@@ -271,8 +271,8 @@ github.com/sacloud/object-storage-api-go v0.1.1 h1:lgAIonpmVEbUbeiOQ3IRH9XXS5U8f
 github.com/sacloud/object-storage-api-go v0.1.1/go.mod h1:uluq6oc/T21x72K45upbW1eMk+Z+LJHJbCto7HhxJJk=
 github.com/sacloud/packages-go v0.0.12 h1:MKeZNN3FQn1heqUSRBrbZw89YusZA1n4kammjMFZYvQ=
 github.com/sacloud/packages-go v0.0.12/go.mod h1:XNF5MCTWcHo9NiqWnYctVbASSSZR3ZOmmQORIzcurJ8=
-github.com/sacloud/saclient-go v0.3.2 h1:naQow/P7gYP4rozN//I0iCwq5PyzV/3WsK4JIhvtUIo=
-github.com/sacloud/saclient-go v0.3.2/go.mod h1:I9CiH5bYOOu6wgLpdv9yl+JW80qafEFca0VqoSEAYpE=
+github.com/sacloud/saclient-go v0.3.3 h1:ZJ6FCTorGT6Lkx92W4BNEmxH6LwC6B02b5LsQwzYyTw=
+github.com/sacloud/saclient-go v0.3.3/go.mod h1:43p2uetaKVpKo9vnCl8tcGvEPCyXoBEQHLavMbmcIes=
 github.com/sacloud/secretmanager-api-go v0.3.1 h1:71Bxt/WxtYfilkj35pD5pauy9zYYEQkF09bturYq1jM=
 github.com/sacloud/secretmanager-api-go v0.3.1/go.mod h1:eSMKWniJrPbaOWWv66AJgubXOoR6ZAOt8uIZo/5BJF8=
 github.com/sacloud/security-control-api-go v0.2.2 h1:cdQT/IqBWM10qm4PWaB89Cvu6u5Hbcgk1Aa5Mqc2q40=

@@ -30,7 +30,7 @@ require (
 	github.com/sacloud/nosql-api-go v0.3.0
 	github.com/sacloud/object-storage-api-go v0.1.1
 	github.com/sacloud/packages-go v0.0.12
-	github.com/sacloud/saclient-go v0.3.2
+	github.com/sacloud/saclient-go v0.3.3
 	github.com/sacloud/secretmanager-api-go v0.3.1
 	github.com/sacloud/security-control-api-go v0.2.2
 	github.com/sacloud/simple-notification-api-go v0.3.0
