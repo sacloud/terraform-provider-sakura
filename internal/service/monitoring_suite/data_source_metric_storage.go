@@ -47,55 +47,52 @@ type metricStorageDataSourceModel struct {
 func (d *metricStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("Monitoring Suite metric storage"),
-			"name":        common.SchemaDataSourceName("Monitoring Suite metric storage"),
-			"description": common.SchemaDataSourceDescription("Monitoring Suite metric storage"),
+			"id":          common.SchemaDataSourceId("Monitoring Suite Metric Storage"),
+			"name":        common.SchemaDataSourceName("Monitoring Suite Metric Storage"),
+			"description": common.SchemaDataSourceDescription("Monitoring Suite Metric Storage"),
 			"account_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the metric storage.",
+				Description: "The account ID of the Metric Storage.",
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The resource ID of the metric storage.",
+				Description: "The resource ID of the Metric Storage.",
 			},
 			"is_system": schema.BoolAttribute{
 				Computed:    true,
-				Description: "The flag to indicate whether this is a system metric storage.",
+				Description: "The flag to indicate whether this is a system Metric Storage.",
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The creation timestamp of the metric storage.",
-			},
+			"created_at": common.SchemaDataSourceCreatedAt("Monitoring Suite Metric Storage"),
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The endpoints of the metric storage.",
+				Description: "The endpoints of the Metric Storage.",
 				Attributes: map[string]schema.Attribute{
 					"address": schema.StringAttribute{
 						Computed:    true,
-						Description: "The address of the metric storage endpoint.",
+						Description: "The address of the Metric Storage endpoint.",
 					},
 				},
 			},
 			"usage": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The usage of the metric storage.",
+				Description: "The usage of the Metric Storage.",
 				Attributes: map[string]schema.Attribute{
 					"metric_routings": schema.Int64Attribute{
 						Computed:    true,
-						Description: "The number of metric routings.",
+						Description: "The number of Metric Routings.",
 					},
 					"alert_rules": schema.Int64Attribute{
 						Computed:    true,
-						Description: "The number of alert rules.",
+						Description: "The number of Alert Rules.",
 					},
 					"log_measure_rules": schema.Int64Attribute{
 						Computed:    true,
-						Description: "The number of log measure rules.",
+						Description: "The number of Log Measure Rules.",
 					},
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing Monitoring Suite metric storage.",
+		MarkdownDescription: "Get information about an existing Monitoring Suite Metric Storage.",
 	}
 }
 
@@ -119,13 +116,13 @@ func (d *metricStorageDataSource) Read(ctx context.Context, req datasource.ReadR
 	if id != "" {
 		storage, err = op.Read(ctx, id)
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read metric storage[%s]: %s", id, err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Metric Storage[%s]: %s", id, err))
 			return
 		}
 	} else {
 		storages, err := op.List(ctx, monitoringsuite.MetricsStorageListParams{})
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list metric storage resources: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Metric Storage resources: %s", err))
 			return
 		}
 		storage, err = filterMetricsStorageByName(storages, name)
@@ -154,7 +151,7 @@ func filterMetricsStorageByName(storages []monitoringsuiteapi.MetricsStorage, na
 		return nil, fmt.Errorf("no result")
 	}
 	if len(match) > 1 {
-		return nil, fmt.Errorf("multiple metric storages found with the same condition. name=%q", name)
+		return nil, fmt.Errorf("multiple Metric Storages found with the same condition. name=%q", name)
 	}
 	return &match[0], nil
 }

@@ -58,11 +58,11 @@ type traceStorageAccessKeyResourceModel struct {
 func (r *traceStorageAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId("Monitoring Suite trace storage access key"),
-			"description": common.SchemaResourceDescription("Monitoring Suite trace storage access key"),
+			"id":          common.SchemaResourceId("Monitoring Suite Trace Storage Access Key"),
+			"description": common.SchemaResourceDescription("Monitoring Suite Trace Storage Access Key"),
 			"storage_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The trace storage ID for the access key.",
+				Description: "The Trace Storage ID for the Access Key.",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
@@ -73,16 +73,16 @@ func (r *traceStorageAccessKeyResource) Schema(ctx context.Context, _ resource.S
 			"token": schema.StringAttribute{
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The token of the access key.",
+				Description: "The token of the Access Key.",
 			},
 			"secret": schema.StringAttribute{
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The secret of the access key.",
+				Description: "The secret of the Access Key.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
-		MarkdownDescription: "Manages a Monitoring Suite trace storage access key.",
+		MarkdownDescription: "Manages a Monitoring Suite Trace Storage Access Key.",
 	}
 }
 
@@ -109,7 +109,7 @@ func (r *traceStorageAccessKeyResource) Create(ctx context.Context, req resource
 	op := monitoringsuite.NewTracesStorageOp(r.client)
 	key, err := op.CreateKey(ctx, plan.StorageID.ValueString(), expandOptionalString(plan.Description))
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create trace storage access key: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Trace Storage Access Key: %s", err))
 		return
 	}
 
@@ -147,13 +147,13 @@ func (r *traceStorageAccessKeyResource) Update(ctx context.Context, req resource
 	op := monitoringsuite.NewTracesStorageOp(r.client)
 	uid, err := parseUUID(plan.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Update: ID Error", fmt.Sprintf("invalid access key id: %s", err))
+		resp.Diagnostics.AddError("Update: ID Error", fmt.Sprintf("invalid Access Key ID: %s", err))
 		return
 	}
 
 	key, err := op.UpdateKey(ctx, plan.StorageID.ValueString(), uid, expandOptionalString(plan.Description))
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update trace storage access key[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Trace Storage Access Key[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -174,12 +174,12 @@ func (r *traceStorageAccessKeyResource) Delete(ctx context.Context, req resource
 	op := monitoringsuite.NewTracesStorageOp(r.client)
 	uid, err := parseUUID(state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Delete: ID Error", fmt.Sprintf("invalid access key id: %s", err))
+		resp.Diagnostics.AddError("Delete: ID Error", fmt.Sprintf("invalid Access Key ID: %s", err))
 		return
 	}
 
 	if err := op.DeleteKey(ctx, state.StorageID.ValueString(), uid); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete trace storage access key[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Trace Storage Access Key[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -188,7 +188,7 @@ func getTraceStorageAccessKey(ctx context.Context, client *monitoringsuiteapi.Cl
 	op := monitoringsuite.NewTracesStorageOp(client)
 	parsedUID, err := parseUUID(uid)
 	if err != nil {
-		diags.AddError("Read: ID Error", fmt.Sprintf("invalid access key id: %s", err))
+		diags.AddError("Read: ID Error", fmt.Sprintf("invalid Access Key ID: %s", err))
 		return nil
 	}
 	key, err := op.ReadKey(ctx, storageID, parsedUID)
@@ -197,7 +197,7 @@ func getTraceStorageAccessKey(ctx context.Context, client *monitoringsuiteapi.Cl
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("failed to read trace storage access key[%s]: %s", uid, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Trace Storage Access Key[%s]: %s", uid, err))
 		return nil
 	}
 	return key

@@ -54,30 +54,30 @@ type metricRoutingResourceModel struct {
 func (r *metricRoutingResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Monitoring Suite metric routing"),
+			"id": common.SchemaResourceId("Monitoring Suite Metric Routing"),
 			"resource_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The resource ID of the metric storage.",
+				Description: "The resource ID of the target service.",
 			},
 			"storage_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the metric storage.",
+				Description: "The ID of the Metric Storage.",
 			},
 			"publisher_code": schema.StringAttribute{
 				Required:    true,
-				Description: "The publisher code of the metric routing.",
+				Description: "The publisher code of the target service.",
 			},
 			"variant": schema.StringAttribute{
 				Required:    true,
-				Description: "The variant of the metric routing.",
+				Description: "The variant of the Metric Routing.",
 			},
-			"created_at": common.SchemaResourceCreatedAt("Monitoring Suite metric routing"),
-			"updated_at": common.SchemaResourceUpdatedAt("Monitoring Suite metric routing"),
+			"created_at": common.SchemaResourceCreatedAt("Monitoring Suite Metric Routing"),
+			"updated_at": common.SchemaResourceUpdatedAt("Monitoring Suite Metric Routing"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages a Monitoring Suite metric routing.",
+		MarkdownDescription: "Manages a Monitoring Suite Metric Routing.",
 	}
 }
 
@@ -120,7 +120,7 @@ func (r *metricRoutingResource) Create(ctx context.Context, req resource.CreateR
 		Variant:          plan.Variant.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create log routing: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Metric Routing: %s", err))
 		return
 	}
 
@@ -162,7 +162,7 @@ func (r *metricRoutingResource) Update(ctx context.Context, req resource.UpdateR
 		Variant:          expandOptionalString(plan.Variant),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update log routing[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Metric Routing[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -182,7 +182,7 @@ func (r *metricRoutingResource) Delete(ctx context.Context, req resource.DeleteR
 
 	op := monitoringsuite.NewMetricsRoutingOp(r.client)
 	if err := op.Delete(ctx, uuid.MustParse(state.ID.ValueString())); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete log routing[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Metric Routing[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -195,7 +195,7 @@ func getMetricRouting(ctx context.Context, client *monitoringsuiteapi.Client, id
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("failed to read metric routing[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Metric Routing[%s]: %s", id, err))
 		return nil
 	}
 	return routing

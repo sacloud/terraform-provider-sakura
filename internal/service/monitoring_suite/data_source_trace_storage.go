@@ -47,36 +47,33 @@ type traceStorageDataSourceModel struct {
 func (d *traceStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("Monitoring Suite trace storage"),
-			"name":        common.SchemaDataSourceName("Monitoring Suite trace storage"),
-			"description": common.SchemaDataSourceDescription("Monitoring Suite trace storage"),
+			"id":          common.SchemaDataSourceId("Monitoring Suite Trace Storage"),
+			"name":        common.SchemaDataSourceName("Monitoring Suite Trace Storage"),
+			"description": common.SchemaDataSourceDescription("Monitoring Suite Trace Storage"),
 			"account_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the trace storage.",
+				Description: "The account ID of the Trace Storage.",
 			},
 			"resource_id": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The resource ID of the trace storage.",
+				Description: "The resource ID of the Trace Storage.",
 			},
 			"retention_period_days": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The retention period days of the trace storage.",
+				Description: "The retention period days of the Trace Storage.",
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The creation timestamp of the trace storage.",
-			},
+			"created_at": common.SchemaDataSourceCreatedAt("Monitoring Suite Trace Storage"),
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The endpoints of the trace storage.",
+				Description: "The endpoints of the Trace Storage.",
 				Attributes: map[string]schema.Attribute{
 					"ingester": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "The ingester endpoint for the trace storage.",
+						Description: "The ingester endpoint for the Trace Storage.",
 						Attributes: map[string]schema.Attribute{
 							"address": schema.StringAttribute{
 								Computed:    true,
-								Description: "The ingester address for the trace storage.",
+								Description: "The ingester address for the Trace Storage.",
 							},
 							"insecure": schema.BoolAttribute{
 								Computed:    true,
@@ -87,7 +84,7 @@ func (d *traceStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing Monitoring Suite trace storage.",
+		MarkdownDescription: "Get information about an existing Monitoring Suite Trace Storage.",
 	}
 }
 
@@ -111,13 +108,13 @@ func (d *traceStorageDataSource) Read(ctx context.Context, req datasource.ReadRe
 	if id != "" {
 		storage, err = op.Read(ctx, id)
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read trace storage[%s]: %s", id, err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Trace Storage[%s]: %s", id, err))
 			return
 		}
 	} else {
 		storages, err := op.List(ctx, monitoringsuite.TracesStorageListParams{})
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list trace storage resources: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Trace Storage resources: %s", err))
 			return
 		}
 		storage, err = filterTraceStorageByName(storages, name)
@@ -146,7 +143,7 @@ func filterTraceStorageByName(storages []monitoringsuiteapi.TraceStorage, name s
 		return nil, fmt.Errorf("no result")
 	}
 	if len(match) > 1 {
-		return nil, fmt.Errorf("multiple trace storages found with the same condition. name=%q", name)
+		return nil, fmt.Errorf("multiple Trace Storages found with the same condition. name=%q", name)
 	}
 	return &match[0], nil
 }

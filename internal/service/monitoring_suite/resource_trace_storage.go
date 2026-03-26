@@ -53,39 +53,33 @@ type traceStorageResourceModel struct {
 func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Monitoring Suite trace storage"),
-			"name": schema.StringAttribute{
-				Required:    true,
-				Description: "The name of the trace storage.",
-			},
-			"description": common.SchemaResourceDescription("Monitoring Suite trace storage"),
+			"id":          common.SchemaResourceId("Monitoring Suite Trace Storage"),
+			"name":        common.SchemaResourceName("Monitoring Suite Trace Storage"),
+			"description": common.SchemaResourceDescription("Monitoring Suite Trace Storage"),
 			"account_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the trace storage.",
+				Description: "The account ID of the Trace Storage.",
 			},
 			"resource_id": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The resource ID of the trace storage.",
+				Description: "The resource ID of the Trace Storage.",
 			},
 			"retention_period_days": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The retention period days of the trace storage.",
+				Description: "The retention period days of the Trace Storage.",
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The creation timestamp of the trace storage.",
-			},
+			"created_at": common.SchemaResourceCreatedAt("Monitoring Suite Trace Storage"),
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The endpoints of the trace storage.",
+				Description: "The endpoints of the Trace Storage.",
 				Attributes: map[string]schema.Attribute{
 					"ingester": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "The ingester endpoint for the trace storage.",
+						Description: "The ingester endpoint for the Trace Storage.",
 						Attributes: map[string]schema.Attribute{
 							"address": schema.StringAttribute{
 								Computed:    true,
-								Description: "The ingester address for the trace storage.",
+								Description: "The ingester address for the Trace Storage.",
 							},
 							"insecure": schema.BoolAttribute{
 								Computed:    true,
@@ -97,7 +91,7 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
-		MarkdownDescription: "Manages a Monitoring Suite trace storage.",
+		MarkdownDescription: "Manages a Monitoring Suite Trace Storage.",
 	}
 }
 
@@ -121,7 +115,7 @@ func (r *traceStorageResource) Create(ctx context.Context, req resource.CreateRe
 		Description: expandOptionalString(plan.Description),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create trace storage: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Trace Storage: %s", err))
 		return
 	}
 
@@ -162,7 +156,7 @@ func (r *traceStorageResource) Update(ctx context.Context, req resource.UpdateRe
 		Description: expandOptionalString(plan.Description),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update trace storage[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Trace Storage[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -182,7 +176,7 @@ func (r *traceStorageResource) Delete(ctx context.Context, req resource.DeleteRe
 
 	op := monitoringsuite.NewTracesStorageOp(r.client)
 	if err := op.Delete(ctx, state.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete trace storage[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Trace Storage[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -195,7 +189,7 @@ func getTraceStorage(ctx context.Context, client *monitoringsuiteapi.Client, id 
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("failed to read trace storage[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Trace Storage[%s]: %s", id, err))
 		return nil
 	}
 	return storage

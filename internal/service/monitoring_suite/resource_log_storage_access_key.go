@@ -58,11 +58,11 @@ type logStorageAccessKeyResourceModel struct {
 func (r *logStorageAccessKeyResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId("Monitoring Suite log storage access key"),
-			"description": common.SchemaResourceDescription("Monitoring Suite log storage access key"),
+			"id":          common.SchemaResourceId("Monitoring Suite Log Storage Access Key"),
+			"description": common.SchemaResourceDescription("Monitoring Suite Log Storage Access Key"),
 			"storage_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The log storage ID for the access key.",
+				Description: "The Log Storage ID for the Access Key.",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
@@ -73,16 +73,16 @@ func (r *logStorageAccessKeyResource) Schema(ctx context.Context, _ resource.Sch
 			"token": schema.StringAttribute{
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The token of the access key.",
+				Description: "The token of the Access Key.",
 			},
 			"secret": schema.StringAttribute{
 				Computed:    true,
 				Sensitive:   true,
-				Description: "The secret of the access key.",
+				Description: "The secret of the Access Key.",
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
-		MarkdownDescription: "Manages a Monitoring Suite log storage access key.",
+		MarkdownDescription: "Manages a Monitoring Suite Log Storage Access Key.",
 	}
 }
 
@@ -109,7 +109,7 @@ func (r *logStorageAccessKeyResource) Create(ctx context.Context, req resource.C
 	op := monitoringsuite.NewLogsStorageOp(r.client)
 	key, err := op.CreateKey(ctx, plan.StorageID.ValueString(), expandOptionalString(plan.Description))
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create log storage access key: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Log Storage Access Key: %s", err))
 		return
 	}
 
@@ -148,13 +148,13 @@ func (r *logStorageAccessKeyResource) Update(ctx context.Context, req resource.U
 	op := monitoringsuite.NewLogsStorageOp(r.client)
 	uid, err := parseUUID(plan.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Update: ID Error", fmt.Sprintf("invalid access key id: %s", err))
+		resp.Diagnostics.AddError("Update: ID Error", fmt.Sprintf("invalid Access Key ID: %s", err))
 		return
 	}
 
 	key, err := op.UpdateKey(ctx, plan.StorageID.ValueString(), uid, expandOptionalString(plan.Description))
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update log storage access key[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Log Storage Access Key[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -176,12 +176,12 @@ func (r *logStorageAccessKeyResource) Delete(ctx context.Context, req resource.D
 	op := monitoringsuite.NewLogsStorageOp(r.client)
 	uid, err := parseUUID(state.ID.ValueString())
 	if err != nil {
-		resp.Diagnostics.AddError("Delete: ID Error", fmt.Sprintf("invalid access key id: %s", err))
+		resp.Diagnostics.AddError("Delete: ID Error", fmt.Sprintf("invalid Access Key ID: %s", err))
 		return
 	}
 
 	if err := op.DeleteKey(ctx, state.StorageID.ValueString(), uid); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete log storage access key[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Log Storage Access Key[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -190,7 +190,7 @@ func getLogStorageAccessKey(ctx context.Context, client *monitoringsuiteapi.Clie
 	op := monitoringsuite.NewLogsStorageOp(client)
 	parsedUID, err := parseUUID(uid)
 	if err != nil {
-		diags.AddError("Read: ID Error", fmt.Sprintf("invalid access key id: %s", err))
+		diags.AddError("Read: ID Error", fmt.Sprintf("invalid Access Key ID: %s", err))
 		return nil
 	}
 	key, err := op.ReadKey(ctx, storageID, parsedUID)
@@ -199,7 +199,7 @@ func getLogStorageAccessKey(ctx context.Context, client *monitoringsuiteapi.Clie
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("failed to read log storage access key[%s]: %s", uid, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Log Storage Access Key[%s]: %s", uid, err))
 		return nil
 	}
 	return key

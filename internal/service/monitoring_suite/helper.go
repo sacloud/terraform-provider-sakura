@@ -84,13 +84,13 @@ func validateRoutingVariant(ctx context.Context, client *v1.Client, storageType,
 				}
 			}
 			if len(availableVars) == 0 {
-				return fmt.Errorf("The publisher_code '%s' does not have any variants for '%s' resource type.", publisherCode, storageTypeNames[storageType])
+				return fmt.Errorf("the publisher_code '%s' does not have any variants for '%s' resource type.", publisherCode, storageTypeNames[storageType])
 			} else {
-				return fmt.Errorf("The variant '%s' is not valid for publisher code '%s' with '%s' resource type. Valid variants are: %v", variantName, publisherCode, storageTypeNames[storageType], availableVars)
+				return fmt.Errorf("the variant '%s' is not valid for publisher code '%s' with '%s' resource type. Valid variants are: %v", variantName, publisherCode, storageTypeNames[storageType], availableVars)
 			}
 		}
 	} else {
-		return fmt.Errorf("The publisher_code '%s' is not valid. Valid publisher codes are: %v", publisherCode, slices.Sorted(maps.Keys(routingVars)))
+		return fmt.Errorf("the publisher_code '%s' is not valid. Valid publisher codes are: %v", publisherCode, slices.Sorted(maps.Keys(routingVars)))
 	}
 
 	return nil

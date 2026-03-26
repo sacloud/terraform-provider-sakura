@@ -47,44 +47,41 @@ type logStorageDataSourceModel struct {
 func (d *logStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("Monitoring Suite log storage"),
-			"name":        common.SchemaDataSourceName("Monitoring Suite log storage"),
-			"description": common.SchemaDataSourceDescription("Monitoring Suite log storage"),
+			"id":          common.SchemaDataSourceId("Monitoring Suite Log Storage"),
+			"name":        common.SchemaDataSourceName("Monitoring Suite Log Storage"),
+			"description": common.SchemaDataSourceDescription("Monitoring Suite Log Storage"),
 			"account_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the log storage.",
+				Description: "The account ID of the Log Storage.",
 			},
 			"resource_id": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The resource ID of the log storage.",
+				Description: "The resource ID of the Log Storage.",
 			},
 			"is_system": schema.BoolAttribute{
 				Computed:    true,
-				Description: "The flag to indicate whether this is a system log storage.",
+				Description: "The flag to indicate whether this is a system Log Storage.",
 			},
 			"classification": schema.StringAttribute{
 				Computed:    true,
-				Description: "The bucket classification of the log storage.",
+				Description: "The bucket classification of the Log Storage.",
 			},
 			"expire_day": schema.Int64Attribute{
 				Computed:    true,
-				Description: "The expiration day of the log storage.",
+				Description: "The expiration day of the Log Storage.",
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The creation timestamp of the log storage.",
-			},
+			"created_at": common.SchemaDataSourceCreatedAt("Monitoring Suite Log Storage"),
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The endpoints of the log storage.",
+				Description: "The endpoints of the Log Storage.",
 				Attributes: map[string]schema.Attribute{
 					"ingester": schema.SingleNestedAttribute{
 						Computed:    true,
-						Description: "The ingester endpoint for the log storage.",
+						Description: "The ingester endpoint for the Log Storage.",
 						Attributes: map[string]schema.Attribute{
 							"address": schema.StringAttribute{
 								Computed:    true,
-								Description: "The ingester address for the log storage.",
+								Description: "The ingester address for the Log Storage.",
 							},
 							"insecure": schema.BoolAttribute{
 								Computed:    true,
@@ -96,20 +93,20 @@ func (d *logStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 			},
 			"usage": schema.SingleNestedAttribute{
 				Computed:    true,
-				Description: "The usage of the log storage.",
+				Description: "The usage of the Log Storage.",
 				Attributes: map[string]schema.Attribute{
 					"log_routings": schema.Int64Attribute{
 						Computed:    true,
-						Description: "The number of log routings.",
+						Description: "The number of Log Routings.",
 					},
 					"log_measure_rules": schema.Int64Attribute{
 						Computed:    true,
-						Description: "The number of log measure rules.",
+						Description: "The number of Log Measure Rules.",
 					},
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing Monitoring Suite log storage.",
+		MarkdownDescription: "Get information about an existing Monitoring Suite Log Storage.",
 	}
 }
 
@@ -133,13 +130,13 @@ func (d *logStorageDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	if id != "" {
 		storage, err = op.Read(ctx, id)
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read log storage[%s]: %s", id, err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Log Storage[%s]: %s", id, err))
 			return
 		}
 	} else {
 		storages, err := op.List(ctx, monitoringsuite.LogsStoragesListParams{})
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list log storage resources: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Log Storage resources: %s", err))
 			return
 		}
 		storage, err = filterLogStorageByName(storages, name)
@@ -168,7 +165,7 @@ func filterLogStorageByName(storages []monitoringsuiteapi.LogStorage, name strin
 		return nil, fmt.Errorf("no result")
 	}
 	if len(match) > 1 {
-		return nil, fmt.Errorf("multiple log storages found with the same condition. name=%q", name)
+		return nil, fmt.Errorf("multiple Log Storages found with the same condition. name=%q", name)
 	}
 	return &match[0], nil
 }

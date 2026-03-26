@@ -54,30 +54,30 @@ type logRoutingResourceModel struct {
 func (r *logRoutingResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id": common.SchemaResourceId("Monitoring Suite log routing"),
+			"id": common.SchemaResourceId("Monitoring Suite Log Routing"),
 			"resource_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The resource ID of the log storage.",
+				Description: "The resource ID of the target service.",
 			},
 			"storage_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the log storage.",
+				Description: "The ID of the Log Storage.",
 			},
 			"publisher_code": schema.StringAttribute{
 				Required:    true,
-				Description: "The publisher code of the log routing.",
+				Description: "The publisher code of the target service.",
 			},
 			"variant": schema.StringAttribute{
 				Required:    true,
-				Description: "The variant of the log routing.",
+				Description: "The variant of the Log Routing.",
 			},
-			"created_at": common.SchemaResourceCreatedAt("Monitoring Suite log routing"),
-			"updated_at": common.SchemaResourceUpdatedAt("Monitoring Suite log routing"),
+			"created_at": common.SchemaResourceCreatedAt("Monitoring Suite Log Routing"),
+			"updated_at": common.SchemaResourceUpdatedAt("Monitoring Suite Log Routing"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages a Monitoring Suite log routing.",
+		MarkdownDescription: "Manages a Monitoring Suite Log Routing.",
 	}
 }
 
@@ -122,7 +122,7 @@ func (r *logRoutingResource) Create(ctx context.Context, req resource.CreateRequ
 		Variant:       plan.Variant.ValueString(),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create log routing: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Log Routing: %s", err))
 		return
 	}
 
@@ -164,7 +164,7 @@ func (r *logRoutingResource) Update(ctx context.Context, req resource.UpdateRequ
 		Variant:       expandOptionalString(plan.Variant),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update log routing[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Log Routing[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -184,7 +184,7 @@ func (r *logRoutingResource) Delete(ctx context.Context, req resource.DeleteRequ
 
 	op := monitoringsuite.NewLogRoutingOp(r.client)
 	if err := op.Delete(ctx, uuid.MustParse(state.ID.ValueString())); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete log routing[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Log Routing[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -197,7 +197,7 @@ func getLogRouting(ctx context.Context, client *monitoringsuiteapi.Client, id st
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("failed to read log routing[%s]: %s", id, err))
+		diags.AddError("API Read Error", fmt.Sprintf("failed to read Log Routing[%s]: %s", id, err))
 		return nil
 	}
 	return routing
