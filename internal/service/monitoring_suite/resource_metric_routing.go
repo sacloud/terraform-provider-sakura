@@ -97,7 +97,7 @@ func (r *metricRoutingResource) ValidateConfig(ctx context.Context, req resource
 		return
 	}
 
-	if err := validateRoutingVariant(ctx, r.client, config.PublisherCode.ValueString(), config.Variant.ValueString()); err != nil {
+	if err := validateRoutingVariant(ctx, r.client, "metrics", config.PublisherCode.ValueString(), config.Variant.ValueString()); err != nil {
 		resp.Diagnostics.AddError("Config: Attribute Error", err.Error())
 	}
 }
@@ -153,11 +153,6 @@ func (r *metricRoutingResource) Update(ctx context.Context, req resource.UpdateR
 
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
-
-	if err := validateRoutingVariant(ctx, r.client, plan.PublisherCode.ValueString(), plan.Variant.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Update: Attribute Error", err.Error())
-		return
-	}
 
 	op := monitoringsuite.NewMetricsRoutingOp(r.client)
 	updated, err := op.Update(ctx, uuid.MustParse(plan.ID.ValueString()), monitoringsuite.MetricsRoutingUpdateParams{

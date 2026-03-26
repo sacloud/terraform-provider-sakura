@@ -31,36 +31,66 @@ func parseUUID(value string) (uuid.UUID, error) {
 	return id, nil
 }
 
-func getRoutingVariants(ctx context.Context, client *v1.Client) (map[string][]string, error) {
+type routingVariant struct {
+	Name string
+	Type string
+}
+
+func getRoutingVariants(ctx context.Context, client *v1.Client) (map[string][]routingVariant, error) {
 	api := monitoringsuite.NewPublisherOp(client)
 	publishers, err := api.List(ctx, nil, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to list Monitoring Suite publishers: %w", err)
 	}
 
-	res := make(map[string][]string)
+	res := make(map[string][]routingVariant)
 	for _, p := range publishers {
-		vs := make([]string, 0, len(p.Variants))
+		vs := make([]routingVariant, 0, len(p.Variants))
 		for _, v := range p.Variants {
-			vs = append(vs, v.Name)
+			vs = append(vs, routingVariant{
+				Name: v.Name,
+				Type: string(v.Storage),
+			})
 		}
 		res[p.Code] = vs
 	}
 	return res, nil
 }
 
-func validateRoutingVariant(ctx context.Context, client *v1.Client, publisherCode, variantName string) error {
-	variants, err := getRoutingVariants(ctx, client)
+var storageTypeNames = map[string]string{
+	"logs":    "sakura_monitoring_suite_log_storage",
+	"metrics": "sakura_monitoring_suite_metric_storage",
+}
+
+func validateRoutingVariant(ctx context.Context, client *v1.Client, storageType, publisherCode, variantName string) error {
+	routingVars, err := getRoutingVariants(ctx, client)
 	if err != nil {
 		return fmt.Errorf("failed to get routing variants: %w", err)
 	}
 
-	if vars, ok := variants[publisherCode]; ok {
-		if !slices.Contains(vars, variantName) {
-			return fmt.Errorf("The variant '%s' is not valid for publisher code '%s'. Valid variants are: %v", variantName, publisherCode, vars)
+	if variants, ok := routingVars[publisherCode]; ok {
+		valid := false
+		for _, v := range variants {
+			if v.Name == variantName && v.Type == storageType {
+				valid = true
+				break
+			}
+		}
+		if !valid {
+			availableVars := make([]string, 0)
+			for _, v := range variants {
+				if v.Type == storageType {
+					availableVars = append(availableVars, v.Name)
+				}
+			}
+			if len(availableVars) == 0 {
+				return fmt.Errorf("The publisher_code '%s' does not have any variants for '%s' resource type.", publisherCode, storageTypeNames[storageType])
+			} else {
+				return fmt.Errorf("The variant '%s' is not valid for publisher code '%s' with '%s' resource type. Valid variants are: %v", variantName, publisherCode, storageTypeNames[storageType], availableVars)
+			}
 		}
 	} else {
-		return fmt.Errorf("The publisher code '%s' is not valid. Valid publisher codes are: %v", publisherCode, slices.Sorted(maps.Keys(variants)))
+		return fmt.Errorf("The publisher_code '%s' is not valid. Valid publisher codes are: %v", publisherCode, slices.Sorted(maps.Keys(routingVars)))
 	}
 
 	return nil
