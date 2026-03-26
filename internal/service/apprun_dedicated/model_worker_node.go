@@ -13,7 +13,9 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-type ifModel struct {
+type wnID = v1.WorkerNodeID
+
+type wnifModel struct {
 	Index     types.Int32 `tfsdk:"interface_index"`
 	Addresses types.Set   `tfsdk:"addresses"`
 }
@@ -29,7 +31,21 @@ type containerModel struct {
 	ApplicationVersion types.Int32  `tfsdk:"application_version"`
 }
 
-var ifAttrs = attrTypes{
+type wnModel struct {
+	ID                 types.String     `tfsdk:"id"`
+	ResourceID         types.String     `tfsdk:"resource_id"`
+	Draining           types.Bool       `tfsdk:"draining"`
+	Status             types.String     `tfsdk:"status"`
+	Healthy            types.Bool       `tfsdk:"healthy"`
+	Creating           types.Bool       `tfsdk:"creating"`
+	Created            types.String     `tfsdk:"created"`
+	RunningContainers  []containerModel `tfsdk:"running_containers"`
+	NetworkInterfaces  []wnifModel      `tfsdk:"network_interfaces"`
+	ArchiveVersion     types.String     `tfsdk:"archive_version"`
+	CreateErrorMessage types.String     `tfsdk:"create_error_message"`
+}
+
+var wnifAttrs = attrTypes{
 	"interface_index": types.Int32Type,
 	"addresses":       types.SetType{ElemType: types.StringType},
 }
@@ -45,20 +61,6 @@ var containerAttrs = attrTypes{
 	"application_version": types.Int32Type,
 }
 
-type wnModel struct {
-	ID                 types.String     `tfsdk:"id"`
-	ResourceID         types.String     `tfsdk:"resource_id"`
-	Draining           types.Bool       `tfsdk:"draining"`
-	Status             types.String     `tfsdk:"status"`
-	Healthy            types.Bool       `tfsdk:"healthy"`
-	Creating           types.Bool       `tfsdk:"creating"`
-	Created            types.String     `tfsdk:"created"`
-	RunningContainers  []containerModel `tfsdk:"running_containers"`
-	NetworkInterfaces  []ifModel        `tfsdk:"network_interfaces"`
-	ArchiveVersion     types.String     `tfsdk:"archive_version"`
-	CreateErrorMessage types.String     `tfsdk:"create_error_message"`
-}
-
 var wnAttrs = attrTypes{
 	"cluster_id":            types.StringType,
 	"auto_scaling_group_id": types.StringType,
@@ -70,23 +72,23 @@ var wnAttrs = attrTypes{
 	"creating":              types.BoolType,
 	"created":               types.StringType,
 	"running_containers":    types.SetType{ElemType: types.ObjectType{AttrTypes: containerAttrs}},
-	"network_interfaces":    types.SetType{ElemType: types.ObjectType{AttrTypes: ifAttrs}},
+	"network_interfaces":    types.SetType{ElemType: types.ObjectType{AttrTypes: wnifAttrs}},
 	"archive_version":       types.StringType,
 	"create_error_message":  types.StringType,
 }
 
-func (ifModel) AttributeTypes() attrTypes         { return ifAttrs }
-func (containerModel) AttributeTypes() attrTypes  { return containerAttrs }
-func (wnModel) AttributeTypes() attrTypes         { return wnAttrs }
-func (m *wnModel) wnID() (v1.WorkerNodeID, error) { return intoUUID[v1.WorkerNodeID](m.ID) }
+func (wnifModel) AttributeTypes() attrTypes      { return wnifAttrs }
+func (containerModel) AttributeTypes() attrTypes { return containerAttrs }
+func (wnModel) AttributeTypes() attrTypes        { return wnAttrs }
+func (m *wnModel) wnID() (wnID, error)           { return intoUUID[wnID](m.ID) }
 
-func (i *ifModel) updateState(ctx context.Context, ni wn.WorkerNodeNetworkInterface) (diag diag.Diagnostics) {
+func (i *wnifModel) updateState(ctx context.Context, ni wn.WorkerNodeNetworkInterface) (ret diag.Diagnostics) {
 	i.Index = types.Int32Value(common.ToInt32(ni.InterfaceIndex))
-	i.Addresses, diag = types.SetValueFrom(ctx, types.StringType, ni.Addresses)
+	i.Addresses, ret = types.SetValueFrom(ctx, types.StringType, ni.Addresses)
 	return
 }
 
-func (r *containerModel) updateState(ctx context.Context, rc v1.RunningContainer) (diag diag.Diagnostics) {
+func (r *containerModel) updateState(rc v1.RunningContainer) {
 	r.ContainerID = types.StringValue(rc.ContainerID)
 	r.Name = types.StringValue(rc.Name)
 	r.State = types.StringValue(rc.State)
@@ -98,7 +100,7 @@ func (r *containerModel) updateState(ctx context.Context, rc v1.RunningContainer
 	return
 }
 
-func (m *wnModel) updateState(ctx context.Context, detail *wn.WorkerNodeDetail) (res diag.Diagnostics) {
+func (m *wnModel) updateState(ctx context.Context, detail *wn.WorkerNodeDetail) (ret diag.Diagnostics) {
 	m.ID = uuid2StringValue(detail.WorkerNodeID)
 	m.ResourceID = types.StringPointerValue(detail.ResourceID)
 	m.Draining = types.BoolValue(detail.Draining)
@@ -108,16 +110,10 @@ func (m *wnModel) updateState(ctx context.Context, detail *wn.WorkerNodeDetail) 
 	m.Created = intoRFC2822(detail.Created)
 	m.ArchiveVersion = types.StringPointerValue(detail.ArchiveVersion)
 	m.CreateErrorMessage = types.StringPointerValue(detail.CreateErrorMessage)
-
-	m.RunningContainers = common.MapTo(detail.RunningContainers, func(src v1.RunningContainer) (dst containerModel) {
-		dst.updateState(ctx, src)
-		return dst
-	})
-
-	m.NetworkInterfaces = common.MapTo(detail.NetworkInterfaces, func(src wn.WorkerNodeNetworkInterface) (dst ifModel) {
-		dst.updateState(ctx, src)
+	m.RunningContainers = common.MapTo(detail.RunningContainers, stateUpdater[v1.RunningContainer, containerModel])
+	m.NetworkInterfaces = common.MapTo(detail.NetworkInterfaces, func(src wn.WorkerNodeNetworkInterface) (dst wnifModel) {
+		ret.Append(dst.updateState(ctx, src)...)
 		return
 	})
-
 	return
 }

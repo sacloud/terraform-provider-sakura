@@ -4,11 +4,14 @@
 package apprun_dedicated
 
 import (
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
+
+type clusterID = v1.ClusterID
 
 type portModel struct {
 	Port     types.Int32  `tfsdk:"port"`
@@ -38,7 +41,7 @@ var clusterAttrs = attrTypes{
 	"created_at":             types.Int64Type,
 }
 
-func (p *portModel) updateState(q *v1.ReadLoadBalancerPort) {
+func (p *portModel) updateState(q v1.ReadLoadBalancerPort) {
 	p.Port = types.Int32Value(common.ToInt32(q.GetPort()))
 	p.Protocol = types.StringValue(common.ToString(q.GetProtocol()))
 }
@@ -49,12 +52,19 @@ func (c *clusterModel) updateState(d *cluster.ClusterDetail) {
 	c.ServicePrincipalID = types.StringValue(d.ServicePrincipalID)
 	c.HasLetsEncryptEmail = types.BoolValue(d.HasLetsEncryptEmail)
 	c.CreatedAt = intoRFC2822(d.Created)
-	c.Ports = common.MapTo(d.Ports, func(p v1.ReadLoadBalancerPort) (q portModel) {
-		q.updateState(&p)
-		return
-	})
+	c.Ports = common.MapTo(d.Ports, stateUpdater[v1.ReadLoadBalancerPort, portModel])
 }
 
-func (portModel) AttributeTypes() attrTypes              { return portAttrs }
-func (clusterModel) AttributeTypes() attrTypes           { return clusterAttrs }
-func (c *clusterModel) clusterID() (v1.ClusterID, error) { return intoUUID[v1.ClusterID](c.ID) }
+func (p *portModel) intoCreate() (ret v1.CreateLoadBalancerPort, diag diag.Diagnostics) {
+	n, d := intoUInt16(p.Port.ValueInt32Pointer())
+	diag.Append(d...)
+	if n != nil {
+		ret.Port = *n
+	}
+	ret.Protocol = v1.CreateLoadBalancerPortProtocol(p.Protocol.ValueString())
+	return
+}
+
+func (portModel) AttributeTypes() attrTypes           { return portAttrs }
+func (clusterModel) AttributeTypes() attrTypes        { return clusterAttrs }
+func (c *clusterModel) clusterID() (clusterID, error) { return intoUUID[clusterID](c.ID) }

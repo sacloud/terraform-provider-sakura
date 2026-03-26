@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	wn "github.com/sacloud/apprun-dedicated-api-go/apis/workernode"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
@@ -225,18 +224,13 @@ func (d *wnDataSource) Read(ctx context.Context, req datasource.ReadRequest, res
 
 	state.ClusterID = uuid2StringValue(cid)
 	state.AutoScalingGroupID = uuid2StringValue(asgID)
-	state.updateState(ctx, detail)
+	res.Diagnostics.Append(state.updateState(ctx, detail)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (d *wnDataSource) api(cid v1.ClusterID, asgID v1.AutoScalingGroupID) wn.WorkerNodeAPI {
+func (d *wnDataSource) api(cid clusterID, asgID asgID) wn.WorkerNodeAPI {
 	return wn.NewWorkerNodeOp(d.client, cid, asgID)
 }
 
-func (d *wnDataSourceModel) asgID() (v1.AutoScalingGroupID, error) {
-	return intoUUID[v1.AutoScalingGroupID](d.AutoScalingGroupID)
-}
-
-func (d *wnDataSourceModel) clusterID() (v1.ClusterID, error) {
-	return intoUUID[v1.ClusterID](d.ClusterID)
-}
+func (d *wnDataSourceModel) asgID() (asgID, error)         { return intoUUID[asgID](d.AutoScalingGroupID) }
+func (d *wnDataSourceModel) clusterID() (clusterID, error) { return intoUUID[clusterID](d.ClusterID) }

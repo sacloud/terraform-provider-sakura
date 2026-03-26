@@ -113,7 +113,7 @@ func (r *appResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	plan.updateState(ctx, detail)
+	plan.updateState(detail)
 	res.Diagnostics.Append(res.State.Set(ctx, &plan)...)
 }
 
@@ -125,7 +125,7 @@ func (r *appResource) Read(ctx context.Context, req resource.ReadRequest, res *r
 		return
 	}
 
-	appID, err := state.applicationID()
+	appID, err := state.appId()
 
 	if err != nil {
 		res.Diagnostics.AddError("Read: Invalid Application ID", fmt.Sprintf("failed to parse application ID: %s", err))
@@ -141,7 +141,7 @@ func (r *appResource) Read(ctx context.Context, req resource.ReadRequest, res *r
 		return
 	}
 
-	state.updateState(ctx, detail)
+	state.updateState(detail)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
@@ -154,7 +154,7 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	appID, err := state.applicationID()
+	appID, err := state.appId()
 
 	if err != nil {
 		res.Diagnostics.AddError("Update: Invalid Application ID", fmt.Sprintf("failed to parse application ID: %s", err))
@@ -183,7 +183,7 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	state.updateState(ctx, detail)
+	state.updateState(detail)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
@@ -195,7 +195,7 @@ func (r *appResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	appID, err := state.applicationID()
+	appID, err := state.appId()
 
 	if err != nil {
 		res.Diagnostics.AddError("Delete: Invalid Application ID", fmt.Sprintf("failed to parse application ID: %s", err))

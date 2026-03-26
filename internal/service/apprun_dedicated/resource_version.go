@@ -326,7 +326,7 @@ func (r *verResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	aid, err := plan.applicationID()
+	aid, err := plan.appId()
 
 	if err != nil {
 		res.Diagnostics.AddError("Create: Invalid Application ID", fmt.Sprintf("failed to parse application ID: %s", err))
@@ -351,7 +351,7 @@ func (r *verResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	plan.updateState(ctx, detail, aid)
+	res.Diagnostics.Append(plan.updateState(ctx, detail, aid)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &plan)...)
 }
 
@@ -363,7 +363,7 @@ func (r *verResource) Read(ctx context.Context, req resource.ReadRequest, res *r
 		return
 	}
 
-	aid, err := state.applicationID()
+	aid, err := state.appId()
 
 	if err != nil {
 		res.Diagnostics.AddError("Read: Invalid Application ID", fmt.Sprintf("failed to parse application ID: %s", err))
@@ -377,7 +377,7 @@ func (r *verResource) Read(ctx context.Context, req resource.ReadRequest, res *r
 		return
 	}
 
-	state.updateState(ctx, detail, aid)
+	res.Diagnostics.Append(state.updateState(ctx, detail, aid)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
@@ -397,7 +397,7 @@ func (r *verResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	aid, err := state.applicationID()
+	aid, err := state.appId()
 
 	if err != nil {
 		res.Diagnostics.AddError("Delete: Invalid Application ID", fmt.Sprintf("failed to parse application ID: %s", err))
@@ -436,7 +436,7 @@ func (r *verResource) ImportState(ctx context.Context, req resource.ImportStateR
 	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("version"), parts[1])...)
 }
 
-func (r *verResource) api(a v1.ApplicationID) ver.VersionAPI { return ver.NewVersionOp(r.client, a) }
+func (r *verResource) api(a appID) ver.VersionAPI { return ver.NewVersionOp(r.client, a) }
 
 func (v *verResourceModel) intoCreate(transitional *verResourceModel) (ret ver.CreateParams) {
 	ret.CPU = v.CPU.ValueInt64()

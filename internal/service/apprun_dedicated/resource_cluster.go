@@ -143,7 +143,14 @@ func (r *clusterResource) Create(ctx context.Context, req resource.CreateRequest
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout20min)
 	defer cancel()
 
-	created, err := r.api().Create(ctx, plan.intoCreate())
+	params, diag := plan.intoCreate()
+	res.Diagnostics.Append(diag...)
+
+	if res.Diagnostics.HasError() {
+		return
+	}
+
+	created, err := r.api().Create(ctx, params)
 
 	if err != nil {
 		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Dedicated cluster: %s", err))
@@ -260,14 +267,14 @@ func (c *clusterResourceModel) read(ctx context.Context, res *clusterResource, d
 	return res.api().Read(ctx, id)
 }
 
-func (c *clusterResourceModel) intoCreate() (ret cluster.CreateParams) {
+func (c *clusterResourceModel) intoCreate() (ret cluster.CreateParams, diag diag.Diagnostics) {
 	ret.Name = c.Name.ValueString()
 	ret.ServicePrincipalID = c.ServicePrincipalID.ValueString()
 	ret.LetsEncryptEmail = c.LetsEncryptEmail.ValueStringPointer()
-	ret.Ports = common.MapTo(c.Ports, func(p portModel) (q v1.CreateLoadBalancerPort) {
-		q.SetPort(uint16(p.Port.ValueInt32()))
-		q.SetProtocol(v1.CreateLoadBalancerPortProtocol(p.Protocol.ValueString()))
-		return
+	ret.Ports = common.MapTo(c.Ports, func(p portModel) v1.CreateLoadBalancerPort {
+		q, d := p.intoCreate()
+		diag.Append(d...)
+		return q
 	})
 
 	// `ports = []` makes no sense for us, but the API mandates empty array

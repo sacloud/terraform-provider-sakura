@@ -79,10 +79,7 @@ func (d *lbscDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	state.Classes = common.MapTo(classes, func(src v1.ReadLbServiceClass) (dst lbServiceClassModel) {
-		dst.updateState(src)
-		return
-	})
+	state.Classes = common.MapTo(classes, stateUpdater[v1.ReadLbServiceClass, lbServiceClassModel])
 
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }

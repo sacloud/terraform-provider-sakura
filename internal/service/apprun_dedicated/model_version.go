@@ -99,10 +99,7 @@ func (healthCheckModel) AttributeTypes() attrTypes { return healthCheckAttrs }
 func (envVarModel) AttributeTypes() attrTypes      { return envVarAttrs }
 func (exposedPortModel) AttributeTypes() attrTypes { return exposedPortAttrs }
 func (verModel) AttributeTypes() attrTypes         { return versionAttrs }
-
-func (v *verModel) applicationID() (v1.ApplicationID, error) {
-	return intoUUID[v1.ApplicationID](v.ApplicationID)
-}
+func (v *verModel) appId() (appID, error)          { return intoUUID[appID](v.ApplicationID) }
 
 func (v *verModel) versionNumber() v1.ApplicationVersionNumber {
 	return v1.ApplicationVersionNumber(v.Version.ValueInt32())
@@ -123,6 +120,7 @@ func (e envVarModel) intoCreate() (ret version.EnvironmentVariable) {
 
 	return
 }
+
 func (p exposedPortModel) intoCreate() (ret version.ExposedPort) {
 	ret.TargetPort = v1.Port(p.TargetPort.ValueInt32())
 	ret.LoadBalancerPort = saclient.Ptr(v1.Port(p.LoadBalancerPort.ValueInt32()))
@@ -157,7 +155,7 @@ func (*exposedPortModel) int32(i16 *v1.Port) types.Int32 {
 	return types.Int32Value(i32)
 }
 
-func (p *exposedPortModel) updateState(ctx context.Context, d *version.ExposedPort) {
+func (p *exposedPortModel) updateState(d version.ExposedPort) {
 	p.TargetPort = p.int32(&d.TargetPort)
 	p.LoadBalancerPort = p.int32(d.LoadBalancerPort)
 	p.UseLetsEncrypt = types.BoolValue(d.UseLetsEncrypt)
@@ -166,7 +164,7 @@ func (p *exposedPortModel) updateState(ctx context.Context, d *version.ExposedPo
 	p.HealthCheck.updateState(d.HealthCheck)
 }
 
-func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, aid v1.ApplicationID) (ret diag.Diagnostics) {
+func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, aid appID) (ret diag.Diagnostics) {
 	v.Version = types.Int32Value(common.ToInt32(d.Version))
 	v.ApplicationID = uuid2StringValue(aid)
 	v.CPU = types.Int64Value(d.CPU)
@@ -182,22 +180,9 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 	// password is write only
 	v.ActiveNodeCount = types.Int64Value(d.ActiveNodeCount)
 	v.CreatedAt = intoRFC2822(d.Created)
-
+	v.ExposedPorts = common.MapTo(d.ExposedPorts, stateUpdater[version.ExposedPort, exposedPortModel])
+	v.EnvVars = common.MapTo(d.EnvVars, stateUpdater[version.EnvironmentVariable, envVarModel])
 	v.Cmd, ret = types.ListValueFrom(ctx, types.StringType, common.MapTo(d.Cmd, types.StringValue))
 
-	if ret.HasError() {
-		return ret
-	}
-
-	v.ExposedPorts = common.MapTo(d.ExposedPorts, func(p version.ExposedPort) (ret exposedPortModel) {
-		ret.updateState(ctx, &p)
-		return
-	})
-
-	v.EnvVars = common.MapTo(d.EnvVars, func(src version.EnvironmentVariable) (dst envVarModel) {
-		dst.updateState(src)
-		return
-	})
-
-	return ret
+	return
 }

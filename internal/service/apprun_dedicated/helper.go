@@ -6,9 +6,11 @@ package apprun_dedicated
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
 	lb "github.com/sacloud/apprun-dedicated-api-go/apis/loadbalancer"
@@ -68,6 +70,50 @@ func intoInt32[T ~int | ~int32 | ~int16 | ~uint16 | ~int64](t *T) types.Int32 {
 	return types.Int32Value(common.ToInt32(*t))
 }
 
+func intoInt16[T ~int | ~int32 | ~int16 | ~uint16 | ~int64](t *T) (ret *int16, diag diag.Diagnostics) {
+	if t == nil {
+		return
+	}
+
+	var val int16 = (int16)(*t)
+	var rev T = (T)(val)
+	ret = &val
+
+	if rev != *t {
+		diag.AddError("integer overflow", fmt.Sprintf("conversion of %q into int16 cannot be excersised; it doesn't fit into.", *t))
+	}
+
+	return
+}
+
+func intoUInt16[T ~int | ~int32 | ~int16 | ~int64](t *T) (ret *uint16, diag diag.Diagnostics) {
+	if t == nil {
+		return
+	}
+
+	var val uint16 = (uint16)(*t)
+	var rev T = (T)(val)
+	ret = &val
+
+	if rev != *t {
+		diag.AddError("integer overflow", fmt.Sprintf("conversion of %q into int16 cannot be excersised; it doesn't fit into.", *t))
+	}
+
+	return
+}
+
+func stateUpdater[
+	T any,
+	U any,
+	V interface {
+		*U
+		updateState(T)
+	},
+](t T) (u U) {
+	V(&u).updateState(t)
+	return
+}
+
 //////////////////////////////////////////////////////////////
 
 func deleteLBs(ctx context.Context, api lb.LoadBalancerAPI) (err error) {
@@ -110,9 +156,7 @@ func provisionLBs(ctx context.Context, api lb.LoadBalancerAPI) error {
 }
 
 func provisionLBsInternal(ctx context.Context, api lb.LoadBalancerAPI) (bool, error) {
-	list, err := listed(func(i *v1.LoadBalancerID) ([]v1.ReadLoadBalancerSummary, *v1.LoadBalancerID, error) {
-		return api.List(ctx, 10, i)
-	})
+	list, err := listed(func(i *lbID) ([]v1.ReadLoadBalancerSummary, *lbID, error) { return api.List(ctx, 10, i) })
 
 	if saclient.IsNotFoundError(err) {
 		return true, nil // no lb no problem
@@ -132,7 +176,7 @@ func provisionLBsInternal(ctx context.Context, api lb.LoadBalancerAPI) (bool, er
 	return ok, err
 }
 
-func provisionLBsInternalNodes(ctx context.Context, api lb.LoadBalancerAPI, id v1.LoadBalancerID) (bool, error) {
+func provisionLBsInternalNodes(ctx context.Context, api lb.LoadBalancerAPI, id lbID) (bool, error) {
 	lb, err := api.Read(ctx, id)
 
 	if saclient.IsNotFoundError(err) {
@@ -167,7 +211,7 @@ func provisionLBsInternalNodes(ctx context.Context, api lb.LoadBalancerAPI, id v
 	return ok, err
 }
 
-func provisionLBsInternalNode(ctx context.Context, api lb.LoadBalancerAPI, lid v1.LoadBalancerID, nid v1.LoadBalancerNodeID) (bool, error) {
+func provisionLBsInternalNode(ctx context.Context, api lb.LoadBalancerAPI, lid lbID, nid v1.LoadBalancerNodeID) (bool, error) {
 	node, err := api.ReadNode(ctx, lid, nid)
 
 	if saclient.IsNotFoundError(err) {
@@ -222,9 +266,7 @@ func waitLBs(ctx context.Context, api lb.LoadBalancerAPI) error {
 }
 
 func waitLBsInternal(ctx context.Context, api lb.LoadBalancerAPI) (bool, error) {
-	list, err := listed(func(i *v1.LoadBalancerID) ([]v1.ReadLoadBalancerSummary, *v1.LoadBalancerID, error) {
-		return api.List(ctx, 10, i)
-	})
+	list, err := listed(func(i *lbID) ([]v1.ReadLoadBalancerSummary, *lbID, error) { return api.List(ctx, 10, i) })
 
 	if saclient.IsNotFoundError(err) {
 		return true, nil // no lb no problem
@@ -244,7 +286,7 @@ func waitLBsInternal(ctx context.Context, api lb.LoadBalancerAPI) (bool, error) 
 	return ok, err
 }
 
-func waitLBsInternalLB(ctx context.Context, api lb.LoadBalancerAPI, id v1.LoadBalancerID) (bool, error) {
+func waitLBsInternalLB(ctx context.Context, api lb.LoadBalancerAPI, id lbID) (bool, error) {
 	lb, err := api.Read(ctx, id)
 
 	if saclient.IsNotFoundError(err) {
@@ -307,9 +349,7 @@ func deleteWNs(ctx context.Context, api wn.WorkerNodeAPI) (err error) {
 }
 
 func drainWNs(ctx context.Context, api wn.WorkerNodeAPI) (bool, error) {
-	list, err := listed(func(i *v1.WorkerNodeID) ([]wn.WorkerNodeDetail, *v1.WorkerNodeID, error) {
-		return api.List(ctx, 10, i)
-	})
+	list, err := listed(func(i *wnID) ([]wn.WorkerNodeDetail, *wnID, error) { return api.List(ctx, 10, i) })
 
 	if saclient.IsNotFoundError(err) {
 		return true, nil // no lb no problem
@@ -329,7 +369,7 @@ func drainWNs(ctx context.Context, api wn.WorkerNodeAPI) (bool, error) {
 	return ok, err
 }
 
-func drainWNsNode(ctx context.Context, api wn.WorkerNodeAPI, id v1.WorkerNodeID) (bool, error) {
+func drainWNsNode(ctx context.Context, api wn.WorkerNodeAPI, id wnID) (bool, error) {
 	wn, err := api.Read(ctx, id)
 
 	if saclient.IsNotFoundError(err) {

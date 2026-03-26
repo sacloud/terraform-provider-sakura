@@ -13,12 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	cert "github.com/sacloud/apprun-dedicated-api-go/apis/certificate"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
@@ -50,10 +47,7 @@ func (r *certResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 		"no special characters allowed; alphanumeric and/or hyphens, dots and underscores",
 	))
 
-	clusterID := common.SchemaResourceId("cluster").(schema.StringAttribute)
-	clusterID.Computed = false
-	clusterID.Required = true
-	clusterID.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
+	clusterID := r.schemaClusterID()
 
 	certPEM := schema.StringAttribute{
 		Required:    true,
@@ -169,7 +163,7 @@ func (r *certResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
-	plan.updateState(ctx, detail, clusterID)
+	res.Diagnostics.Append(plan.updateState(ctx, detail, clusterID)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &plan)...)
 }
 
@@ -204,7 +198,7 @@ func (r *certResource) Read(ctx context.Context, req resource.ReadRequest, res *
 		return
 	}
 
-	state.updateState(ctx, detail, clusterID)
+	res.Diagnostics.Append(state.updateState(ctx, detail, clusterID)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
@@ -249,7 +243,7 @@ func (r *certResource) Update(ctx context.Context, req resource.UpdateRequest, r
 		return
 	}
 
-	plan.updateState(ctx, detail, clusterID)
+	res.Diagnostics.Append(plan.updateState(ctx, detail, clusterID)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &plan)...)
 }
 
@@ -292,7 +286,7 @@ func (r *certResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 }
 
-func (c *certResource) api(id v1.ClusterID) cert.CertificateAPI {
+func (c *certResource) api(id clusterID) cert.CertificateAPI {
 	return cert.NewCertificateOp(c.client, id)
 }
 

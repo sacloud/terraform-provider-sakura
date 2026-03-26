@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
-	"github.com/sacloud/apprun-dedicated-api-go/apis/version"
+	ver "github.com/sacloud/apprun-dedicated-api-go/apis/version"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
@@ -241,16 +241,16 @@ func (d *verDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		return
 	}
 
-	state.updateState(ctx, detail, aid)
+	res.Diagnostics.Append(state.updateState(ctx, detail, aid)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (d *verDataSource) api(applicationID v1.ApplicationID) version.VersionAPI {
-	return version.NewVersionOp(d.client, applicationID)
+func (d *verDataSource) api(applicationID appID) ver.VersionAPI {
+	return ver.NewVersionOp(d.client, applicationID)
 }
 
-func (d *verDataSourceModel) ver() (aid v1.ApplicationID, ver v1.ApplicationVersionNumber, err error) {
-	aid, err = d.applicationID()
+func (d *verDataSourceModel) ver() (aid appID, ver v1.ApplicationVersionNumber, err error) {
+	aid, err = d.appId()
 	ver = v1.ApplicationVersionNumber(d.Version.ValueInt32())
 	return
 }

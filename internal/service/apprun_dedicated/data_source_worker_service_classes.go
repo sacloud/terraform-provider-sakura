@@ -73,10 +73,7 @@ func (d *wscDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		return
 	}
 
-	state.Classes = common.MapTo(classes, func(src v1.ReadWorkerServiceClass) (dst workerServiceClassModel) {
-		dst.updateState(src)
-		return
-	})
+	state.Classes = common.MapTo(classes, stateUpdater[v1.ReadWorkerServiceClass, workerServiceClassModel])
 
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }

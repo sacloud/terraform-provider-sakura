@@ -93,8 +93,8 @@ func (d *certDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	var certID *v1.CertificateID
-	var clusterID *v1.ClusterID
+	var certID *certID
+	var clusterID *clusterID
 	var ds diag.Diagnostics
 
 	if state.ID.IsNull() {
@@ -120,11 +120,11 @@ func (d *certDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 		return
 	}
 
-	state.updateState(ctx, detail, *clusterID)
+	res.Diagnostics.Append(state.updateState(ctx, detail, *clusterID)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (state *certDataSourceModel) byId(context.Context, *certDataSource) (*v1.ClusterID, *v1.CertificateID, diag.Diagnostics) {
+func (state *certDataSourceModel) byId(context.Context, *certDataSource) (*clusterID, *certID, diag.Diagnostics) {
 	var d diag.Diagnostics
 	certID, err := state.certID()
 
@@ -141,7 +141,7 @@ func (state *certDataSourceModel) byId(context.Context, *certDataSource) (*v1.Cl
 	return &clusterID, &certID, d
 }
 
-func (state *certDataSourceModel) byName(ctx context.Context, r *certDataSource) (_ *v1.ClusterID, _ *v1.CertificateID, d diag.Diagnostics) {
+func (state *certDataSourceModel) byName(ctx context.Context, r *certDataSource) (_ *clusterID, _ *certID, d diag.Diagnostics) {
 	clusterID, err := state.clusterID()
 
 	if err != nil {
@@ -150,7 +150,7 @@ func (state *certDataSourceModel) byName(ctx context.Context, r *certDataSource)
 	}
 
 	api := r.api(clusterID)
-	certs, err := listed(func(cursor *v1.CertificateID) ([]v1.ReadCertificate, *v1.CertificateID, error) {
+	certs, err := listed(func(cursor *certID) ([]v1.ReadCertificate, *certID, error) {
 		return api.List(ctx, 10, cursor)
 	})
 
@@ -170,6 +170,6 @@ func (state *certDataSourceModel) byName(ctx context.Context, r *certDataSource)
 	return
 }
 
-func (d *certDataSource) api(clusterID v1.ClusterID) *cert.CertificateOp {
+func (d *certDataSource) api(clusterID clusterID) *cert.CertificateOp {
 	return cert.NewCertificateOp(d.client, clusterID)
 }

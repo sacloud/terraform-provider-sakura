@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -90,7 +89,7 @@ func (d *clusterDataSource) Read(ctx context.Context, req datasource.ReadRequest
 		return
 	}
 
-	var id *v1.ClusterID
+	var id *clusterID
 	var ds diag.Diagnostics
 
 	if state.ID.IsNull() {
@@ -124,7 +123,7 @@ func (d *clusterDataSource) Read(ctx context.Context, req datasource.ReadRequest
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (state *clusterDataSourceModel) byId(context.Context, *clusterDataSource) (ret *v1.ClusterID, d diag.Diagnostics) {
+func (state *clusterDataSourceModel) byId(context.Context, *clusterDataSource) (ret *clusterID, d diag.Diagnostics) {
 	id, err := state.clusterID()
 
 	if err != nil {
@@ -136,8 +135,8 @@ func (state *clusterDataSourceModel) byId(context.Context, *clusterDataSource) (
 	return
 }
 
-func (state *clusterDataSourceModel) byName(ctx context.Context, d *clusterDataSource) (ret *v1.ClusterID, ds diag.Diagnostics) {
-	list, err := listed(func(c *v1.ClusterID) ([]cluster.ClusterDetail, *v1.ClusterID, error) { return d.api().List(ctx, 10, c) })
+func (state *clusterDataSourceModel) byName(ctx context.Context, d *clusterDataSource) (ret *clusterID, ds diag.Diagnostics) {
+	list, err := listed(func(c *clusterID) ([]cluster.ClusterDetail, *clusterID, error) { return d.api().List(ctx, 10, c) })
 
 	if err != nil {
 		ds.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Dedicated cluster: %s", err))

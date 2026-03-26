@@ -73,7 +73,7 @@ func (d *appDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		return
 	}
 
-	var appID *v1.ApplicationID
+	var appID *appID
 	var ds diag.Diagnostics
 
 	if state.ID.IsNull() {
@@ -97,12 +97,12 @@ func (d *appDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		return
 	}
 
-	state.updateState(ctx, detail)
+	state.updateState(detail)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (state *appDataSourceModel) byId(context.Context, *appDataSource) (ret *v1.ApplicationID, d diag.Diagnostics) {
-	appID, err := state.applicationID()
+func (state *appDataSourceModel) byId(context.Context, *appDataSource) (ret *appID, d diag.Diagnostics) {
+	appID, err := state.appId()
 
 	if err != nil {
 		d.AddError("Read: Invalid ID", fmt.Sprintf("failed to parse application ID: %s", err))
@@ -113,7 +113,7 @@ func (state *appDataSourceModel) byId(context.Context, *appDataSource) (ret *v1.
 	return
 }
 
-func (state *appDataSourceModel) byName(ctx context.Context, d *appDataSource) (ret *v1.ApplicationID, ds diag.Diagnostics) {
+func (state *appDataSourceModel) byName(ctx context.Context, d *appDataSource) (ret *appID, ds diag.Diagnostics) {
 	apps, err := listed(func(c *string) ([]v1.ReadApplicationDetail, *string, error) { return d.api().List(ctx, 10, c) })
 
 	if err != nil {

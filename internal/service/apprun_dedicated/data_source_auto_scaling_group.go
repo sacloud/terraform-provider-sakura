@@ -168,8 +168,8 @@ func (d *asgDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		return
 	}
 
-	var asgID *v1.AutoScalingGroupID
-	var clusterID *v1.ClusterID
+	var asgID *asgID
+	var clusterID *clusterID
 	var ds diag.Diagnostics
 
 	if state.ID.IsNull() {
@@ -195,11 +195,11 @@ func (d *asgDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		return
 	}
 
-	state.updateState(ctx, detail, *clusterID)
+	res.Diagnostics.Append(state.updateState(ctx, detail, *clusterID)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (state *asgDataSourceModel) byId(context.Context, *asgDataSource) (_ *v1.ClusterID, _ *v1.AutoScalingGroupID, d diag.Diagnostics) {
+func (state *asgDataSourceModel) byId(context.Context, *asgDataSource) (_ *clusterID, _ *asgID, d diag.Diagnostics) {
 	a, e := state.asgID()
 
 	if e != nil {
@@ -215,7 +215,7 @@ func (state *asgDataSourceModel) byId(context.Context, *asgDataSource) (_ *v1.Cl
 	return &c, &a, d
 }
 
-func (state *asgDataSourceModel) byName(ctx context.Context, r *asgDataSource) (_ *v1.ClusterID, _ *v1.AutoScalingGroupID, d diag.Diagnostics) {
+func (state *asgDataSourceModel) byName(ctx context.Context, r *asgDataSource) (_ *clusterID, _ *asgID, d diag.Diagnostics) {
 	clusterID, err := state.clusterID()
 
 	if err != nil {
@@ -224,7 +224,7 @@ func (state *asgDataSourceModel) byName(ctx context.Context, r *asgDataSource) (
 	}
 
 	api := r.api(clusterID)
-	certs, err := listed(func(cursor *v1.AutoScalingGroupID) ([]v1.ReadAutoScalingGroupDetail, *v1.AutoScalingGroupID, error) {
+	certs, err := listed(func(cursor *asgID) ([]v1.ReadAutoScalingGroupDetail, *asgID, error) {
 		return api.List(ctx, 10, cursor)
 	})
 
@@ -244,14 +244,9 @@ func (state *asgDataSourceModel) byName(ctx context.Context, r *asgDataSource) (
 	return
 }
 
-func (d *asgDataSource) api(id v1.ClusterID) asg.AutoScalingGroupAPI {
+func (d *asgDataSource) api(id clusterID) asg.AutoScalingGroupAPI {
 	return asg.NewAutoScalingGroupOp(d.client, id)
 }
 
-func (s *asgDataSourceModel) clusterID() (v1.ClusterID, error) {
-	return intoUUID[v1.ClusterID](s.ClusterID)
-}
-
-func (s *asgDataSourceModel) asgID() (v1.AutoScalingGroupID, error) {
-	return intoUUID[v1.AutoScalingGroupID](s.ID)
-}
+func (s *asgDataSourceModel) clusterID() (clusterID, error) { return intoUUID[clusterID](s.ClusterID) }
+func (s *asgDataSourceModel) asgID() (asgID, error)         { return intoUUID[asgID](s.ID) }

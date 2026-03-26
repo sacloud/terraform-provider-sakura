@@ -4,8 +4,12 @@ Computing:
   - apprun_dedicated_auto_scaling_group
   - apprun_dedicated_certificate
   - apprun_dedicated_cluster
+  - apprun_dedicated_load_balancer
+  - apprun_dedicated_load_balancer_node
+  - apprun_dedicated_load_balancer_nodes
   - apprun_dedicated_load_balancer_service_class
   - apprun_dedicated_load_balancer_service_classes
+  - apprun_dedicated_load_balancers
   - apprun_dedicated_version
   - apprun_dedicated_worker_node
   - apprun_dedicated_worker_nodes

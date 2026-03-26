@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	wn "github.com/sacloud/apprun-dedicated-api-go/apis/workernode"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
@@ -216,9 +215,8 @@ func (d *workerNodesDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	nodes, err := listed(func(cursor *v1.WorkerNodeID) ([]wn.WorkerNodeDetail, *v1.WorkerNodeID, error) {
-		return d.api(cid, asgID).List(ctx, 10, cursor)
-	})
+	api := d.api(cid, asgID)
+	nodes, err := listed(func(cursor *wnID) ([]wn.WorkerNodeDetail, *wnID, error) { return api.List(ctx, 10, cursor) })
 
 	if err != nil {
 		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list worker nodes: %s", err))
@@ -228,21 +226,16 @@ func (d *workerNodesDataSource) Read(ctx context.Context, req datasource.ReadReq
 	state.ClusterID = uuid2StringValue(cid)
 	state.AutoScalingGroupID = uuid2StringValue(asgID)
 	state.Nodes = common.MapTo(nodes, func(src wn.WorkerNodeDetail) (dst wnModel) {
-		dst.updateState(ctx, &src)
+		res.Diagnostics.Append(dst.updateState(ctx, &src)...)
 		return
 	})
 
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (d *workerNodesDataSource) api(cid v1.ClusterID, asgID v1.AutoScalingGroupID) wn.WorkerNodeAPI {
+func (d *workerNodesDataSource) api(cid clusterID, asgID asgID) wn.WorkerNodeAPI {
 	return wn.NewWorkerNodeOp(d.client, cid, asgID)
 }
 
-func (m *wnsDataSourceModel) clusterID() (v1.ClusterID, error) {
-	return intoUUID[v1.ClusterID](m.ClusterID)
-}
-
-func (m *wnsDataSourceModel) asgID() (v1.AutoScalingGroupID, error) {
-	return intoUUID[v1.AutoScalingGroupID](m.AutoScalingGroupID)
-}
+func (m *wnsDataSourceModel) clusterID() (clusterID, error) { return intoUUID[clusterID](m.ClusterID) }
+func (m *wnsDataSourceModel) asgID() (asgID, error)         { return intoUUID[asgID](m.AutoScalingGroupID) }

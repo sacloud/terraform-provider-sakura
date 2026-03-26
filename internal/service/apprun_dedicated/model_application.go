@@ -4,13 +4,12 @@
 package apprun_dedicated
 
 import (
-	"context"
-
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	app "github.com/sacloud/apprun-dedicated-api-go/apis/application"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 )
+
+type appID = v1.ApplicationID
 
 type appModel struct {
 	ID                     types.String `tfsdk:"id"`
@@ -32,7 +31,7 @@ var applicationAttrs = attrTypes{
 	"scaling_cooldown_seconds": types.Int32Type,
 }
 
-func (a *appModel) updateState(ctx context.Context, d *app.ApplicationDetail) (ret diag.Diagnostics) {
+func (a *appModel) updateState(d *app.ApplicationDetail) {
 	a.ID = uuid2StringValue(d.ApplicationID)
 	a.ClusterID = uuid2StringValue(d.ClusterID)
 	a.Name = types.StringValue(d.Name)
@@ -40,10 +39,8 @@ func (a *appModel) updateState(ctx context.Context, d *app.ApplicationDetail) (r
 	a.ActiveVersion = types.Int32PointerValue(d.ActiveVersion)
 	a.DesiredCount = types.Int32PointerValue(d.DesiredCount)
 	a.ScalingCooldownSeconds = types.Int32Value(d.ScalingCooldownSeconds)
-
-	return
 }
 
-func (appModel) AttributeTypes() attrTypes                   { return applicationAttrs }
-func (a *appModel) applicationID() (v1.ApplicationID, error) { return intoUUID[v1.ApplicationID](a.ID) }
-func (a *appModel) clusterID() (v1.ClusterID, error)         { return intoUUID[v1.ClusterID](a.ClusterID) }
+func (appModel) AttributeTypes() attrTypes        { return applicationAttrs }
+func (a *appModel) appId() (appID, error)         { return intoUUID[appID](a.ID) }
+func (a *appModel) clusterID() (clusterID, error) { return intoUUID[clusterID](a.ClusterID) }

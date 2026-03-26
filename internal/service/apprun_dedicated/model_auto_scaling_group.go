@@ -13,6 +13,8 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
+type asgID = v1.AutoScalingGroupID
+
 type rangeModel struct {
 	Start types.String `tfsdk:"start"`
 	End   types.String `tfsdk:"end"`
@@ -73,7 +75,7 @@ var asgAttrs = attrTypes{
 func (rangeModel) AttributeTypes() attrTypes         { return rangeAttrs }
 func (nodeInterfaceModel) AttributeTypes() attrTypes { return asgInterfaceAttrs }
 func (asgModel) AttributeTypes() attrTypes           { return asgAttrs }
-func (a *asgModel) clusterID() (v1.ClusterID, error) { return intoUUID[v1.ClusterID](a.ClusterID) }
+func (a *asgModel) clusterID() (clusterID, error)    { return intoUUID[clusterID](a.ClusterID) }
 
 func (i rangeModel) intoCreate() (ret v1.IpRange) {
 	ret.Start = v1.IPv4(i.Start.ValueString())
@@ -81,23 +83,27 @@ func (i rangeModel) intoCreate() (ret v1.IpRange) {
 	return
 }
 
-func (i nodeInterfaceModel) intoCreate() (ret asg.NodeInterface) {
-	ret.InterfaceIndex = int16(i.InterfaceIndex.ValueInt32())
+func (i nodeInterfaceModel) intoCreate() (ret asg.NodeInterface, diag diag.Diagnostics) {
 	ret.Upstream = i.Upstream.ValueString()
 	ret.IpPool = common.MapTo(i.IpPool, rangeModel.intoCreate)
 	ret.DefaultGateway = i.DefaultGateway.ValueStringPointer()
 	ret.PacketFilterID = i.PacketFilterID.ValueStringPointer()
 	ret.ConnectsToLB = i.ConnectsToLB.ValueBool()
 
-	if !i.NetmaskLen.IsNull() && !i.NetmaskLen.IsUnknown() {
-		n := int16(i.NetmaskLen.ValueInt32())
-		ret.NetmaskLen = &n
+	n, d := intoInt16(i.InterfaceIndex.ValueInt32Pointer())
+	diag.Append(d...)
+	if n != nil {
+		ret.InterfaceIndex = *n
 	}
+
+	n, d = intoInt16(i.NetmaskLen.ValueInt32Pointer())
+	diag.Append(d...)
+	ret.NetmaskLen = n
 
 	return
 }
 
-func (a *asgModel) intoCreate() (ret asg.CreateParams) {
+func (a *asgModel) intoCreate() (ret asg.CreateParams, diag diag.Diagnostics) {
 	ret.Name = a.Name.ValueString()
 	ret.Zone = a.Zone.ValueString()
 	ret.NameServers = common.MapTo(common.TlistToStrings(a.NameServers), func(s string) v1.IPv4 {
@@ -106,7 +112,11 @@ func (a *asgModel) intoCreate() (ret asg.CreateParams) {
 	ret.WorkerServiceClassPath = a.WorkerServiceClassPath.ValueString()
 	ret.MinNodes = a.MinNodes.ValueInt32()
 	ret.MaxNodes = a.MaxNodes.ValueInt32()
-	ret.Interfaces = common.MapTo(a.Interfaces, nodeInterfaceModel.intoCreate)
+	ret.Interfaces = common.MapTo(a.Interfaces, func(i nodeInterfaceModel) asg.NodeInterface {
+		j, d := i.intoCreate()
+		diag.Append(d...)
+		return j
+	})
 
 	return
 }
@@ -116,39 +126,27 @@ func (i *rangeModel) updateState(ip v1.IpRange) {
 	i.End = types.StringValue(common.ToString(ip.End))
 }
 
-func (i *nodeInterfaceModel) updateState(d *asg.NodeInterface) {
+func (i *nodeInterfaceModel) updateState(d asg.NodeInterface) {
 	i.InterfaceIndex = types.Int32Value(common.ToInt32(d.InterfaceIndex))
 	i.Upstream = types.StringValue(d.Upstream)
 	i.NetmaskLen = intoInt32(d.NetmaskLen)
 	i.DefaultGateway = types.StringPointerValue(d.DefaultGateway)
 	i.PacketFilterID = types.StringPointerValue(d.PacketFilterID)
 	i.ConnectsToLB = types.BoolValue(d.ConnectsToLB)
-	i.IpPool = common.MapTo(d.IpPool, func(src v1.IpRange) (dst rangeModel) {
-		dst.updateState(src)
-		return
-	})
+	i.IpPool = common.MapTo(d.IpPool, stateUpdater[v1.IpRange, rangeModel])
 }
 
-func (a *asgModel) updateState(ctx context.Context, d *asg.AutoScalingGroupDetail, cid v1.ClusterID) (ret diag.Diagnostics) {
+func (a *asgModel) updateState(ctx context.Context, d *asg.AutoScalingGroupDetail, cid clusterID) (ret diag.Diagnostics) {
 	a.ID = uuid2StringValue(d.AutoScalingGroupID)
 	a.ClusterID = uuid2StringValue(cid)
 	a.Name = types.StringValue(d.Name)
 	a.Zone = types.StringValue(d.Zone)
-	a.NameServers, ret = types.ListValueFrom(ctx, types.StringType, common.MapTo(d.NameServers, common.ToString))
-
-	if ret.HasError() {
-		return
-	}
-
 	a.WorkerServiceClassPath = types.StringValue(d.WorkerServiceClassPath)
 	a.MinNodes = types.Int32Value(d.MinNodes)
 	a.MaxNodes = types.Int32Value(d.MaxNodes)
 	a.CurrentNodes = types.Int32Value(d.CurrentNodes)
 	a.Deleting = types.BoolValue(d.Deleting)
-	a.Interfaces = common.MapTo(d.Interfaces, func(src asg.NodeInterface) (dst nodeInterfaceModel) {
-		dst.updateState(&src)
-		return
-	})
-
+	a.Interfaces = common.MapTo(d.Interfaces, stateUpdater[asg.NodeInterface, nodeInterfaceModel])
+	a.NameServers, ret = types.ListValueFrom(ctx, types.StringType, common.MapTo(d.NameServers, common.ToString))
 	return
 }

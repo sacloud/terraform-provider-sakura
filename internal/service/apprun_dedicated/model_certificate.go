@@ -12,6 +12,8 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
+type certID = v1.CertificateID
+
 type certModel struct {
 	ID        types.String `tfsdk:"id"`
 	ClusterID types.String `tfsdk:"cluster_id"`
@@ -36,7 +38,7 @@ var certAttrs = attrTypes{
 	"updated_at":                types.StringType,
 }
 
-func (c *certModel) updateState(ctx context.Context, d *v1.ReadCertificate, clusterID v1.ClusterID) (ret diag.Diagnostics) {
+func (c *certModel) updateState(ctx context.Context, d *v1.ReadCertificate, clusterID clusterID) (ret diag.Diagnostics) {
 	c.ID = uuid2StringValue(d.CertificateID)
 	c.ClusterID = uuid2StringValue(clusterID)
 	c.Name = types.StringValue(d.Name)
@@ -46,10 +48,9 @@ func (c *certModel) updateState(ctx context.Context, d *v1.ReadCertificate, clus
 	c.CreatedAt = intoRFC2822(d.Created)
 	c.UpdatedAt = intoRFC2822(d.Updated)
 	c.SAN, ret = types.SetValueFrom(ctx, types.StringType, common.MapTo(d.SubjectAlternativeNames, types.StringValue))
-
 	return
 }
 
-func (certModel) AttributeTypes() attrTypes            { return certAttrs }
-func (c *certModel) certID() (v1.CertificateID, error) { return intoUUID[v1.CertificateID](c.ID) }
-func (c *certModel) clusterID() (v1.ClusterID, error)  { return intoUUID[v1.ClusterID](c.ClusterID) }
+func (certModel) AttributeTypes() attrTypes        { return certAttrs }
+func (c *certModel) certID() (certID, error)       { return intoUUID[certID](c.ID) }
+func (c *certModel) clusterID() (clusterID, error) { return intoUUID[clusterID](c.ClusterID) }

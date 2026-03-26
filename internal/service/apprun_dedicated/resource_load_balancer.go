@@ -5,11 +5,9 @@ package apprun_dedicated
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"regexp"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/google/uuid"
@@ -21,7 +19,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -30,34 +27,36 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	asg "github.com/sacloud/apprun-dedicated-api-go/apis/autoscalinggroup"
 	lb "github.com/sacloud/apprun-dedicated-api-go/apis/loadbalancer"
-	wn "github.com/sacloud/apprun-dedicated-api-go/apis/workernode"
 	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-type asgResource struct{ resourceClient }
+type lbResource struct{ resourceClient }
 
-type asgResourceModel struct {
-	asgModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+type lbResourceModel struct {
+	lbModel
+	ClusterID          types.String   `tfsdk:"cluster_id"`
+	AutoScalingGroupID types.String   `tfsdk:"auto_scaling_group_id"`
+	Timeouts           timeouts.Value `tfsdk:"timeouts"`
 }
 
 var (
-	_ resource.Resource                = &asgResource{}
-	_ resource.ResourceWithConfigure   = &asgResource{}
-	_ resource.ResourceWithImportState = &asgResource{}
+	_ resource.Resource                = &lbResource{}
+	_ resource.ResourceWithConfigure   = &lbResource{}
+	_ resource.ResourceWithImportState = &lbResource{}
 )
 
-func NewAutoScalingGroupResource() resource.Resource {
-	return &asgResource{resourceNamed("auto_scaling_group")}
+func NewLoadBalancerResource() resource.Resource {
+	return &lbResource{resourceNamed("load_balancer")}
 }
 
-func (r *asgResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
+func (r *lbResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
 	id := r.schemaID()
 
 	cid := r.schemaClusterID()
+
+	aid := r.schemaASGID()
 
 	name := r.schemaName(stringvalidator.RegexMatches(
 		regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
@@ -65,50 +64,26 @@ func (r *asgResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 	))
 	name.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
 
-	// :TODO: zone can be validated? against usacould config?
-	zone := schema.StringAttribute{
+	serviceClassPath := schema.StringAttribute{
 		Required:      true,
-		Description:   "The zone name where the auto scaling group will be created",
+		Description:   "The service class path for the load balancer",
+		Validators:    []validator.String{stringvalidator.LengthBetween(1, 255)},
 		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 	}
 
 	nameServers := schema.ListAttribute{
 		Optional:      true,
 		ElementType:   types.StringType,
-		Description:   "The name servers for the auto scaling group (ORDER MATTERS)",
+		Description:   "The name servers for the load balancer (ORDER MATTERS)",
 		Validators:    []validator.List{listvalidator.SizeAtMost(3)},
 		PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
 	}
 
-	workerServiceClassPath := schema.StringAttribute{
-		Required:      true,
-		Description:   "The worker service class path",
-		Validators:    []validator.String{stringvalidator.LengthBetween(1, 255)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	minNodes := schema.Int32Attribute{
-		Required:      true,
-		Description:   "Minimum number of nodes",
-		Validators:    []validator.Int32{int32validator.Between(1, 10)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	maxNodes := schema.Int32Attribute{
-		Required:      true,
-		Description:   "Maximum number of nodes",
-		Validators:    []validator.Int32{int32validator.Between(1, 10)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	currentNodes := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The current number of nodes. You might want to ignore_changes this field because it changes from time to time",
-	}
+	created := r.schemaCreatedAt()
 
 	deleting := schema.BoolAttribute{
 		Computed:    true,
-		Description: "Whether the auto scaling group is being deleted",
+		Description: "Whether the load balancer is being deleted",
 	}
 
 	ifaceIdx := schema.Int32Attribute{
@@ -172,34 +147,46 @@ func (r *asgResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 		PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
 	}
 
+	vip := schema.StringAttribute{
+		Optional:            true,
+		MarkdownDescription: "The VIP address. Makes sense only when upstream is not `shared`",
+		PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
+		Validators: []validator.String{stringvalidator.RegexMatches(
+			regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
+			"must be an IPv4 address",
+		)},
+	}
+
+	virtualRouterID := schema.Int32Attribute{
+		Optional:            true,
+		MarkdownDescription: "The virtual router ID. Makes sense only when upstream is not `shared`",
+		Validators:          []validator.Int32{int32validator.Between(1, 255)},
+		PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+	}
+
 	packetFilterID := schema.StringAttribute{
 		Optional:      true,
 		Description:   "The packet filter ID",
 		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 	}
 
-	connectsToLB := schema.BoolAttribute{
-		Required:      true,
-		Description:   "Whether the interface connects to the load balancer",
-		PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
-	}
-
 	iface := schema.NestedAttributeObject{
 		Attributes: map[string]schema.Attribute{
-			"interface_index":  ifaceIdx,
-			"upstream":         upstream,
-			"ip_pool":          ipPool,
-			"netmask_len":      netmaskLen,
-			"default_gateway":  defaultGateway,
-			"packet_filter_id": packetFilterID,
-			"connects_to_lb":   connectsToLB,
+			"interface_index":   ifaceIdx,
+			"upstream":          upstream,
+			"ip_pool":           ipPool,
+			"netmask_len":       netmaskLen,
+			"default_gateway":   defaultGateway,
+			"vip":               vip,
+			"virtual_router_id": virtualRouterID,
+			"packet_filter_id":  packetFilterID,
 		},
 	}
 
 	interfaces := schema.SetNestedAttribute{
 		Required:      true,
 		NestedObject:  iface,
-		Description:   "The network interfaces for the nodes",
+		Description:   "The network interfaces for the load balancer",
 		Validators:    []validator.Set{setvalidator.SizeBetween(1, 5)},
 		PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
 	}
@@ -207,26 +194,24 @@ func (r *asgResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 	to := timeouts.Attributes(ctx, timeouts.Opts{Create: true, Delete: true})
 
 	res.Schema = schema.Schema{
-		Description: "Manages an AppRun dedicated auto scaling group",
+		Description: "Manages an AppRun dedicated load balancer",
 		Attributes: map[string]schema.Attribute{
-			"id":                        id,
-			"cluster_id":                cid,
-			"name":                      name,
-			"zone":                      zone,
-			"name_servers":              nameServers,
-			"worker_service_class_path": workerServiceClassPath,
-			"min_nodes":                 minNodes,
-			"max_nodes":                 maxNodes,
-			"current_nodes":             currentNodes,
-			"deleting":                  deleting,
-			"interfaces":                interfaces,
-			"timeouts":                  to,
+			"id":                    id,
+			"cluster_id":            cid,
+			"auto_scaling_group_id": aid,
+			"name":                  name,
+			"service_class_path":    serviceClassPath,
+			"name_servers":          nameServers,
+			"interfaces":            interfaces,
+			"created":               created,
+			"deleting":              deleting,
+			"timeouts":              to,
 		},
 	}
 }
 
-func (r *asgResource) Create(ctx context.Context, req resource.CreateRequest, res *resource.CreateResponse) {
-	var plan asgResourceModel
+func (r *lbResource) Create(ctx context.Context, req resource.CreateRequest, res *resource.CreateResponse) {
+	var plan lbResourceModel
 	res.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 
 	if res.Diagnostics.HasError() {
@@ -240,9 +225,17 @@ func (r *asgResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
+	asgID, err := plan.asgID()
+
+	if err != nil {
+		res.Diagnostics.AddError("Create: Invalid Auto Scaling Group ID", fmt.Sprintf("failed to parse auto scaling group ID: %s", err))
+		return
+	}
+
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
+	api := r.api(cid, asgID)
 	params, diag := plan.intoCreate()
 	res.Diagnostics.Append(diag...)
 
@@ -250,61 +243,60 @@ func (r *asgResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	api := r.api(cid)
 	created, err := api.Create(ctx, params)
 
 	if err != nil {
-		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Dedicated auto scaling group: %s", err))
+		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Dedicated load balancer: %s", err))
 		return
 	}
 
-	detail, err := api.Read(ctx, created.AutoScalingGroupID)
+	detail, err := api.Read(ctx, created.LoadBalancerID)
 
 	if err != nil {
-		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to read created AppRun Dedicated auto scaling group: %s", err))
+		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to read created AppRun Dedicated load balancer: %s", err))
 		return
 	}
 
-	res.Diagnostics.Append(plan.updateState(ctx, detail, cid)...)
+	res.Diagnostics.Append(plan.updateState(ctx, detail)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &plan)...)
 }
 
-func (r *asgResource) Read(ctx context.Context, req resource.ReadRequest, res *resource.ReadResponse) {
-	var state asgResourceModel
+func (r *lbResource) Read(ctx context.Context, req resource.ReadRequest, res *resource.ReadResponse) {
+	var state lbResourceModel
 	res.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if res.Diagnostics.HasError() {
 		return
 	}
 
-	cid, id, err := state.ids()
+	cid, asgID, lbID, err := state.ids()
 
 	if err != nil {
 		res.Diagnostics.AddError("Read: Invalid IDs", fmt.Sprintf("failed to parse IDs: %s", err))
 		return
 	}
 
-	detail, err := r.api(cid).Read(ctx, id)
+	detail, err := r.api(cid, asgID).Read(ctx, lbID)
 
 	if err != nil {
-		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Dedicated auto scaling group: %s", err))
+		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Dedicated load balancer: %s", err))
 		return
 	}
 
-	res.Diagnostics.Append(state.updateState(ctx, detail, cid)...)
+	res.Diagnostics.Append(state.updateState(ctx, detail)...)
 	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
 }
 
-func (r *asgResource) Update(ctx context.Context, req resource.UpdateRequest, res *resource.UpdateResponse) {
-	// Auto scaling groups are immutable and cannot be updated
+func (r *lbResource) Update(ctx context.Context, req resource.UpdateRequest, res *resource.UpdateResponse) {
+	// Load balancers are immutable and cannot be updated
 	res.Diagnostics.AddError(
 		"Update: Not Supported",
-		"AppRun Dedicated auto scaling groups are immutable. Create a new auto scaling group instead of updating an existing one.",
+		"AppRun Dedicated load balancers are immutable. Create a new load balancer instead of updating an existing one.",
 	)
 }
 
-func (r *asgResource) Delete(ctx context.Context, req resource.DeleteRequest, res *resource.DeleteResponse) {
-	var state asgResourceModel
+func (r *lbResource) Delete(ctx context.Context, req resource.DeleteRequest, res *resource.DeleteResponse) {
+	var state lbResourceModel
 	res.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if res.Diagnostics.HasError() {
@@ -323,102 +315,121 @@ func (r *asgResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 			return
 		}
 
-		res.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete AppRun Dedicated auto scaling group: %s", err))
+		res.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete AppRun Dedicated load balancer: %s", err))
 		return
 	}
 }
 
-func (r *asgResource) ImportState(ctx context.Context, req resource.ImportStateRequest, res *resource.ImportStateResponse) {
-	// Import format: cluster_id/auto_scaling_group_id
+func (r *lbResource) ImportState(ctx context.Context, req resource.ImportStateRequest, res *resource.ImportStateResponse) {
+	// Import format: cluster_id/auto_scaling_group_id/load_balancer_id
 	parts := strings.Split(req.ID, "/")
 
-	if len(parts) != 2 {
+	if len(parts) != 3 {
 		res.Diagnostics.AddError(
 			"Import: Invalid ID",
-			fmt.Sprintf("Expected format: cluster_id/auto_scaling_group_id, got: %s", req.ID),
+			fmt.Sprintf("Expected format: cluster_id/auto_scaling_group_id/load_balancer_id, got: %s", req.ID),
 		)
 		return
 	}
 
 	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("cluster_id"), parts[0])...)
-	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
+	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("auto_scaling_group_id"), parts[1])...)
+	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("id"), parts[2])...)
 }
 
-func (r *asgResource) api(c clusterID) asg.AutoScalingGroupAPI {
-	return asg.NewAutoScalingGroupOp(r.client, c)
+func (r *lbResource) api(c clusterID, a asgID) lb.LoadBalancerAPI {
+	return lb.NewLoadBalancerOp(r.client, c, a)
 }
 
-func (r *asgResourceModel) ids() (c clusterID, a asgID, e error) {
-	c, e = intoUUID[clusterID](r.ClusterID)
+func (r *lbResourceModel) ids() (c clusterID, a asgID, l lbID, e error) {
+	c, e = r.clusterID()
 
 	if e != nil {
 		return
 	}
 
-	a, e = intoUUID[asgID](r.ID)
+	a, e = r.asgID()
+
+	if e != nil {
+		return
+	}
+
+	l, e = r.lbID()
 
 	return
 }
 
-func (r *asgResourceModel) waitDeleted(ctx context.Context, client *asgResource) (err error) {
-	// An auto scaling group can have load balancer nodes and worker nodes
-	// They have to be provisioned before deleted
-	wg := sync.WaitGroup{}
-	ch := make(chan error, 2)
-	c, a, err := r.ids()
+func (r *lbResourceModel) clusterID() (clusterID, error) { return intoUUID[clusterID](r.ClusterID) }
+func (r *lbResourceModel) asgID() (asgID, error)         { return intoUUID[asgID](r.AutoScalingGroupID) }
+
+func (r *lbResourceModel) waitDeleted(ctx context.Context, client *lbResource) (err error) {
+	c, a, l, err := r.ids()
 
 	if err != nil {
 		return err
 	}
 
-	wnAPI := wn.NewWorkerNodeOp(client.client, c, a)
-	lbAPI := lb.NewLoadBalancerOp(client.client, c, a)
+	api := client.api(c, a)
 
-	tflog.Info(ctx, "waiting for ASG provisioning", map[string]any{"id": uuid.UUID(a).String()})
-	wg.Go(func() { ch <- deleteLBs(ctx, lbAPI) })
-	wg.Go(func() { ch <- deleteWNs(ctx, wnAPI) })
-	go func() {
-		defer close(ch)
-		wg.Wait()
-	}()
-	for e := range ch {
-		err = errors.Join(err, e)
-	}
+	// Wait for nodes to be provisioned before deleting
+	err = provisionLBNodes(ctx, api, l)
 
 	if err != nil {
 		return err
 	}
 
-	err = client.api(c).Delete(ctx, a)
-
-	if saclient.IsNotFoundError(err) {
-		return nil // no asg no error
-	}
-
-	if err != nil {
-		return err
-	}
-
-	return drainASG(ctx, client.api(c), a)
+	return drainLB(ctx, api, l)
 }
 
-func drainASG(ctx context.Context, api asg.AutoScalingGroupAPI, id asgID) error {
-	t := time.NewTicker(13 * time.Second)
+func provisionLBNodes(ctx context.Context, api lb.LoadBalancerAPI, id lbID) error {
+	t := time.NewTicker(7 * time.Second)
 	defer t.Stop()
 
 	for {
-		_, err := api.Read(ctx, id)
+		ok, err := provisionLBsInternalNodes(ctx, api, id)
 
 		if saclient.IsNotFoundError(err) {
-			tflog.Debug(ctx, "ASG deleted", map[string]any{"id": uuid.UUID(id).String()})
-			return nil // no asg no problem
+			return nil // no lb no problem
 		}
 
 		if err != nil {
 			return err
 		}
 
-		tflog.Debug(ctx, "ASG deleting", map[string]any{"id": uuid.UUID(id).String()})
+		if ok {
+			return nil
+		}
+
+		select {
+		case <-t.C:
+			continue
+
+		case <-ctx.Done():
+			return ctx.Err()
+		}
+	}
+}
+
+func drainLB(ctx context.Context, api lb.LoadBalancerAPI, id lbID) error {
+	t := time.NewTicker(13 * time.Second)
+	defer t.Stop()
+
+	for {
+		ok, err := waitLBsInternalLB(ctx, api, id)
+
+		if saclient.IsNotFoundError(err) {
+			return nil // no lb no problem
+		}
+
+		if err != nil {
+			return err
+		}
+
+		if ok {
+			return nil
+		}
+
+		tflog.Debug(ctx, "ASG LB deleting", map[string]any{"id": uuid.UUID(id).String()})
 
 		select {
 		case <-t.C:
