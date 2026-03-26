@@ -87,9 +87,9 @@ func (r *metricStorageAccessKeyResource) Schema(ctx context.Context, _ resource.
 }
 
 func (r *metricStorageAccessKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, ",", 2)
+	parts := strings.SplitN(req.ID, "_", 2)
 	if len(parts) != 2 {
-		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: <storage_id>,<uid>")
+		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: <storage_id>_<uid>")
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("storage_id"), parts[0])...)
