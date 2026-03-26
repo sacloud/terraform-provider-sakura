@@ -129,13 +129,14 @@ func (r *traceStorageAccessKeyResource) Read(ctx context.Context, req resource.R
 		return
 	}
 
-	state.updateState(state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
+	state.updateState(state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), state.Secret.ValueString())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *traceStorageAccessKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan traceStorageAccessKeyResourceModel
+	var plan, state traceStorageAccessKeyResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -156,7 +157,7 @@ func (r *traceStorageAccessKeyResource) Update(ctx context.Context, req resource
 		return
 	}
 
-	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret())
+	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), state.Secret.ValueString())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

@@ -129,13 +129,14 @@ func (r *metricStorageAccessKeyResource) Read(ctx context.Context, req resource.
 		return
 	}
 
-	state.updateState(state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
+	state.updateState(state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), state.Secret.ValueString())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *metricStorageAccessKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan metricStorageAccessKeyResourceModel
+	var plan, state metricStorageAccessKeyResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -156,7 +157,7 @@ func (r *metricStorageAccessKeyResource) Update(ctx context.Context, req resourc
 		return
 	}
 
-	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
+	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), state.Secret.ValueString())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 

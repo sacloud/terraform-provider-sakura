@@ -129,13 +129,15 @@ func (r *logStorageAccessKeyResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	state.updateState(state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
+	// secretは将来的にCreate以外では返ってこなくなるので、現状の値を保持する形にする。
+	state.updateState(state.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), state.Secret.ValueString())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *logStorageAccessKeyResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan logStorageAccessKeyResourceModel
+	var plan, state logStorageAccessKeyResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -156,7 +158,8 @@ func (r *logStorageAccessKeyResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), key.GetSecret().String())
+	// secretは将来的にCreate以外では返ってこなくなるので、現状の値を保持する形にする。
+	plan.updateState(plan.StorageID.ValueString(), key.GetUID().String(), key.GetDescription().Value, key.GetToken(), state.Secret.ValueString())
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
