@@ -40,8 +40,8 @@ data "sakura_apprun_dedicated_load_balancer_nodes" "main" {
 
 ### Required
 
-- `auto_scaling_group_id` (String) The auto scaling group ID that the load_balancer_nodes belong to
-- `cluster_id` (String) The cluster ID that the load_balancer_nodes belong to
+- `auto_scaling_group_id` (String) The auto scaling group ID that the load_balancer_nodes belongs to
+- `cluster_id` (String) The cluster ID that the load_balancer_nodes belongs to
 - `load_balancer_id` (String) The load balancer ID that the load_balancer_nodes belong to
 
 ### Read-Only
@@ -51,14 +51,20 @@ data "sakura_apprun_dedicated_load_balancer_nodes" "main" {
 <a id="nestedatt--nodes"></a>
 ### Nested Schema for `nodes`
 
+Required:
+
+- `id` (String) The load balancer node ID
+
+Optional:
+
+- `resource_id` (String) The ID of the load_balancer_nodes.
+
 Read-Only:
 
 - `archive_version` (String) The archive version
 - `create_error_message` (String) The error message if creation failed
 - `created` (String) The creation time of the load balancer node
-- `id` (String) The ID of the load_balancer_node.
 - `interfaces` (Attributes List) The network interfaces of the load balancer node (see [below for nested schema](#nestedatt--nodes--interfaces))
-- `resource_id` (String) The ID of the load_balancer_node.
 - `status` (String) The status of the load balancer node
 
 <a id="nestedatt--nodes--interfaces"></a>

@@ -43,7 +43,7 @@ data "sakura_apprun_dedicated_load_balancer_node" "main" {
 
 - `auto_scaling_group_id` (String) The auto scaling group ID that the load_balancer_node belongs to
 - `cluster_id` (String) The cluster ID that the load_balancer_node belongs to
-- `id` (String) The ID of the load_balancer_node.
+- `id` (String) The load balancer node ID
 - `load_balancer_id` (String) The load balancer ID that the load_balancer_node belongs to
 
 ### Optional
