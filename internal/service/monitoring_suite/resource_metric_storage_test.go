@@ -58,6 +58,52 @@ func TestAccSakuraMonitoringSuiteMetricStorage_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraMonitoringSuiteMetricStorage_basic(t *testing.T) {
+	rand := test.RandomName()
+
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"name":        rand,
+			"description": "description",
+			"is_system":   "false",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0],
+			"created_at",
+			"account_id",
+			"resource_id",
+			"endpoints.address",
+			"usage.metric_routings",
+		)
+	}
+
+	resourceName := "sakura_monitoring_suite_metric_storage.foobar"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraMonitoringSuiteMetricStorageDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricStorage_basic, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateCheck:  checkFn,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraMonitoringSuiteMetricStorageDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	op := monitoringsuite.NewMetricsStorageOp(client.MonitoringSuiteClient)
