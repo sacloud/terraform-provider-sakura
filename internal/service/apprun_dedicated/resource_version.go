@@ -382,7 +382,7 @@ func (v *verResourceModel) intoCreate(transitional *verResourceModel) (ret ver.C
 	ret.ScalingMode = v1.ScalingMode(v.ScalingMode.ValueString())
 	ret.FixedScale = v.FixedScale.ValueInt32Pointer()
 	ret.MinScale = v.MinScale.ValueInt32Pointer()
-	ret.MaxScale = v.MinScale.ValueInt32Pointer()
+	ret.MaxScale = v.MaxScale.ValueInt32Pointer()
 	ret.ScaleInThreshold = v.ScaleInThreshold.ValueInt32Pointer()
 	ret.ScaleOutThreshold = v.ScaleOutThreshold.ValueInt32Pointer()
 	ret.Image = v.Image.ValueString()
