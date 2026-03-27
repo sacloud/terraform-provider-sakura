@@ -195,7 +195,7 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 							Validators:          []validator.Set{setvalidator.SizeAtMost(5)},
 							PlanModifiers:       []planmodifier.Set{setplanmodifier.RequiresReplace()},
 						},
-						"health_chek": schema.SingleNestedAttribute{
+						"health_check": schema.SingleNestedAttribute{
 							Required:    true,
 							Description: "Health check configuration",
 							Attributes: map[string]schema.Attribute{

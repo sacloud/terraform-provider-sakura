@@ -116,7 +116,7 @@ func (d *verDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 							ElementType:         types.StringType,
 							MarkdownDescription: "Target `Host:` header value (only applicable when `http` or `https`)",
 						},
-						"health_chek": schema.SingleNestedAttribute{
+						"health_check": schema.SingleNestedAttribute{
 							Computed:    true,
 							Description: "Health check configuration",
 							Attributes: map[string]schema.Attribute{
