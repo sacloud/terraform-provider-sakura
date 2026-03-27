@@ -29,58 +29,40 @@ func NewCertDataSource() datasource.DataSource {
 }
 
 func (d *certDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	id := d.schemaID()
-
-	name := d.schemaName()
-
-	clusterID := d.schemaClusterID()
-
-	commonName := schema.StringAttribute{
-		Computed:    true,
-		Description: "The common name of the certificate",
-	}
-
-	// SANはAPI上はリストで表現されている
-	// が、X.509とRFC6125によると順序はない
-	// Terraform上はSetであると考えるべきだろう
-	subjectAlternativeNames := schema.SetAttribute{
-		Computed:    true,
-		ElementType: types.StringType,
-		Description: "The subject alternative names of the certificate",
-	}
-
-	notBefore := schema.StringAttribute{
-		Computed:    true,
-		Description: "The certificate validity start time",
-	}
-
-	notAfter := schema.StringAttribute{
-		Computed:    true,
-		Description: "The certificate validity end time",
-	}
-
-	createdAt := schema.StringAttribute{
-		Computed:    true,
-		Description: "The creation timestamp of the certificate",
-	}
-
-	updatedAt := schema.StringAttribute{
-		Computed:    true,
-		Description: "The update timestamp of the certificate",
-	}
-
 	res.Schema = schema.Schema{
 		Description: "Information about an AppRun dedicated certificate",
 		Attributes: map[string]schema.Attribute{
-			"id":                        id,
-			"name":                      name,
-			"cluster_id":                clusterID,
-			"common_name":               commonName,
-			"subject_alternative_names": subjectAlternativeNames,
-			"not_before":                notBefore,
-			"not_after":                 notAfter,
-			"created_at":                createdAt,
-			"updated_at":                updatedAt,
+			"id":         d.schemaID(),
+			"name":       d.schemaName(),
+			"cluster_id": d.schemaClusterID(),
+			"common_name": schema.StringAttribute{
+				Computed:    true,
+				Description: "The common name of the certificate",
+			},
+			// SANはAPI上はリストで表現されている
+			// が、X.509とRFC6125によると順序はない
+			// Terraform上はSetであると考えるべきだろう
+			"subject_alternative_names": schema.SetAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "The subject alternative names of the certificate",
+			},
+			"not_before": schema.StringAttribute{
+				Computed:    true,
+				Description: "The certificate validity start time",
+			},
+			"not_after": schema.StringAttribute{
+				Computed:    true,
+				Description: "The certificate validity end time",
+			},
+			"created_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The creation timestamp of the certificate",
+			},
+			"updated_at": schema.StringAttribute{
+				Computed:    true,
+				Description: "The update timestamp of the certificate",
+			},
 		},
 	}
 }

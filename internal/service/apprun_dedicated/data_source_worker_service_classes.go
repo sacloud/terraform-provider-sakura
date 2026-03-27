@@ -29,30 +29,24 @@ func NewWorkerServiceClassesDataSource() datasource.DataSource {
 }
 
 func (d *wscDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	name := schema.StringAttribute{
-		Computed:    true,
-		Description: "The service class name",
-	}
-
-	path := schema.StringAttribute{
-		Computed:    true,
-		Description: "The service class path",
-	}
-
-	class := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"path": path,
-			"name": name,
-		},
-	}
-
 	res.Schema = schema.Schema{
 		Description: "List of available worker service classes for AppRun Dedicated",
 		Attributes: map[string]schema.Attribute{
 			"classes": schema.ListNestedAttribute{
-				Computed:     true,
-				Description:  "List of worker service classes",
-				NestedObject: class,
+				Computed:    true,
+				Description: "List of worker service classes",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"path": schema.StringAttribute{
+							Computed:    true,
+							Description: "The service class path",
+						},
+						"name": schema.StringAttribute{
+							Computed:    true,
+							Description: "The service class name",
+						},
+					},
+				},
 			},
 		},
 	}

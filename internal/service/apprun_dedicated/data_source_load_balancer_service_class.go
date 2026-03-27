@@ -26,27 +26,21 @@ func NewLoadBalancerServiceClassDataSource() datasource.DataSource {
 }
 
 func (d *lbsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	name := schema.StringAttribute{
-		Required:    true,
-		Description: "The name of the load balancer service class",
-	}
-
-	path := schema.StringAttribute{
-		Computed:    true,
-		Description: "The service class path",
-	}
-
-	nodeCount := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The number of nodes assigned",
-	}
-
 	res.Schema = schema.Schema{
 		Description: "Information about a specific load balancer service class for AppRun Dedicated",
 		Attributes: map[string]schema.Attribute{
-			"name":       name,
-			"path":       path,
-			"node_count": nodeCount,
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the load balancer service class",
+			},
+			"path": schema.StringAttribute{
+				Computed:    true,
+				Description: "The service class path",
+			},
+			"node_count": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The number of nodes assigned",
+			},
 		},
 	}
 }

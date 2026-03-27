@@ -40,91 +40,65 @@ var (
 func NewCertResource() resource.Resource { return &certResource{resourceNamed("certificate")} }
 
 func (r *certResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
-	id := r.schemaID()
-
-	name := r.schemaName(stringvalidator.RegexMatches(
-		regexp.MustCompile(`^[a-zA-Z0-9_.-]+$`),
-		"no special characters allowed; alphanumeric and/or hyphens, dots and underscores",
-	))
-
-	clusterID := r.schemaClusterID()
-
-	certPEM := schema.StringAttribute{
-		Required:    true,
-		Sensitive:   false,
-		Description: "The PEM-encoded certificate",
-		Validators: []validator.String{
-			stringvalidator.LengthAtMost(1000000),
-			stringvalidator.AlsoRequires(path.MatchRoot("private_key_pem")),
-		},
-	}
-
-	keyPEM := schema.StringAttribute{
-		Required:    true,
-		Sensitive:   true,
-		WriteOnly:   true,
-		Description: "The PEM-encoded private key",
-		Validators: []validator.String{
-			stringvalidator.LengthAtMost(1000000),
-			stringvalidator.AlsoRequires(path.MatchRoot("certificate_pem")),
-		},
-	}
-
-	intermediateCertPEM := schema.StringAttribute{
-		Optional:    true,
-		Sensitive:   true,
-		Description: "The PEM-encoded intermediate certificate",
-		Validators: []validator.String{
-			stringvalidator.LengthAtMost(1000000),
-		},
-	}
-
-	commonName := schema.StringAttribute{
-		Computed:    true,
-		Description: "The common name of the certificate",
-	}
-
-	// SANはAPI上はリストで表現されている
-	// が、X.509とRFC6125によると順序はない
-	// Terraform上はSetであると考えるべきだろう
-	subjectAlternativeNames := schema.SetAttribute{
-		Computed:    true,
-		ElementType: types.StringType,
-		Description: "The subject alternative names of the certificate",
-	}
-
-	notBefore := schema.StringAttribute{
-		Computed:    true,
-		Description: "The certificate validity start time (Unix timestamp)",
-	}
-
-	notAfter := schema.StringAttribute{
-		Computed:    true,
-		Description: "The certificate validity end time (Unix timestamp)",
-	}
-
-	createdAt := common.SchemaResourceCreatedAt("certificate")
-
-	updatedAt := common.SchemaResourceUpdatedAt("certificate")
-
-	to := timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true})
-
 	res.Schema = schema.Schema{
 		Description: "Manages an AppRun dedicated certificate",
 		Attributes: map[string]schema.Attribute{
-			"id":                           id,
-			"cluster_id":                   clusterID,
-			"name":                         name,
-			"certificate_pem":              certPEM,
-			"private_key_pem":              keyPEM,
-			"intermediate_certificate_pem": intermediateCertPEM,
-			"common_name":                  commonName,
-			"subject_alternative_names":    subjectAlternativeNames,
-			"not_before":                   notBefore,
-			"not_after":                    notAfter,
-			"created_at":                   createdAt,
-			"updated_at":                   updatedAt,
-			"timeouts":                     to,
+			"id":         r.schemaID(),
+			"cluster_id": r.schemaClusterID(),
+			"name": r.schemaName(stringvalidator.RegexMatches(
+				regexp.MustCompile(`^[a-zA-Z0-9_.-]+$`),
+				"no special characters allowed; alphanumeric and/or hyphens, dots and underscores",
+			)),
+			"certificate_pem": schema.StringAttribute{
+				Required:    true,
+				Sensitive:   false,
+				Description: "The PEM-encoded certificate",
+				Validators: []validator.String{
+					stringvalidator.LengthAtMost(1000000),
+					stringvalidator.AlsoRequires(path.MatchRoot("private_key_pem")),
+				},
+			},
+			"private_key_pem": schema.StringAttribute{
+				Required:    true,
+				Sensitive:   true,
+				WriteOnly:   true,
+				Description: "The PEM-encoded private key",
+				Validators: []validator.String{
+					stringvalidator.LengthAtMost(1000000),
+					stringvalidator.AlsoRequires(path.MatchRoot("certificate_pem")),
+				},
+			},
+			"intermediate_certificate_pem": schema.StringAttribute{
+				Optional:    true,
+				Sensitive:   true,
+				Description: "The PEM-encoded intermediate certificate",
+				Validators: []validator.String{
+					stringvalidator.LengthAtMost(1000000),
+				},
+			},
+			"common_name": schema.StringAttribute{
+				Computed:    true,
+				Description: "The common name of the certificate",
+			},
+			// SANはAPI上はリストで表現されている
+			// が、X.509とRFC6125によると順序はない
+			// Terraform上はSetであると考えるべきだろう
+			"subject_alternative_names": schema.SetAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "The subject alternative names of the certificate",
+			},
+			"not_before": schema.StringAttribute{
+				Computed:    true,
+				Description: "The certificate validity start time (Unix timestamp)",
+			},
+			"not_after": schema.StringAttribute{
+				Computed:    true,
+				Description: "The certificate validity end time (Unix timestamp)",
+			},
+			"created_at": common.SchemaResourceCreatedAt("certificate"),
+			"updated_at": common.SchemaResourceUpdatedAt("certificate"),
+			"timeouts":   timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
 	}
 }

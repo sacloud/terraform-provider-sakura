@@ -32,133 +32,87 @@ func NewLoadBalancersDataSource() datasource.DataSource {
 }
 
 func (d *loadBalancersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	cid := d.schemaClusterID()
-
-	aid := d.schemaASGID()
-
-	id := d.schemaID()
-
-	name := d.schemaName()
-
-	serviceClassPath := schema.StringAttribute{
-		Computed:    true,
-		Description: "The service class path of the load balancer",
-	}
-
-	nameServers := schema.ListAttribute{
-		Computed:    true,
-		ElementType: types.StringType,
-		Description: "The name servers for the load balancer",
-	}
-
-	created := d.schemaCreatedAt()
-
-	deleting := schema.BoolAttribute{
-		Computed:    true,
-		Description: "Whether the load balancer is being deleted",
-	}
-
-	ifaceIdx := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The interface index",
-	}
-
-	upstream := schema.StringAttribute{
-		Computed:    true,
-		Description: "The upstream network",
-	}
-
-	start := schema.StringAttribute{
-		Computed:    true,
-		Description: "The start IP address of the range",
-	}
-
-	end := schema.StringAttribute{
-		Computed:    true,
-		Description: "The end IP address of the range",
-	}
-
-	ipRange := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"start": start,
-			"end":   end,
-		},
-	}
-
-	ipPool := schema.SetNestedAttribute{
-		Computed:     true,
-		NestedObject: ipRange,
-		Description:  "The IP pool for the interface",
-	}
-
-	netmaskLen := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The netmask length",
-	}
-
-	defaultGateway := schema.StringAttribute{
-		Computed:    true,
-		Description: "The default gateway",
-	}
-
-	vip := schema.StringAttribute{
-		Computed:    true,
-		Description: "The VIP address",
-	}
-
-	virtualRouterID := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The virtual router ID",
-	}
-
-	packetFilterID := schema.StringAttribute{
-		Computed:    true,
-		Description: "The packet filter ID",
-	}
-
-	iface := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"interface_index":   ifaceIdx,
-			"upstream":          upstream,
-			"ip_pool":           ipPool,
-			"netmask_len":       netmaskLen,
-			"default_gateway":   defaultGateway,
-			"vip":               vip,
-			"virtual_router_id": virtualRouterID,
-			"packet_filter_id":  packetFilterID,
-		},
-	}
-
-	interfaces := schema.SetNestedAttribute{
-		Computed:     true,
-		NestedObject: iface,
-		Description:  "The network interfaces for the load balancer",
-	}
-
-	loadBalancer := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"id":                 id,
-			"name":               name,
-			"service_class_path": serviceClassPath,
-			"name_servers":       nameServers,
-			"interfaces":         interfaces,
-			"created":            created,
-			"deleting":           deleting,
-		},
-	}
-
-	loadBalancers := schema.ListNestedAttribute{
-		Computed:     true,
-		Description:  "List of load balancers",
-		NestedObject: loadBalancer,
-	}
-
 	res.Schema = schema.Schema{
 		Description: "List of load balancers in an AppRun dedicated auto scaling group",
 		Attributes: map[string]schema.Attribute{
-			"cluster_id":            cid,
-			"auto_scaling_group_id": aid,
-			"load_balancers":        loadBalancers,
+			"cluster_id":            d.schemaClusterID(),
+			"auto_scaling_group_id": d.schemaASGID(),
+			"load_balancers": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "List of load balancers",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id":   d.schemaID(),
+						"name": d.schemaName(),
+						"service_class_path": schema.StringAttribute{
+							Computed:    true,
+							Description: "The service class path of the load balancer",
+						},
+						"name_servers": schema.ListAttribute{
+							Computed:    true,
+							ElementType: types.StringType,
+							Description: "The name servers for the load balancer",
+						},
+						"interfaces": schema.SetNestedAttribute{
+							Computed: true,
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"interface_index": schema.Int32Attribute{
+										Computed:    true,
+										Description: "The interface index",
+									},
+									"upstream": schema.StringAttribute{
+										Computed:    true,
+										Description: "The upstream network",
+									},
+									"ip_pool": schema.SetNestedAttribute{
+										Computed: true,
+										NestedObject: schema.NestedAttributeObject{
+											Attributes: map[string]schema.Attribute{
+												"start": schema.StringAttribute{
+													Computed:    true,
+													Description: "The start IP address of the range",
+												},
+												"end": schema.StringAttribute{
+													Computed:    true,
+													Description: "The end IP address of the range",
+												},
+											},
+										},
+										Description: "The IP pool for the interface",
+									},
+									"netmask_len": schema.Int32Attribute{
+										Computed:    true,
+										Description: "The netmask length",
+									},
+									"default_gateway": schema.StringAttribute{
+										Computed:    true,
+										Description: "The default gateway",
+									},
+									"vip": schema.StringAttribute{
+										Computed:    true,
+										Description: "The VIP address",
+									},
+									"virtual_router_id": schema.Int32Attribute{
+										Computed:    true,
+										Description: "The virtual router ID",
+									},
+									"packet_filter_id": schema.StringAttribute{
+										Computed:    true,
+										Description: "The packet filter ID",
+									},
+								},
+							},
+							Description: "The network interfaces for the load balancer",
+						},
+						"created": d.schemaCreatedAt(),
+						"deleting": schema.BoolAttribute{
+							Computed:    true,
+							Description: "Whether the load balancer is being deleted",
+						},
+					},
+				},
+			},
 		},
 	}
 }

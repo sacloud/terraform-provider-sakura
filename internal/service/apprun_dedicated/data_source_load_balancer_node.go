@@ -35,98 +35,66 @@ func NewLoadBalancerNodeDataSource() datasource.DataSource {
 }
 
 func (d *lbnDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	cid := d.schemaClusterID()
-
-	aid := d.schemaASGID()
-
-	lbid := schema.StringAttribute{
-		Required:    true,
-		Description: "The load balancer ID that the load_balancer_node belongs to",
-		Validators:  []validator.String{sacloudvalidator.UUIDValidator},
-	}
-
-	id := schema.StringAttribute{
-		Required:    true,
-		Description: "The load balancer node ID",
-		Validators:  []validator.String{sacloudvalidator.UUIDValidator},
-	}
-
-	resourceID := common.SchemaDataSourceId(d.name)
-
-	status := schema.StringAttribute{
-		Computed:    true,
-		Description: "The status of the load balancer node",
-	}
-
-	archiveVersion := schema.StringAttribute{
-		Computed:    true,
-		Description: "The archive version",
-	}
-
-	createErrorMessage := schema.StringAttribute{
-		Computed:    true,
-		Description: "The error message if creation failed",
-	}
-
-	created := schema.StringAttribute{
-		Computed:    true,
-		Description: "The creation time of the load balancer node",
-	}
-
-	interfaceIndex := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The interface index",
-	}
-
-	address := schema.StringAttribute{
-		Computed:    true,
-		Description: "The IP address",
-	}
-
-	vip := schema.BoolAttribute{
-		Computed:    true,
-		Description: "Whether this is a VIP address",
-	}
-
-	addressObj := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"address": address,
-			"vip":     vip,
-		},
-	}
-
-	addresses := schema.SetNestedAttribute{
-		Computed:     true,
-		Description:  "The IP addresses assigned to this interface",
-		NestedObject: addressObj,
-	}
-
-	iface := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"interface_index": interfaceIndex,
-			"addresses":       addresses,
-		},
-	}
-
-	interfaces := schema.ListNestedAttribute{
-		Computed:     true,
-		Description:  "The network interfaces of the load balancer node",
-		NestedObject: iface,
-	}
-
 	res.Schema = schema.Schema{
 		Description: "Information about an AppRun dedicated load balancer node",
 		Attributes: map[string]schema.Attribute{
-			"cluster_id":            cid,
-			"auto_scaling_group_id": aid,
-			"load_balancer_id":      lbid,
-			"id":                    id,
-			"resource_id":           resourceID,
-			"status":                status,
-			"archive_version":       archiveVersion,
-			"create_error_message":  createErrorMessage,
-			"created":               created,
-			"interfaces":            interfaces,
+			"cluster_id":            d.schemaClusterID(),
+			"auto_scaling_group_id": d.schemaASGID(),
+			"load_balancer_id": schema.StringAttribute{
+				Required:    true,
+				Description: "The load balancer ID that the load_balancer_node belongs to",
+				Validators:  []validator.String{sacloudvalidator.UUIDValidator},
+			},
+			"id": schema.StringAttribute{
+				Required:    true,
+				Description: "The load balancer node ID",
+				Validators:  []validator.String{sacloudvalidator.UUIDValidator},
+			},
+			"resource_id": common.SchemaDataSourceId(d.name),
+			"status": schema.StringAttribute{
+				Computed:    true,
+				Description: "The status of the load balancer node",
+			},
+			"archive_version": schema.StringAttribute{
+				Computed:    true,
+				Description: "The archive version",
+			},
+			"create_error_message": schema.StringAttribute{
+				Computed:    true,
+				Description: "The error message if creation failed",
+			},
+			"created": schema.StringAttribute{
+				Computed:    true,
+				Description: "The creation time of the load balancer node",
+			},
+			"interfaces": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "The network interfaces of the load balancer node",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"interface_index": schema.Int32Attribute{
+							Computed:    true,
+							Description: "The interface index",
+						},
+						"addresses": schema.SetNestedAttribute{
+							Computed:    true,
+							Description: "The IP addresses assigned to this interface",
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"address": schema.StringAttribute{
+										Computed:    true,
+										Description: "The IP address",
+									},
+									"vip": schema.BoolAttribute{
+										Computed:    true,
+										Description: "Whether this is a VIP address",
+									},
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }

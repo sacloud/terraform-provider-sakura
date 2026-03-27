@@ -27,58 +27,38 @@ func NewClusterDataSource() datasource.DataSource {
 }
 
 func (d *clusterDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	id := d.schemaID()
-
-	name := d.schemaName()
-
-	spid := schema.StringAttribute{
-		Computed:    true,
-		Description: "The service principal ID.  This is the principal that invokes the application",
-	}
-
-	portno := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The port number where the cluster listens for requests",
-	}
-
-	protocol := schema.StringAttribute{
-		Computed:            true,
-		MarkdownDescription: "Either `http`, `https`, or `tcp`",
-	}
-
-	nested := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"port":     portno,
-			"protocol": protocol,
-		},
-	}
-
-	ports := schema.ListNestedAttribute{
-		Computed:     true,
-		Description:  "The list of ports that the cluster listens on (max 5)",
-		NestedObject: nested,
-	}
-
-	le := schema.BoolAttribute{
-		Computed:            true,
-		MarkdownDescription: "If true the cluster must listen HTTP port 80 because LetsEncrypt challenges there",
-	}
-
-	at := d.schemaCreatedAt()
-
-	cluster := schema.Schema{
+	res.Schema = schema.Schema{
 		Description: "Information about an AppRun dedicated cluster",
 		Attributes: map[string]schema.Attribute{
-			"id":                     id,
-			"name":                   name,
-			"service_principal_id":   spid,
-			"ports":                  ports,
-			"has_lets_encrypt_email": le,
-			"created_at":             at,
+			"id":   d.schemaID(),
+			"name": d.schemaName(),
+			"service_principal_id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The service principal ID.  This is the principal that invokes the application",
+			},
+			"ports": schema.ListNestedAttribute{
+				Computed:    true,
+				Description: "The list of ports that the cluster listens on (max 5)",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"port": schema.Int32Attribute{
+							Computed:    true,
+							Description: "The port number where the cluster listens for requests",
+						},
+						"protocol": schema.StringAttribute{
+							Computed:            true,
+							MarkdownDescription: "Either `http`, `https`, or `tcp`",
+						},
+					},
+				},
+			},
+			"has_lets_encrypt_email": schema.BoolAttribute{
+				Computed:            true,
+				MarkdownDescription: "If true the cluster must listen HTTP port 80 because LetsEncrypt challenges there",
+			},
+			"created_at": d.schemaCreatedAt(),
 		},
 	}
-
-	res.Schema = cluster
 }
 
 func (d *clusterDataSource) Read(ctx context.Context, req datasource.ReadRequest, res *datasource.ReadResponse) {

@@ -26,21 +26,17 @@ func NewWorkerServiceClassDataSource() datasource.DataSource {
 }
 
 func (d *wsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	name := schema.StringAttribute{
-		Required:    true,
-		Description: "The name of the worker service class",
-	}
-
-	path := schema.StringAttribute{
-		Computed:    true,
-		Description: "The service class path",
-	}
-
 	res.Schema = schema.Schema{
 		Description: "Information about a specific worker service class for AppRun Dedicated",
 		Attributes: map[string]schema.Attribute{
-			"name": name,
-			"path": path,
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the worker service class",
+			},
+			"path": schema.StringAttribute{
+				Computed:    true,
+				Description: "The service class path",
+			},
 		},
 	}
 }

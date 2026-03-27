@@ -29,192 +29,134 @@ var (
 func NewVersionDataSource() datasource.DataSource { return &verDataSource{dataSourceNamed("version")} }
 
 func (d *verDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	aid := common.SchemaDataSourceId("application").(schema.StringAttribute)
-	aid.Required = true
-	aid.Computed = false
-	aid.Optional = false
-	aid.Validators = []validator.String{sacloudvalidator.UUIDValidator}
-
-	// unlike other apprun dedicated resources, a version has no name.
-	// it has version number in stead.
-	ver := d.schemaVersion()
-
-	cpu := schema.Int64Attribute{
-		Computed:    true,
-		Description: "The CPU limit in millicores (e.g., 1000 = 1 CPU)",
-	}
-
-	memory := schema.Int64Attribute{
-		Computed:    true,
-		Description: "The memory limit in megabytes",
-	}
-
-	scalingMode := schema.StringAttribute{
-		Computed:    true,
-		Description: "The scaling mode (manual, autoscale)",
-	}
-
-	fixedScale := schema.Int32Attribute{
-		Computed:            true,
-		MarkdownDescription: "Number of nodes when scaling mode is `manual`",
-	}
-
-	minScale := schema.Int32Attribute{
-		Computed:            true,
-		MarkdownDescription: "Minimum number of nodes when scaling mode is `autoscale`",
-	}
-
-	maxScale := schema.Int32Attribute{
-		Computed:            true,
-		MarkdownDescription: "Maximum number of nodes when scaling mode is `autoscale`",
-	}
-
-	scaleIn := schema.Int32Attribute{
-		Computed:            true,
-		MarkdownDescription: "When to scale in when scaling mode is `autoscale`",
-	}
-
-	scaleOut := schema.Int32Attribute{
-		Computed:            true,
-		MarkdownDescription: "When to scale out when scaling mode is `autoscale`",
-	}
-
-	image := schema.StringAttribute{
-		Computed:    true,
-		Description: "The container image",
-	}
-
-	user := schema.StringAttribute{
-		Computed:    true,
-		Description: "Login username for container registry",
-	}
-
-	// note that password is intentionally not saved in the state
-
-	cmd := schema.ListAttribute{
-		Computed:    true,
-		ElementType: types.StringType,
-		Description: "application command line i.e. the command and arguments",
-	}
-
-	activeNodeCount := schema.Int64Attribute{
-		Computed:    true,
-		Description: "The number of active nodes.  You might want to ignore_changes this field because it changes from time to time",
-	}
-
-	target := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The port that the application listens to",
-	}
-
-	listens := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The port that the load balancer listens to",
-	}
-
-	usele := schema.BoolAttribute{
-		Computed:            true,
-		MarkdownDescription: "Whether the load balancer uses Let's Encrypt (applicable only when `https`)",
-	}
-
-	hosts := schema.SetAttribute{
-		Computed:            true,
-		ElementType:         types.StringType,
-		MarkdownDescription: "Target `Host:` header value (only applicable when `http` or `https`)",
-	}
-
-	path := schema.StringAttribute{
-		Computed:    true,
-		Description: "Health check endpoint",
-	}
-
-	intv := schema.Int32Attribute{
-		Computed:    true,
-		Description: "Health check intervals in seconds",
-	}
-
-	to := schema.Int32Attribute{
-		Computed:    true,
-		Description: "Time out in seconds until the health check fails",
-	}
-
-	hc := schema.SingleNestedAttribute{
-		Computed:    true,
-		Description: "Health check configuration",
-		Attributes: map[string]schema.Attribute{
-			"path":     path,
-			"interval": intv,
-			"timeout":  to,
-		},
-	}
-
-	port := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"target_port":        target,
-			"load_balancer_port": listens,
-			"use_lets_encrypt":   usele,
-			"host":               hosts,
-			"health_chek":        hc,
-		},
-	}
-
-	ports := schema.SetNestedAttribute{
-		Computed:     true,
-		NestedObject: port,
-		Description:  "Ports that the application exposes",
-	}
-
-	k := schema.StringAttribute{
-		Computed:    true,
-		Description: "Environment variable name",
-	}
-
-	v := schema.StringAttribute{
-		Computed:    true,
-		Description: "The value, or null if it is secret",
-	}
-
-	s := schema.BoolAttribute{
-		Computed:    true,
-		Description: "Whether the value is sensitive",
-	}
-
-	e := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"key":    k,
-			"value":  v,
-			"secret": s,
-		},
-	}
-
-	env := schema.SetNestedAttribute{
-		Computed:     true,
-		Description:  "Environment variables",
-		NestedObject: e,
-	}
-
-	createdAt := d.schemaCreatedAt()
-
 	res.Schema = schema.Schema{
 		Description: "Information about an AppRun dedicated application version",
 		Attributes: map[string]schema.Attribute{
-			"application_id":      aid,
-			"version":             ver,
-			"cpu":                 cpu,
-			"memory":              memory,
-			"scaling_mode":        scalingMode,
-			"fixed_scale":         fixedScale,
-			"min_scale":           minScale,
-			"max_scale":           maxScale,
-			"scale_in_threshold":  scaleIn,
-			"scale_out_threshold": scaleOut,
-			"image":               image,
-			"registry_username":   user,
-			"cmd":                 cmd,
-			"created_at":          createdAt,
-			"active_node_count":   activeNodeCount,
-			"exposed_ports":       ports,
-			"env_vars":            env,
+			"application_id": func() (attr schema.StringAttribute) {
+				attr = common.SchemaDataSourceId("application").(schema.StringAttribute)
+				attr.Required = true
+				attr.Computed = false
+				attr.Optional = false
+				attr.Validators = []validator.String{sacloudvalidator.UUIDValidator}
+				return
+			}(),
+			// unlike other apprun dedicated resources, a version has no name.
+			// it has version number in stead.
+			"version": d.schemaVersion(),
+			"cpu": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The CPU limit in millicores (e.g., 1000 = 1 CPU)",
+			},
+			"memory": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The memory limit in megabytes",
+			},
+			"scaling_mode": schema.StringAttribute{
+				Computed:    true,
+				Description: "The scaling mode (manual, autoscale)",
+			},
+			"fixed_scale": schema.Int32Attribute{
+				Computed:            true,
+				MarkdownDescription: "Number of nodes when scaling mode is `manual`",
+			},
+			"min_scale": schema.Int32Attribute{
+				Computed:            true,
+				MarkdownDescription: "Minimum number of nodes when scaling mode is `autoscale`",
+			},
+			"max_scale": schema.Int32Attribute{
+				Computed:            true,
+				MarkdownDescription: "Maximum number of nodes when scaling mode is `autoscale`",
+			},
+			"scale_in_threshold": schema.Int32Attribute{
+				Computed:            true,
+				MarkdownDescription: "When to scale in when scaling mode is `autoscale`",
+			},
+			"scale_out_threshold": schema.Int32Attribute{
+				Computed:            true,
+				MarkdownDescription: "When to scale out when scaling mode is `autoscale`",
+			},
+			"image": schema.StringAttribute{
+				Computed:    true,
+				Description: "The container image",
+			},
+			"registry_username": schema.StringAttribute{
+				Computed:    true,
+				Description: "Login username for container registry",
+			},
+			// note that password is intentionally not saved in the state
+			"cmd": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "application command line i.e. the command and arguments",
+			},
+			"active_node_count": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The number of active nodes.  You might want to ignore_changes this field because it changes from time to time",
+			},
+			"created_at": d.schemaCreatedAt(),
+			"exposed_ports": schema.SetNestedAttribute{
+				Computed:    true,
+				Description: "Ports that the application exposes",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"target_port": schema.Int32Attribute{
+							Computed:    true,
+							Description: "The port that the application listens to",
+						},
+						"load_balancer_port": schema.Int32Attribute{
+							Computed:    true,
+							Description: "The port that the load balancer listens to",
+						},
+						"use_lets_encrypt": schema.BoolAttribute{
+							Computed:            true,
+							MarkdownDescription: "Whether the load balancer uses Let's Encrypt (applicable only when `https`)",
+						},
+						"host": schema.SetAttribute{
+							Computed:            true,
+							ElementType:         types.StringType,
+							MarkdownDescription: "Target `Host:` header value (only applicable when `http` or `https`)",
+						},
+						"health_chek": schema.SingleNestedAttribute{
+							Computed:    true,
+							Description: "Health check configuration",
+							Attributes: map[string]schema.Attribute{
+								"path": schema.StringAttribute{
+									Computed:    true,
+									Description: "Health check endpoint",
+								},
+								"interval": schema.Int32Attribute{
+									Computed:    true,
+									Description: "Health check intervals in seconds",
+								},
+								"timeout": schema.Int32Attribute{
+									Computed:    true,
+									Description: "Time out in seconds until the health check fails",
+								},
+							},
+						},
+					},
+				},
+			},
+			"env_vars": schema.SetNestedAttribute{
+				Computed:    true,
+				Description: "Environment variables",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"key": schema.StringAttribute{
+							Computed:    true,
+							Description: "Environment variable name",
+						},
+						"value": schema.StringAttribute{
+							Computed:    true,
+							Description: "The value, or null if it is secret",
+						},
+						"secret": schema.BoolAttribute{
+							Computed:    true,
+							Description: "Whether the value is sensitive",
+						},
+					},
+				},
+			},
 		},
 	}
 }

@@ -50,80 +50,59 @@ var reservedPorts = []int32{
 }
 
 func (r *clusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
-	id := r.schemaID()
-
-	name := r.schemaName(stringvalidator.RegexMatches(
-		regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
-		"no special characters allowed; alphanumeric and/or hyphens and underscores",
-	))
-
-	email := schema.StringAttribute{
-		Optional:      true,
-		Description:   "Let'sEncrypt registation email address",
-		PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
-	}
-
-	spid := schema.StringAttribute{
-		Required:    true,
-		Description: "The service principal ID. This is the principal that invokes the application",
-		Validators: []validator.String{
-			stringvalidator.LengthBetween(12, 12),
-			sacloudvalidator.SakuraIDValidator(),
-		},
-	}
-
-	portno := schema.Int32Attribute{
-		Required:    true,
-		Description: "The port number where the cluster listens for requests",
-		Validators: []validator.Int32{
-			int32validator.Between(1, 65535),
-			int32validator.NoneOf(reservedPorts...),
-		},
-	}
-
 	var p v1.CreateLoadBalancerPortProtocol
 	protocols := common.MapTo(p.AllValues(), common.ToString)
-	protocol := schema.StringAttribute{
-		Required:            true,
-		MarkdownDescription: "Either `http`, `https`, or `tcp`",
-		Validators:          []validator.String{stringvalidator.OneOf(protocols...)},
-	}
-
-	nested := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"port":     portno,
-			"protocol": protocol,
-		},
-	}
-
-	ports := schema.SetNestedAttribute{
-		Optional:      true,
-		Description:   "The list of ports that the cluster listens on (max 5)",
-		NestedObject:  nested,
-		Validators:    []validator.Set{setvalidator.SizeAtMost(5)},
-		PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
-	}
-
-	le := schema.BoolAttribute{
-		Computed:    true,
-		Description: "If true the cluster must listen HTTP port 80 because LetsEncrypt challenges there",
-	}
-
-	createdAt := r.schemaCreatedAt()
-
-	to := timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true})
 
 	res.Schema = schema.Schema{
 		Description: "Manages an AppRun dedicated cluster",
 		Attributes: map[string]schema.Attribute{
-			"id":                     id,
-			"name":                   name,
-			"service_principal_id":   spid,
-			"lets_encrypt_email":     email,
-			"ports":                  ports,
-			"has_lets_encrypt_email": le,
-			"created_at":             createdAt,
-			"timeouts":               to,
+			"id": r.schemaID(),
+			"name": r.schemaName(stringvalidator.RegexMatches(
+				regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
+				"no special characters allowed; alphanumeric and/or hyphens and underscores",
+			)),
+			"service_principal_id": schema.StringAttribute{
+				Required:    true,
+				Description: "The service principal ID. This is the principal that invokes the application",
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(12, 12),
+					sacloudvalidator.SakuraIDValidator(),
+				},
+			},
+			"lets_encrypt_email": schema.StringAttribute{
+				Optional:      true,
+				Description:   "Let'sEncrypt registation email address",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.UseStateForUnknown()},
+			},
+			"ports": schema.SetNestedAttribute{
+				Optional:    true,
+				Description: "The list of ports that the cluster listens on (max 5)",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"port": schema.Int32Attribute{
+							Required:    true,
+							Description: "The port number where the cluster listens for requests",
+							Validators: []validator.Int32{
+								int32validator.Between(1, 65535),
+								int32validator.NoneOf(reservedPorts...),
+							},
+						},
+						"protocol": schema.StringAttribute{
+							Required:            true,
+							MarkdownDescription: "Either `http`, `https`, or `tcp`",
+							Validators:          []validator.String{stringvalidator.OneOf(protocols...)},
+						},
+					},
+				},
+				Validators:    []validator.Set{setvalidator.SizeAtMost(5)},
+				PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+			},
+			"has_lets_encrypt_email": schema.BoolAttribute{
+				Computed:    true,
+				Description: "If true the cluster must listen HTTP port 80 because LetsEncrypt challenges there",
+			},
+			"created_at": r.schemaCreatedAt(),
+			"timeouts":   timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
 	}
 }

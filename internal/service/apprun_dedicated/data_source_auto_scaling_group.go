@@ -29,133 +29,89 @@ func NewAutoScalingGroupDataSource() datasource.DataSource {
 }
 
 func (d *asgDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	id := d.schemaID()
-
-	cid := d.schemaClusterID()
-
-	name := d.schemaName()
-
-	zone := schema.StringAttribute{
-		Computed:    true,
-		Description: "The zone name where the auto scaling group is located",
-	}
-
-	nameServers := schema.ListAttribute{
-		Computed:    true,
-		ElementType: types.StringType,
-		Description: "The name servers for the auto scaling group",
-	}
-
-	workerServiceClassPath := schema.StringAttribute{
-		Computed:    true,
-		Description: "The worker service class path",
-	}
-
-	minNodes := schema.Int32Attribute{
-		Computed:    true,
-		Description: "Minimum number of nodes",
-	}
-
-	maxNodes := schema.Int32Attribute{
-		Computed:    true,
-		Description: "Maximum number of nodes",
-	}
-
-	currentNodes := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The current number of nodes. You might want to ignore_changes this field because it changes from time to time",
-	}
-
-	deleting := schema.BoolAttribute{
-		Computed:    true,
-		Description: "Whether the auto scaling group is being deleted",
-	}
-
-	ifaceIdx := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The interface index",
-	}
-
-	upstream := schema.StringAttribute{
-		Computed:    true,
-		Description: "The upstream network",
-	}
-
-	start := schema.StringAttribute{
-		Computed:    true,
-		Description: "The start IP address of the range",
-	}
-
-	end := schema.StringAttribute{
-		Computed:    true,
-		Description: "The end IP address of the range",
-	}
-
-	ipRange := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"start": start,
-			"end":   end,
-		},
-	}
-
-	ipPool := schema.SetNestedAttribute{
-		Computed:     true,
-		NestedObject: ipRange,
-		Description:  "The IP pool for the interface",
-	}
-
-	netmaskLen := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The netmask length",
-	}
-
-	defaultGateway := schema.StringAttribute{
-		Computed:    true,
-		Description: "The default gateway",
-	}
-
-	packetFilterID := schema.StringAttribute{
-		Computed:    true,
-		Description: "The packet filter ID",
-	}
-
-	connectsToLB := schema.BoolAttribute{
-		Computed:    true,
-		Description: "Whether the interface connects to the load balancer",
-	}
-
-	iface := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"interface_index":  ifaceIdx,
-			"upstream":         upstream,
-			"ip_pool":          ipPool,
-			"netmask_len":      netmaskLen,
-			"default_gateway":  defaultGateway,
-			"packet_filter_id": packetFilterID,
-			"connects_to_lb":   connectsToLB,
-		},
-	}
-
-	interfaces := schema.SetNestedAttribute{
-		Computed:     true,
-		NestedObject: iface,
-		Description:  "The network interfaces for the nodes",
-	}
-
 	res.Schema = schema.Schema{
 		Description: "Information about an AppRun dedicated auto scaling group",
 		Attributes: map[string]schema.Attribute{
-			"id":                        id,
-			"cluster_id":                cid,
-			"name":                      name,
-			"zone":                      zone,
-			"name_servers":              nameServers,
-			"worker_service_class_path": workerServiceClassPath,
-			"min_nodes":                 minNodes,
-			"max_nodes":                 maxNodes,
-			"current_nodes":             currentNodes,
-			"deleting":                  deleting,
-			"interfaces":                interfaces,
+			"id":         d.schemaID(),
+			"cluster_id": d.schemaClusterID(),
+			"name":       d.schemaName(),
+			"zone": schema.StringAttribute{
+				Computed:    true,
+				Description: "The zone name where the auto scaling group is located",
+			},
+			"name_servers": schema.ListAttribute{
+				Computed:    true,
+				ElementType: types.StringType,
+				Description: "The name servers for the auto scaling group",
+			},
+			"worker_service_class_path": schema.StringAttribute{
+				Computed:    true,
+				Description: "The worker service class path",
+			},
+			"min_nodes": schema.Int32Attribute{
+				Computed:    true,
+				Description: "Minimum number of nodes",
+			},
+			"max_nodes": schema.Int32Attribute{
+				Computed:    true,
+				Description: "Maximum number of nodes",
+			},
+			"current_nodes": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The current number of nodes. You might want to ignore_changes this field because it changes from time to time",
+			},
+			"deleting": schema.BoolAttribute{
+				Computed:    true,
+				Description: "Whether the auto scaling group is being deleted",
+			},
+			"interfaces": schema.SetNestedAttribute{
+				Computed: true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"interface_index": schema.Int32Attribute{
+							Computed:    true,
+							Description: "The interface index",
+						},
+						"upstream": schema.StringAttribute{
+							Computed:    true,
+							Description: "The upstream network",
+						},
+						"ip_pool": schema.SetNestedAttribute{
+							Computed: true,
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"start": schema.StringAttribute{
+										Computed:    true,
+										Description: "The start IP address of the range",
+									},
+									"end": schema.StringAttribute{
+										Computed:    true,
+										Description: "The end IP address of the range",
+									},
+								},
+							},
+							Description: "The IP pool for the interface",
+						},
+						"netmask_len": schema.Int32Attribute{
+							Computed:    true,
+							Description: "The netmask length",
+						},
+						"default_gateway": schema.StringAttribute{
+							Computed:    true,
+							Description: "The default gateway",
+						},
+						"packet_filter_id": schema.StringAttribute{
+							Computed:    true,
+							Description: "The packet filter ID",
+						},
+						"connects_to_lb": schema.BoolAttribute{
+							Computed:    true,
+							Description: "Whether the interface connects to the load balancer",
+						},
+					},
+				},
+				Description: "The network interfaces for the nodes",
+			},
 		},
 	}
 }

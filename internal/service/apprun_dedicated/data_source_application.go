@@ -25,42 +25,28 @@ var (
 func NewAppDataSource() datasource.DataSource { return &appDataSource{dataSourceNamed("application")} }
 
 func (d *appDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	id := d.schemaID()
-
-	name := d.schemaName()
-
-	clusterID := d.schemaClusterID()
-
-	clusterName := schema.StringAttribute{
-		Computed:    true,
-		Description: "The name of the cluster",
-	}
-
-	activeVersion := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The active version of the application",
-	}
-
-	desiredCount := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The desired count of the application",
-	}
-
-	scalingCooldownSeconds := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The scaling cooldown seconds of the application",
-	}
-
 	res.Schema = schema.Schema{
 		Description: "Information about an AppRun dedicated application",
 		Attributes: map[string]schema.Attribute{
-			"id":                       id,
-			"name":                     name,
-			"cluster_id":               clusterID,
-			"cluster_name":             clusterName,
-			"active_version":           activeVersion,
-			"desired_count":            desiredCount,
-			"scaling_cooldown_seconds": scalingCooldownSeconds,
+			"id":         d.schemaID(),
+			"name":       d.schemaName(),
+			"cluster_id": d.schemaClusterID(),
+			"cluster_name": schema.StringAttribute{
+				Computed:    true,
+				Description: "The name of the cluster",
+			},
+			"active_version": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The active version of the application",
+			},
+			"desired_count": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The desired count of the application",
+			},
+			"scaling_cooldown_seconds": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The scaling cooldown seconds of the application",
+			},
 		},
 	}
 }

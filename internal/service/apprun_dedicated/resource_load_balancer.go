@@ -52,160 +52,115 @@ func NewLoadBalancerResource() resource.Resource {
 }
 
 func (r *lbResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
-	id := r.schemaID()
-
-	cid := r.schemaClusterID()
-
-	aid := r.schemaASGID()
-
-	name := r.schemaName(stringvalidator.RegexMatches(
+	nameAttr := r.schemaName(stringvalidator.RegexMatches(
 		regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
 		"no special characters allowed; alphanumeric and/or hyphens, and underscores",
 	))
-	name.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
-
-	serviceClassPath := schema.StringAttribute{
-		Required:      true,
-		Description:   "The service class path for the load balancer",
-		Validators:    []validator.String{stringvalidator.LengthBetween(1, 255)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	nameServers := schema.ListAttribute{
-		Optional:      true,
-		ElementType:   types.StringType,
-		Description:   "The name servers for the load balancer (ORDER MATTERS)",
-		Validators:    []validator.List{listvalidator.SizeAtMost(3)},
-		PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
-	}
-
-	created := r.schemaCreatedAt()
-
-	deleting := schema.BoolAttribute{
-		Computed:    true,
-		Description: "Whether the load balancer is being deleted",
-	}
-
-	ifaceIdx := schema.Int32Attribute{
-		Required:      true,
-		Description:   "The interface index",
-		Validators:    []validator.Int32{int32validator.AtLeast(0)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	upstream := schema.StringAttribute{
-		Required:            true,
-		MarkdownDescription: "The upstream switch id, or `shared` to use shared segment",
-		PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	start := schema.StringAttribute{
-		Required:    true,
-		Description: "The start IP address of the range",
-		Validators: []validator.String{stringvalidator.RegexMatches(
-			regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
-			"must be an IPv4 address",
-		)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	end := schema.StringAttribute{
-		Required:    true,
-		Description: "The end IP address of the range",
-		Validators: []validator.String{stringvalidator.RegexMatches(
-			regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
-			"must be an IPv4 address",
-		)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	ipRange := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"start": start,
-			"end":   end,
-		},
-	}
-
-	ipPool := schema.SetNestedAttribute{
-		Optional:      true,
-		NestedObject:  ipRange,
-		Description:   "The IP pool for the interface.  Must omit when upstream is `shared`.  Mandatory otherwise.",
-		Validators:    []validator.Set{setvalidator.SizeAtMost(20)},
-		PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
-	}
-
-	netmaskLen := schema.Int32Attribute{
-		Optional:            true,
-		MarkdownDescription: "The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.",
-		Validators:          []validator.Int32{int32validator.Between(8, 29)},
-		PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	defaultGateway := schema.StringAttribute{
-		Optional:            true,
-		MarkdownDescription: "The default gateway.  Makes sense only when upstream is not `shared`",
-		PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	vip := schema.StringAttribute{
-		Optional:            true,
-		MarkdownDescription: "The VIP address. Makes sense only when upstream is not `shared`",
-		PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-		Validators: []validator.String{stringvalidator.RegexMatches(
-			regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
-			"must be an IPv4 address",
-		)},
-	}
-
-	virtualRouterID := schema.Int32Attribute{
-		Optional:            true,
-		MarkdownDescription: "The virtual router ID. Makes sense only when upstream is not `shared`",
-		Validators:          []validator.Int32{int32validator.Between(1, 255)},
-		PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	packetFilterID := schema.StringAttribute{
-		Optional:      true,
-		Description:   "The packet filter ID",
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	iface := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"interface_index":   ifaceIdx,
-			"upstream":          upstream,
-			"ip_pool":           ipPool,
-			"netmask_len":       netmaskLen,
-			"default_gateway":   defaultGateway,
-			"vip":               vip,
-			"virtual_router_id": virtualRouterID,
-			"packet_filter_id":  packetFilterID,
-		},
-	}
-
-	interfaces := schema.SetNestedAttribute{
-		Required:      true,
-		NestedObject:  iface,
-		Description:   "The network interfaces for the load balancer",
-		Validators:    []validator.Set{setvalidator.SizeBetween(1, 5)},
-		PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
-	}
-
-	to := timeouts.Attributes(ctx, timeouts.Opts{Create: true, Delete: true})
+	nameAttr.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
 
 	res.Schema = schema.Schema{
 		Description: "Manages an AppRun dedicated load balancer",
 		Attributes: map[string]schema.Attribute{
-			"id":                    id,
-			"cluster_id":            cid,
-			"auto_scaling_group_id": aid,
-			"name":                  name,
-			"service_class_path":    serviceClassPath,
-			"name_servers":          nameServers,
-			"interfaces":            interfaces,
-			"created":               created,
-			"deleting":              deleting,
-			"timeouts":              to,
+			"id":                    r.schemaID(),
+			"cluster_id":            r.schemaClusterID(),
+			"auto_scaling_group_id": r.schemaASGID(),
+			"name":                  nameAttr,
+			"service_class_path": schema.StringAttribute{
+				Required:      true,
+				Description:   "The service class path for the load balancer",
+				Validators:    []validator.String{stringvalidator.LengthBetween(1, 255)},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"name_servers": schema.ListAttribute{
+				Optional:      true,
+				ElementType:   types.StringType,
+				Description:   "The name servers for the load balancer (ORDER MATTERS)",
+				Validators:    []validator.List{listvalidator.SizeAtMost(3)},
+				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
+			},
+			"interfaces": schema.SetNestedAttribute{
+				Required:      true,
+				Description:   "The network interfaces for the load balancer",
+				Validators:    []validator.Set{setvalidator.SizeBetween(1, 5)},
+				PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"interface_index": schema.Int32Attribute{
+							Required:      true,
+							Description:   "The interface index",
+							Validators:    []validator.Int32{int32validator.AtLeast(0)},
+							PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+						},
+						"upstream": schema.StringAttribute{
+							Required:            true,
+							MarkdownDescription: "The upstream switch id, or `shared` to use shared segment",
+							PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
+						},
+						"ip_pool": schema.SetNestedAttribute{
+							Optional:      true,
+							Description:   "The IP pool for the interface.  Must omit when upstream is `shared`.  Mandatory otherwise.",
+							Validators:    []validator.Set{setvalidator.SizeAtMost(20)},
+							PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"start": schema.StringAttribute{
+										Required:    true,
+										Description: "The start IP address of the range",
+										Validators: []validator.String{stringvalidator.RegexMatches(
+											regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
+											"must be an IPv4 address",
+										)},
+										PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+									},
+									"end": schema.StringAttribute{
+										Required:    true,
+										Description: "The end IP address of the range",
+										Validators: []validator.String{stringvalidator.RegexMatches(
+											regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
+											"must be an IPv4 address",
+										)},
+										PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+									},
+								},
+							},
+						},
+						"netmask_len": schema.Int32Attribute{
+							Optional:            true,
+							MarkdownDescription: "The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.",
+							Validators:          []validator.Int32{int32validator.Between(8, 29)},
+							PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+						},
+						"default_gateway": schema.StringAttribute{
+							Optional:            true,
+							MarkdownDescription: "The default gateway.  Makes sense only when upstream is not `shared`",
+							PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
+						},
+						"vip": schema.StringAttribute{
+							Optional:            true,
+							MarkdownDescription: "The VIP address. Makes sense only when upstream is not `shared`",
+							PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
+							Validators: []validator.String{stringvalidator.RegexMatches(
+								regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
+								"must be an IPv4 address",
+							)},
+						},
+						"virtual_router_id": schema.Int32Attribute{
+							Optional:            true,
+							MarkdownDescription: "The virtual router ID. Makes sense only when upstream is not `shared`",
+							Validators:          []validator.Int32{int32validator.Between(1, 255)},
+							PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+						},
+						"packet_filter_id": schema.StringAttribute{
+							Optional:      true,
+							Description:   "The packet filter ID",
+							PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+						},
+					},
+				},
+			},
+			"created":  r.schemaCreatedAt(),
+			"deleting": schema.BoolAttribute{Computed: true, Description: "Whether the load balancer is being deleted"},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Delete: true}),
 		},
 	}
 }

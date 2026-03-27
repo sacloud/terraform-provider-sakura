@@ -29,36 +29,28 @@ func NewLoadBalancerServiceClassesDataSource() datasource.DataSource {
 }
 
 func (d *lbscDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
-	name := schema.StringAttribute{
-		Computed:    true,
-		Description: "The service class name",
-	}
-
-	path := schema.StringAttribute{
-		Computed:    true,
-		Description: "The service class path",
-	}
-
-	count := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The number of nodes assigned",
-	}
-
-	class := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"path":       path,
-			"name":       name,
-			"node_count": count,
-		},
-	}
-
 	res.Schema = schema.Schema{
 		Description: "List of available load balancer service classes for AppRun Dedicated",
 		Attributes: map[string]schema.Attribute{
 			"classes": schema.ListNestedAttribute{
-				Computed:     true,
-				Description:  "List of load balancer service classes",
-				NestedObject: class,
+				Computed:    true,
+				Description: "List of load balancer service classes",
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"path": schema.StringAttribute{
+							Computed:    true,
+							Description: "The service class path",
+						},
+						"name": schema.StringAttribute{
+							Computed:    true,
+							Description: "The service class name",
+						},
+						"node_count": schema.Int32Attribute{
+							Computed:    true,
+							Description: "The number of nodes assigned",
+						},
+					},
+				},
 			},
 		},
 	}

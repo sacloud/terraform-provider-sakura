@@ -33,49 +33,33 @@ var (
 func NewAppResource() resource.Resource { return &appResource{resourceNamed("application")} }
 
 func (r *appResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
-	id := r.schemaID()
-
-	name := r.schemaName(stringvalidator.RegexMatches(
-		regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
-		"no special characters allowed; alphanumeric and/or hyphens and underscores",
-	))
-
-	clusterID := r.schemaClusterID()
-
-	clusterName := schema.StringAttribute{
-		Computed:    true,
-		Description: "The name of the cluster",
-	}
-
-	activeVersion := schema.Int32Attribute{
-		Optional:    true,
-		Computed:    true,
-		Description: "The active version of the application",
-	}
-
-	desiredCount := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The desired count of the application",
-	}
-
-	scalingCooldownSeconds := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The scaling cooldown seconds of the application",
-	}
-
-	to := timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true})
-
 	res.Schema = schema.Schema{
 		Description: "Manages an AppRun dedicated application",
 		Attributes: map[string]schema.Attribute{
-			"id":                       id,
-			"cluster_id":               clusterID,
-			"name":                     name,
-			"cluster_name":             clusterName,
-			"active_version":           activeVersion,
-			"desired_count":            desiredCount,
-			"scaling_cooldown_seconds": scalingCooldownSeconds,
-			"timeouts":                 to,
+			"id":         r.schemaID(),
+			"cluster_id": r.schemaClusterID(),
+			"name": r.schemaName(stringvalidator.RegexMatches(
+				regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
+				"no special characters allowed; alphanumeric and/or hyphens and underscores",
+			)),
+			"cluster_name": schema.StringAttribute{
+				Computed:    true,
+				Description: "The name of the cluster",
+			},
+			"active_version": schema.Int32Attribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The active version of the application",
+			},
+			"desired_count": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The desired count of the application",
+			},
+			"scaling_cooldown_seconds": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The scaling cooldown seconds of the application",
+			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
 	}
 }

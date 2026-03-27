@@ -52,267 +52,205 @@ var (
 func NewVersionResource() resource.Resource { return &verResource{resourceNamed("version")} }
 
 func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
-	aid := common.SchemaResourceId("application").(schema.StringAttribute)
-	aid.Required = true
-	aid.Computed = false
-	aid.Optional = false
-	aid.Validators = []validator.String{sacloudvalidator.UUIDValidator}
-	aid.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
-
-	ver := schema.Int32Attribute{
-		Computed:      true,
-		Description:   "The version number",
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	cpu := schema.Int64Attribute{
-		Required:      true,
-		Description:   "The CPU limit in millicores (e.g., 1000 = 1 CPU)",
-		Validators:    []validator.Int64{int64validator.Between(100, 64000)},
-		PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()},
-	}
-
-	memory := schema.Int64Attribute{
-		Required:      true,
-		Description:   "The memory limit in megabytes",
-		Validators:    []validator.Int64{int64validator.Between(128, 131072)},
-		PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()},
-	}
-
 	var m v1.ScalingMode
 	modes := common.MapTo(m.AllValues(), common.ToString)
-	scalingMode := schema.StringAttribute{
-		Required:      true,
-		Description:   "The scaling mode (manual, autoscale)",
-		Validators:    []validator.String{stringvalidator.OneOf(modes...)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	fixedScale := schema.Int32Attribute{
-		Required:            false,
-		Optional:            true,
-		MarkdownDescription: "Number of nodes when scaling mode is `manual`",
-		Validators:          []validator.Int32{int32validator.Between(1, 50)},
-		PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	minScale := schema.Int32Attribute{
-		Required:            false,
-		Optional:            true,
-		MarkdownDescription: "Minimum number of nodes when scaling mode is `autoscale`",
-		Validators:          []validator.Int32{int32validator.Between(1, 50)},
-		PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	maxScale := schema.Int32Attribute{
-		Required:            false,
-		Optional:            true,
-		MarkdownDescription: "Maximum number of nodes when scaling mode is `autoscale`",
-		Validators:          []validator.Int32{int32validator.Between(1, 50)},
-		PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	scaleIn := schema.Int32Attribute{
-		Required:            false,
-		Optional:            true,
-		MarkdownDescription: "When to scale in when scaling mode is `autoscale`",
-		Validators:          []validator.Int32{int32validator.Between(30, 70)},
-		PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	scaleOut := schema.Int32Attribute{
-		Required:            false,
-		Optional:            true,
-		MarkdownDescription: "When to scale out when scaling mode is `autoscale`",
-		Validators:          []validator.Int32{int32validator.Between(50, 99)},
-		PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	image := schema.StringAttribute{
-		Required:      true,
-		Description:   "The container image",
-		Validators:    []validator.String{stringvalidator.LengthAtMost(512)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	cmd := schema.ListAttribute{
-		Optional:      true,
-		ElementType:   types.StringType,
-		Description:   "application command line i.e. the command and arguments",
-		Validators:    []validator.List{listvalidator.SizeAtMost(20)},
-		PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
-	}
-
-	user := schema.StringAttribute{
-		Optional:      true,
-		Description:   "Login user name for the container registry",
-		Validators:    []validator.String{stringvalidator.LengthAtMost(255)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	pass := schema.StringAttribute{
-		WriteOnly:     true,
-		Optional:      true,
-		Description:   "Login password for the container registry",
-		Validators:    []validator.String{stringvalidator.LengthAtMost(255)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
 	var rpa v1.RegistryPasswordAction
 	actions := common.MapTo(rpa.AllValues(), common.ToString)
-	action := schema.StringAttribute{
-		Optional:      true,
-		Description:   "Password configuration method",
-		Validators:    []validator.String{stringvalidator.OneOf(actions...)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	activeNodeCount := schema.Int64Attribute{
-		Computed:    true,
-		Description: "The number of active nodes.  You might want to ignore_changes this field because it changes from time to time",
-	}
-
-	target := schema.Int32Attribute{
-		Required:      true,
-		Description:   "The port that the application listens to",
-		Validators:    []validator.Int32{int32validator.Between(1, 65535)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	listens := schema.Int32Attribute{
-		Optional:      true,
-		Description:   "The port that the load balancer listens to, or if when this port is internal",
-		Validators:    []validator.Int32{int32validator.Between(1, 65535)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	usele := schema.BoolAttribute{
-		Optional:            true,
-		MarkdownDescription: "Whether the load balancer uses Let's Encrypt (applicable only when `https`)",
-		PlanModifiers:       []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
-	}
-
-	hosts := schema.SetAttribute{
-		Optional:            true,
-		ElementType:         types.StringType,
-		MarkdownDescription: "Target `Host:` header value (only applicable when `http` or `https`)",
-		Validators:          []validator.Set{setvalidator.SizeAtMost(5)},
-		PlanModifiers:       []planmodifier.Set{setplanmodifier.RequiresReplace()},
-	}
-
-	path := schema.StringAttribute{
-		Required:      true,
-		Description:   "Health check endpoint",
-		Validators:    []validator.String{stringvalidator.LengthAtMost(200)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	intv := schema.Int32Attribute{
-		Required:      true,
-		Description:   "Health check intervals in seconds",
-		Validators:    []validator.Int32{int32validator.Between(3, 60)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	pto := schema.Int32Attribute{
-		Required:      true,
-		Description:   "Time out in seconds until the health check fails",
-		Validators:    []validator.Int32{int32validator.Between(1, 60)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	hc := schema.SingleNestedAttribute{
-		Required:    true,
-		Description: "Health check configuration",
-		Attributes: map[string]schema.Attribute{
-			"path":     path,
-			"interval": intv,
-			"timeout":  pto,
-		},
-		PlanModifiers: []planmodifier.Object{objectplanmodifier.RequiresReplace()},
-	}
-
-	port := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"target_port":        target,
-			"load_balancer_port": listens,
-			"use_lets_encrypt":   usele,
-			"host":               hosts,
-			"health_chek":        hc,
-		},
-	}
-
-	ports := schema.SetNestedAttribute{
-		Optional:      true,
-		NestedObject:  port,
-		Description:   "Ports that the application exposes",
-		Validators:    []validator.Set{setvalidator.SizeAtMost(5)},
-		PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
-	}
-
-	k := schema.StringAttribute{
-		Required:      true,
-		Description:   "Environment variable name",
-		Validators:    []validator.String{stringvalidator.LengthBetween(1, 255)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	v := schema.StringAttribute{
-		Optional:      true,
-		Description:   "The value.  Omitting this field and set `secret` to true retains old secret value",
-		Validators:    []validator.String{stringvalidator.LengthAtMost(4096)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	s := schema.BoolAttribute{
-		Required:      true,
-		Description:   "Whether the value is sensitive",
-		PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
-	}
-
-	e := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"key":    k,
-			"value":  v,
-			"secret": s,
-		},
-	}
-
-	env := schema.SetNestedAttribute{
-		Optional:      true,
-		Description:   "Environment variables",
-		NestedObject:  e,
-		Validators:    []validator.Set{setvalidator.SizeAtMost(50)},
-		PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
-	}
-
-	createdAt := r.schemaCreatedAt()
-
-	to := timeouts.Attributes(ctx, timeouts.Opts{Create: true, Delete: true})
 
 	res.Schema = schema.Schema{
 		Description: "Manages an AppRun dedicated version",
 		Attributes: map[string]schema.Attribute{
-			"application_id":           aid,
-			"version":                  ver,
-			"cpu":                      cpu,
-			"memory":                   memory,
-			"scaling_mode":             scalingMode,
-			"fixed_scale":              fixedScale,
-			"min_scale":                minScale,
-			"max_scale":                maxScale,
-			"scale_in_threshold":       scaleIn,
-			"scale_out_threshold":      scaleOut,
-			"image":                    image,
-			"registry_username":        user,
-			"registry_password":        pass,
-			"registry_password_action": action,
-			"cmd":                      cmd,
-			"created_at":               createdAt,
-			"active_node_count":        activeNodeCount,
-			"exposed_ports":            ports,
-			"env_vars":                 env,
-			"timeouts":                 to,
+			"application_id": func() (attr schema.StringAttribute) {
+				attr = common.SchemaResourceId("application").(schema.StringAttribute)
+				attr.Required = true
+				attr.Computed = false
+				attr.Optional = false
+				attr.Validators = []validator.String{sacloudvalidator.UUIDValidator}
+				attr.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
+				return
+			}(),
+			"version": schema.Int32Attribute{
+				Computed:      true,
+				Description:   "The version number",
+				PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+			},
+			"cpu": schema.Int64Attribute{
+				Required:      true,
+				Description:   "The CPU limit in millicores (e.g., 1000 = 1 CPU)",
+				Validators:    []validator.Int64{int64validator.Between(100, 64000)},
+				PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()},
+			},
+			"memory": schema.Int64Attribute{
+				Required:      true,
+				Description:   "The memory limit in megabytes",
+				Validators:    []validator.Int64{int64validator.Between(128, 131072)},
+				PlanModifiers: []planmodifier.Int64{int64planmodifier.RequiresReplace()},
+			},
+			"scaling_mode": schema.StringAttribute{
+				Required:      true,
+				Description:   "The scaling mode (manual, autoscale)",
+				Validators:    []validator.String{stringvalidator.OneOf(modes...)},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"fixed_scale": schema.Int32Attribute{
+				Required:            false,
+				Optional:            true,
+				MarkdownDescription: "Number of nodes when scaling mode is `manual`",
+				Validators:          []validator.Int32{int32validator.Between(1, 50)},
+				PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+			},
+			"min_scale": schema.Int32Attribute{
+				Required:            false,
+				Optional:            true,
+				MarkdownDescription: "Minimum number of nodes when scaling mode is `autoscale`",
+				Validators:          []validator.Int32{int32validator.Between(1, 50)},
+				PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+			},
+			"max_scale": schema.Int32Attribute{
+				Required:            false,
+				Optional:            true,
+				MarkdownDescription: "Maximum number of nodes when scaling mode is `autoscale`",
+				Validators:          []validator.Int32{int32validator.Between(1, 50)},
+				PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+			},
+			"scale_in_threshold": schema.Int32Attribute{
+				Required:            false,
+				Optional:            true,
+				MarkdownDescription: "When to scale in when scaling mode is `autoscale`",
+				Validators:          []validator.Int32{int32validator.Between(30, 70)},
+				PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+			},
+			"scale_out_threshold": schema.Int32Attribute{
+				Required:            false,
+				Optional:            true,
+				MarkdownDescription: "When to scale out when scaling mode is `autoscale`",
+				Validators:          []validator.Int32{int32validator.Between(50, 99)},
+				PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+			},
+			"image": schema.StringAttribute{
+				Required:      true,
+				Description:   "The container image",
+				Validators:    []validator.String{stringvalidator.LengthAtMost(512)},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"registry_username": schema.StringAttribute{
+				Optional:      true,
+				Description:   "Login user name for the container registry",
+				Validators:    []validator.String{stringvalidator.LengthAtMost(255)},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"registry_password": schema.StringAttribute{
+				WriteOnly:     true,
+				Optional:      true,
+				Description:   "Login password for the container registry",
+				Validators:    []validator.String{stringvalidator.LengthAtMost(255)},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"registry_password_action": schema.StringAttribute{
+				Optional:      true,
+				Description:   "Password configuration method",
+				Validators:    []validator.String{stringvalidator.OneOf(actions...)},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"cmd": schema.ListAttribute{
+				Optional:      true,
+				ElementType:   types.StringType,
+				Description:   "application command line i.e. the command and arguments",
+				Validators:    []validator.List{listvalidator.SizeAtMost(20)},
+				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
+			},
+			"created_at": r.schemaCreatedAt(),
+			"active_node_count": schema.Int64Attribute{
+				Computed:    true,
+				Description: "The number of active nodes.  You might want to ignore_changes this field because it changes from time to time",
+			},
+			"exposed_ports": schema.SetNestedAttribute{
+				Optional:      true,
+				Description:   "Ports that the application exposes",
+				Validators:    []validator.Set{setvalidator.SizeAtMost(5)},
+				PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"target_port": schema.Int32Attribute{
+							Required:      true,
+							Description:   "The port that the application listens to",
+							Validators:    []validator.Int32{int32validator.Between(1, 65535)},
+							PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+						},
+						"load_balancer_port": schema.Int32Attribute{
+							Optional:      true,
+							Description:   "The port that the load balancer listens to, or if when this port is internal",
+							Validators:    []validator.Int32{int32validator.Between(1, 65535)},
+							PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+						},
+						"use_lets_encrypt": schema.BoolAttribute{
+							Optional:            true,
+							MarkdownDescription: "Whether the load balancer uses Let's Encrypt (applicable only when `https`)",
+							PlanModifiers:       []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
+						},
+						"host": schema.SetAttribute{
+							Optional:            true,
+							ElementType:         types.StringType,
+							MarkdownDescription: "Target `Host:` header value (only applicable when `http` or `https`)",
+							Validators:          []validator.Set{setvalidator.SizeAtMost(5)},
+							PlanModifiers:       []planmodifier.Set{setplanmodifier.RequiresReplace()},
+						},
+						"health_chek": schema.SingleNestedAttribute{
+							Required:    true,
+							Description: "Health check configuration",
+							Attributes: map[string]schema.Attribute{
+								"path": schema.StringAttribute{
+									Required:      true,
+									Description:   "Health check endpoint",
+									Validators:    []validator.String{stringvalidator.LengthAtMost(200)},
+									PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+								},
+								"interval": schema.Int32Attribute{
+									Required:      true,
+									Description:   "Health check intervals in seconds",
+									Validators:    []validator.Int32{int32validator.Between(3, 60)},
+									PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+								},
+								"timeout": schema.Int32Attribute{
+									Required:      true,
+									Description:   "Time out in seconds until the health check fails",
+									Validators:    []validator.Int32{int32validator.Between(1, 60)},
+									PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+								},
+							},
+							PlanModifiers: []planmodifier.Object{objectplanmodifier.RequiresReplace()},
+						},
+					},
+				},
+			},
+			"env_vars": schema.SetNestedAttribute{
+				Optional:      true,
+				Description:   "Environment variables",
+				Validators:    []validator.Set{setvalidator.SizeAtMost(50)},
+				PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"key": schema.StringAttribute{
+							Required:      true,
+							Description:   "Environment variable name",
+							Validators:    []validator.String{stringvalidator.LengthBetween(1, 255)},
+							PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+						},
+						"value": schema.StringAttribute{
+							Optional:      true,
+							Description:   "The value.  Omitting this field and set `secret` to true retains old secret value",
+							Validators:    []validator.String{stringvalidator.LengthAtMost(4096)},
+							PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+						},
+						"secret": schema.BoolAttribute{
+							Required:      true,
+							Description:   "Whether the value is sensitive",
+							PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
+						},
+					},
+				},
+			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Delete: true}),
 		},
 	}
 }

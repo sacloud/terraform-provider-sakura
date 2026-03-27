@@ -55,172 +55,127 @@ func NewAutoScalingGroupResource() resource.Resource {
 }
 
 func (r *asgResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
-	id := r.schemaID()
-
-	cid := r.schemaClusterID()
-
-	name := r.schemaName(stringvalidator.RegexMatches(
+	nameAttr := r.schemaName(stringvalidator.RegexMatches(
 		regexp.MustCompile(`^[a-zA-Z0-9_-]+$`),
 		"no special characters allowed; alphanumeric and/or hyphens, and underscores",
 	))
-	name.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
-
-	// :TODO: zone can be validated? against usacould config?
-	zone := schema.StringAttribute{
-		Required:      true,
-		Description:   "The zone name where the auto scaling group will be created",
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	nameServers := schema.ListAttribute{
-		Optional:      true,
-		ElementType:   types.StringType,
-		Description:   "The name servers for the auto scaling group (ORDER MATTERS)",
-		Validators:    []validator.List{listvalidator.SizeAtMost(3)},
-		PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
-	}
-
-	workerServiceClassPath := schema.StringAttribute{
-		Required:      true,
-		Description:   "The worker service class path",
-		Validators:    []validator.String{stringvalidator.LengthBetween(1, 255)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	minNodes := schema.Int32Attribute{
-		Required:      true,
-		Description:   "Minimum number of nodes",
-		Validators:    []validator.Int32{int32validator.Between(1, 10)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	maxNodes := schema.Int32Attribute{
-		Required:      true,
-		Description:   "Maximum number of nodes",
-		Validators:    []validator.Int32{int32validator.Between(1, 10)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	currentNodes := schema.Int32Attribute{
-		Computed:    true,
-		Description: "The current number of nodes. You might want to ignore_changes this field because it changes from time to time",
-	}
-
-	deleting := schema.BoolAttribute{
-		Computed:    true,
-		Description: "Whether the auto scaling group is being deleted",
-	}
-
-	ifaceIdx := schema.Int32Attribute{
-		Required:      true,
-		Description:   "The interface index",
-		Validators:    []validator.Int32{int32validator.AtLeast(0)},
-		PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	upstream := schema.StringAttribute{
-		Required:            true,
-		MarkdownDescription: "The upstream switch id, or `shared` to use shared segment",
-		PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	start := schema.StringAttribute{
-		Required:    true,
-		Description: "The start IP address of the range",
-		Validators: []validator.String{stringvalidator.RegexMatches(
-			regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
-			"must be an IPv4 address",
-		)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	end := schema.StringAttribute{
-		Required:    true,
-		Description: "The end IP address of the range",
-		Validators: []validator.String{stringvalidator.RegexMatches(
-			regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
-			"must be an IPv4 address",
-		)},
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	ipRange := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"start": start,
-			"end":   end,
-		},
-	}
-
-	ipPool := schema.SetNestedAttribute{
-		Optional:      true,
-		NestedObject:  ipRange,
-		Description:   "The IP pool for the interface.  Must omit when upstream is `shared`.  Mandatory otherwise.",
-		Validators:    []validator.Set{setvalidator.SizeAtMost(20)},
-		PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
-	}
-
-	netmaskLen := schema.Int32Attribute{
-		Optional:            true,
-		MarkdownDescription: "The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.",
-		Validators:          []validator.Int32{int32validator.Between(8, 29)},
-		PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
-	}
-
-	defaultGateway := schema.StringAttribute{
-		Optional:            true,
-		MarkdownDescription: "The default gateway.  Makes sense only when upstream is not `shared`",
-		PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	packetFilterID := schema.StringAttribute{
-		Optional:      true,
-		Description:   "The packet filter ID",
-		PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
-	}
-
-	connectsToLB := schema.BoolAttribute{
-		Required:      true,
-		Description:   "Whether the interface connects to the load balancer",
-		PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
-	}
-
-	iface := schema.NestedAttributeObject{
-		Attributes: map[string]schema.Attribute{
-			"interface_index":  ifaceIdx,
-			"upstream":         upstream,
-			"ip_pool":          ipPool,
-			"netmask_len":      netmaskLen,
-			"default_gateway":  defaultGateway,
-			"packet_filter_id": packetFilterID,
-			"connects_to_lb":   connectsToLB,
-		},
-	}
-
-	interfaces := schema.SetNestedAttribute{
-		Required:      true,
-		NestedObject:  iface,
-		Description:   "The network interfaces for the nodes",
-		Validators:    []validator.Set{setvalidator.SizeBetween(1, 5)},
-		PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
-	}
-
-	to := timeouts.Attributes(ctx, timeouts.Opts{Create: true, Delete: true})
+	nameAttr.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
 
 	res.Schema = schema.Schema{
 		Description: "Manages an AppRun dedicated auto scaling group",
 		Attributes: map[string]schema.Attribute{
-			"id":                        id,
-			"cluster_id":                cid,
-			"name":                      name,
-			"zone":                      zone,
-			"name_servers":              nameServers,
-			"worker_service_class_path": workerServiceClassPath,
-			"min_nodes":                 minNodes,
-			"max_nodes":                 maxNodes,
-			"current_nodes":             currentNodes,
-			"deleting":                  deleting,
-			"interfaces":                interfaces,
-			"timeouts":                  to,
+			"id":         r.schemaID(),
+			"cluster_id": r.schemaClusterID(),
+			"name":       nameAttr,
+			"zone": schema.StringAttribute{
+				Required:      true,
+				Description:   "The zone name where the auto scaling group will be created",
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"name_servers": schema.ListAttribute{
+				Optional:      true,
+				ElementType:   types.StringType,
+				Description:   "The name servers for the auto scaling group (ORDER MATTERS)",
+				Validators:    []validator.List{listvalidator.SizeAtMost(3)},
+				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
+			},
+			"worker_service_class_path": schema.StringAttribute{
+				Required:      true,
+				Description:   "The worker service class path",
+				Validators:    []validator.String{stringvalidator.LengthBetween(1, 255)},
+				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+			},
+			"min_nodes": schema.Int32Attribute{
+				Required:      true,
+				Description:   "Minimum number of nodes",
+				Validators:    []validator.Int32{int32validator.Between(1, 10)},
+				PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+			},
+			"max_nodes": schema.Int32Attribute{
+				Required:      true,
+				Description:   "Maximum number of nodes",
+				Validators:    []validator.Int32{int32validator.Between(1, 10)},
+				PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+			},
+			"current_nodes": schema.Int32Attribute{
+				Computed:    true,
+				Description: "The current number of nodes. You might want to ignore_changes this field because it changes from time to time",
+			},
+			"deleting": schema.BoolAttribute{
+				Computed:    true,
+				Description: "Whether the auto scaling group is being deleted",
+			},
+			"interfaces": schema.SetNestedAttribute{
+				Required:      true,
+				Description:   "The network interfaces for the nodes",
+				Validators:    []validator.Set{setvalidator.SizeBetween(1, 5)},
+				PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"interface_index": schema.Int32Attribute{
+							Required:      true,
+							Description:   "The interface index",
+							Validators:    []validator.Int32{int32validator.AtLeast(0)},
+							PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+						},
+						"upstream": schema.StringAttribute{
+							Required:            true,
+							MarkdownDescription: "The upstream switch id, or `shared` to use shared segment",
+							PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
+						},
+						"ip_pool": schema.SetNestedAttribute{
+							Optional:      true,
+							Description:   "The IP pool for the interface.  Must omit when upstream is `shared`.  Mandatory otherwise.",
+							Validators:    []validator.Set{setvalidator.SizeAtMost(20)},
+							PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"start": schema.StringAttribute{
+										Required:    true,
+										Description: "The start IP address of the range",
+										Validators: []validator.String{stringvalidator.RegexMatches(
+											regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
+											"must be an IPv4 address",
+										)},
+										PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+									},
+									"end": schema.StringAttribute{
+										Required:    true,
+										Description: "The end IP address of the range",
+										Validators: []validator.String{stringvalidator.RegexMatches(
+											regexp.MustCompile(`^[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}$`),
+											"must be an IPv4 address",
+										)},
+										PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+									},
+								},
+							},
+						},
+						"netmask_len": schema.Int32Attribute{
+							Optional:            true,
+							MarkdownDescription: "The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.",
+							Validators:          []validator.Int32{int32validator.Between(8, 29)},
+							PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+						},
+						"default_gateway": schema.StringAttribute{
+							Optional:            true,
+							MarkdownDescription: "The default gateway.  Makes sense only when upstream is not `shared`",
+							PlanModifiers:       []planmodifier.String{stringplanmodifier.RequiresReplace()},
+						},
+						"packet_filter_id": schema.StringAttribute{
+							Optional:      true,
+							Description:   "The packet filter ID",
+							PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+						},
+						"connects_to_lb": schema.BoolAttribute{
+							Required:      true,
+							Description:   "Whether the interface connects to the load balancer",
+							PlanModifiers: []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
+						},
+					},
+				},
+			},
+			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{Create: true, Delete: true}),
 		},
 	}
 }
