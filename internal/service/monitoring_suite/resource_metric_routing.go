@@ -77,7 +77,9 @@ func (r *metricRoutingResource) Schema(ctx context.Context, _ resource.SchemaReq
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages a Monitoring Suite Metric Routing.",
+		MarkdownDescription: `Manages a Monitoring Suite Metric Routing.
+If you want to get publisher_code and variant value, check publishers API: https://manual.sakura.ad.jp/api/cloud/monitoring-suite/#tag/連携サービス/operation/publishers_list
+		`,
 	}
 }
 
