@@ -67,7 +67,7 @@ func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Computed:    true,
 				Description: "The account ID of the Log Storage.",
 			},
-			"resource_id": schema.Int64Attribute{
+			"resource_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the Log Storage.",
 			},

@@ -35,17 +35,6 @@ func (m *accessKeyBaseModel) updateState(storageID string, uid string, descripti
 	m.Secret = types.StringValue(secret)
 }
 
-type optInt64 interface {
-	Get() (int64, bool)
-}
-
-func optInt64ToType(value optInt64) types.Int64 {
-	if v, ok := value.Get(); ok {
-		return types.Int64Value(v)
-	}
-	return types.Int64Null()
-}
-
 type optBool interface {
 	Get() (bool, bool)
 }

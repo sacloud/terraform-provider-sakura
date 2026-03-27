@@ -54,7 +54,7 @@ func (d *traceStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 				Computed:    true,
 				Description: "The account ID of the Trace Storage.",
 			},
-			"resource_id": schema.Int64Attribute{
+			"resource_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the Trace Storage.",
 			},

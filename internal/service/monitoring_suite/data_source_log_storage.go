@@ -54,7 +54,7 @@ func (d *logStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Computed:    true,
 				Description: "The account ID of the Log Storage.",
 			},
-			"resource_id": schema.Int64Attribute{
+			"resource_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the Log Storage.",
 			},
