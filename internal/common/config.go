@@ -29,6 +29,8 @@ import (
 	iamapi "github.com/sacloud/iam-api-go/apis/v1"
 	kms "github.com/sacloud/kms-api-go"
 	kmsapi "github.com/sacloud/kms-api-go/apis/v1"
+	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
+	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 	nosql "github.com/sacloud/nosql-api-go"
 	nosqlapi "github.com/sacloud/nosql-api-go/apis/v1"
 	objectstorage "github.com/sacloud/object-storage-api-go"
@@ -120,6 +122,7 @@ type APIClient struct {
 	AddonClient                      *addonapi.Client
 	WorkflowsClient                  *workflowsapi.Client
 	SimpleNotificationClient         *simple_notification_api.Client
+	MonitoringSuiteClient            *monitoringsuiteapi.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -438,6 +441,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	monitoringSuiteClient, err := monitoringsuite.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 
 	return &APIClient{
 		APICaller:                        caller,
@@ -463,6 +470,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		AddonClient:                      addonClient,
 		WorkflowsClient:                  workflowsClient,
 		SimpleNotificationClient:         simpleNotificationClient,
+		MonitoringSuiteClient:            monitoringSuiteClient,
 	}, nil
 }
 

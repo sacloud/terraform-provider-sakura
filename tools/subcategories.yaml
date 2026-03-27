@@ -71,7 +71,14 @@ Application Integration:
   - simple_notification_routing 
 Monitoring:
   - simple_monitor
-  - monitoring_suite
+  - monitoring_suite_log_storage
+  - monitoring_suite_log_storage_access_key
+  - monitoring_suite_log_routing
+  - monitoring_suite_metric_storage
+  - monitoring_suite_metric_storage_access_key
+  - monitoring_suite_metric_routing
+  - monitoring_suite_trace_storage
+  - monitoring_suite_trace_storage_access_key
 Security:
   - cloudhsm
   - cloudhsm_client
