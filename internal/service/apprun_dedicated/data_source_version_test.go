@@ -16,7 +16,7 @@ func TestAccSakuraDataSourceApprunDedicatedVersion(t *testing.T) {
 		resourceName := "data.sakura_apprun_dedicated_version.main"
 		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
-		resource.Test(t, resource.TestCase{
+		resource.ParallelTest(t, resource.TestCase{
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{

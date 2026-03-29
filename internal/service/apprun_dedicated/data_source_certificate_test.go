@@ -22,7 +22,7 @@ func TestAccSakuraDataSourceApprunDedicatedCertificate(t *testing.T) {
 			t.Fatalf("%q", err)
 		}
 
-		resource.Test(t, resource.TestCase{
+		resource.ParallelTest(t, resource.TestCase{
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{
@@ -50,7 +50,7 @@ func TestAccSakuraDataSourceApprunDedicatedCertificate(t *testing.T) {
 			t.Fatalf("%q", err)
 		}
 
-		resource.Test(t, resource.TestCase{
+		resource.ParallelTest(t, resource.TestCase{
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{
