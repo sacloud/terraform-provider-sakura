@@ -14,7 +14,6 @@ import (
 )
 
 func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
-
 	t.Run("find by id", func(t *testing.T) {
 		resourceName := "data.sakura_apprun_dedicated_cluster.main"
 		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)

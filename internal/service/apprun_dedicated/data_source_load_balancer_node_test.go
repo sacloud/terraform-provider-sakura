@@ -4,7 +4,6 @@
 package apprun_dedicated_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -13,15 +12,6 @@ import (
 )
 
 func TestAccSakuraDataSourceApprunDedicatedLoadBalancerNode(t *testing.T) {
-	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_APPRUN_DEDICATED_TEST")
-	test.SkipIfEnvIsNotSet(t, "SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
-	test.SkipIfFakeModeEnabled(t)
-
-	spid := os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
-	if spid == "" {
-		t.Fatalf("need valid SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID environment variable")
-	}
-
 	resourceName := "data.sakura_apprun_dedicated_load_balancer_node.main"
 	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
@@ -29,7 +19,7 @@ func TestAccSakuraDataSourceApprunDedicatedLoadBalancerNode(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedLoadBalancerNodeConfig, name, spid),
+				Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedLoadBalancerNodeConfig, name, globalClusterID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
@@ -56,18 +46,13 @@ data "sakura_apprun_dedicated_worker_service_classes" "main" {}
 
 data "sakura_apprun_dedicated_load_balancer_service_classes" "main" {}
 
-resource "sakura_apprun_dedicated_cluster" "main" {
-  name                 = "tfacc-{{ .arg0 }}"
-  service_principal_id = "{{ .arg1 }}"
-}
-
 resource "sakura_internet" "main" {
   name = "tfacc-{{ .arg0 }}"
   zone = data.sakura_zone.is1c.name
 }
 
 resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
-  cluster_id                = sakura_apprun_dedicated_cluster.main.id
+  cluster_id                = "{{ .arg1 }}"
   name                      = "tfacc-{{ .arg0 }}"
   zone                      = data.sakura_zone.is1c.name
   worker_service_class_path = data.sakura_apprun_dedicated_worker_service_classes.main.classes[0].path

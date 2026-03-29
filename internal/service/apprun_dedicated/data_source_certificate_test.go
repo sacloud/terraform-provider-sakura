@@ -5,7 +5,6 @@ package apprun_dedicated_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
@@ -14,15 +13,6 @@ import (
 )
 
 func TestAccSakuraDataSourceApprunDedicatedCertificate(t *testing.T) {
-	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_APPRUN_DEDICATED_TEST")
-	test.SkipIfEnvIsNotSet(t, "SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
-	test.SkipIfFakeModeEnabled(t)
-
-	spid := os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
-	if spid == "" {
-		t.Fatalf("need valid SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID environment variable")
-	}
-
 	t.Run("find by id", func(t *testing.T) {
 		resourceName := "data.sakura_apprun_dedicated_certificate.main"
 		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
@@ -34,9 +24,10 @@ func TestAccSakuraDataSourceApprunDedicatedCertificate(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{
 				{
-					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedCertificateConfigById, name, spid, string(cert), string(key)),
+					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedCertificateConfigById, name, globalClusterID, string(cert), string(key)),
 					Check: resource.ComposeTestCheckFunc(
 						test.CheckSakuraDataSourceExists(resourceName),
 						resource.TestCheckResourceAttr(resourceName, "name", "tfacc-"+name),
@@ -61,9 +52,10 @@ func TestAccSakuraDataSourceApprunDedicatedCertificate(t *testing.T) {
 
 		resource.Test(t, resource.TestCase{
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{
 				{
-					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedCertificateConfigByName, name, spid, string(cert), string(key)),
+					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedCertificateConfigByName, name, globalClusterID, string(cert), string(key)),
 					Check: resource.ComposeTestCheckFunc(
 						test.CheckSakuraDataSourceExists(resourceName),
 						resource.TestCheckResourceAttr(resourceName, "name", "tfacc-"+name),
@@ -78,24 +70,8 @@ func TestAccSakuraDataSourceApprunDedicatedCertificate(t *testing.T) {
 }
 
 var testAccCheckSakuraDataSourceApprunDedicatedCertificateSetup = `
-resource "sakura_apprun_dedicated_cluster" "main" {
-  name                 = "tfacc-{{ .arg0 }}"
-  service_principal_id = "{{ .arg1 }}"
-
-  ports = [
-    {
-      port     = 443
-      protocol = "https"
-    },
-    {
-      port     = 80
-      protocol = "http"
-    }
-  ]
-}
-
 resource "sakura_apprun_dedicated_certificate" "main" {
-  cluster_id  = sakura_apprun_dedicated_cluster.main.id
+  cluster_id  = "{{ .arg1 }}"
   name        = "tfacc-{{ .arg0 }}"
 
   certificate_pem = <<EOF
@@ -111,14 +87,14 @@ EOF
 var testAccCheckSakuraDataSourceApprunDedicatedCertificateConfigById = testAccCheckSakuraDataSourceApprunDedicatedCertificateSetup + `
 data "sakura_apprun_dedicated_certificate" "main" {
   id         = sakura_apprun_dedicated_certificate.main.id
-  cluster_id = sakura_apprun_dedicated_cluster.main.id
+  cluster_id = "{{ .arg1 }}"
 }
 `
 
 var testAccCheckSakuraDataSourceApprunDedicatedCertificateConfigByName = testAccCheckSakuraDataSourceApprunDedicatedCertificateSetup + `
 data "sakura_apprun_dedicated_certificate" "main" {
   name       = "tfacc-{{ .arg0 }}"
-  cluster_id = sakura_apprun_dedicated_cluster.main.id
+  cluster_id = "{{ .arg1 }}"
 
   depends_on = [sakura_apprun_dedicated_certificate.main]
 }

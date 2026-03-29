@@ -4,17 +4,25 @@
 package apprun_dedicated_test
 
 import (
+	"context"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"math/big"
 	"os"
 	"testing"
 	"time"
 
+	"github.com/google/uuid"
+	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
+	"github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
+	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -61,6 +69,50 @@ func OreSign(domain string) (certPEM, keyPEM []byte, err error) {
 	certPEM = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 	keyPEM = pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: key})
 	return
+}
+
+var (
+	globalClient      saclient.Client
+	globalClusterID   string // filled below
+	globalClusterName string = "tfacc-" + acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
+)
+
+func TestMain(m *testing.M) {
+	var created *v1.CreatedCluster
+	var err error
+	ctx := context.Background()
+	client, err := apprun_dedicated.NewClient(&globalClient)
+
+	if err != nil {
+		fmt.Printf("test setup failed: %q", err.Error())
+		os.Exit(1)
+	}
+
+	api := cluster.NewClusterOp(client)
+	spid, ok := os.LookupEnv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
+
+	if ok {
+		created, err = api.Create(ctx, cluster.CreateParams{
+			Name:               globalClusterName,
+			ServicePrincipalID: spid,
+			Ports:              make([]v1.CreateLoadBalancerPort, 0),
+		})
+
+		if err != nil {
+			fmt.Printf("test setup failed: %q", err.Error())
+			os.Exit(1)
+		}
+
+		globalClusterID = uuid.UUID(created.ClusterID).String()
+	}
+
+	ret := m.Run()
+
+	if created != nil {
+		_ = api.Delete(ctx, created.ClusterID)
+	}
+
+	os.Exit(ret)
 }
 
 func AccPreCheck(t *testing.T) func() {
