@@ -48,7 +48,6 @@ func (r *appResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 			},
 			"active_version": schema.Int32Attribute{
 				Optional:    true,
-				Computed:    true,
 				Description: "The active version of the application",
 			},
 			"desired_count": schema.Int32Attribute{
@@ -130,15 +129,14 @@ func (r *appResource) Read(ctx context.Context, req resource.ReadRequest, res *r
 }
 
 func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, res *resource.UpdateResponse) {
-	var plan, state appResourceModel
+	var plan appResourceModel
 	res.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
-	res.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if res.Diagnostics.HasError() {
 		return
 	}
 
-	appID, err := state.appId()
+	appID, err := plan.appId()
 
 	if err != nil {
 		res.Diagnostics.AddError("Update: Invalid Application ID", fmt.Sprintf("failed to parse application ID: %s", err))
@@ -147,17 +145,14 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 
 	api := r.api()
 
-	// Only update if active_version has changed
-	if !plan.ActiveVersion.IsNull() && !plan.ActiveVersion.Equal(state.ActiveVersion) {
-		ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
-		defer cancel()
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
+	defer cancel()
 
-		err = api.Update(ctx, appID, plan.intoUpdate())
+	err = api.Update(ctx, appID, plan.intoUpdate())
 
-		if err != nil {
-			res.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update AppRun Dedicated application: %s", err))
-			return
-		}
+	if err != nil {
+		res.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update AppRun Dedicated application: %s", err))
+		return
 	}
 
 	detail, err := api.Read(ctx, appID)
@@ -167,8 +162,8 @@ func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	state.updateState(detail)
-	res.Diagnostics.Append(res.State.Set(ctx, &state)...)
+	plan.updateState(detail)
+	res.Diagnostics.Append(res.State.Set(ctx, &plan)...)
 }
 
 func (r *appResource) Delete(ctx context.Context, req resource.DeleteRequest, res *resource.DeleteResponse) {
@@ -203,4 +198,14 @@ func (r *appResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 
 func (r *appResource) api() *app.ApplicationOp { return app.NewApplicationOp(r.client) }
 func (c *appResourceModel) intoCreate() string { return c.Name.ValueString() }
-func (c *appResourceModel) intoUpdate() *int32 { return c.ActiveVersion.ValueInt32Pointer() }
+
+func (c *appResourceModel) intoUpdate() *int32 {
+	switch {
+	case c.ActiveVersion.IsUnknown():
+		return (*int32)(nil)
+	case c.ActiveVersion.IsNull():
+		return (*int32)(nil)
+	default:
+		return c.ActiveVersion.ValueInt32Pointer()
+	}
+}

@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/setvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -164,11 +165,11 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 				Computed:    true,
 				Description: "The number of active nodes.  You might want to ignore_changes this field because it changes from time to time",
 			},
-			"exposed_ports": schema.SetNestedAttribute{
+			"exposed_ports": schema.ListNestedAttribute{
 				Optional:      true,
 				Description:   "Ports that the application exposes",
-				Validators:    []validator.Set{setvalidator.SizeAtMost(5)},
-				PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+				Validators:    []validator.List{listvalidator.SizeAtMost(5)},
+				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"target_port": schema.Int32Attribute{
@@ -178,13 +179,14 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 							PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 						},
 						"load_balancer_port": schema.Int32Attribute{
-							Optional:      true,
-							Description:   "The port that the load balancer listens to, or if when this port is internal",
-							Validators:    []validator.Int32{int32validator.Between(1, 65535)},
-							PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
+							Optional:            true,
+							MarkdownDescription: "The port that the load balancer listens to.  Explicitly set it to `null` when you want to disconnect from the load balancer",
+							Validators:          []validator.Int32{int32validator.Between(1, 65535)},
+							PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 						},
 						"use_lets_encrypt": schema.BoolAttribute{
 							Optional:            true,
+							Computed:            true,
 							MarkdownDescription: "Whether the load balancer uses Let's Encrypt (applicable only when `https`)",
 							PlanModifiers:       []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
 						},
@@ -205,13 +207,13 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 									Validators:    []validator.String{stringvalidator.LengthAtMost(200)},
 									PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 								},
-								"interval": schema.Int32Attribute{
+								"interval_seconds": schema.Int32Attribute{
 									Required:      true,
 									Description:   "Health check intervals in seconds",
 									Validators:    []validator.Int32{int32validator.Between(3, 60)},
 									PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 								},
-								"timeout": schema.Int32Attribute{
+								"timeout_seconds": schema.Int32Attribute{
 									Required:      true,
 									Description:   "Time out in seconds until the health check fails",
 									Validators:    []validator.Int32{int32validator.Between(1, 60)},
@@ -275,7 +277,14 @@ func (r *verResource) Create(ctx context.Context, req resource.CreateRequest, re
 	defer cancel()
 
 	api := r.api(aid)
-	created, err := api.Create(ctx, plan.intoCreate(&state))
+	params, diag := plan.intoCreate(&state)
+	res.Diagnostics.Append(diag...)
+
+	if res.Diagnostics.HasError() {
+		return
+	}
+
+	created, err := api.Create(ctx, params)
 
 	if err != nil {
 		res.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create AppRun Dedicated version: %s", err))
@@ -376,7 +385,7 @@ func (r *verResource) ImportState(ctx context.Context, req resource.ImportStateR
 
 func (r *verResource) api(a appID) ver.VersionAPI { return ver.NewVersionOp(r.client, a) }
 
-func (v *verResourceModel) intoCreate(transitional *verResourceModel) (ret ver.CreateParams) {
+func (v *verResourceModel) intoCreate(transitional *verResourceModel) (ret ver.CreateParams, diag diag.Diagnostics) {
 	ret.CPU = v.CPU.ValueInt64()
 	ret.Memory = v.Memory.ValueInt64()
 	ret.ScalingMode = v1.ScalingMode(v.ScalingMode.ValueString())
@@ -389,7 +398,11 @@ func (v *verResourceModel) intoCreate(transitional *verResourceModel) (ret ver.C
 	ret.Cmd = common.TlistToStrings(v.Cmd)
 	ret.RegistryUsername = v.RegistryUsername.ValueStringPointer()
 	ret.RegistryPassword = transitional.RegistryPassword.ValueStringPointer()
-	ret.ExposedPorts = common.MapTo(v.ExposedPorts, exposedPortModel.intoCreate)
+	ret.ExposedPorts = common.MapTo(v.ExposedPorts, func(src exposedPortModel) (dst ver.ExposedPort) {
+		dst, d := src.intoCreate()
+		diag.Append(d...)
+		return dst
+	})
 	ret.EnvVars = common.MapTo(v.EnvVars, envVarModel.intoCreate)
 
 	// API cannot omit RegistryPasswordAction, but can omit username and password...

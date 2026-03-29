@@ -73,6 +73,7 @@ var exposedPortAttrs = attrTypes{
 	"host":               types.SetType{ElemType: types.StringType},
 	"health_check":       types.ObjectType{AttrTypes: healthCheckAttrs},
 }
+
 var versionAttrs = attrTypes{
 	"version":                  types.Int32Type,
 	"application_id":           types.StringType,
@@ -91,7 +92,7 @@ var versionAttrs = attrTypes{
 	"registry_password_action": types.StringType,
 	"active_node_count":        types.Int64Type,
 	"created_at":               types.StringType,
-	"exposed_ports":            types.SetType{ElemType: types.ObjectType{AttrTypes: exposedPortAttrs}},
+	"exposed_ports":            types.ListType{ElemType: types.ObjectType{AttrTypes: exposedPortAttrs}},
 	"env_vars":                 types.SetType{ElemType: types.ObjectType{AttrTypes: envVarAttrs}},
 }
 
@@ -121,13 +122,22 @@ func (e envVarModel) intoCreate() (ret version.EnvironmentVariable) {
 	return
 }
 
-func (p exposedPortModel) intoCreate() (ret version.ExposedPort) {
+func (p exposedPortModel) intoCreate() (ret version.ExposedPort, diag diag.Diagnostics) {
 	ret.TargetPort = v1.Port(p.TargetPort.ValueInt32())
-	ret.LoadBalancerPort = saclient.Ptr(v1.Port(p.LoadBalancerPort.ValueInt32()))
 	ret.UseLetsEncrypt = p.UseLetsEncrypt.ValueBool()
 	ret.Host = common.TsetToStrings(p.Host)
 	ret.HealthCheck = saclient.Ptr(p.HealthCheck.intoCreate())
 
+	var port *uint16
+	switch {
+	case p.LoadBalancerPort.IsUnknown():
+		port = (*uint16)(nil)
+	case p.LoadBalancerPort.IsNull():
+		port = (*uint16)(nil)
+	default:
+		port, diag = intoUInt16(p.LoadBalancerPort.ValueInt32Pointer())
+	}
+	ret.LoadBalancerPort = (*v1.Port)(port)
 	return
 }
 
