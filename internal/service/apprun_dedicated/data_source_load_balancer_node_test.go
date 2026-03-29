@@ -8,6 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -20,14 +23,14 @@ func TestAccSakuraDataSourceApprunDedicatedLoadBalancerNode(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedLoadBalancerNodeConfig, name, globalClusterID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "auto_scaling_group_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "load_balancer_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "status"),
-					resource.TestCheckResourceAttrSet(resourceName, "created"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("auto_scaling_group_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancer_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("status"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("created"), knownvalue.NotNull()),
+				},
 			},
 		},
 	})

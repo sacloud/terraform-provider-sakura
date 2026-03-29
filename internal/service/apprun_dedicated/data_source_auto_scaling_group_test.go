@@ -8,6 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -22,14 +25,14 @@ func TestAccSakuraDataSourceApprunDedicatedAutoScalingGroup(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedAutoScalingGroupConfigById, name, globalClusterID),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttrSet(resourceName, "id"),
-						resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
-						resource.TestCheckResourceAttr(resourceName, "name", "tfacc-"+name),
-						resource.TestCheckResourceAttr(resourceName, "zone", "is1c"),
-						resource.TestCheckResourceAttr(resourceName, "min_nodes", "1"),
-						resource.TestCheckResourceAttr(resourceName, "max_nodes", "3"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact("tfacc-"+name)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone"), knownvalue.StringExact("is1c")),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("min_nodes"), knownvalue.Int32Exact(1)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("max_nodes"), knownvalue.Int32Exact(3)),
+					},
 				},
 			},
 		})
@@ -45,12 +48,12 @@ func TestAccSakuraDataSourceApprunDedicatedAutoScalingGroup(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedAutoScalingGroupConfigByName, name, globalClusterID),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttrSet(resourceName, "id"),
-						resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
-						resource.TestCheckResourceAttr(resourceName, "name", "tfacc-"+name),
-						resource.TestCheckResourceAttr(resourceName, "zone", "is1c"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact("tfacc-"+name)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone"), knownvalue.StringExact("is1c")),
+					},
 				},
 			},
 		})

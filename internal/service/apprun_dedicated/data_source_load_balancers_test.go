@@ -8,6 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -21,15 +24,15 @@ func TestAccSakuraDataSourceApprunDedicatedLoadBalancers(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedLoadBalancersConfig, name, globalClusterID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "auto_scaling_group_id"),
-					resource.TestCheckResourceAttr(resourceName, "load_balancers.#", "1"),
-					resource.TestCheckResourceAttrSet(resourceName, "load_balancers.0.id"),
-					resource.TestCheckResourceAttrSet(resourceName, "load_balancers.0.name"),
-					resource.TestCheckResourceAttrSet(resourceName, "load_balancers.0.service_class_path"),
-					resource.TestCheckResourceAttrSet(resourceName, "load_balancers.0.created"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("auto_scaling_group_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers"), knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers").AtSliceIndex(0).AtMapKey("name"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers").AtSliceIndex(0).AtMapKey("service_class_path"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers").AtSliceIndex(0).AtMapKey("created"), knownvalue.NotNull()),
+				},
 			},
 		},
 	})

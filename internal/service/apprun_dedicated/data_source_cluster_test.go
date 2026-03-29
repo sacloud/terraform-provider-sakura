@@ -10,6 +10,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -26,15 +29,14 @@ func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigById,
 						name,
 						os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
-					Check: resource.ComposeTestCheckFunc(
-						test.CheckSakuraDataSourceExists(resourceName),
-						resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tfacc-%s", name)),
-						resource.TestCheckResourceAttrSet(resourceName, "id"),
-						resource.TestCheckResourceAttrSet(resourceName, "service_principal_id"),
-						resource.TestCheckResourceAttrSet(resourceName, "has_lets_encrypt_email"),
-						resource.TestCheckResourceAttrSet(resourceName, "created_at"),
-						resource.TestCheckResourceAttr(resourceName, "ports.#", "2"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("service_principal_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("has_lets_encrypt_email"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("created_at"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(2)),
+					},
 				},
 			},
 		})
@@ -53,15 +55,14 @@ func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 						testAccCheckSakuraDataSourceApprunDedicatedClusterConfigByName,
 						name,
 						os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
-					Check: resource.ComposeTestCheckFunc(
-						test.CheckSakuraDataSourceExists(resourceName),
-						resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tfacc-%s", name)),
-						resource.TestCheckResourceAttrSet(resourceName, "id"),
-						resource.TestCheckResourceAttrSet(resourceName, "service_principal_id"),
-						resource.TestCheckResourceAttrSet(resourceName, "has_lets_encrypt_email"),
-						resource.TestCheckResourceAttrSet(resourceName, "created_at"),
-						resource.TestCheckResourceAttr(resourceName, "ports.#", "2"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("service_principal_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("has_lets_encrypt_email"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("created_at"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(2)),
+					},
 				},
 			},
 		})

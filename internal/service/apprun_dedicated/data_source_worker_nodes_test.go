@@ -8,6 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -21,11 +24,11 @@ func TestAccSakuraDataSourceApprunDedicatedWorkerNodes(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedWorkerNodesConfig, name, globalClusterID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "auto_scaling_group_id"),
-					resource.TestCheckResourceAttr(resourceName, "nodes.#", "1"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("auto_scaling_group_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("nodes"), knownvalue.ListSizeExact(1)),
+				},
 			},
 		},
 	})

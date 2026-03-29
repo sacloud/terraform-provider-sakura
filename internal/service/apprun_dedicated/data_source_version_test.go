@@ -8,6 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -22,14 +25,14 @@ func TestAccSakuraDataSourceApprunDedicatedVersion(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedVersionConfig, name, globalClusterID),
-					Check: resource.ComposeTestCheckFunc(
-						resource.TestCheckResourceAttrSet(resourceName, "version"),
-						resource.TestCheckResourceAttrSet(resourceName, "application_id"),
-						resource.TestCheckResourceAttr(resourceName, "cpu", "1000"),
-						resource.TestCheckResourceAttr(resourceName, "memory", "512"),
-						resource.TestCheckResourceAttr(resourceName, "scaling_mode", "manual"),
-						resource.TestCheckResourceAttr(resourceName, "image", "nginx:latest"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("version"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("application_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cpu"), knownvalue.Int64Exact(1000)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("memory"), knownvalue.Int64Exact(512)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("scaling_mode"), knownvalue.StringExact("manual")),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("image"), knownvalue.StringExact("nginx:latest")),
+					},
 				},
 			},
 		})

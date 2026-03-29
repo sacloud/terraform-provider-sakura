@@ -9,6 +9,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -28,14 +31,13 @@ func TestAccSakuraDataSourceApprunDedicatedCertificate(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedCertificateConfigById, name, globalClusterID, string(cert), string(key)),
-					Check: resource.ComposeTestCheckFunc(
-						test.CheckSakuraDataSourceExists(resourceName),
-						resource.TestCheckResourceAttr(resourceName, "name", "tfacc-"+name),
-						resource.TestCheckResourceAttrSet(resourceName, "id"),
-						resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
-						resource.TestCheckResourceAttrSet(resourceName, "common_name"),
-						resource.TestCheckResourceAttrSet(resourceName, "created_at"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact("tfacc-"+name)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("common_name"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("created_at"), knownvalue.NotNull()),
+					},
 				},
 			},
 		})
@@ -56,13 +58,12 @@ func TestAccSakuraDataSourceApprunDedicatedCertificate(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedCertificateConfigByName, name, globalClusterID, string(cert), string(key)),
-					Check: resource.ComposeTestCheckFunc(
-						test.CheckSakuraDataSourceExists(resourceName),
-						resource.TestCheckResourceAttr(resourceName, "name", "tfacc-"+name),
-						resource.TestCheckResourceAttrSet(resourceName, "id"),
-						resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
-						resource.TestCheckResourceAttrSet(resourceName, "common_name"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact("tfacc-"+name)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("common_name"), knownvalue.NotNull()),
+					},
 				},
 			},
 		})

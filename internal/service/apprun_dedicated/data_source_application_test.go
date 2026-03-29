@@ -8,6 +8,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -22,13 +25,12 @@ func TestAccSakuraDataSourceApprunDedicatedApplication(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedApplicationConfigById, name, globalClusterID),
-					Check: resource.ComposeTestCheckFunc(
-						test.CheckSakuraDataSourceExists(resourceName),
-						resource.TestCheckResourceAttr(resourceName, "name", "tfacc-"+name),
-						resource.TestCheckResourceAttrSet(resourceName, "id"),
-						resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
-						resource.TestCheckResourceAttrSet(resourceName, "cluster_name"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact("tfacc-"+name)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_name"), knownvalue.NotNull()),
+					},
 				},
 			},
 		})
@@ -44,12 +46,11 @@ func TestAccSakuraDataSourceApprunDedicatedApplication(t *testing.T) {
 			Steps: []resource.TestStep{
 				{
 					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedApplicationConfigByName, name, globalClusterID),
-					Check: resource.ComposeTestCheckFunc(
-						test.CheckSakuraDataSourceExists(resourceName),
-						resource.TestCheckResourceAttr(resourceName, "name", "tfacc-"+name),
-						resource.TestCheckResourceAttrSet(resourceName, "id"),
-						resource.TestCheckResourceAttrSet(resourceName, "cluster_id"),
-					),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact("tfacc-"+name)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
+					},
 				},
 			},
 		})
