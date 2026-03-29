@@ -14,25 +14,19 @@ import (
 )
 
 func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
-	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_APPRUN_DEDICATED_TEST")
-	test.SkipIfEnvIsNotSet(t, "SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
-	test.SkipIfFakeModeEnabled(t)
-
-	spid := os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
-	if spid == "" {
-		t.Fatalf("need valid SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID environment variable")
-	}
 
 	t.Run("find by id", func(t *testing.T) {
 		resourceName := "data.sakura_apprun_dedicated_cluster.main"
 		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
 		resource.Test(t, resource.TestCase{
-			//PreCheck:                 func() { test.AccPreCheck(t) },
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{
 				{
-					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigById, name, spid),
+					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigById,
+						name,
+						os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
 					Check: resource.ComposeTestCheckFunc(
 						test.CheckSakuraDataSourceExists(resourceName),
 						resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tfacc-%s", name)),
@@ -52,11 +46,14 @@ func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
 		resource.Test(t, resource.TestCase{
-			//PreCheck:                 func() { test.AccPreCheck(t) },
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{
 				{
-					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigByName, name, spid),
+					Config: test.BuildConfigWithArgs(
+						testAccCheckSakuraDataSourceApprunDedicatedClusterConfigByName,
+						name,
+						os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
 					Check: resource.ComposeTestCheckFunc(
 						test.CheckSakuraDataSourceExists(resourceName),
 						resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tfacc-%s", name)),

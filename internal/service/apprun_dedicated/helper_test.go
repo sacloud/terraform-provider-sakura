@@ -11,7 +11,11 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"math/big"
+	"os"
+	"testing"
 	"time"
+
+	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
 // `acctest` has `RandTLSCert()` but its return value lacks SANs.
@@ -57,4 +61,17 @@ func OreSign(domain string) (certPEM, keyPEM []byte, err error) {
 	certPEM = pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: der})
 	keyPEM = pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: key})
 	return
+}
+
+func AccPreCheck(t *testing.T) func() {
+	return func() {
+		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_APPRUN_DEDICATED_TEST")
+		test.SkipIfEnvIsNotSet(t, "SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
+		test.SkipIfFakeModeEnabled(t)
+
+		spid := os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
+		if spid == "" {
+			t.Fatalf("need valid SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID environment variable")
+		}
+	}
 }
