@@ -23,7 +23,7 @@ func TestAccSakuraResourceApprunDedicatedCluster_basic(t *testing.T) {
 	resourceName := "sakura_apprun_dedicated_cluster.main"
 	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:                 AccPreCheck(t),
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy:             testCheckSakuraApprunDedicatedClusterDestroy,
@@ -55,7 +55,7 @@ func TestAccSakuraResourceApprunDedicatedCluster_update(t *testing.T) {
 	resourceName := "sakura_apprun_dedicated_cluster.main"
 	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
-	resource.ParallelTest(t, resource.TestCase{
+	resource.Test(t, resource.TestCase{
 		PreCheck:                 AccPreCheck(t),
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy:             testCheckSakuraApprunDedicatedClusterDestroy,
