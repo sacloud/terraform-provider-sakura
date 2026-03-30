@@ -22,65 +22,64 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraResourceApprunDedicatedCluster_basic(t *testing.T) {
+func TestAccSakuraResourceApprunDedicatedCluster(t *testing.T) {
 	resourceName := "sakura_apprun_dedicated_cluster.main"
 	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 AccPreCheck(t),
-		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraApprunDedicatedClusterDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedCluster_basic, name, os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(2)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("service_principal_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("created_at"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("has_lets_encrypt_email"), knownvalue.NotNull()),
+	t.Run("basic", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 AccPreCheck(t),
+			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			CheckDestroy:             testCheckSakuraApprunDedicatedClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedCluster_basic, name, os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(2)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("service_principal_id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("created_at"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("has_lets_encrypt_email"), knownvalue.NotNull()),
+					},
+				},
+				{
+					ResourceName:      resourceName,
+					ImportState:       true,
+					ImportStateVerify: true,
+					// Importing doesn't retrieve the Let's Encrypt email (sensitive/computed), and timeouts are not part of state
+					ImportStateVerifyIgnore: []string{"lets_encrypt_email", "timeouts"},
 				},
 			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				// Importing doesn't retrieve the Let's Encrypt email (sensitive/computed), and timeouts are not part of state
-				ImportStateVerifyIgnore: []string{"lets_encrypt_email", "timeouts"},
-			},
-		},
+		})
 	})
-}
 
-func TestAccSakuraResourceApprunDedicatedCluster_update(t *testing.T) {
-	resourceName := "sakura_apprun_dedicated_cluster.main"
-	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 AccPreCheck(t),
-		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraApprunDedicatedClusterDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedCluster_basic, name, os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(2)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("lets_encrypt_email"), knownvalue.Null()),
+	t.Run("update", func(t *testing.T) {
+		resource.Test(t, resource.TestCase{
+			PreCheck:                 AccPreCheck(t),
+			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			CheckDestroy:             testCheckSakuraApprunDedicatedClusterDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedCluster_basic, name, os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(2)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("lets_encrypt_email"), knownvalue.Null()),
+					},
+				},
+				{
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedCluster_update, name, os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(1)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports").AtSliceIndex(0).AtMapKey("port"), knownvalue.Int64Exact(80)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports").AtSliceIndex(0).AtMapKey("protocol"), knownvalue.StringExact("http")),
+						// Note: lets_encrypt_email cannot be verified directly as it's write-only for updates
+					},
 				},
 			},
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedCluster_update, name, os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(1)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports").AtSliceIndex(0).AtMapKey("port"), knownvalue.Int64Exact(80)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports").AtSliceIndex(0).AtMapKey("protocol"), knownvalue.StringExact("http")),
-					// Note: lets_encrypt_email cannot be verified directly as it's write-only for updates
-				},
-			},
-		},
+		})
 	})
 }
 

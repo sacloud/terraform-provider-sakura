@@ -22,65 +22,66 @@ import (
 )
 
 func TestAccSakuraResourceApprunDedicatedApplication_basic(t *testing.T) {
-	resourceName := "sakura_apprun_dedicated_application.main"
-	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
+	t.Run("basic", func(t *testing.T) {
+		resourceName := "sakura_apprun_dedicated_application.main"
+		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 AccPreCheck(t),
-		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraApprunDedicatedApplicationDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_basic, name, globalClusterID),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.StringExact(globalClusterID)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_name"), knownvalue.NotNull()),
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:                 AccPreCheck(t),
+			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			CheckDestroy:             testCheckSakuraApprunDedicatedApplicationDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_basic, name, globalClusterID),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.StringExact(globalClusterID)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_name"), knownvalue.NotNull()),
+					},
+				},
+				{
+					ResourceName:            resourceName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"timeouts"},
 				},
 			},
-			{
-				ResourceName:            resourceName,
-				ImportState:             true,
-				ImportStateVerify:       true,
-				ImportStateVerifyIgnore: []string{"timeouts"},
-			},
-		},
+		})
 	})
-}
+	t.Run("update", func(t *testing.T) {
+		resourceName := "sakura_apprun_dedicated_application.main"
+		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
-func TestAccSakuraResourceApprunDedicatedApplication_update(t *testing.T) {
-	resourceName := "sakura_apprun_dedicated_application.main"
-	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
-
-	resource.ParallelTest(t, resource.TestCase{
-		PreCheck:                 AccPreCheck(t),
-		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		Steps: []resource.TestStep{
-			// create app & version
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_version, name, globalClusterID),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.StringExact(globalClusterID)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("active_version"), knownvalue.Null()),
+		resource.ParallelTest(t, resource.TestCase{
+			PreCheck:                 AccPreCheck(t),
+			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			Steps: []resource.TestStep{
+				// create app & version
+				{
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_version, name, globalClusterID),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.StringExact(globalClusterID)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("active_version"), knownvalue.Null()),
+					},
+				},
+				// set version
+				{
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_update, name, globalClusterID),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("active_version"), knownvalue.Int32Exact(1)),
+					},
+				},
+				// deactivate version (necessary for proper teardown)
+				{
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_teardown, name, globalClusterID),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("active_version"), knownvalue.Null()),
+					},
 				},
 			},
-			// set version
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_update, name, globalClusterID),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("active_version"), knownvalue.Int32Exact(1)),
-				},
-			},
-			// deactivate version (necessary for proper teardown)
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_teardown, name, globalClusterID),
-				ConfigStateChecks: []statecheck.StateCheck{
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("active_version"), knownvalue.Null()),
-				},
-			},
-		},
+		})
 	})
 }
 
