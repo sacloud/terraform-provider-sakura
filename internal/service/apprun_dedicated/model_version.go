@@ -5,6 +5,7 @@ package apprun_dedicated
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -35,6 +36,7 @@ type exposedPortModel struct {
 }
 
 type verModel struct {
+	ID                types.String       `tfsdk:"id"`
 	Version           types.Int32        `tfsdk:"version"`
 	ApplicationID     types.String       `tfsdk:"application_id"`
 	CPU               types.Int64        `tfsdk:"cpu"`
@@ -75,6 +77,7 @@ var exposedPortAttrs = attrTypes{
 }
 
 var versionAttrs = attrTypes{
+	"id":                       types.StringType,
 	"version":                  types.Int32Type,
 	"application_id":           types.StringType,
 	"cpu":                      types.Int64Type,
@@ -93,7 +96,7 @@ var versionAttrs = attrTypes{
 	"active_node_count":        types.Int64Type,
 	"created_at":               types.StringType,
 	"exposed_ports":            types.ListType{ElemType: types.ObjectType{AttrTypes: exposedPortAttrs}},
-	"env_vars":                 types.SetType{ElemType: types.ObjectType{AttrTypes: envVarAttrs}},
+	"env_vars":                 types.ListType{ElemType: types.ObjectType{AttrTypes: envVarAttrs}},
 }
 
 func (healthCheckModel) AttributeTypes() attrTypes { return healthCheckAttrs }
@@ -149,8 +152,14 @@ func (h *healthCheckModel) updateState(d *v1.HealthCheck) {
 
 func (e *envVarModel) updateState(d version.EnvironmentVariable) {
 	e.Key = types.StringValue(d.Key)
-	e.Value = types.StringPointerValue(d.Value)
 	e.Secret = types.BoolValue(d.Secret)
+
+	if d.Secret == true && d.Value == nil {
+		// This means "value is concealed".
+		// However we already know the value from the state, so we keep it as is instead of setting to null.
+	} else {
+		e.Value = types.StringPointerValue(d.Value)
+	}
 }
 
 func (*exposedPortModel) int32(i16 *v1.Port) types.Int32 {
@@ -175,6 +184,7 @@ func (p *exposedPortModel) updateState(d version.ExposedPort) {
 }
 
 func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, aid appID) (ret diag.Diagnostics) {
+	v.ID = types.StringValue(fmt.Sprintf("%s/%d", aid, d.Version))
 	v.Version = types.Int32Value(common.ToInt32(d.Version))
 	v.ApplicationID = uuid2StringValue(aid)
 	v.CPU = types.Int64Value(d.CPU)
@@ -191,8 +201,17 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 	v.ActiveNodeCount = types.Int64Value(d.ActiveNodeCount)
 	v.CreatedAt = intoRFC2822(d.Created)
 	v.ExposedPorts = common.MapTo(d.ExposedPorts, stateUpdater[version.ExposedPort, exposedPortModel])
-	v.EnvVars = common.MapTo(d.EnvVars, stateUpdater[version.EnvironmentVariable, envVarModel])
 	v.Cmd, ret = types.ListValueFrom(ctx, types.StringType, common.MapTo(d.Cmd, types.StringValue))
+
+	buf := make([]envVarModel, len(d.EnvVars))
+	copy(buf, v.EnvVars)
+
+	for i, j := range d.EnvVars {
+		k := &buf[i]
+		k.updateState(j)
+	}
+
+	v.EnvVars = buf
 
 	return
 }

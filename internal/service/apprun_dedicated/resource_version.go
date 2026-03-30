@@ -6,6 +6,7 @@ package apprun_dedicated
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -61,6 +62,10 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 	res.Schema = schema.Schema{
 		Description: "Manages an AppRun dedicated version",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "(Synthetic ID, only for internal use)",
+			},
 			"application_id": func() (attr schema.StringAttribute) {
 				attr = common.SchemaResourceId("application").(schema.StringAttribute)
 				attr.Required = true
@@ -225,11 +230,11 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 					},
 				},
 			},
-			"env_vars": schema.SetNestedAttribute{
+			"env_vars": schema.ListNestedAttribute{
 				Optional:      true,
 				Description:   "Environment variables",
-				Validators:    []validator.Set{setvalidator.SizeAtMost(50)},
-				PlanModifiers: []planmodifier.Set{setplanmodifier.RequiresReplace()},
+				Validators:    []validator.List{listvalidator.SizeAtMost(50)},
+				PlanModifiers: []planmodifier.List{listplanmodifier.RequiresReplace()},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"key": schema.StringAttribute{
@@ -379,8 +384,18 @@ func (r *verResource) ImportState(ctx context.Context, req resource.ImportStateR
 		return
 	}
 
+	conv, err := strconv.ParseInt(parts[1], 0, 32)
+	if err != nil {
+		res.Diagnostics.AddError(
+			"Import: Invalid Version Number",
+			fmt.Sprintf("failed to parse version number: %s", err),
+		)
+		return
+	}
+
 	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("application_id"), parts[0])...)
-	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("version"), parts[1])...)
+	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("version"), int32(conv))...)
+	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("id"), req.ID)...)
 }
 
 func (r *verResource) api(a appID) ver.VersionAPI { return ver.NewVersionOp(r.client, a) }
