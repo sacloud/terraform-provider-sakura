@@ -4,11 +4,8 @@
 package apprun_dedicated_test
 
 import (
-	"fmt"
-	"os"
 	"testing"
 
-	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
@@ -19,23 +16,19 @@ import (
 func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 	t.Run("find by id", func(t *testing.T) {
 		resourceName := "data.sakura_apprun_dedicated_cluster.main"
-		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
-
 		resource.ParallelTest(t, resource.TestCase{
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{
 				{
-					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigById,
-						name,
-						os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
+					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigById, globalClusterID),
 					ConfigStateChecks: []statecheck.StateCheck{
-						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(globalClusterName)),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("service_principal_id"), knownvalue.NotNull()),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("has_lets_encrypt_email"), knownvalue.NotNull()),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("created_at"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(2)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.Null()),
 					},
 				},
 			},
@@ -44,24 +37,19 @@ func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 
 	t.Run("find by name", func(t *testing.T) {
 		resourceName := "data.sakura_apprun_dedicated_cluster.main"
-		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
-
 		resource.ParallelTest(t, resource.TestCase{
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{
 				{
-					Config: test.BuildConfigWithArgs(
-						testAccCheckSakuraDataSourceApprunDedicatedClusterConfigByName,
-						name,
-						os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")),
+					Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedClusterConfigByName, globalClusterName),
 					ConfigStateChecks: []statecheck.StateCheck{
-						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(globalClusterName)),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("service_principal_id"), knownvalue.NotNull()),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("has_lets_encrypt_email"), knownvalue.NotNull()),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("created_at"), knownvalue.NotNull()),
-						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.ListSizeExact(2)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("ports"), knownvalue.Null()),
 					},
 				},
 			},
@@ -70,46 +58,13 @@ func TestAccSakuraDataSourceApprunDedicatedCluster(t *testing.T) {
 }
 
 var testAccCheckSakuraDataSourceApprunDedicatedClusterConfigById = `
-resource "sakura_apprun_dedicated_cluster" "main" {
-  name                 = "tfacc-{{ .arg0 }}"
-  service_principal_id = "{{ .arg1 }}"
-
-  ports = [
-    {
-      port     = 443
-      protocol = "https"
-    },
-    {
-      port     = 80
-      protocol = "http"
-    }
-  ]
-}
-
 data "sakura_apprun_dedicated_cluster" "main" {
-  id = sakura_apprun_dedicated_cluster.main.id
+  id = "{{ .arg0 }}"
 }
 `
 
 var testAccCheckSakuraDataSourceApprunDedicatedClusterConfigByName = `
-resource "sakura_apprun_dedicated_cluster" "main" {
-  name                 = "tfacc-{{ .arg0 }}"
-  service_principal_id = "{{ .arg1 }}"
-
-  ports = [
-    {
-      port     = 443
-      protocol = "https"
-    },
-    {
-      port     = 80
-      protocol = "http"
-    }
-  ]
-}
-
 data "sakura_apprun_dedicated_cluster" "main" {
-  name       = "tfacc-{{ .arg0 }}"
-  depends_on = [sakura_apprun_dedicated_cluster.main]
+  name = "{{ .arg0 }}"
 }
 `
