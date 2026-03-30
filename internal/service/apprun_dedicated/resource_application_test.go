@@ -12,7 +12,10 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/knownvalue"
+	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
 	app "github.com/sacloud/apprun-dedicated-api-go/apis/application"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
@@ -29,13 +32,12 @@ func TestAccSakuraResourceApprunDedicatedApplication_basic(t *testing.T) {
 		Steps: []resource.TestStep{
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_basic, name, globalClusterID),
-				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraApprunDedicatedApplicationExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tfacc-%s", name)),
-					resource.TestCheckResourceAttr(resourceName, "cluster_id", globalClusterID),
-					resource.TestCheckResourceAttrSet(resourceName, "id"),
-					resource.TestCheckResourceAttrSet(resourceName, "cluster_name"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.StringExact(globalClusterID)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_name"), knownvalue.NotNull()),
+				},
 			},
 			{
 				ResourceName:            resourceName,
@@ -58,26 +60,25 @@ func TestAccSakuraResourceApprunDedicatedApplication_update(t *testing.T) {
 			// create app & version
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_version, name, globalClusterID),
-				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraApprunDedicatedApplicationExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", fmt.Sprintf("tfacc-%s", name)),
-					resource.TestCheckResourceAttr(resourceName, "cluster_id", globalClusterID),
-					resource.TestCheckNoResourceAttr(resourceName, "active_version"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact(fmt.Sprintf("tfacc-%s", name))),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.StringExact(globalClusterID)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("active_version"), knownvalue.Null()),
+				},
 			},
 			// set version
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_update, name, globalClusterID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName, "active_version", "1"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("active_version"), knownvalue.Int32Exact(1)),
+				},
 			},
 			// deactivate version (necessary for proper teardown)
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedApplication_teardown, name, globalClusterID),
-				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckNoResourceAttr(resourceName, "active_version"),
-				),
+				ConfigStateChecks: []statecheck.StateCheck{
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("active_version"), knownvalue.Null()),
+				},
 			},
 		},
 	})
@@ -113,45 +114,6 @@ func testCheckSakuraApprunDedicatedApplicationDestroy(s *terraform.State) error 
 		}
 	}
 	return nil
-}
-
-func testCheckSakuraApprunDedicatedApplicationExists(n string) resource.TestCheckFunc {
-	return func(s *terraform.State) error {
-		rs, ok := s.RootModule().Resources[n]
-
-		if !ok {
-			return fmt.Errorf("not found: %s", n)
-		}
-
-		if rs.Primary.ID == "" {
-			return errors.New("no application ID is set")
-		}
-
-		client := test.AccClientGetter().AppRunDedicatedClient
-
-		if client == nil {
-			return errors.New("AppRunDedicatedClient is nil")
-		}
-
-		appID, err := uuid.Parse(rs.Primary.ID)
-
-		if err != nil {
-			return fmt.Errorf("invalid application ID: %s", rs.Primary.ID)
-		}
-
-		api := app.NewApplicationOp(client)
-		found, err := api.Read(context.Background(), v1.ApplicationID(appID))
-
-		if err != nil {
-			return fmt.Errorf("failed to read application: %s", err)
-		}
-
-		if uuid.UUID(found.ApplicationID).String() != rs.Primary.ID {
-			return fmt.Errorf("application not found: %s", rs.Primary.ID)
-		}
-
-		return nil
-	}
 }
 
 var testAccSakuraResourceApprunDedicatedApplication_basic = `
