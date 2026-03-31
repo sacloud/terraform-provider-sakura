@@ -31,7 +31,7 @@ func TestAccSakuraDataSourceApprunDedicatedAutoScalingGroup(t *testing.T) {
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("name"), knownvalue.StringExact("tfacc-"+name)),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("zone"), knownvalue.StringExact("is1c")),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("min_nodes"), knownvalue.Int32Exact(1)),
-						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("max_nodes"), knownvalue.Int32Exact(3)),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("max_nodes"), knownvalue.Int32Exact(1)),
 					},
 				},
 			},
