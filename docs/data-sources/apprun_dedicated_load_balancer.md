@@ -64,7 +64,7 @@ Read-Only:
 - `default_gateway` (String) The default gateway
 - `interface_index` (Number) The interface index
 - `ip_pool` (Attributes Set) The IP pool for the interface (see [below for nested schema](#nestedatt--interfaces--ip_pool))
-- `netmask_len` (Number) The netmask length
+- `netmask` (Number) The netmask length
 - `packet_filter_id` (String) The packet filter ID
 - `upstream` (String) The upstream network
 - `vip` (String) The VIP address

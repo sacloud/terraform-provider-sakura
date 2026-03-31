@@ -29,7 +29,7 @@ resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
     interface_index = 0
     upstream        = data.sakura_internet.main.vswitch_id
     connects_to_lb  = false
-    netmask_len     = data.sakura_internet.main.netmask
+    netmask         = data.sakura_internet.main.netmask
     default_gateway = data.sakura_internet.main.gateway
     ip_pool = [{
       start = data.sakura_internet.main.min_ip_address

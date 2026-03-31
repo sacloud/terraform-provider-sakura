@@ -89,7 +89,7 @@ resource "sakura_apprun_dedicated_load_balancer" "main" {
           end   = sakura_internet.main.max_ip_address
         }
       ]
-      netmask_len       = sakura_internet.main.netmask
+      netmask           = sakura_internet.main.netmask
       default_gateway   = sakura_internet.main.gateway
       vip               = cidrhost("${sakura_internet.main.gateway}/${sakura_internet.main.netmask}", 9)
       virtual_router_id = 1

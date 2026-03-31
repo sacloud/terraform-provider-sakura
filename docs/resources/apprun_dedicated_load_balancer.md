@@ -50,7 +50,7 @@ resource "sakura_apprun_dedicated_load_balancer" "main" {
       start = data.sakura_internet.main.min_ip_address
       end   = data.sakura_internet.main.max_ip_address
     }]
-    netmask_len       = data.sakura_internet.main.netmask
+    netmask           = data.sakura_internet.main.netmask
     default_gateway   = data.sakura_internet.main.gateway
     vip               = cidrhost("${data.sakura_internet.main.gateway}/${data.sakura_internet.main.netmask}", 9)
     virtual_router_id = 1
@@ -92,7 +92,7 @@ Optional:
 
 - `default_gateway` (String) The default gateway.  Makes sense only when upstream is not `shared`
 - `ip_pool` (Attributes Set) The IP pool for the interface.  Must omit when upstream is `shared`.  Mandatory otherwise. (see [below for nested schema](#nestedatt--interfaces--ip_pool))
-- `netmask_len` (Number) The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.
+- `netmask` (Number) The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.
 - `packet_filter_id` (String) The packet filter ID
 - `vip` (String) The VIP address. Makes sense only when upstream is not `shared`
 - `virtual_router_id` (Number) The virtual router ID. Makes sense only when upstream is not `shared`

@@ -77,7 +77,7 @@ func (d *lbDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res
 							},
 							Description: "The IP pool for the interface",
 						},
-						"netmask_len": schema.Int32Attribute{
+						"netmask": schema.Int32Attribute{
 							Computed:    true,
 							Description: "The netmask length",
 						},

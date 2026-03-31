@@ -44,7 +44,7 @@ resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
     interface_index = 0
     upstream        = data.sakura_internet.main.vswitch_id
     connects_to_lb  = false
-    netmask_len     = data.sakura_internet.main.netmask
+    netmask         = data.sakura_internet.main.netmask
     default_gateway = data.sakura_internet.main.gateway
     ip_pool = [{
       start = data.sakura_internet.main.min_ip_address
@@ -91,7 +91,7 @@ Optional:
 
 - `default_gateway` (String) The default gateway.  Makes sense only when upstream is not `shared`
 - `ip_pool` (Attributes Set) The IP pool for the interface.  Must omit when upstream is `shared`.  Mandatory otherwise. (see [below for nested schema](#nestedatt--interfaces--ip_pool))
-- `netmask_len` (Number) The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.
+- `netmask` (Number) The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.
 - `packet_filter_id` (String) The packet filter ID
 
 <a id="nestedatt--interfaces--ip_pool"></a>

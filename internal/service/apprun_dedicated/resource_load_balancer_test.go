@@ -44,7 +44,7 @@ func TestAccSakuraResourceApprunDedicatedLoadBalancer(t *testing.T) {
 							"interface_index":   knownvalue.Int32Exact(0),
 							"upstream":          knownvalue.StringRegexp(regexp.MustCompile("^[0-9]+$")),
 							"default_gateway":   knownvalue.NotNull(),
-							"netmask_len":       knownvalue.NotNull(),
+							"netmask":           knownvalue.NotNull(),
 							"vip":               knownvalue.NotNull(),
 							"virtual_router_id": knownvalue.Int32Exact(1),
 							"packet_filter_id":  knownvalue.Null(),
@@ -161,7 +161,7 @@ resource "sakura_apprun_dedicated_load_balancer" "main" {
           end   = sakura_internet.main.max_ip_address
         }
       ]
-      netmask_len       = sakura_internet.main.netmask
+      netmask           = sakura_internet.main.netmask
       default_gateway   = sakura_internet.main.gateway
       vip               = cidrhost("${sakura_internet.main.gateway}/${sakura_internet.main.netmask}", 9)
       virtual_router_id = 1

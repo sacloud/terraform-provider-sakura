@@ -151,7 +151,7 @@ func (r *asgResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 								},
 							},
 						},
-						"netmask_len": schema.Int32Attribute{
+						"netmask": schema.Int32Attribute{
 							Optional:            true,
 							MarkdownDescription: "The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.",
 							Validators:          []validator.Int32{int32validator.Between(8, 29)},

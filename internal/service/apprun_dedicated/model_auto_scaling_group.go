@@ -24,7 +24,7 @@ type nodeInterfaceModel struct {
 	InterfaceIndex types.Int32  `tfsdk:"interface_index"`
 	Upstream       types.String `tfsdk:"upstream"`
 	IpPool         []rangeModel `tfsdk:"ip_pool"`
-	NetmaskLen     types.Int32  `tfsdk:"netmask_len"`
+	NetmaskLen     types.Int32  `tfsdk:"netmask"`
 	DefaultGateway types.String `tfsdk:"default_gateway"`
 	PacketFilterID types.String `tfsdk:"packet_filter_id"`
 	ConnectsToLB   types.Bool   `tfsdk:"connects_to_lb"`
@@ -53,7 +53,7 @@ var asgInterfaceAttrs = attrTypes{
 	"interface_index":  types.Int32Type,
 	"upstream":         types.StringType,
 	"ip_pool":          types.SetType{ElemType: types.ObjectType{AttrTypes: rangeAttrs}},
-	"netmask_len":      types.Int32Type,
+	"netmask":          types.Int32Type,
 	"default_gateway":  types.StringType,
 	"packet_filter_id": types.StringType,
 	"connects_to_lb":   types.BoolType,

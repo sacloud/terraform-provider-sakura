@@ -41,7 +41,7 @@ type lbifModel struct {
 	InterfaceIndex  types.Int32  `tfsdk:"interface_index"`
 	Upstream        types.String `tfsdk:"upstream"`
 	IpPool          []rangeModel `tfsdk:"ip_pool"`
-	NetmaskLen      types.Int32  `tfsdk:"netmask_len"`
+	NetmaskLen      types.Int32  `tfsdk:"netmask"`
 	DefaultGateway  types.String `tfsdk:"default_gateway"`
 	Vip             types.String `tfsdk:"vip"`
 	VirtualRouterID types.Int32  `tfsdk:"virtual_router_id"`
@@ -82,7 +82,7 @@ var lbifAttrs = attrTypes{
 	"interface_index":   types.Int32Type,
 	"upstream":          types.StringType,
 	"ip_pool":           types.SetType{ElemType: types.ObjectType{AttrTypes: rangeAttrs}},
-	"netmask_len":       types.Int32Type,
+	"netmask":           types.Int32Type,
 	"default_gateway":   types.StringType,
 	"vip":               types.StringType,
 	"virtual_router_id": types.Int32Type,
