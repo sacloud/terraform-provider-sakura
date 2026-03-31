@@ -49,8 +49,8 @@ resource "sakura_apprun_dedicated_version" "main" {
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `cmd` (List of String) application command line i.e. the command and arguments
-- `env_vars` (Attributes Set) Environment variables (see [below for nested schema](#nestedatt--env_vars))
-- `exposed_ports` (Attributes Set) Ports that the application exposes (see [below for nested schema](#nestedatt--exposed_ports))
+- `env_vars` (Attributes List) Environment variables (see [below for nested schema](#nestedatt--env_vars))
+- `exposed_ports` (Attributes List) Ports that the application exposes (see [below for nested schema](#nestedatt--exposed_ports))
 - `fixed_scale` (Number) Number of nodes when scaling mode is `manual`
 - `max_scale` (Number) Maximum number of nodes when scaling mode is `autoscale`
 - `min_scale` (Number) Minimum number of nodes when scaling mode is `autoscale`
@@ -65,6 +65,7 @@ resource "sakura_apprun_dedicated_version" "main" {
 
 - `active_node_count` (Number) The number of active nodes.  You might want to ignore_changes this field because it changes from time to time
 - `created_at` (String) The creation timestamp of the version
+- `id` (String) (Synthetic ID, only for internal use)
 - `version` (Number) The version number
 
 <a id="nestedatt--env_vars"></a>
@@ -85,23 +86,23 @@ Optional:
 
 Required:
 
-- `health_chek` (Attributes) Health check configuration (see [below for nested schema](#nestedatt--exposed_ports--health_chek))
+- `health_check` (Attributes) Health check configuration (see [below for nested schema](#nestedatt--exposed_ports--health_check))
 - `target_port` (Number) The port that the application listens to
 
 Optional:
 
 - `host` (Set of String) Target `Host:` header value (only applicable when `http` or `https`)
-- `load_balancer_port` (Number) The port that the load balancer listens to, or if when this port is internal
+- `load_balancer_port` (Number) The port that the load balancer listens to.  Explicitly set it to `null` when you want to disconnect from the load balancer
 - `use_lets_encrypt` (Boolean) Whether the load balancer uses Let's Encrypt (applicable only when `https`)
 
-<a id="nestedatt--exposed_ports--health_chek"></a>
-### Nested Schema for `exposed_ports.health_chek`
+<a id="nestedatt--exposed_ports--health_check"></a>
+### Nested Schema for `exposed_ports.health_check`
 
 Required:
 
-- `interval` (Number) Health check intervals in seconds
+- `interval_seconds` (Number) Health check intervals in seconds
 - `path` (String) Health check endpoint
-- `timeout` (Number) Time out in seconds until the health check fails
+- `timeout_seconds` (Number) Time out in seconds until the health check fails
 
 
 
