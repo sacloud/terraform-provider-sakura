@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
@@ -101,6 +102,22 @@ func (r *certResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 			"timeouts":   timeouts.Attributes(ctx, timeouts.Opts{Create: true, Update: true, Delete: true}),
 		},
 	}
+}
+
+func (r *certResource) ImportState(ctx context.Context, req resource.ImportStateRequest, res *resource.ImportStateResponse) {
+	// Import format: cluster_id/certificate_id
+	parts := strings.Split(req.ID, "/")
+
+	if len(parts) != 2 {
+		res.Diagnostics.AddError(
+			"Import: Invalid ID",
+			fmt.Sprintf("Expected format: cluster_id/certificate_id, got: %s", req.ID),
+		)
+		return
+	}
+
+	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("cluster_id"), parts[0])...)
+	res.Diagnostics.Append(res.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
 func (r *certResource) Create(ctx context.Context, req resource.CreateRequest, res *resource.CreateResponse) {
