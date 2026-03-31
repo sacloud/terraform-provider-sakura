@@ -211,7 +211,11 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 		k.updateState(j)
 	}
 
-	v.EnvVars = buf
+	if d.EnvVars == nil {
+		v.EnvVars = ([]envVarModel)(nil)
+	} else {
+		v.EnvVars = buf
+	}
 
 	return
 }
