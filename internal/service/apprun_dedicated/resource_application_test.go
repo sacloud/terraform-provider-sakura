@@ -143,7 +143,7 @@ resource "sakura_apprun_dedicated_version" "main" {
   exposed_ports = [
     {
       target_port        = 80
-	  load_balancer_port = null
+	  lb_port            = null
       health_check       = {
         path             = "/"
         interval_seconds = 10
@@ -172,7 +172,7 @@ resource "sakura_apprun_dedicated_version" "main" {
   exposed_ports = [
     {
       target_port        = 80
-	  load_balancer_port = null
+	  lb_port            = null
       health_check       = {
         path             = "/"
         interval_seconds = 10
@@ -201,7 +201,7 @@ resource "sakura_apprun_dedicated_version" "main" {
   exposed_ports = [
     {
       target_port        = 80
-	  load_balancer_port = null
+	  lb_port            = null
       health_check       = {
         path             = "/"
         interval_seconds = 10

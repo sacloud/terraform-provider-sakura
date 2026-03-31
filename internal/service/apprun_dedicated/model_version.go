@@ -29,7 +29,7 @@ type envVarModel struct {
 
 type exposedPortModel struct {
 	TargetPort       types.Int32       `tfsdk:"target_port"`
-	LoadBalancerPort types.Int32       `tfsdk:"load_balancer_port"`
+	LoadBalancerPort types.Int32       `tfsdk:"lb_port"`
 	UseLetsEncrypt   types.Bool        `tfsdk:"use_lets_encrypt"`
 	Host             types.Set         `tfsdk:"host"`
 	HealthCheck      *healthCheckModel `tfsdk:"health_check"`
@@ -69,11 +69,11 @@ var envVarAttrs = attrTypes{
 }
 
 var exposedPortAttrs = attrTypes{
-	"target_port":        types.Int32Type,
-	"load_balancer_port": types.Int32Type,
-	"use_lets_encrypt":   types.BoolType,
-	"host":               types.SetType{ElemType: types.StringType},
-	"health_check":       types.ObjectType{AttrTypes: healthCheckAttrs},
+	"target_port":      types.Int32Type,
+	"lb_port":          types.Int32Type,
+	"use_lets_encrypt": types.BoolType,
+	"host":             types.SetType{ElemType: types.StringType},
+	"health_check":     types.ObjectType{AttrTypes: healthCheckAttrs},
 }
 
 var versionAttrs = attrTypes{

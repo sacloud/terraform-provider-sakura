@@ -22,7 +22,7 @@ var (
 )
 
 func NewLoadBalancerServiceClassDataSource() datasource.DataSource {
-	return &lbsDataSource{dataSourceNamed("load_balancer_service_class")}
+	return &lbsDataSource{dataSourceNamed("lb_service_class")}
 }
 
 func (d *lbsDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {

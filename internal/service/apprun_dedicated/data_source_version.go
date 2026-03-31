@@ -103,7 +103,7 @@ func (d *verDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 							Computed:    true,
 							Description: "The port that the application listens to",
 						},
-						"load_balancer_port": schema.Int32Attribute{
+						"lb_port": schema.Int32Attribute{
 							Computed:    true,
 							Description: "The port that the load balancer listens to",
 						},

@@ -48,7 +48,7 @@ var (
 )
 
 func NewLoadBalancerResource() resource.Resource {
-	return &lbResource{resourceNamed("load_balancer")}
+	return &lbResource{resourceNamed("lb")}
 }
 
 func (r *lbResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
@@ -276,13 +276,13 @@ func (r *lbResource) Delete(ctx context.Context, req resource.DeleteRequest, res
 }
 
 func (r *lbResource) ImportState(ctx context.Context, req resource.ImportStateRequest, res *resource.ImportStateResponse) {
-	// Import format: cluster_id/auto_scaling_group_id/load_balancer_id
+	// Import format: cluster_id/auto_scaling_group_id/lb_id
 	parts := strings.Split(req.ID, "/")
 
 	if len(parts) != 3 {
 		res.Diagnostics.AddError(
 			"Import: Invalid ID",
-			fmt.Sprintf("Expected format: cluster_id/auto_scaling_group_id/load_balancer_id, got: %s", req.ID),
+			fmt.Sprintf("Expected format: cluster_id/auto_scaling_group_id/lb_id, got: %s", req.ID),
 		)
 		return
 	}

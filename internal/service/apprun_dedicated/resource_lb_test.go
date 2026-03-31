@@ -23,7 +23,7 @@ import (
 )
 
 func TestAccSakuraResourceApprunDedicatedLoadBalancer(t *testing.T) {
-	resourceName := "sakura_apprun_dedicated_load_balancer.main"
+	resourceName := "sakura_apprun_dedicated_lb.main"
 	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -84,7 +84,7 @@ func testCheckSakuraApprunDedicatedLoadBalancerDestroy(s *terraform.State) error
 		return errors.New("AppRunDedicatedClient is nil")
 	}
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_apprun_dedicated_load_balancer" {
+		if rs.Type != "sakura_apprun_dedicated_lb" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -143,13 +143,13 @@ resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
   ]
 }
 
-data "sakura_apprun_dedicated_load_balancer_service_classes" "main" {}
+data "sakura_apprun_dedicated_lb_service_classes" "main" {}
 
-resource "sakura_apprun_dedicated_load_balancer" "main" {
+resource "sakura_apprun_dedicated_lb" "main" {
   cluster_id            = sakura_apprun_dedicated_auto_scaling_group.main.cluster_id
   auto_scaling_group_id = sakura_apprun_dedicated_auto_scaling_group.main.id
   name                  = "tfacc-{{ .arg0 }}"
-  service_class_path    = data.sakura_apprun_dedicated_load_balancer_service_classes.main.classes[0].path
+  service_class_path    = data.sakura_apprun_dedicated_lb_service_classes.main.classes[0].path
   name_servers          = local.sakura_dns
   interfaces = [
     {

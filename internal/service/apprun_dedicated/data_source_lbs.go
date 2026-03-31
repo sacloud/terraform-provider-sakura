@@ -19,7 +19,7 @@ type loadBalancersDataSource struct{ dataSourceClient }
 type loadBalancersDataSourceModel struct {
 	ClusterID          types.String `tfsdk:"cluster_id"`
 	AutoScalingGroupID types.String `tfsdk:"auto_scaling_group_id"`
-	LoadBalancers      []lbModel    `tfsdk:"load_balancers"`
+	LoadBalancers      []lbModel    `tfsdk:"lbs"`
 }
 
 var (
@@ -28,7 +28,7 @@ var (
 )
 
 func NewLoadBalancersDataSource() datasource.DataSource {
-	return &loadBalancersDataSource{dataSourceNamed("load_balancers")}
+	return &loadBalancersDataSource{dataSourceNamed("lbs")}
 }
 
 func (d *loadBalancersDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
@@ -37,7 +37,7 @@ func (d *loadBalancersDataSource) Schema(_ context.Context, _ datasource.SchemaR
 		Attributes: map[string]schema.Attribute{
 			"cluster_id":            d.schemaClusterID(),
 			"auto_scaling_group_id": d.schemaASGID(),
-			"load_balancers": schema.ListNestedAttribute{
+			"lbs": schema.ListNestedAttribute{
 				Computed:    true,
 				Description: "List of load balancers",
 				NestedObject: schema.NestedAttributeObject{

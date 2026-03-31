@@ -183,7 +183,7 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 							Validators:    []validator.Int32{int32validator.Between(1, 65535)},
 							PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 						},
-						"load_balancer_port": schema.Int32Attribute{
+						"lb_port": schema.Int32Attribute{
 							Optional:            true,
 							MarkdownDescription: "The port that the load balancer listens to.  Explicitly set it to `null` when you want to disconnect from the load balancer",
 							Validators:          []validator.Int32{int32validator.Between(1, 65535)},

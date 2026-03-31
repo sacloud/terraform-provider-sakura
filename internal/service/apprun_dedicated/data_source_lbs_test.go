@@ -15,7 +15,7 @@ import (
 )
 
 func TestAccSakuraDataSourceApprunDedicatedLoadBalancers(t *testing.T) {
-	resourceName := "data.sakura_apprun_dedicated_load_balancers.main"
+	resourceName := "data.sakura_apprun_dedicated_lbs.main"
 	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -27,11 +27,11 @@ func TestAccSakuraDataSourceApprunDedicatedLoadBalancers(t *testing.T) {
 				ConfigStateChecks: []statecheck.StateCheck{
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("auto_scaling_group_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers"), knownvalue.ListSizeExact(1)),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers").AtSliceIndex(0).AtMapKey("name"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers").AtSliceIndex(0).AtMapKey("service_class_path"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancers").AtSliceIndex(0).AtMapKey("created"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("lbs"), knownvalue.ListSizeExact(1)),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("lbs").AtSliceIndex(0).AtMapKey("id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("lbs").AtSliceIndex(0).AtMapKey("name"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("lbs").AtSliceIndex(0).AtMapKey("service_class_path"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("lbs").AtSliceIndex(0).AtMapKey("created"), knownvalue.NotNull()),
 				},
 			},
 		},
@@ -49,7 +49,7 @@ data "sakura_zone" "is1c" {
 
 data "sakura_apprun_dedicated_worker_service_classes" "main" {}
 
-data "sakura_apprun_dedicated_load_balancer_service_classes" "main" {}
+data "sakura_apprun_dedicated_lb_service_classes" "main" {}
 
 resource "sakura_internet" "main" {
   name = "tfacc-{{ .arg0 }}"
@@ -73,11 +73,11 @@ resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
   ]
 }
 
-resource "sakura_apprun_dedicated_load_balancer" "main" {
+resource "sakura_apprun_dedicated_lb" "main" {
   cluster_id                = sakura_apprun_dedicated_auto_scaling_group.main.cluster_id
   auto_scaling_group_id     = sakura_apprun_dedicated_auto_scaling_group.main.id
   name                      = "tfacc-{{ .arg0 }}"
-  service_class_path        = data.sakura_apprun_dedicated_load_balancer_service_classes.main.classes[0].path
+  service_class_path        = data.sakura_apprun_dedicated_lb_service_classes.main.classes[0].path
   name_servers              = local.sakura_dns
   interfaces = [
     {
@@ -97,9 +97,9 @@ resource "sakura_apprun_dedicated_load_balancer" "main" {
   ]
 }
 
-data "sakura_apprun_dedicated_load_balancers" "main" {
+data "sakura_apprun_dedicated_lbs" "main" {
   cluster_id            = sakura_apprun_dedicated_auto_scaling_group.main.cluster_id
   auto_scaling_group_id = sakura_apprun_dedicated_auto_scaling_group.main.id
-  depends_on            = [sakura_apprun_dedicated_load_balancer.main]
+  depends_on            = [sakura_apprun_dedicated_lb.main]
 }
 `

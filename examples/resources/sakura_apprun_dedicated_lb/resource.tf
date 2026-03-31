@@ -15,17 +15,17 @@ data "sakura_apprun_dedicated_auto_scaling_group" "main" {
   name       = "ExampleASG"
 }
 
-data "sakura_apprun_dedicated_load_balancer_service_classes" "main" {}
+data "sakura_apprun_dedicated_lb_service_classes" "main" {}
 
 data "sakura_internet" "main" {
   name = "ExampleInternet"
 }
 
-resource "sakura_apprun_dedicated_load_balancer" "main" {
+resource "sakura_apprun_dedicated_lb" "main" {
   cluster_id            = data.sakura_apprun_dedicated_cluster.main.id
   auto_scaling_group_id = data.sakura_apprun_dedicated_auto_scaling_group.main.id
   name                  = "ExampleLB"
-  service_class_path    = data.sakura_apprun_dedicated_load_balancer_service_classes.main.classes[0].path
+  service_class_path    = data.sakura_apprun_dedicated_lb_service_classes.main.classes[0].path
   name_servers          = local.sakura_dns
 
   interfaces = [{

@@ -4,17 +4,17 @@ data "sakura_apprun_dedicated_cluster" "main" {
 
 data "sakura_apprun_dedicated_auto_scaling_group" "main" {
   cluster_id = data.sakura_apprun_dedicated_cluster.main.id
-  id         = "A5F8D577-7395-4EB4-83D9-AC60A1EF2C5B"
+  name       = "ExampleASG"
 }
 
-data "sakura_apprun_dedicated_load_balancer" "main" {
+data "sakura_apprun_dedicated_lb" "by_id" {
+  cluster_id            = data.sakura_apprun_dedicated_cluster.main.id
+  auto_scaling_group_id = data.sakura_apprun_dedicated_auto_scaling_group.main.id
+  id                    = "A5F8D577-7395-4EB4-83D9-AC60A1EF2C5B"
+}
+
+data "sakura_apprun_dedicated_lb" "by_name" {
   cluster_id            = data.sakura_apprun_dedicated_cluster.main.id
   auto_scaling_group_id = data.sakura_apprun_dedicated_auto_scaling_group.main.id
   name                  = "ExampleLB"
-}
-
-data "sakura_apprun_dedicated_load_balancer_nodes" "main" {
-  cluster_id            = data.sakura_apprun_dedicated_cluster.main.id
-  auto_scaling_group_id = data.sakura_apprun_dedicated_auto_scaling_group.main.id
-  load_balancer_id      = data.sakura_apprun_dedicated_load_balancer.main.id
 }

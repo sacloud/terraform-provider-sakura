@@ -71,7 +71,7 @@ Read-Only:
 
 - `health_check` (Attributes) Health check configuration (see [below for nested schema](#nestedatt--exposed_ports--health_check))
 - `host` (Set of String) Target `Host:` header value (only applicable when `http` or `https`)
-- `load_balancer_port` (Number) The port that the load balancer listens to
+- `lb_port` (Number) The port that the load balancer listens to
 - `target_port` (Number) The port that the application listens to
 - `use_lets_encrypt` (Boolean) Whether the load balancer uses Let's Encrypt (applicable only when `https`)
 

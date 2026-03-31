@@ -15,7 +15,7 @@ import (
 )
 
 func TestAccSakuraDataSourceApprunDedicatedLoadBalancerNode(t *testing.T) {
-	resourceName := "data.sakura_apprun_dedicated_load_balancer_node.main"
+	resourceName := "data.sakura_apprun_dedicated_lb_node.main"
 	name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
 	resource.ParallelTest(t, resource.TestCase{
@@ -27,7 +27,7 @@ func TestAccSakuraDataSourceApprunDedicatedLoadBalancerNode(t *testing.T) {
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("cluster_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("auto_scaling_group_id"), knownvalue.NotNull()),
-					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("load_balancer_id"), knownvalue.NotNull()),
+					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("lb_id"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("status"), knownvalue.NotNull()),
 					statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("created"), knownvalue.NotNull()),
 				},
@@ -47,7 +47,7 @@ data "sakura_zone" "is1c" {
 
 data "sakura_apprun_dedicated_worker_service_classes" "main" {}
 
-data "sakura_apprun_dedicated_load_balancer_service_classes" "main" {}
+data "sakura_apprun_dedicated_lb_service_classes" "main" {}
 
 resource "sakura_internet" "main" {
   name = "tfacc-{{ .arg0 }}"
@@ -71,11 +71,11 @@ resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
   ]
 }
 
-resource "sakura_apprun_dedicated_load_balancer" "main" {
+resource "sakura_apprun_dedicated_lb" "main" {
   cluster_id                = sakura_apprun_dedicated_auto_scaling_group.main.cluster_id
   auto_scaling_group_id     = sakura_apprun_dedicated_auto_scaling_group.main.id
   name                      = "tfacc-{{ .arg0 }}"
-  service_class_path        = data.sakura_apprun_dedicated_load_balancer_service_classes.main.classes[0].path
+  service_class_path        = data.sakura_apprun_dedicated_lb_service_classes.main.classes[0].path
   name_servers              = local.sakura_dns
   interfaces = [
     {
@@ -95,16 +95,16 @@ resource "sakura_apprun_dedicated_load_balancer" "main" {
   ]
 }
 
-data "sakura_apprun_dedicated_load_balancer_nodes" "nodes" {
-  cluster_id            = sakura_apprun_dedicated_load_balancer.main.cluster_id
-  auto_scaling_group_id = sakura_apprun_dedicated_load_balancer.main.auto_scaling_group_id
-  load_balancer_id      = sakura_apprun_dedicated_load_balancer.main.id
+data "sakura_apprun_dedicated_lb_nodes" "nodes" {
+  cluster_id            = sakura_apprun_dedicated_lb.main.cluster_id
+  auto_scaling_group_id = sakura_apprun_dedicated_lb.main.auto_scaling_group_id
+  lb_id      = sakura_apprun_dedicated_lb.main.id
 }
 
-data "sakura_apprun_dedicated_load_balancer_node" "main" {
-  cluster_id            = sakura_apprun_dedicated_load_balancer.main.cluster_id
-  auto_scaling_group_id = sakura_apprun_dedicated_load_balancer.main.auto_scaling_group_id
-  load_balancer_id      = sakura_apprun_dedicated_load_balancer.main.id
-  id                    = data.sakura_apprun_dedicated_load_balancer_nodes.nodes.nodes[0].id
+data "sakura_apprun_dedicated_lb_node" "main" {
+  cluster_id            = sakura_apprun_dedicated_lb.main.cluster_id
+  auto_scaling_group_id = sakura_apprun_dedicated_lb.main.auto_scaling_group_id
+  lb_id      = sakura_apprun_dedicated_lb.main.id
+  id                    = data.sakura_apprun_dedicated_lb_nodes.nodes.nodes[0].id
 }
 `

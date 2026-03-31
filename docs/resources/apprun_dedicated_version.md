@@ -92,7 +92,7 @@ Required:
 Optional:
 
 - `host` (Set of String) Target `Host:` header value (only applicable when `http` or `https`)
-- `load_balancer_port` (Number) The port that the load balancer listens to.  Explicitly set it to `null` when you want to disconnect from the load balancer
+- `lb_port` (Number) The port that the load balancer listens to.  Explicitly set it to `null` when you want to disconnect from the load balancer
 - `use_lets_encrypt` (Boolean) Whether the load balancer uses Let's Encrypt (applicable only when `https`)
 
 <a id="nestedatt--exposed_ports--health_check"></a>

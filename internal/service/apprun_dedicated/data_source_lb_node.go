@@ -22,7 +22,7 @@ type lbnDataSourceModel struct {
 	lbNodeModel
 	ClusterID          types.String `tfsdk:"cluster_id"`
 	AutoScalingGroupID types.String `tfsdk:"auto_scaling_group_id"`
-	LoadBalancerID     types.String `tfsdk:"load_balancer_id"`
+	LoadBalancerID     types.String `tfsdk:"lb_id"`
 }
 
 var (
@@ -31,7 +31,7 @@ var (
 )
 
 func NewLoadBalancerNodeDataSource() datasource.DataSource {
-	return &lbnDataSource{dataSourceNamed("load_balancer_node")}
+	return &lbnDataSource{dataSourceNamed("lb_node")}
 }
 
 func (d *lbnDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, res *datasource.SchemaResponse) {
@@ -40,9 +40,9 @@ func (d *lbnDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 		Attributes: map[string]schema.Attribute{
 			"cluster_id":            d.schemaClusterID(),
 			"auto_scaling_group_id": d.schemaASGID(),
-			"load_balancer_id": schema.StringAttribute{
+			"lb_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The load balancer ID that the load_balancer_node belongs to",
+				Description: "The load balancer ID that the lb_node belongs to",
 				Validators:  []validator.String{sacloudvalidator.UUIDValidator},
 			},
 			"id": schema.StringAttribute{
