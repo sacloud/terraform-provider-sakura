@@ -34,8 +34,8 @@ func TestAccSakuraResourceApprunDedicatedCertificate(t *testing.T) {
 
 		config := test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedCertificate_basic, name, globalClusterID, string(cert), string(key))
 		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:                 AccPreCheck(t),
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			CheckDestroy:             testCheckSakuraApprunDedicatedCertificateDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -88,8 +88,8 @@ func TestAccSakuraResourceApprunDedicatedCertificate(t *testing.T) {
 		configBasic := test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedCertificate_basic, name, globalClusterID, string(cert), string(key))
 		configUpdate := test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedCertificate_update, name, globalClusterID, string(cert), string(key))
 		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:                 AccPreCheck(t),
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			CheckDestroy:             testCheckSakuraApprunDedicatedCertificateDestroy,
 			Steps: []resource.TestStep{
 				{

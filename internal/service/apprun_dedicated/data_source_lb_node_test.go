@@ -20,6 +20,7 @@ func TestAccSakuraDataSourceApprunDedicatedLoadBalancerNode(t *testing.T) {
 
 	resource.ParallelTest(t, resource.TestCase{
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		PreCheck:                 AccPreCheck(t),
 		Steps: []resource.TestStep{
 			{
 				Config: test.BuildConfigWithArgs(testAccCheckSakuraDataSourceApprunDedicatedLoadBalancerNodeConfig, name, globalClusterID),

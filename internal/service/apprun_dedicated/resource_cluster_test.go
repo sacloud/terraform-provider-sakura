@@ -28,8 +28,8 @@ func TestAccSakuraResourceApprunDedicatedCluster(t *testing.T) {
 
 	t.Run("basic", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			PreCheck:                 AccPreCheck(t),
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			CheckDestroy:             testCheckSakuraApprunDedicatedClusterDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -56,8 +56,8 @@ func TestAccSakuraResourceApprunDedicatedCluster(t *testing.T) {
 
 	t.Run("update", func(t *testing.T) {
 		resource.Test(t, resource.TestCase{
-			PreCheck:                 AccPreCheck(t),
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			CheckDestroy:             testCheckSakuraApprunDedicatedClusterDestroy,
 			Steps: []resource.TestStep{
 				{

@@ -117,8 +117,7 @@ func TestMain(m *testing.M) {
 
 func AccPreCheck(t *testing.T) func() {
 	return func() {
-		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_APPRUN_DEDICATED_TEST")
-		test.SkipIfEnvIsNotSet(t, "SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
+		test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_APPRUN_DEDICATED_TEST", "SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")
 		test.SkipIfFakeModeEnabled(t)
 
 		spid := os.Getenv("SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID")

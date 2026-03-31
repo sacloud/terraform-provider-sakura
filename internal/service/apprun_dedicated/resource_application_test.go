@@ -27,8 +27,8 @@ func TestAccSakuraResourceApprunDedicatedApplication_basic(t *testing.T) {
 		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
 		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:                 AccPreCheck(t),
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			CheckDestroy:             testCheckSakuraApprunDedicatedApplicationDestroy,
 			Steps: []resource.TestStep{
 				{
@@ -54,8 +54,8 @@ func TestAccSakuraResourceApprunDedicatedApplication_basic(t *testing.T) {
 		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
 
 		resource.ParallelTest(t, resource.TestCase{
-			PreCheck:                 AccPreCheck(t),
 			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
 			Steps: []resource.TestStep{
 				// create app & version
 				{
