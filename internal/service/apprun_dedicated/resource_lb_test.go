@@ -132,8 +132,8 @@ resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
   name                      = "tfacc-{{ .arg0 }}"
   zone                      = data.sakura_zone.is1c.name
   worker_service_class_path = data.sakura_apprun_dedicated_worker_service_classes.main.classes[0].path
-  min_nodes                 = 3
-  max_nodes                 = 7
+  min_nodes                 = 1
+  max_nodes                 = 1
   interfaces = [
     {
       interface_index = 0

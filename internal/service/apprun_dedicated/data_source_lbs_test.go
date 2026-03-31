@@ -63,7 +63,7 @@ resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
   worker_service_class_path = data.sakura_apprun_dedicated_worker_service_classes.main.classes[0].path
   name_servers              = local.sakura_dns
   min_nodes                 = 1
-  max_nodes                 = 3
+  max_nodes                 = 1
   interfaces = [
     {
       interface_index = 0
