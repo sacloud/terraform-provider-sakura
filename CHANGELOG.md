@@ -1,5 +1,15 @@
 # Changelog
 
+## [v3.7.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.7.0...v3.7.1) - 2026-03-27
+- Update terraform related modules by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/164
+- dependabot: Use groups for terraform and sacloud modules by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/166
+- go: bump github.com/sacloud/saclient-go from 0.3.2 to 0.3.3 in the sacloud group by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/167
+
+## [v3.7.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.6.0...v3.7.0) - 2026-03-17
+- fix: corrected the description of source_id in the example by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/156
+- docs: add import instructions for internet resource by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/160
+- Use replica_password_wo instead of reading replication password from master database by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/155
+
 ## [v3.6.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.5.1...v3.6.0) - 2026-03-12
 - nosql: Update version to 4.1.10 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/137
 - ci: bump Songmu/tagpr from 1.11.1 to 1.17.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/129
