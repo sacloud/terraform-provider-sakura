@@ -55,14 +55,8 @@ func (d *certDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, r
 				Computed:    true,
 				Description: "The certificate validity end time",
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The creation timestamp of the certificate",
-			},
-			"updated_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The update timestamp of the certificate",
-			},
+			"created_at": common.SchemaDataSourceCreatedAt(d.name),
+			"updated_at": common.SchemaDataSourceUpdatedAt(d.name),
 		},
 	}
 }
