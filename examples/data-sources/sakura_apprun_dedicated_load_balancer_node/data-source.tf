@@ -1,5 +1,5 @@
 data "sakura_apprun_dedicated_cluster" "main" {
-  name = "Gkii8dvRskKjYOGzxL3D"
+  name = "ExampleCluster"
 }
 
 data "sakura_apprun_dedicated_auto_scaling_group" "main" {
@@ -10,7 +10,7 @@ data "sakura_apprun_dedicated_auto_scaling_group" "main" {
 data "sakura_apprun_dedicated_load_balancer" "main" {
   cluster_id            = data.sakura_apprun_dedicated_cluster.main.id
   auto_scaling_group_id = data.sakura_apprun_dedicated_auto_scaling_group.main.id
-  name                  = "MyLoadBalancer"
+  name                  = "ExampleLB"
 }
 
 data "sakura_apprun_dedicated_load_balancer_node" "main" {

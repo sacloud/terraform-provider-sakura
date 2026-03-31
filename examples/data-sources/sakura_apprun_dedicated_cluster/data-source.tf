@@ -3,5 +3,5 @@ data "sakura_apprun_dedicated_cluster" "by_id" {
 }
 
 data "sakura_apprun_dedicated_cluster" "by_name" {
-  name = "Gkii8dvRskKjYOGzxL3D"
+  name = "ExampleCluster"
 }

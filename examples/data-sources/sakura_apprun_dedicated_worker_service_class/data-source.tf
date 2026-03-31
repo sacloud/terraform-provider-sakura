@@ -1,5 +1,5 @@
 data "sakura_apprun_worker_service_class" "example" {
-  name = "example-class-name"
+  name = "AppRun専有型 ワーカ 8vCPU / 8GBメモリ"
 }
 
 output "worker_service_class_path" {

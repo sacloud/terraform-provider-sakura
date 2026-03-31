@@ -1,5 +1,5 @@
 data "sakura_apprun_dedicated_cluster" "main" {
-  name = "Gkii8dvRskKjYOGzxL3D"
+  name = "ExampleCluster"
 }
 
 data "sakura_apprun_dedicated_application" "by_id" {
@@ -8,6 +8,6 @@ data "sakura_apprun_dedicated_application" "by_id" {
 }
 
 data "sakura_apprun_dedicated_application" "by_name" {
-  name       = "OghqEsr1JMB06MNKz3dc"
+  name       = "ExampleApplication"
   cluster_id = data.sakura_apprun_dedicated_cluster.main.id
 }

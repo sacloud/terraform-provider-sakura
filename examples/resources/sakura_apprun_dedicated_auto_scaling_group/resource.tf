@@ -7,18 +7,18 @@ data "sakura_zone" "is1c" {
 }
 
 data "sakura_internet" "main" {
-  name = "ozoQuqtyLG022lA3C1Nv"
+  name = "ExampleInternet"
 }
 
 data "sakura_apprun_dedicated_cluster" "main" {
-  name = "Gkii8dvRskKjYOGzxL3D"
+  name = "ExampleCluster"
 }
 
 data "sakura_apprun_dedicated_worker_service_classes" "main" {}
 
 resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
   cluster_id                = sakura_apprun_dedicated_cluster.main.id
-  name                      = "Pg065g2wSVJa3DSWxCDO"
+  name                      = "ExampleASG"
   zone                      = data.sakura_zone.is1c.name
   worker_service_class_path = data.sakura_apprun_dedicated_worker_service_classes.main.classes[0].path
   name_servers              = local.sakura_dns

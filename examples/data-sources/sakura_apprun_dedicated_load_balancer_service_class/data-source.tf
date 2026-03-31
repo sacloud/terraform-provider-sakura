@@ -1,5 +1,5 @@
 data "sakura_apprun_load_balancer_service_class" "example" {
-  name = "example-class-name"
+  name = "AppRun専有型 ロードバランサ 2vCPU / 2GBメモリ（冗長構成）"
 }
 
 output "lb_service_class_path" {

@@ -1,5 +1,5 @@
 data "sakura_apprun_dedicated_cluster" "main" {
-  name = "Gkii8dvRskKjYOGzxL3D"
+  name = "ExampleCluster"
 }
 
 data "sakura_apprun_dedicated_certificate" "by_id" {
@@ -8,6 +8,6 @@ data "sakura_apprun_dedicated_certificate" "by_id" {
 }
 
 data "sakura_apprun_dedicated_certificate" "by_name" {
-  name       = "KuhnzDtcMtsU9Pa5qsnF"
+  name       = "ExampleCertificate"
   cluster_id = data.sakura_apprun_dedicated_cluster.main.id
 }

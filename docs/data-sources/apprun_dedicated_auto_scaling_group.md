@@ -14,7 +14,7 @@ Information about an AppRun dedicated auto scaling group
 
 ```terraform
 data "sakura_apprun_dedicated_cluster" "main" {
-  name = "Gkii8dvRskKjYOGzxL3D"
+  name = "ExampleCluster"
 }
 
 data "sakura_apprun_dedicated_auto_scaling_group" "by_id" {
@@ -24,7 +24,7 @@ data "sakura_apprun_dedicated_auto_scaling_group" "by_id" {
 
 data "sakura_apprun_dedicated_auto_scaling_group" "by_name" {
   cluster_id = data.sakura_apprun_dedicated_cluster.main.id
-  name       = "HejIrLkM2DWO8UPQvGOw"
+  name       = "ExampleASG"
 }
 ```
 

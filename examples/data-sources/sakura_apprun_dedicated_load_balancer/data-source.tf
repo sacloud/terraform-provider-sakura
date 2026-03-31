@@ -1,10 +1,10 @@
 data "sakura_apprun_dedicated_cluster" "main" {
-  name = "Gkii8dvRskKjYOGzxL3D"
+  name = "ExampleCluster"
 }
 
 data "sakura_apprun_dedicated_auto_scaling_group" "main" {
   cluster_id = data.sakura_apprun_dedicated_cluster.main.id
-  name       = "HejIrLkM2DWO8UPQvGOw"
+  name       = "ExampleASG"
 }
 
 data "sakura_apprun_dedicated_load_balancer" "by_id" {
@@ -16,5 +16,5 @@ data "sakura_apprun_dedicated_load_balancer" "by_id" {
 data "sakura_apprun_dedicated_load_balancer" "by_name" {
   cluster_id            = data.sakura_apprun_dedicated_cluster.main.id
   auto_scaling_group_id = data.sakura_apprun_dedicated_auto_scaling_group.main.id
-  name                  = "MyLoadBalancer"
+  name                  = "ExampleLB"
 }

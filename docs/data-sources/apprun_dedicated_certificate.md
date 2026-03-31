@@ -14,7 +14,7 @@ Information about an AppRun dedicated certificate
 
 ```terraform
 data "sakura_apprun_dedicated_cluster" "main" {
-  name = "Gkii8dvRskKjYOGzxL3D"
+  name = "ExampleCluster"
 }
 
 data "sakura_apprun_dedicated_certificate" "by_id" {
@@ -23,7 +23,7 @@ data "sakura_apprun_dedicated_certificate" "by_id" {
 }
 
 data "sakura_apprun_dedicated_certificate" "by_name" {
-  name       = "KuhnzDtcMtsU9Pa5qsnF"
+  name       = "ExampleCertificate"
   cluster_id = data.sakura_apprun_dedicated_cluster.main.id
 }
 ```
@@ -47,4 +47,4 @@ data "sakura_apprun_dedicated_certificate" "by_name" {
 - `not_after` (String) The certificate validity end time
 - `not_before` (String) The certificate validity start time
 - `subject_alternative_names` (Set of String) The subject alternative names of the certificate
-- `updated_at` (String) The update timestamp of the certificate
+- `updated_at` (String) The last update timestamp of the certificate

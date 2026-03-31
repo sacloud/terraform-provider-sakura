@@ -14,7 +14,7 @@ Manages an AppRun dedicated version
 
 ```terraform
 data "sakura_apprun_dedicated_cluster" "main" {
-  name = "Gkii8dvRskKjYOGzxL3D"
+  name = "ExampleCluster"
 }
 
 data "sakura_apprun_dedicated_application" "main" {
