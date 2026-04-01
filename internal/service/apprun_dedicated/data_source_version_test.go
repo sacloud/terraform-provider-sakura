@@ -57,6 +57,6 @@ resource "sakura_apprun_dedicated_version" "main" {
 
 data "sakura_apprun_dedicated_version" "main" {
   application_id = sakura_apprun_dedicated_version.main.application_id
-  version             = sakura_apprun_dedicated_version.main.version
+  version        = sakura_apprun_dedicated_version.main.version
 }
 `

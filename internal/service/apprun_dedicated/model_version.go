@@ -211,8 +211,8 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 		k.updateState(j)
 	}
 
-	if d.EnvVars == nil {
-		v.EnvVars = ([]envVarModel)(nil)
+	if v.EnvVars == nil && len(d.EnvVars) == 0 {
+		// keep null, not empty list
 	} else {
 		v.EnvVars = buf
 	}

@@ -32,6 +32,10 @@ func (d *verDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 	res.Schema = schema.Schema{
 		Description: "Information about an AppRun dedicated application version",
 		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:    true,
+				Description: "(Synthetic ID, only for internal use)",
+			},
 			"application_id": func() (attr schema.StringAttribute) {
 				attr = common.SchemaDataSourceId("application").(schema.StringAttribute)
 				attr.Required = true
