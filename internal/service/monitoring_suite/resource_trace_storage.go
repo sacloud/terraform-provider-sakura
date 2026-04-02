@@ -56,9 +56,9 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 			"id":          common.SchemaResourceId("Monitoring Suite Trace Storage"),
 			"name":        common.SchemaResourceName("Monitoring Suite Trace Storage"),
 			"description": common.SchemaResourceDescription("Monitoring Suite Trace Storage"),
-			"account_id": schema.StringAttribute{
+			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the Trace Storage.",
+				Description: "The project ID of the Trace Storage.",
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,

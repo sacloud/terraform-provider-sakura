@@ -30,10 +30,10 @@ data "sakura_monitoring_suite_trace_storage" "foobar" {
 
 ### Read-Only
 
-- `account_id` (String) The account ID of the Trace Storage.
 - `created_at` (String) The creation timestamp of the Monitoring Suite Trace Storage
 - `description` (String) The description of the Monitoring Suite Trace Storage.
 - `endpoints` (Attributes) The endpoints of the Trace Storage. (see [below for nested schema](#nestedatt--endpoints))
+- `project_id` (String) The project ID of the Trace Storage.
 - `resource_id` (String) The resource ID of the Trace Storage.
 - `retention_period_days` (Number) The retention period days of the Trace Storage.
 

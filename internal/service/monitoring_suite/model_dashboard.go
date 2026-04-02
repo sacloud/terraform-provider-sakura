@@ -15,7 +15,7 @@ type dashboardBaseModel struct {
 	ID          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
-	AccountID   types.String `tfsdk:"account_id"`
+	ProjectID   types.String `tfsdk:"project_id"` // さくらではプロジェクトという命名で統一するようになっているため、account_idではなくproject_idとする
 	ResourceID  types.String `tfsdk:"resource_id"`
 	CreatedAt   types.String `tfsdk:"created_at"`
 }
@@ -24,7 +24,7 @@ func (model *dashboardBaseModel) updateState(dashboard *monitoringsuiteapi.Dashb
 	model.ID = types.StringValue(strconv.FormatInt(dashboard.ID, 10))
 	model.Name = types.StringValue(dashboard.Name.Value)
 	model.Description = types.StringValue(dashboard.Description.Value)
-	model.AccountID = types.StringValue(dashboard.AccountID)
+	model.ProjectID = types.StringValue(dashboard.AccountID)
 	model.ResourceID = types.StringValue(strconv.FormatInt(dashboard.ResourceID.Value, 10))
 	model.CreatedAt = types.StringValue(dashboard.CreatedAt.String())
 }

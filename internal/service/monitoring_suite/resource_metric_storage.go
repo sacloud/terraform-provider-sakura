@@ -59,9 +59,9 @@ func (r *metricStorageResource) Schema(ctx context.Context, _ resource.SchemaReq
 			"id":          common.SchemaResourceId("Monitoring Suite Metric Storage"),
 			"name":        common.SchemaResourceName("Monitoring Suite Metric Storage"),
 			"description": common.SchemaResourceDescription("Monitoring Suite Metric Storage"),
-			"account_id": schema.StringAttribute{
+			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the Metric Storage.",
+				Description: "The project ID of the Metric Storage.",
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,

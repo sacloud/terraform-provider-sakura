@@ -25,7 +25,7 @@ func TestAccSakuraMonitoringSuiteTraceStorageDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
-					resource.TestCheckResourceAttrSet(resourceName, "account_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "retention_period_days"),
 					resource.TestCheckResourceAttrSet(resourceName, "endpoints.ingester.address"),

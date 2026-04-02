@@ -50,9 +50,9 @@ func (d *metricStorageDataSource) Schema(_ context.Context, _ datasource.SchemaR
 			"id":          common.SchemaDataSourceId("Monitoring Suite Metric Storage"),
 			"name":        common.SchemaDataSourceName("Monitoring Suite Metric Storage"),
 			"description": common.SchemaDataSourceDescription("Monitoring Suite Metric Storage"),
-			"account_id": schema.StringAttribute{
+			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the Metric Storage.",
+				Description: "The project ID of the Metric Storage.",
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,

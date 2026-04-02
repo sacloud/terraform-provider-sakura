@@ -31,6 +31,6 @@ data "sakura_monitoring_suite_dashboard" "foobar" {
 
 ### Read-Only
 
-- `account_id` (String) The account ID of the Dashboard.
 - `created_at` (String) The creation timestamp of the Monitoring Suite Dashboard
 - `description` (String) The description of the Monitoring Suite Dashboard.
+- `project_id` (String) The project ID of the Dashboard.

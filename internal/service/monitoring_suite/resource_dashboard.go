@@ -57,9 +57,9 @@ func (r *dashboardResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			"name":        common.SchemaResourceName("Monitoring Suite Dashboard"),
 			"description": common.SchemaResourceDescription("Monitoring Suite Dashboard"),
 			"resource_id": common.SchemaResourceId("Monitoring Suite Dashboard"),
-			"account_id": schema.StringAttribute{
+			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the Dashboard.",
+				Description: "The project ID of the Dashboard.",
 			},
 			"created_at": common.SchemaResourceCreatedAt("Monitoring Suite Dashboard"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

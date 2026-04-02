@@ -37,11 +37,11 @@ resource "sakura_monitoring_suite_log_storage" "foobar" {
 
 ### Read-Only
 
-- `account_id` (String) The account ID of the Log Storage.
 - `created_at` (String) The creation timestamp of the Monitoring Suite Log Storage
 - `endpoints` (Attributes) The endpoints of the Log Storage. (see [below for nested schema](#nestedatt--endpoints))
 - `expire_day` (Number) The expiration day of the Log Storage.
 - `id` (String) The ID of the Monitoring Suite Log Storage.
+- `project_id` (String) The project ID of the Log Storage.
 - `resource_id` (String) The resource ID of the Log Storage.
 - `usage` (Attributes) The usage of the Log Storage. (see [below for nested schema](#nestedatt--usage))
 

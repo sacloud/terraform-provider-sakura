@@ -14,7 +14,7 @@ import (
 
 type metricStorageBaseModel struct {
 	msBaseModel
-	AccountID  types.String `tfsdk:"account_id"`
+	ProjectID  types.String `tfsdk:"project_id"`
 	ResourceID types.String `tfsdk:"resource_id"`
 	IsSystem   types.Bool   `tfsdk:"is_system"`
 	CreatedAt  types.String `tfsdk:"created_at"`
@@ -49,7 +49,7 @@ func (m metricStorageUsageModel) AttributeTypes() map[string]attr.Type {
 
 func (model *metricStorageBaseModel) updateState(storage *monitoringsuiteapi.MetricsStorage) {
 	model.updateBaseState(strconv.FormatInt(storage.GetID(), 10), storage.GetName().Value, storage.GetDescription().Value)
-	model.AccountID = types.StringValue(storage.GetAccountID())
+	model.ProjectID = types.StringValue(storage.GetAccountID())
 	model.ResourceID = types.StringValue(strconv.FormatInt(storage.GetResourceID().Value, 10))
 	model.IsSystem = types.BoolValue(storage.GetIsSystem())
 	model.CreatedAt = types.StringValue(storage.GetCreatedAt().String())

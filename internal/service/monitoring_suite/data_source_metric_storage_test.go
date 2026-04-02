@@ -26,7 +26,7 @@ func TestAccSakuraMonitoringSuiteMetricStorageDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "is_system", "false"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
-					resource.TestCheckResourceAttrSet(resourceName, "account_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "endpoints.address"),
 					resource.TestCheckResourceAttrSet(resourceName, "usage.metric_routings"),
