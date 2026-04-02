@@ -10,8 +10,8 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraMonitoringSuiteMetricStorageDataSource_basic(t *testing.T) {
-	resourceName := "data.sakura_monitoring_suite_metric_storage.foobar"
+func TestAccSakuraMonitoringSuiteDashboardDataSource_basic(t *testing.T) {
+	resourceName := "data.sakura_monitoring_suite_dashboard.foobar"
 	rand := test.RandomName()
 
 	resource.Test(t, resource.TestCase{
@@ -19,31 +19,28 @@ func TestAccSakuraMonitoringSuiteMetricStorageDataSource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricStorageDataSource_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteDashboardDataSource_basic, rand),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
-					resource.TestCheckResourceAttr(resourceName, "is_system", "false"),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "endpoints.address"),
-					resource.TestCheckResourceAttrSet(resourceName, "usage.metric_routings"),
 				),
 			},
 		},
 	})
 }
 
-var testAccSakuraMonitoringSuiteMetricStorageDataSource_basic = `
-resource "sakura_monitoring_suite_metric_storage" "foobar" {
+var testAccSakuraMonitoringSuiteDashboardDataSource_basic = `
+resource "sakura_monitoring_suite_dashboard" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
-  is_system = false
 }
 
-data "sakura_monitoring_suite_metric_storage" "foobar" {
-  id = sakura_monitoring_suite_metric_storage.foobar.id
+data "sakura_monitoring_suite_dashboard" "foobar" {
+  id = sakura_monitoring_suite_dashboard.foobar.id
 }
 `

@@ -27,7 +27,7 @@ func TestAccSakuraMonitoringSuiteLogStorageDataSource_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "classification", "shared"),
 					resource.TestCheckResourceAttr(resourceName, "is_system", "false"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
-					resource.TestCheckResourceAttrSet(resourceName, "account_id"),
+					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "expire_day"),
 					resource.TestCheckResourceAttrSet(resourceName, "endpoints.ingester.address"),

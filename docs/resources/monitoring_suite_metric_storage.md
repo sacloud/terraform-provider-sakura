@@ -35,10 +35,10 @@ resource "sakura_monitoring_suite_metric_storage" "foobar" {
 
 ### Read-Only
 
-- `account_id` (String) The account ID of the Metric Storage.
 - `created_at` (String) The creation timestamp of the Monitoring Suite Metric Storage
 - `endpoints` (Attributes) The endpoints of the Metric Storage. (see [below for nested schema](#nestedatt--endpoints))
 - `id` (String) The ID of the Monitoring Suite Metric Storage.
+- `project_id` (String) The project ID of the Metric Storage.
 - `resource_id` (String) The resource ID of the Metric Storage.
 - `usage` (Attributes) The usage of the Metric Storage. (see [below for nested schema](#nestedatt--usage))
 
