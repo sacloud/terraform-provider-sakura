@@ -7,16 +7,21 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 )
 
 type stringCustomFuncValidator struct {
-	fun func(value string) error
+	fun  func(value string) error
+	desc string
 }
 
 var _ validator.String = stringCustomFuncValidator{}
 
 func (v stringCustomFuncValidator) Description(_ context.Context) string {
+	if v.desc != "" {
+		return v.desc
+	}
 	return "Validates a string attribute using a custom function"
 }
 
@@ -38,4 +43,9 @@ func (v stringCustomFuncValidator) ValidateString(ctx context.Context, req valid
 
 func StringFuncValidator(fun func(value string) error) stringCustomFuncValidator {
 	return stringCustomFuncValidator{fun: fun}
+}
+
+var UUIDValidator = stringCustomFuncValidator{
+	fun:  uuid.Validate,
+	desc: "must be a UUID",
 }
