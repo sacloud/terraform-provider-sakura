@@ -1,5 +1,11 @@
 # Changelog
 
+## [v3.8.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.7.1...v3.8.0) - 2026-04-03
+- モニタリングスイート　ストレージ/ルーティング追加 by @lvctr in https://github.com/sacloud/terraform-provider-sakura/pull/159
+- monitoring_suite: Add Dashboard resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/172
+- docs: Add guide for object storage and terraform backend by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/174
+- apprun_shared: update apprun-api-go and add resource_id attribute by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/176
+
 ## [v3.7.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.7.0...v3.7.1) - 2026-03-27
 - Update terraform related modules by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/164
 - dependabot: Use groups for terraform and sacloud modules by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/166
