@@ -43,6 +43,7 @@ func TestAccSakuraApprunShared_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "apprun-test.sakuracr.jp/test1:latest"),
 					resource.TestMatchResourceAttr(resourceName, "status", regexp.MustCompile(".+")),
 					resource.TestMatchResourceAttr(resourceName, "public_url", regexp.MustCompile(".+")),
+					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 				),
 			},
 			{
@@ -59,6 +60,7 @@ func TestAccSakuraApprunShared_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_cpu", "1"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_memory", "2Gi"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "apprun-test.sakuracr.jp/test1:tag1"),
+					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 				),
 			},
 		},
@@ -405,6 +407,7 @@ func TestAccImportSakuraApprunShared_basic(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"status",
+					"resource_id",
 					"public_url",
 				},
 			},
@@ -453,6 +456,7 @@ func TestAccImportSakuraApprunShared_withCRUser(t *testing.T) {
 				ImportStateVerifyIgnore: []string{
 					"components.0.deploy_source.container_registry.password",
 					"status",
+					"resource_id",
 					"public_url",
 				},
 			},
@@ -503,6 +507,7 @@ func TestAccImportSakuraApprunShared_withEnv(t *testing.T) {
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
 					"status",
+					"resource_id",
 					"public_url",
 				},
 			},

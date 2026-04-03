@@ -28,12 +28,13 @@ data "sakura_apprun_shared" "foobar" {
 ### Read-Only
 
 - `components` (Attributes List) The AppRun Shared application component information (see [below for nested schema](#nestedatt--components))
-- `id` (String) The ID of the AppRun Shared application
+- `id` (String) The UUID based ID of the AppRun Shared application
 - `max_scale` (Number) The maximum number of scales for the entire AppRun Shared application
 - `min_scale` (Number) The minimum number of scales for the entire AppRun Shared application
 - `packet_filter` (Attributes) The packet filter for the AppRun Shared application (see [below for nested schema](#nestedatt--packet_filter))
 - `port` (Number) The port number where the AppRun Shared application listens for requests
 - `public_url` (String) The public URL of the AppRun Shared application
+- `resource_id` (String) The resource ID of the AppRun Shared application
 - `status` (String) The AppRun Shared application status
 - `timeout_seconds` (Number) The time limit between accessing the AppRun Shared application's public URL, starting the instance, and receiving a response
 
