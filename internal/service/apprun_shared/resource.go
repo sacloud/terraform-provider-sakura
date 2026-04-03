@@ -76,12 +76,13 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The ID of the AppRun Shared",
+				Description: "The UUID based ID of the AppRun Shared",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
-			"name": common.SchemaResourceName("AppRun Shared"),
+			"resource_id": common.SchemaResourceId("AppRun Shared"),
+			"name":        common.SchemaResourceName("AppRun Shared"),
 			"timeout_seconds": schema.Int32Attribute{
 				Required:    true,
 				Description: "The time limit between accessing the AppRun Shared application's public URL, starting the instance, and receiving a response",

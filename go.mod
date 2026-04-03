@@ -18,7 +18,7 @@ require (
 	github.com/sacloud/addon-api-go v0.0.1
 	github.com/sacloud/api-client-go v0.3.5
 	github.com/sacloud/apigw-api-go v0.3.0
-	github.com/sacloud/apprun-api-go v0.6.1
+	github.com/sacloud/apprun-api-go v0.7.1
 	github.com/sacloud/autoscaler v0.19.3
 	github.com/sacloud/cloudhsm-api-go v0.4.0
 	github.com/sacloud/dedicated-storage-api-go v0.1.0
@@ -31,7 +31,7 @@ require (
 	github.com/sacloud/nosql-api-go v0.3.0
 	github.com/sacloud/object-storage-api-go v0.1.1
 	github.com/sacloud/packages-go v0.0.12
-	github.com/sacloud/saclient-go v0.3.4
+	github.com/sacloud/saclient-go v0.3.5
 	github.com/sacloud/secretmanager-api-go v0.3.1
 	github.com/sacloud/security-control-api-go v0.2.2
 	github.com/sacloud/simple-notification-api-go v0.3.0

@@ -49,7 +49,11 @@ func (r *apprunSharedDataSource) Schema(ctx context.Context, req datasource.Sche
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The ID of the AppRun Shared application",
+				Description: "The UUID based ID of the AppRun Shared application",
+			},
+			"resource_id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The resource ID of the AppRun Shared application",
 			},
 			"name": schema.StringAttribute{
 				Required:    true,

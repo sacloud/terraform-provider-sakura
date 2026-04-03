@@ -13,6 +13,7 @@ import (
 
 type apprunSharedBaseModel struct {
 	ID             types.String                   `tfsdk:"id"`
+	ResourceID     types.String                   `tfsdk:"resource_id"`
 	Name           types.String                   `tfsdk:"name"`
 	TimeoutSeconds types.Int32                    `tfsdk:"timeout_seconds"`
 	Port           types.Int32                    `tfsdk:"port"`
@@ -120,6 +121,7 @@ func (m apprunSharedPacketFilterSettingsModel) AttributeTypes() map[string]attr.
 
 func (model *apprunSharedBaseModel) updateState(application *v1.Application, pf *v1.HandlerGetPacketFilter) {
 	model.ID = types.StringValue(application.Id)
+	model.ResourceID = types.StringValue(application.ResourceId)
 	model.Name = types.StringValue(application.Name)
 	model.TimeoutSeconds = types.Int32Value(int32(application.TimeoutSeconds))
 	model.Port = types.Int32Value(int32(application.Port))
