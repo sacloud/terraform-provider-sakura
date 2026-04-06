@@ -239,8 +239,8 @@ github.com/sacloud/api-client-go v0.3.5 h1:0ALibvbC+6MBhN7t61k+RhguhiEQ8+NejqBjq
 github.com/sacloud/api-client-go v0.3.5/go.mod h1:akdcCOl6wszywa0YQ5X8cMnNgWTm+7N4EneODTdiH48=
 github.com/sacloud/apigw-api-go v0.3.0 h1:dxrV2L6/SNdRM0dLJm+p9d40bOWopVYmykD8TAJL1qY=
 github.com/sacloud/apigw-api-go v0.3.0/go.mod h1:YtaZ7lYtjwI4PrnrVvYStQEjrb2lTbyac/L95giqApg=
-github.com/sacloud/apprun-api-go v0.6.1 h1:tZDEaWkH5OQIeZSrWHKIcG8HR19jZy4E/6FZIEIMSMw=
-github.com/sacloud/apprun-api-go v0.6.1/go.mod h1:0Bo4+cXtj/MDalhf4JMTA+CnvutdMcHsyl2TS+d9qKA=
+github.com/sacloud/apprun-api-go v0.7.1 h1:Kc0Xa9sveiXFRYJ0e9NtRRj9AI36yG5RFuQYjDNJ4Qo=
+github.com/sacloud/apprun-api-go v0.7.1/go.mod h1:0vQhVsP/5QWui5yJsYjV7cf35tESEHdv84dGSt6qZuE=
 github.com/sacloud/apprun-dedicated-api-go v0.1.0 h1:RzvhL/l6bvWRWcttuyZVAbarq+RClJyLUhRNtI81pu0=
 github.com/sacloud/apprun-dedicated-api-go v0.1.0/go.mod h1:cl7dNOk5BpREjwV9s9TObh/hXXfaG8Ui08D5FD0ebjI=
 github.com/sacloud/autoscaler v0.19.3 h1:FkBxc0mE8fvaWiOiz+TpFAT1TX8DRLXs8prsqaM2MF0=
@@ -275,8 +275,8 @@ github.com/sacloud/object-storage-api-go v0.1.1 h1:lgAIonpmVEbUbeiOQ3IRH9XXS5U8f
 github.com/sacloud/object-storage-api-go v0.1.1/go.mod h1:uluq6oc/T21x72K45upbW1eMk+Z+LJHJbCto7HhxJJk=
 github.com/sacloud/packages-go v0.0.12 h1:MKeZNN3FQn1heqUSRBrbZw89YusZA1n4kammjMFZYvQ=
 github.com/sacloud/packages-go v0.0.12/go.mod h1:XNF5MCTWcHo9NiqWnYctVbASSSZR3ZOmmQORIzcurJ8=
-github.com/sacloud/saclient-go v0.3.4 h1:mlWU+/F94T0p5aGQRvuWjfrhHOIr5ceuLrjK7UnLedI=
-github.com/sacloud/saclient-go v0.3.4/go.mod h1:43p2uetaKVpKo9vnCl8tcGvEPCyXoBEQHLavMbmcIes=
+github.com/sacloud/saclient-go v0.3.5 h1:cgMNAapY4xu34uMjeAEYkPnsDjLSvfR0GF+nYKSIWec=
+github.com/sacloud/saclient-go v0.3.5/go.mod h1:43p2uetaKVpKo9vnCl8tcGvEPCyXoBEQHLavMbmcIes=
 github.com/sacloud/secretmanager-api-go v0.3.1 h1:71Bxt/WxtYfilkj35pD5pauy9zYYEQkF09bturYq1jM=
 github.com/sacloud/secretmanager-api-go v0.3.1/go.mod h1:eSMKWniJrPbaOWWv66AJgubXOoR6ZAOt8uIZo/5BJF8=
 github.com/sacloud/security-control-api-go v0.2.2 h1:cdQT/IqBWM10qm4PWaB89Cvu6u5Hbcgk1Aa5Mqc2q40=

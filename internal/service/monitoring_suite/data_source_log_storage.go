@@ -50,9 +50,9 @@ func (d *logStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 			"id":          common.SchemaDataSourceId("Monitoring Suite Log Storage"),
 			"name":        common.SchemaDataSourceName("Monitoring Suite Log Storage"),
 			"description": common.SchemaDataSourceDescription("Monitoring Suite Log Storage"),
-			"account_id": schema.StringAttribute{
+			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The account ID of the Log Storage.",
+				Description: "The project ID of the Log Storage.",
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,

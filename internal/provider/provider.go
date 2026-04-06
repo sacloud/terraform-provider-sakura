@@ -323,6 +323,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		internet.NewInternetDataSource,
 		kms.NewKmsDataSource,
 		local_router.NewLocalRouterDataSource,
+		monitoring_suite.NewDashboardDataSource,
 		monitoring_suite.NewLogStorageDataSource,
 		monitoring_suite.NewMetricStorageDataSource,
 		monitoring_suite.NewTraceStorageDataSource,

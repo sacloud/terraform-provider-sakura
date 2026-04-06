@@ -87,8 +87,9 @@ resource "sakura_apprun_shared" "foobar" {
 
 ### Read-Only
 
-- `id` (String) The ID of the AppRun Shared
+- `id` (String) The UUID based ID of the AppRun Shared
 - `public_url` (String) The public URL of the AppRun Shared application
+- `resource_id` (String) The ID of the AppRun Shared.
 - `status` (String) The AppRun Shared application status
 
 <a id="nestedatt--components"></a>
