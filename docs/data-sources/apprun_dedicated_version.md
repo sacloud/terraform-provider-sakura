@@ -45,6 +45,7 @@ data "sakura_apprun_dedicated_version" "main" {
 - `env_vars` (Attributes Set) Environment variables (see [below for nested schema](#nestedatt--env_vars))
 - `exposed_ports` (Attributes Set) Ports that the application exposes (see [below for nested schema](#nestedatt--exposed_ports))
 - `fixed_scale` (Number) Number of nodes when scaling mode is `manual`
+- `id` (String) (Synthetic ID, only for internal use)
 - `image` (String) The container image
 - `max_scale` (Number) Maximum number of nodes when scaling mode is `autoscale`
 - `memory` (Number) The memory limit in megabytes
