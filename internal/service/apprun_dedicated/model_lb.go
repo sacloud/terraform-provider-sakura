@@ -15,7 +15,6 @@ import (
 )
 
 type lbID = v1.LoadBalancerID
-type lbnID = v1.LoadBalancerNodeID
 
 type lbAddrModel struct {
 	Address types.String `tfsdk:"address"`

@@ -80,7 +80,6 @@ var wnAttrs = attrTypes{
 func (wnifModel) AttributeTypes() attrTypes      { return wnifAttrs }
 func (containerModel) AttributeTypes() attrTypes { return containerAttrs }
 func (wnModel) AttributeTypes() attrTypes        { return wnAttrs }
-func (m *wnModel) wnID() (wnID, error)           { return intoUUID[wnID](m.ID) }
 
 func (i *wnifModel) updateState(ctx context.Context, ni wn.WorkerNodeNetworkInterface) (ret diag.Diagnostics) {
 	i.Index = types.Int32Value(common.ToInt32(ni.InterfaceIndex))
