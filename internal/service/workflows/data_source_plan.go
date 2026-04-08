@@ -45,23 +45,23 @@ func (d *workflowPlanDataSource) Configure(ctx context.Context, req datasource.C
 }
 
 type workflowPlanModel struct {
-	ID                  types.String  `tfsdk:"id"`
-	Name                types.String  `tfsdk:"name"`
-	Grade               types.Float64 `tfsdk:"grade"`
-	BasePrice           types.Float64 `tfsdk:"base_price"`
-	IncludedSteps       types.Float64 `tfsdk:"included_steps"`
-	OverageStepUnit     types.Float64 `tfsdk:"overage_step_unit"`
-	OveragePricePerUnit types.Float64 `tfsdk:"overage_price_per_unit"`
+	ID                  types.String `tfsdk:"id"`
+	Name                types.String `tfsdk:"name"`
+	Grade               types.Int64  `tfsdk:"grade"`
+	BasePrice           types.Int64  `tfsdk:"base_price"`
+	IncludedSteps       types.Int64  `tfsdk:"included_steps"`
+	OverageStepUnit     types.Int64  `tfsdk:"overage_step_unit"`
+	OveragePricePerUnit types.Int64  `tfsdk:"overage_price_per_unit"`
 }
 
 func (model *workflowPlanModel) updateState(data v1.ListPlansOKPlansItem) {
-	model.ID = types.StringValue(fmt.Sprintf("%.0f", data.ID))
+	model.ID = types.StringValue(fmt.Sprintf("%d", data.ID))
 	model.Name = types.StringValue(data.Name)
-	model.Grade = types.Float64Value(data.Grade)
-	model.BasePrice = types.Float64Value(data.BasePrice)
-	model.IncludedSteps = types.Float64Value(data.IncludedSteps)
-	model.OverageStepUnit = types.Float64Value(data.OverageStepUnit)
-	model.OveragePricePerUnit = types.Float64Value(data.OveragePricePerUnit)
+	model.Grade = types.Int64Value(int64(data.Grade))
+	model.BasePrice = types.Int64Value(int64(data.BasePrice))
+	model.IncludedSteps = types.Int64Value(int64(data.IncludedSteps))
+	model.OverageStepUnit = types.Int64Value(int64(data.OverageStepUnit))
+	model.OveragePricePerUnit = types.Int64Value(int64(data.OveragePricePerUnit))
 }
 
 func (d *workflowPlanDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -77,23 +77,23 @@ func (d *workflowPlanDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 					stringvalidator.LengthAtLeast(1),
 				},
 			},
-			"grade": schema.Float64Attribute{
+			"grade": schema.Int64Attribute{
 				Computed:    true,
 				Description: desc.Sprintf("The grade of the %s.", resourceName),
 			},
-			"base_price": schema.Float64Attribute{
+			"base_price": schema.Int64Attribute{
 				Computed:    true,
 				Description: desc.Sprintf("The base price of the %s.", resourceName),
 			},
-			"included_steps": schema.Float64Attribute{
+			"included_steps": schema.Int64Attribute{
 				Computed:    true,
 				Description: desc.Sprintf("The included steps of the %s.", resourceName),
 			},
-			"overage_step_unit": schema.Float64Attribute{
+			"overage_step_unit": schema.Int64Attribute{
 				Computed:    true,
 				Description: desc.Sprintf("The overage step unit of the %s.", resourceName),
 			},
-			"overage_price_per_unit": schema.Float64Attribute{
+			"overage_price_per_unit": schema.Int64Attribute{
 				Computed:    true,
 				Description: desc.Sprintf("The overage price per unit of the %s.", resourceName),
 			},
