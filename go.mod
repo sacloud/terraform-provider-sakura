@@ -19,6 +19,7 @@ require (
 	github.com/sacloud/api-client-go v0.3.5
 	github.com/sacloud/apigw-api-go v0.3.0
 	github.com/sacloud/apprun-api-go v0.7.1
+	github.com/sacloud/apprun-dedicated-api-go v0.1.0
 	github.com/sacloud/autoscaler v0.19.3
 	github.com/sacloud/cloudhsm-api-go v0.4.0
 	github.com/sacloud/dedicated-storage-api-go v0.1.0

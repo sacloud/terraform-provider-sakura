@@ -1,0 +1,16 @@
+# Copyright 2016-2026 The terraform-provider-sakura Authors
+# SPDX-License-Identifier: Apache-2.0
+
+* text=auto eol=lf
+
+docs/** linguist-documentation linguist-generated
+examples/** linguist-documentation
+
+go.sum              linguist-generated merge=ours
+go.mod              linguist-generated
+*.md                diff=markdown merge=union
+*.go                diff=golang
+
+/.github            export-ignore
+.gitattributes      export-ignore
+.gitignore          export-ignore

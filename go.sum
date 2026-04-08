@@ -241,6 +241,8 @@ github.com/sacloud/apigw-api-go v0.3.0 h1:dxrV2L6/SNdRM0dLJm+p9d40bOWopVYmykD8TA
 github.com/sacloud/apigw-api-go v0.3.0/go.mod h1:YtaZ7lYtjwI4PrnrVvYStQEjrb2lTbyac/L95giqApg=
 github.com/sacloud/apprun-api-go v0.7.1 h1:Kc0Xa9sveiXFRYJ0e9NtRRj9AI36yG5RFuQYjDNJ4Qo=
 github.com/sacloud/apprun-api-go v0.7.1/go.mod h1:0vQhVsP/5QWui5yJsYjV7cf35tESEHdv84dGSt6qZuE=
+github.com/sacloud/apprun-dedicated-api-go v0.1.0 h1:RzvhL/l6bvWRWcttuyZVAbarq+RClJyLUhRNtI81pu0=
+github.com/sacloud/apprun-dedicated-api-go v0.1.0/go.mod h1:cl7dNOk5BpREjwV9s9TObh/hXXfaG8Ui08D5FD0ebjI=
 github.com/sacloud/autoscaler v0.19.3 h1:FkBxc0mE8fvaWiOiz+TpFAT1TX8DRLXs8prsqaM2MF0=
 github.com/sacloud/autoscaler v0.19.3/go.mod h1:jTeHzdZHrWd/2mYtgEyyFDTqHu0EbMPNDzwj7mdl0MA=
 github.com/sacloud/cloudhsm-api-go v0.4.0 h1:KllahNlmgL4Ukat32b+Iody6GFKsYR2uqUtsF4G4opc=

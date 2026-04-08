@@ -1,0 +1,42 @@
+# Copyright 2016-2026 The terraform-provider-sakura Authors
+# SPDX-License-Identifier: Apache-2.0
+
+[settings]
+lockfile = true
+experimental = true
+
+[tools]
+"go:github.com/sacloud/usacloud" = { version = "latest" }
+terraform = { version = "latest" }
+
+[env._.file]
+path = ".env"
+
+[env.TF_WORKSPACE]
+required = "set TF_WORKSPACE as a name of your usacloud profile"
+
+[vars]
+TFPLAN = "tfplan" # override by mise plan --set TFPLAN=custom.tfplan
+
+[tasks.setup]
+description = "set up terraform"
+run = [
+  "usacloud config show {{env.TF_WORKSPACE}} > /dev/null || exit 1",
+  "terraform init",
+]
+
+[tasks.plan]
+description = "plan terraform"
+depends = "setup"
+run = "terraform plan -out={{vars.TFPLAN}}"
+
+[tasks.apply]
+description = "apply terraform"
+run = [
+  "[ -f {{vars.TFPLAN}} ] || (echo 'plan file not found: {{vars.TFPLAN}}' && exit 1)",
+  "terraform apply {{vars.TFPLAN}}",
+]
+
+[tasks.fmt]
+description = "format terraform files"
+run = "terraform fmt -recursive ."

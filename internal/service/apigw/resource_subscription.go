@@ -65,7 +65,7 @@ func (r *apigwSubscriptionResource) Schema(ctx context.Context, req resource.Sch
 				Required:    true,
 				Description: "Plan ID of the API Gateway Subscription",
 				Validators: []validator.String{
-					sacloudvalidator.StringFuncValidator(uuid.Validate),
+					sacloudvalidator.UUIDValidator,
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),
