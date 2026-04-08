@@ -15,14 +15,14 @@ require (
 	github.com/hashicorp/terraform-plugin-testing v1.15.0
 	github.com/minio/minio-go/v7 v7.0.99
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/sacloud/addon-api-go v0.0.1
+	github.com/sacloud/addon-api-go v0.1.0
 	github.com/sacloud/api-client-go v0.3.5
 	github.com/sacloud/apigw-api-go v0.3.0
 	github.com/sacloud/apprun-api-go v0.7.1
-	github.com/sacloud/apprun-dedicated-api-go v0.1.0
+	github.com/sacloud/apprun-dedicated-api-go v0.2.0
 	github.com/sacloud/autoscaler v0.19.3
 	github.com/sacloud/cloudhsm-api-go v0.4.0
-	github.com/sacloud/dedicated-storage-api-go v0.1.0
+	github.com/sacloud/dedicated-storage-api-go v0.2.0
 	github.com/sacloud/eventbus-api-go v0.6.1
 	github.com/sacloud/iaas-api-go v1.26.0
 	github.com/sacloud/iaas-service-go v1.22.3
@@ -30,14 +30,14 @@ require (
 	github.com/sacloud/kms-api-go v0.4.0
 	github.com/sacloud/monitoring-suite-api-go v0.2.0
 	github.com/sacloud/nosql-api-go v0.3.0
-	github.com/sacloud/object-storage-api-go v0.1.1
+	github.com/sacloud/object-storage-api-go v0.2.0
 	github.com/sacloud/packages-go v0.0.12
 	github.com/sacloud/saclient-go v0.3.5
-	github.com/sacloud/secretmanager-api-go v0.3.1
-	github.com/sacloud/security-control-api-go v0.2.2
+	github.com/sacloud/secretmanager-api-go v0.4.0
+	github.com/sacloud/security-control-api-go v0.3.0
 	github.com/sacloud/simple-notification-api-go v0.3.0
 	github.com/sacloud/simplemq-api-go v0.5.0
-	github.com/sacloud/workflows-api-go v0.3.0
+	github.com/sacloud/workflows-api-go v0.4.0
 	github.com/stretchr/testify v1.11.1
 )
 
@@ -142,13 +142,13 @@ require (
 	go.uber.org/ratelimit v0.3.1 // indirect
 	go.uber.org/zap v1.27.1 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
-	golang.org/x/crypto v0.48.0 // indirect
+	golang.org/x/crypto v0.49.0 // indirect
 	golang.org/x/exp v0.0.0-20260112195511-716be5621a96 // indirect
 	golang.org/x/mod v0.33.0 // indirect
 	golang.org/x/net v0.51.0 // indirect
-	golang.org/x/sync v0.19.0 // indirect
-	golang.org/x/sys v0.41.0 // indirect
-	golang.org/x/text v0.34.0 // indirect
+	golang.org/x/sync v0.20.0 // indirect
+	golang.org/x/sys v0.42.0 // indirect
+	golang.org/x/text v0.35.0 // indirect
 	golang.org/x/tools v0.42.0 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20251202230838-ff82c1b0f217 // indirect
