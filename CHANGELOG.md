@@ -1,5 +1,8 @@
 # Changelog
 
+## [v3.8.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.8.0...v3.8.1) - 2026-04-09
+- go: bump github.com/sacloud/workflows-api-go from 0.3.0 to 0.4.0 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/183
+
 ## [v3.8.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.7.1...v3.8.0) - 2026-04-08
 - モニタリングスイート　ストレージ/ルーティング追加 by @lvctr in https://github.com/sacloud/terraform-provider-sakura/pull/159
 - monitoring_suite: Add Dashboard resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/172
