@@ -15,7 +15,7 @@ Manages a Service Endpoint Gateway.
 ```terraform
 resource "sakura_vswitch" "foobar" {
 	name = "foobar" 
-	zone = "tk1b" # zone name isk
+	zone = "tk1b" # zone name # e.g. is1a 
 }
 
 resource "sakura_service_endpoint_gateway" "foobar" {
@@ -24,7 +24,7 @@ resource "sakura_service_endpoint_gateway" "foobar" {
 	server_ip_addresses = ["server_ip_address"] # e,g. 192.168.1.1 
 	netmask     = 28 # 8-29
 	endpoint_setting = {
-		object_storage_endpoints = ["sakura-object-storage-endpoint"] # e.g. s3.isk01.sakurastorage.jp
+		object_storage_endpoints = ["sakura-object-storage-endpoint"] # e.g. s3.isk01.sakurastorage.jp, s3.tky01.sakurastorage.jp
 		monitoring_suite_endpoints = ["sakura-monitoring-suite-endpoint"] # e.g *****.logs.monitoring.global.api.salocloud.jp
 		container_registry_endpoints = [""] # e.g. *****.sakuracr.jp
 		ai_engine_endpoints = [""] # e.g. api.ai.sakura.ad.jp
