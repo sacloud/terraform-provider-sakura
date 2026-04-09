@@ -6,6 +6,7 @@ package workflows
 import (
 	"context"
 	"fmt"
+	"math"
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -188,13 +189,17 @@ func (r *workflowsSubscriptionResource) Delete(ctx context.Context, req resource
 
 func (r *workflowsSubscriptionResource) setSubscription(ctx context.Context, plan workflowsSubscriptionResourceModel) error {
 	planID := plan.PlanID.ValueString()
-	id, err := strconv.ParseFloat(planID, 64)
+	id, err := strconv.ParseInt(planID, 10, 64)
 	if err != nil {
 		return err
 	}
+	if id > math.MaxInt {
+		// happens when int != int64
+		return fmt.Errorf("plan_id %d is too large", id)
+	}
 
 	subscriptionOp := workflows.NewSubscriptionOp(r.client)
-	if err := subscriptionOp.Create(ctx, v1.CreateSubscriptionReq{PlanId: id}); err != nil {
+	if err := subscriptionOp.Create(ctx, v1.CreateSubscriptionReq{PlanId: (int)(id)}); err != nil {
 		return err
 	}
 	return nil

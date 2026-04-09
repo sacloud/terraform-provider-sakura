@@ -27,7 +27,7 @@ func (model *workflowsSubscriptionBaseModel) updateState(data *v1.GetSubscriptio
 		model.AccountID = types.StringValue(v.AccountId)
 		model.ContractID = types.StringValue(v.ContractId)
 		model.PlanName = types.StringValue(v.PlanName)
-		model.PlanID = types.StringValue(fmt.Sprintf("%.0f", v.PlanId))
+		model.PlanID = types.StringValue(fmt.Sprintf("%d", v.PlanId))
 		model.ActivateFrom = types.StringValue(v.ActivateFrom.String())
 		model.CreatedAt = types.StringValue(v.CreatedAt.String())
 		model.UpdatedAt = types.StringValue(v.UpdatedAt.String())
