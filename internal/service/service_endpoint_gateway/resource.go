@@ -12,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
@@ -92,32 +91,32 @@ func (r *segResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				},
 			},
 			"endpoint_setting": schema.SingleNestedAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "The endpoint settings of the Service Endpoint Gateway",
 				Attributes: map[string]schema.Attribute{
 					"object_storage_endpoints": schema.ListAttribute{
 						Optional:    true,
 						ElementType: types.StringType,
 						Description: "The list of sakura object storage endpoints to connect to the Service Endpoint Gateway",
-						//validator is not added here because api is not required validation and endpoint is validated by server side,
+						// validator is not added here because api is not required validation and endpoint is validated by server side,
 					},
 					"monitoring_suite_endpoints": schema.ListAttribute{
 						Optional:    true,
 						ElementType: types.StringType,
 						Description: "The list of monitoring suite endpoints to connect to the Service Endpoint Gateway",
-						//validator is not added here because api is not required validation and endpoint is validated by server side,
+						// validator is not added here because api is not required validation and endpoint is validated by server side,
 					},
 					"container_registry_endpoints": schema.ListAttribute{
 						Optional:    true,
 						ElementType: types.StringType,
 						Description: "The list of sakura container registry endpoints to connect to the Service Endpoint Gateway",
-						//validator is not added here because api is not required validation and endpoint is validated by server side,
+						// validator is not added here because api is not required validation and endpoint is validated by server side,
 					},
 					"ai_engine_endpoints": schema.ListAttribute{
 						Optional:    true,
 						ElementType: types.StringType,
 						Description: "The list of AI engine endpoints to connect to the Service Endpoint Gateway",
-						//validator is not added here because api is not required validation and endpoint is validated by server side,
+						// validator is not added here because api is not required validation and endpoint is validated by server side,
 					},
 					"app_run_dedicated_control_enabled": schema.BoolAttribute{
 						Optional:    true,
@@ -170,6 +169,7 @@ func (r *segResource) Create(ctx context.Context, req resource.CreateRequest, re
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout24hour)
 	defer cancel()
 
@@ -192,22 +192,25 @@ func (r *segResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	segOp := seg.NewServiceEndpointGatewayOp(apiClient)
-	appliance, err := createSEGAppliance(ctx, segOp, &plan, &resp.Diagnostics)
+	appliance, err := createSEGAppliance(ctx, segOp, &plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to set up seg: %s", err))
 		return
 	}
-	err = plan.updateState(ctx, appliance)
+
+	err = plan.updateState(appliance)
 	if err != nil {
 		resp.State.RemoveResource(ctx)
 		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update state for seg resource: %s", err))
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *segResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var state segResourceModel
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -226,27 +229,30 @@ func (r *segResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	segOp := seg.NewServiceEndpointGatewayOp(apiClient)
-	appliance, err := getSEGAppliance(ctx, segOp, state.ID, &resp.State, &resp.Diagnostics)
+	appliance, err := getSEGAppliance(ctx, segOp, state.ID, &resp.State)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read seg resource: %s", err))
 		return
 	}
 
-	err = state.updateState(ctx, appliance)
+	err = state.updateState(appliance)
 	if err != nil {
 		resp.State.RemoveResource(ctx)
 		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for seg resource: %s", err))
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
 func (r *segResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
 	var plan segResourceModel
+
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout24hour)
 	defer cancel()
 
@@ -262,26 +268,29 @@ func (r *segResource) Update(ctx context.Context, req resource.UpdateRequest, re
 	}
 
 	segOp := seg.NewServiceEndpointGatewayOp(apiClient)
-	appliance, err := updateSEGAppliance(ctx, segOp, plan.ID, &plan, &resp.Diagnostics)
+	appliance, err := updateSEGAppliance(ctx, segOp, plan.ID, &plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update seg resource: %s", err))
 		return
 	}
 
-	if err := plan.updateState(ctx, appliance); err != nil {
+	if err := plan.updateState(appliance); err != nil {
 		resp.State.RemoveResource(ctx)
 		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update state for seg resource: %s", err))
 		return
 	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *segResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
 	var state segResourceModel
+
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout20min)
 	defer cancel()
 
@@ -316,22 +325,26 @@ func (r *segResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 }
 
-func createSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, d *segResourceModel, diags *diag.Diagnostics) (*v1.ModelsApplianceAppliance, error) {
+func createSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, d *segResourceModel) (*v1.ModelsApplianceAppliance, error) {
 	createRequest := expandSEGCreateRequest(d)
+
 	created, err := segAPI.Create(ctx, createRequest)
 	if err != nil {
 		return nil, err
 	}
+
 	instanceID := created.Appliance.ID
 	err = waitForInstanceStatus(ctx, segAPI, instanceID, v1.ModelsInstanceInstanceStatusUp)
 	if err != nil {
 		return nil, err
 	}
-	return updateSEGAppliance(ctx, segAPI, types.StringValue(instanceID), d, diags)
+
+	return updateSEGAppliance(ctx, segAPI, types.StringValue(instanceID), d)
 }
 
-func updateSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, id types.String, d *segResourceModel, diags *diag.Diagnostics) (*v1.ModelsApplianceAppliance, error) {
+func updateSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, id types.String, d *segResourceModel) (*v1.ModelsApplianceAppliance, error) {
 	updateRequest := expandSEGUpdateRequest(d)
+
 	_, err := segAPI.Update(ctx, id.ValueString(), updateRequest)
 	if err != nil {
 		return nil, err
@@ -350,19 +363,21 @@ func updateSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAP
 	if err != nil {
 		return nil, err
 	}
+
 	return &res.Appliance, nil
 }
 
-func getSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, id types.String, state *tfsdk.State, diags *diag.Diagnostics) (*v1.ModelsApplianceAppliance, error) {
+func getSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, id types.String, state *tfsdk.State) (*v1.ModelsApplianceAppliance, error) {
 	seg, err := segAPI.Read(ctx, id.ValueString())
+
 	if err != nil {
 		var e *v1.ModelsCommonDefaultErrorResponseBodyStatusCode
 		if errors.As(err, &e) && e.StatusCode == http.StatusNotFound {
 			state.RemoveResource(ctx)
 			return nil, err
 		}
-		diags.AddError("API Read Error", fmt.Sprintf("failed to read seg[%s]: %s", id.ValueString(), err))
 		return nil, err
 	}
+
 	return &seg.Appliance, nil
 }

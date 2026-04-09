@@ -154,7 +154,7 @@ func (d *segDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 		return
 	}
 
-	if err := data.updateState(ctx, &res.Appliance); err != nil {
+	if err := data.updateState(&res.Appliance); err != nil {
 		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for seg resource: %s", err))
 		return
 	}

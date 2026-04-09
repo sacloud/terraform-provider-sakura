@@ -45,7 +45,6 @@ resource "sakura_service_endpoint_gateway" "foobar" {
 
 ### Required
 
-- `endpoint_setting` (Attributes) The endpoint settings of the Service Endpoint Gateway (see [below for nested schema](#nestedatt--endpoint_setting))
 - `netmask` (Number) The bit length of the subnet to assign to the Service Endpoint Gateway. This must be in the range [`8`-`29`]
 - `server_ip_addresses` (List of String) The IP server addresslist to connect the Service Endpoint Gateway
 - `vswitch_id` (String) The id of the vSwitch to which the Service Endpoint Gateway connects
@@ -53,6 +52,7 @@ resource "sakura_service_endpoint_gateway" "foobar" {
 ### Optional
 
 - `dns_forwarding` (Attributes) The DNS forwarding settings of the Service Endpoint Gateway. This block is required when `dns_forwarding.enabled` is `true`. (see [below for nested schema](#nestedatt--dns_forwarding))
+- `endpoint_setting` (Attributes) The endpoint settings of the Service Endpoint Gateway (see [below for nested schema](#nestedatt--endpoint_setting))
 - `monitoring_suite_enable` (Boolean) The flag to enable monitoring suite endpoint on the Service Endpoint Gateway
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `zone` (String) The name of zone that the Service Endpoint Gateway will be created (e.g. `is1a`, `tk1a`)
@@ -60,6 +60,17 @@ resource "sakura_service_endpoint_gateway" "foobar" {
 ### Read-Only
 
 - `id` (String) The ID of the Service Endpoint Gateway.
+
+<a id="nestedatt--dns_forwarding"></a>
+### Nested Schema for `dns_forwarding`
+
+Required:
+
+- `enabled` (Boolean) The flag to enable DNS forwarding on the Service Endpoint Gateway
+- `private_hosted_zone` (String) The private hosted zone name for DNS forwarding
+- `upstream_dns_1` (String) The IP address of the first upstream DNS server for DNS forwarding
+- `upstream_dns_2` (String) The IP address of the second upstream DNS server for DNS forwarding
+
 
 <a id="nestedatt--endpoint_setting"></a>
 ### Nested Schema for `endpoint_setting`
@@ -71,17 +82,6 @@ Optional:
 - `container_registry_endpoints` (List of String) The list of sakura container registry endpoints to connect to the Service Endpoint Gateway
 - `monitoring_suite_endpoints` (List of String) The list of monitoring suite endpoints to connect to the Service Endpoint Gateway
 - `object_storage_endpoints` (List of String) The list of sakura object storage endpoints to connect to the Service Endpoint Gateway
-
-
-<a id="nestedatt--dns_forwarding"></a>
-### Nested Schema for `dns_forwarding`
-
-Required:
-
-- `enabled` (Boolean) The flag to enable DNS forwarding on the Service Endpoint Gateway
-- `private_hosted_zone` (String) The private hosted zone name for DNS forwarding
-- `upstream_dns_1` (String) The IP address of the first upstream DNS server for DNS forwarding
-- `upstream_dns_2` (String) The IP address of the second upstream DNS server for DNS forwarding
 
 
 <a id="nestedatt--timeouts"></a>

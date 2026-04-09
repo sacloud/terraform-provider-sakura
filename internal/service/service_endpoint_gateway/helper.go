@@ -20,6 +20,7 @@ import (
 
 func isAvailableZoneForVSwitch(ctx context.Context, client *common.APIClient, zone string, vswitchID types.String, diags *diag.Diagnostics) error {
 	iaasID := common.ExpandSakuraCloudID(vswitchID)
+
 	swOp := iaas.NewSwitchOp(client)
 	_, err := swOp.Read(ctx, zone, iaasID)
 	if err != nil {
@@ -99,16 +100,19 @@ func expandSEGUpdateRequest(d *segResourceModel) v1.ModelsApplianceApplianceUpda
 }
 
 func expandEndpointSetting(d types.Object) []v1.ModelsSettingsEnabledService {
+	var model segEndpointSettingModel
+
 	if d.IsNull() || d.IsUnknown() {
 		return []v1.ModelsSettingsEnabledService{}
 	}
-	var model segEndpointSettingModel
+
 	diags := d.As(context.Background(), &model, basetypes.ObjectAsOptions{})
 	if diags.HasError() {
 		return []v1.ModelsSettingsEnabledService{}
 	}
 
 	var settings []v1.ModelsSettingsEnabledService
+
 	if !model.ObjectStorageEndpoints.IsNull() {
 		settings = append(settings, v1.ModelsSettingsEnabledService{
 			Type: v1.ModelsSettingsEnabledServiceTypeObjectStorage,
@@ -117,6 +121,7 @@ func expandEndpointSetting(d types.Object) []v1.ModelsSettingsEnabledService {
 			},
 		})
 	}
+
 	if !model.MonitoringSuiteEndpoints.IsNull() {
 		settings = append(settings, v1.ModelsSettingsEnabledService{
 			Type: v1.ModelsSettingsEnabledServiceTypeMonitoringSuite,
@@ -125,6 +130,7 @@ func expandEndpointSetting(d types.Object) []v1.ModelsSettingsEnabledService {
 			},
 		})
 	}
+
 	if !model.ContainerRegistryEndpoints.IsNull() {
 		settings = append(settings, v1.ModelsSettingsEnabledService{
 			Type: v1.ModelsSettingsEnabledServiceTypeContainerRegistry,
@@ -133,6 +139,7 @@ func expandEndpointSetting(d types.Object) []v1.ModelsSettingsEnabledService {
 			},
 		})
 	}
+
 	if !model.AIEngineEndpoints.IsNull() {
 		settings = append(settings, v1.ModelsSettingsEnabledService{
 			Type: v1.ModelsSettingsEnabledServiceTypeAIEngine,
@@ -141,6 +148,7 @@ func expandEndpointSetting(d types.Object) []v1.ModelsSettingsEnabledService {
 			},
 		})
 	}
+
 	if !model.AppRunDedicatedControlEnabled.IsNull() {
 		settings = append(settings, v1.ModelsSettingsEnabledService{
 			Type: v1.ModelsSettingsEnabledServiceTypeAppRunDedicatedControlPlane,
@@ -157,22 +165,26 @@ func expandEndpointSetting(d types.Object) []v1.ModelsSettingsEnabledService {
 			},
 		})
 	}
+
 	return settings
 }
 
 func expandDNSForwardingSettings(d types.Object) v1.OptModelsSettingsDNSForwardingSettings {
+	var model segDNSForwardingModel
+
 	if d.IsNull() || d.IsUnknown() {
 		return v1.OptModelsSettingsDNSForwardingSettings{
 			Set: false,
 		}
 	}
-	var model segDNSForwardingModel
+
 	diags := d.As(context.Background(), &model, basetypes.ObjectAsOptions{})
 	if diags.HasError() {
 		return v1.OptModelsSettingsDNSForwardingSettings{
 			Set: false,
 		}
 	}
+
 	return v1.OptModelsSettingsDNSForwardingSettings{
 		Set: true,
 		Value: v1.ModelsSettingsDNSForwardingSettings{
@@ -222,6 +234,7 @@ func checkInstanceStatus(ctx context.Context, api seg.ServiceEndpointGatewayAPI,
 	if resp == nil {
 		return false, nil
 	}
+
 	currentStatus, set := resp.Appliance.Instance.Status.Get()
 	if !set {
 		return false, nil

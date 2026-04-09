@@ -36,10 +36,10 @@ type segBaseModel struct {
 	NetMask                types.Int32  `tfsdk:"netmask"`
 	EndpointSetting        types.Object `tfsdk:"endpoint_setting"`
 	MonitoringSuiteEnabled types.Bool   `tfsdk:"monitoring_suite_enable"`
-	DNSForwarding          types.Object `tfsdk:"dns_forwarding"` //nullable
+	DNSForwarding          types.Object `tfsdk:"dns_forwarding"`
 }
 
-func (model *segBaseModel) updateState(ctx context.Context, appliance *v1.ModelsApplianceAppliance) error {
+func (model *segBaseModel) updateState(appliance *v1.ModelsApplianceAppliance) error {
 	if appliance.Availability != v1.ModelsApplianceApplianceAvailabilityAvailable {
 		return fmt.Errorf("got unexpected state: Appliance[%s].Availability is failed", appliance.ID)
 	}
@@ -47,7 +47,7 @@ func (model *segBaseModel) updateState(ctx context.Context, appliance *v1.Models
 	model.Zone = types.StringValue(appliance.Switch.Zone.Name)
 	model.VSwitchID = types.StringValue(appliance.Switch.ID)
 	model.ServerIPAddresses = flattenServerIPAddreses(appliance.Remark.Value.Servers)
-	model.NetMask = types.Int32Value(int32(appliance.Remark.Value.Network.NetworkMaskLen))
+	model.NetMask = types.Int32Value(appliance.Remark.Value.Network.NetworkMaskLen)
 	model.EndpointSetting = flattenEndpointSetting(appliance.Settings)
 	model.MonitoringSuiteEnabled = flattenMonitoringSuiteEnabled(appliance.Settings)
 	model.DNSForwarding = flattenDNSForwarding(appliance.Settings)
@@ -58,7 +58,6 @@ func flattenEndpointSetting(setting v1.NilModelsSettingsApplianceSettings) types
 	if setting.IsNull() {
 		return types.ObjectNull(segEndpointSettingModel{}.AttributeTypes())
 	}
-	enableServiceSettings := setting.Value.ServiceEndpointGateway.EnabledServices
 
 	settingModel := segEndpointSettingModel{
 		ObjectStorageEndpoints:        types.ListNull(types.StringType),
@@ -68,6 +67,7 @@ func flattenEndpointSetting(setting v1.NilModelsSettingsApplianceSettings) types
 		AppRunDedicatedControlEnabled: types.BoolNull(),
 	}
 
+	enableServiceSettings := setting.Value.ServiceEndpointGateway.EnabledServices
 	for _, setting := range enableServiceSettings {
 		switch setting.Type {
 		case v1.ModelsSettingsEnabledServiceTypeObjectStorage:
