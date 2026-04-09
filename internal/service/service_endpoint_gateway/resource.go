@@ -307,20 +307,9 @@ func (r *segResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 
 	segAPI := seg.NewServiceEndpointGatewayOp(apiClient)
-	err = segAPI.Shutdown(ctx, state.ID.ValueString())
+	err = deleteSEGAppliance(ctx, segAPI, state.ID.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to shutdown seg[%s]: %s", state.ID.ValueString(), err))
-		return
-	}
-
-	err = waitForInstanceStatus(ctx, segAPI, state.ID.ValueString(), v1.ModelsInstanceInstanceStatusDown)
-	if err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to wait for seg[%s] to shutdown: %s", state.ID.ValueString(), err))
-		return
-	}
-
-	if err := segAPI.Delete(ctx, state.ID.ValueString()); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete seg[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
@@ -340,6 +329,21 @@ func createSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAP
 	}
 
 	return updateSEGAppliance(ctx, segAPI, types.StringValue(instanceID), d)
+}
+
+func getSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, id types.String, state *tfsdk.State) (*v1.ModelsApplianceAppliance, error) {
+	seg, err := segAPI.Read(ctx, id.ValueString())
+
+	if err != nil {
+		var e *v1.ModelsCommonDefaultErrorResponseBodyStatusCode
+		if errors.As(err, &e) && e.StatusCode == http.StatusNotFound {
+			state.RemoveResource(ctx)
+			return nil, err
+		}
+		return nil, err
+	}
+
+	return &seg.Appliance, nil
 }
 
 func updateSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, id types.String, d *segResourceModel) (*v1.ModelsApplianceAppliance, error) {
@@ -367,17 +371,16 @@ func updateSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAP
 	return &res.Appliance, nil
 }
 
-func getSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, id types.String, state *tfsdk.State) (*v1.ModelsApplianceAppliance, error) {
-	seg, err := segAPI.Read(ctx, id.ValueString())
-
+func deleteSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, id string) error {
+	err := segAPI.Shutdown(ctx, id)
 	if err != nil {
-		var e *v1.ModelsCommonDefaultErrorResponseBodyStatusCode
-		if errors.As(err, &e) && e.StatusCode == http.StatusNotFound {
-			state.RemoveResource(ctx)
-			return nil, err
-		}
-		return nil, err
+		return err
 	}
 
-	return &seg.Appliance, nil
+	err = waitForInstanceStatus(ctx, segAPI, id, v1.ModelsInstanceInstanceStatusDown)
+	if err != nil {
+		return err
+	}
+
+	return segAPI.Delete(ctx, id)
 }
