@@ -52,6 +52,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/script"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/security_control"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/server"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/service_endpoint_gateway"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_monitor"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_mq"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/simple_notification"
@@ -329,6 +330,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		security_control.NewAutomatedActionDataSource,
 		security_control.NewEvaluationRuleDataSource,
 		server.NewServerDataSource,
+		service_endpoint_gateway.NewSEGDataSource,
 		simple_monitor.NewSimpleMonitorDataSource,
 		simple_mq.NewSimpleMQDataSource,
 		simple_notification.NewDestinationDataSource,
@@ -435,6 +437,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		security_control.NewAutomatedActionResource,
 		security_control.NewEvaluationRuleResource,
 		server.NewServerResource,
+		service_endpoint_gateway.NewSEGResource,
 		simple_monitor.NewSimpleMonitorResource,
 		simple_mq.NewSimpleMQResource,
 		simple_notification.NewDestinationResource,
