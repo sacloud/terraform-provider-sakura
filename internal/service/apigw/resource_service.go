@@ -84,7 +84,7 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 				Required:    true,
 				Description: "The subscription plan ID associated with the service",
 				Validators: []validator.String{
-					sacloudvalidator.StringFuncValidator(uuid.Validate),
+					sacloudvalidator.UUIDValidator,
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplace(),

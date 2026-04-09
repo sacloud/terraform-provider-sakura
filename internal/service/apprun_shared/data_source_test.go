@@ -31,6 +31,7 @@ func TestAccSakuraDataSourceApprunShared_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_cpu", "0.5"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_memory", "1Gi"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "apprun-test.sakuracr.jp/test1:latest"),
+					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 				),
 			},
 		},

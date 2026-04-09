@@ -18,6 +18,8 @@ import (
 	"github.com/sacloud/apigw-api-go"
 	apigwapi "github.com/sacloud/apigw-api-go/apis/v1"
 	"github.com/sacloud/apprun-api-go"
+	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
+	apprundedicatedapi "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	dedicatedstorage "github.com/sacloud/dedicated-storage-api-go"
 	dedicatedstorageapi "github.com/sacloud/dedicated-storage-api-go/apis/v1"
 	"github.com/sacloud/eventbus-api-go"
@@ -109,6 +111,7 @@ type APIClient struct {
 	CallerOptions                    *client.Options
 	SaClient                         *saclient.Client
 	AppRunClient                     *apprun.Client
+	AppRunDedicatedClient            *apprundedicatedapi.Client
 	KmsClient                        *kmsapi.Client
 	SecretManagerClient              *smapi.Client
 	SimpleMqClient                   *queue.Client
@@ -389,6 +392,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		zones = iaas.SakuraCloudZones
 	}
 
+	apprundedicatedClient, err := apprun_dedicated.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 	kmsClient, err := kms.NewClient(theClient)
 	if err != nil {
 		return nil, err
@@ -461,6 +468,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		SimpleMqClient:                   simplemqClient,
 		EventBusClient:                   eventbusClient,
 		AppRunClient:                     &apprun.Client{Saclient: theClient},
+		AppRunDedicatedClient:            apprundedicatedClient,
 		ObjectStorageFedClient:           fedClient,
 		NosqlClient:                      nosqlClient,
 		DedicatedStorageClient:           dedicatedStorageClient,

@@ -1,10 +1,9 @@
 # Terraform Provider for さくらのクラウド v3
 
-さくら向けTerraform Providerの次期メジャーバージョンとなるv3のリポジトリです。
+さくらのクラウド向けのTerraform Providerです。
 
-レジストリ: https://registry.terraform.io/providers/sacloud/sakura
-
-v2: https://github.com/sacloud/terraform-provider-sakuracloud
+- レジストリ: https://registry.terraform.io/providers/sacloud/sakura
+- v2(旧バージョン): https://github.com/sacloud/terraform-provider-sakuracloud
 
 ## v3での変更点
 
