@@ -35,6 +35,7 @@ Networking:
   - local_router
   - packet_filter
   - packet_filter_rules
+  - service_endpoint_gateway 
   - switch
   - subnet
   - vswitch
