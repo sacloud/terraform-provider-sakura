@@ -4,10 +4,10 @@
 package common_test
 
 import (
-	"errors"
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"testing"
 
 	"github.com/sacloud/api-client-go/profile"
@@ -93,7 +93,7 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 		profiles       map[string]*saclient.Profile
 		expect         *common.Config
 		currentProfile string
-		err            error
+		errre          *regexp.Regexp
 	}{
 		{
 			scenario: "If profileName is not specified and profile is not exists, use default values",
@@ -275,7 +275,7 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 			expect: &common.Config{
 				Profile: "test",
 			},
-			err: errors.New(`failed to load profile[test]: API Error - failed to open test/config.json: openat test/config.json: no such file or directory`),
+			errre: regexp.MustCompile(`^failed to load profile\[test\]: API Error - failed to open test.config\.json: openat test.config\.json: no such file or directory`),
 		},
 		{
 			scenario: "Profile name specified with normal profile",
@@ -357,8 +357,8 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 
 			cfg, err := tt.in.LoadFromProfile()
 			if err != nil {
-				if tt.err.Error() != err.Error() {
-					t.Errorf("got unexpected error: expected: %s got: %s", tt.err, err)
+				if !tt.errre.Match([]byte(err.Error())) {
+					t.Errorf("got unexpected error: %q", err)
 				}
 			} else {
 				tt.in.FillWith(cfg)
