@@ -43,6 +43,7 @@ func (model *segBaseModel) updateState(appliance *v1.ModelsApplianceAppliance) e
 	if appliance.Availability != v1.ModelsApplianceApplianceAvailabilityAvailable {
 		return fmt.Errorf("got unexpected state: Appliance[%s].Availability is failed", appliance.ID)
 	}
+
 	model.ID = types.StringValue(appliance.ID)
 	model.Zone = types.StringValue(appliance.Switch.Zone.Name)
 	model.VSwitchID = types.StringValue(appliance.Switch.ID)
@@ -82,10 +83,12 @@ func flattenEndpointSetting(setting v1.NilModelsSettingsApplianceSettings) types
 			settingModel.AppRunDedicatedControlEnabled = types.BoolValue(setting.Config.Mode.Value == v1.ModelsSettingsServiceConfigModeManaged)
 		}
 	}
+
 	value, diags := types.ObjectValueFrom(context.Background(), settingModel.AttributeTypes(), settingModel)
 	if diags.HasError() {
 		return types.ObjectNull(segEndpointSettingModel{}.AttributeTypes())
 	}
+
 	return value
 }
 
@@ -93,10 +96,12 @@ func flattenMonitoringSuiteEnabled(setting v1.NilModelsSettingsApplianceSettings
 	if setting.IsNull() {
 		return types.BoolNull()
 	}
+
 	monitoringSuite := setting.Value.ServiceEndpointGateway.MonitoringSuite
 	if !monitoringSuite.Set {
 		return types.BoolNull()
 	}
+
 	return types.BoolValue(monitoringSuite.Value.Enabled == v1.ModelsSettingsMonitoringSuiteSettingsEnabledTrue)
 }
 
@@ -104,11 +109,12 @@ func flattenDNSForwarding(setting v1.NilModelsSettingsApplianceSettings) types.O
 	if setting.IsNull() {
 		return types.ObjectNull(segDNSForwardingModel{}.AttributeTypes())
 	}
+
 	if !setting.Value.ServiceEndpointGateway.DNSForwarding.Set {
 		return types.ObjectNull(segDNSForwardingModel{}.AttributeTypes())
 	}
-	dnsForwarding := setting.Value.ServiceEndpointGateway.DNSForwarding.Value
 
+	dnsForwarding := setting.Value.ServiceEndpointGateway.DNSForwarding.Value
 	model := segDNSForwardingModel{
 		Enabled:           types.BoolValue(dnsForwarding.Enabled == v1.ModelsSettingsDNSForwardingSettingsEnabledTrue),
 		PrivateHostedZone: types.StringValue(dnsForwarding.PrivateHostedZone),
@@ -120,6 +126,7 @@ func flattenDNSForwarding(setting v1.NilModelsSettingsApplianceSettings) types.O
 	if diags.HasError() {
 		return types.ObjectNull(segDNSForwardingModel{}.AttributeTypes())
 	}
+
 	return value
 }
 
@@ -130,6 +137,7 @@ func flattenServerIPAddreses(servers []v1.ModelsRemarkServerRemark) types.List {
 			serverlist = append(serverlist, server.IPAddress)
 		}
 	}
+
 	return common.StringsToTlist(serverlist)
 }
 

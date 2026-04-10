@@ -40,9 +40,11 @@ func getServiceEndpointGatewayAPIClient(client *common.APIClient, zone string) (
 
 func expandSeversIPAddresses(d types.List) []v1.ModelsRemarkServerRemark {
 	var servers []v1.ModelsRemarkServerRemark
+
 	if d.IsNull() || d.IsUnknown() {
 		return servers
 	}
+
 	ipList := common.TlistToStrings(d)
 	for _, ip := range ipList {
 		servers = append(servers, v1.ModelsRemarkServerRemark{
