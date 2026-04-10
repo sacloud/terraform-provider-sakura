@@ -1,7 +1,7 @@
 // Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package enhanced_db_test
+package ondemand_db_test
 
 import (
 	"testing"
@@ -11,8 +11,8 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraDataSourceEnhancedDB_basic(t *testing.T) {
-	resourceName := "data.sakura_enhanced_db.foobar"
+func TestAccSakuraDataSourceOnDemandDB_basic(t *testing.T) {
+	resourceName := "data.sakura_ondemand_db.foobar"
 	rand := test.RandomName()
 	databaseName := acctest.RandStringFromCharSet(10, acctest.CharSetAlpha)
 	password := test.RandomPassword()
@@ -22,7 +22,7 @@ func TestAccSakuraDataSourceEnhancedDB_basic(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceEnhancedDB_basic, rand, databaseName, password),
+				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceOnDemandDB_basic, rand, databaseName, password),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -38,8 +38,8 @@ func TestAccSakuraDataSourceEnhancedDB_basic(t *testing.T) {
 	})
 }
 
-var testAccSakuraDataSourceEnhancedDB_basic = `
-resource "sakura_enhanced_db" "foobar" {
+var testAccSakuraDataSourceOnDemandDB_basic = `
+resource "sakura_ondemand_db" "foobar" {
   name            = "{{ .arg0 }}"
   database_name   = "{{ .arg1 }}"
   database_type   = "tidb"
@@ -51,6 +51,6 @@ resource "sakura_enhanced_db" "foobar" {
   tags        = ["tag1", "tag2"]
 }
 
-data "sakura_enhanced_db" "foobar" {
-  name = sakura_enhanced_db.foobar.name
+data "sakura_ondemand_db" "foobar" {
+  name = sakura_ondemand_db.foobar.name
 }`
