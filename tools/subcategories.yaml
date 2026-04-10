@@ -33,6 +33,7 @@ Database:
   - enhanced_db
   - nosql
   - nosql_additional_nodes
+  - ondemand_db
 Networking:
   - bridge
   - dns
