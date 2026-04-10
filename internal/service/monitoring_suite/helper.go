@@ -23,6 +23,22 @@ func expandOptionalString(value types.String) *string {
 	return &v
 }
 
+func expandOptionalInt64(value types.Int64) *int64 {
+	if value.IsNull() || value.IsUnknown() {
+		return nil
+	}
+	v := value.ValueInt64()
+	return &v
+}
+
+func expandOptionalBool(value types.Bool) *bool {
+	if value.IsNull() || value.IsUnknown() {
+		return nil
+	}
+	v := value.ValueBool()
+	return &v
+}
+
 func parseUUID(value string) (uuid.UUID, error) {
 	id, err := uuid.Parse(value)
 	if err != nil {
