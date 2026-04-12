@@ -14,7 +14,7 @@ Manages a Monitoring Suite Alert Notification Routing.
 
 ```terraform
 resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
-  alert_id = "alert-project-resource-id" # e.g. sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = "alert-project-resource-id" # e.g. sakura_monitoring_suite_alert_project.foobar.id
   notification_target_id = "notification-target-resource-id" # e.g. sakura_monitoring_suite_alert_notification_target.foobar.id
   resend_interval_minutes = 60
   match_labels = [{
@@ -29,7 +29,7 @@ resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
 
 ### Required
 
-- `alert_id` (String) The resource ID of the Alert Project.
+- `alert_project_id` (String) The resource ID of the Alert Project.
 - `match_labels` (Attributes List) The list of match label of the Alert Notification Routing. (see [below for nested schema](#nestedatt--match_labels))
 - `notification_target_id` (String) The ID of the Alert Notification Target.
 

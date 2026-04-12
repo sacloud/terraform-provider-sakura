@@ -17,20 +17,20 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraMonitoringSuiteAlert_basic(t *testing.T) {
-	resourceName := "sakura_monitoring_suite_alert.foobar"
+func TestAccSakuraMonitoringSuiteAlertProject_basic(t *testing.T) {
+	resourceName := "sakura_monitoring_suite_alert_project.foobar"
 	rand := test.RandomName()
 
 	var alertProject monitoringsuiteapi.AlertProject
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraMonitoringSuiteAlertDestroy,
+		CheckDestroy:             testCheckSakuraMonitoringSuiteAlertProjectDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlert_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertProject_basic, rand),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraMonitoringSuiteAlertExists(resourceName, &alertProject),
+					testCheckSakuraMonitoringSuiteAlertProjectExists(resourceName, &alertProject),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
@@ -40,9 +40,9 @@ func TestAccSakuraMonitoringSuiteAlert_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlert_update, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertProject_update, rand),
 				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraMonitoringSuiteAlertExists(resourceName, &alertProject),
+					testCheckSakuraMonitoringSuiteAlertProjectExists(resourceName, &alertProject),
 					resource.TestCheckResourceAttr(resourceName, "name", rand+"-updated"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
@@ -55,12 +55,12 @@ func TestAccSakuraMonitoringSuiteAlert_basic(t *testing.T) {
 	})
 }
 
-func testCheckSakuraMonitoringSuiteAlertDestroy(s *terraform.State) error {
+func testCheckSakuraMonitoringSuiteAlertProjectDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	op := monitoringsuite.NewAlertProjectOp(client.MonitoringSuiteClient)
 
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_monitoring_suite_alert" {
+		if rs.Type != "sakura_monitoring_suite_alert_project" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -69,13 +69,13 @@ func testCheckSakuraMonitoringSuiteAlertDestroy(s *terraform.State) error {
 
 		_, err := op.Read(context.Background(), rs.Primary.ID)
 		if err == nil {
-			return fmt.Errorf("still exists monitoring suite alert: %s", rs.Primary.ID)
+			return fmt.Errorf("still exists monitoring suite alert project: %s", rs.Primary.ID)
 		}
 	}
 	return nil
 }
 
-func testCheckSakuraMonitoringSuiteAlertExists(n string, alertProject *monitoringsuiteapi.AlertProject) resource.TestCheckFunc {
+func testCheckSakuraMonitoringSuiteAlertProjectExists(n string, alertProject *monitoringsuiteapi.AlertProject) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -103,15 +103,15 @@ func testCheckSakuraMonitoringSuiteAlertExists(n string, alertProject *monitorin
 	}
 }
 
-var testAccSakuraMonitoringSuiteAlert_basic = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+var testAccSakuraMonitoringSuiteAlertProject_basic = `
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 `
 
-var testAccSakuraMonitoringSuiteAlert_update = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+var testAccSakuraMonitoringSuiteAlertProject_update = `
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}-updated"
   description = "description-updated"
 }

@@ -27,7 +27,7 @@ func TestAccSakuraMonitoringSuiteAlertRuleDataSource_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "metric_storage_id", msId),
 					resource.TestCheckResourceAttr(resourceName, "query", "count_values"),
 					resource.TestCheckResourceAttr(resourceName, "enabled_warning", "true"),
@@ -45,13 +45,13 @@ func TestAccSakuraMonitoringSuiteAlertRuleDataSource_basic(t *testing.T) {
 }
 
 var testAccSakuraMonitoringSuiteAlertRuleDataSource_basic = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 
 resource "sakura_monitoring_suite_alert_rule" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   metric_storage_id = {{ .arg1 }}
   name = "{{ .arg0 }}"
   query = "count_values"
@@ -65,5 +65,5 @@ resource "sakura_monitoring_suite_alert_rule" "foobar" {
 
 data "sakura_monitoring_suite_alert_rule" "foobar" {
   id = sakura_monitoring_suite_alert_rule.foobar.id
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
 }`

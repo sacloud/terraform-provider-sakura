@@ -12,7 +12,7 @@ import (
 	v1 "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 )
 
-type alertBaseModel struct {
+type alertProjectBaseModel struct {
 	ID          types.String `tfsdk:"id"`
 	Name        types.String `tfsdk:"name"`
 	Description types.String `tfsdk:"description"`
@@ -21,7 +21,7 @@ type alertBaseModel struct {
 	CreatedAt   types.String `tfsdk:"created_at"`
 }
 
-func (model *alertBaseModel) updateState(alert *v1.AlertProject) {
+func (model *alertProjectBaseModel) updateState(alert *v1.AlertProject) {
 	model.ID = types.StringValue(strconv.FormatInt(alert.ID, 10))
 	model.Name = types.StringValue(alert.Name.Value)
 	model.Description = types.StringValue(alert.Description.Value)
@@ -33,7 +33,7 @@ func (model *alertBaseModel) updateState(alert *v1.AlertProject) {
 type alertRuleBaseModel struct {
 	ID                        types.String `tfsdk:"id"`
 	Name                      types.String `tfsdk:"name"`
-	AlertID                   types.String `tfsdk:"alert_id"` // アラートプロジェクトとサービス全体で利用するプロジェクトでわかりにくいため、alert_idとする
+	AlertProjectID            types.String `tfsdk:"alert_project_id"`
 	MetricStorageID           types.String `tfsdk:"metric_storage_id"`
 	Query                     types.String `tfsdk:"query"`
 	Format                    types.String `tfsdk:"format"`
@@ -50,7 +50,7 @@ type alertRuleBaseModel struct {
 func (model *alertRuleBaseModel) updateState(alertRule *v1.AlertRule) {
 	model.ID = types.StringValue(alertRule.UID.String())
 	model.Name = types.StringValue(alertRule.Name.Value)
-	model.AlertID = types.StringValue(strconv.FormatInt(alertRule.ProjectID.Value, 10))
+	model.AlertProjectID = types.StringValue(strconv.FormatInt(alertRule.ProjectID.Value, 10))
 	model.MetricStorageID = types.StringValue(strconv.FormatInt(alertRule.MetricsStorageID.Value, 10))
 	model.Query = types.StringValue(alertRule.Query)
 	// FormatとTemplateはAPIのレスポンスでは空文字列になることがあるため、空文字列の場合はNullとする
@@ -74,17 +74,17 @@ func (model *alertRuleBaseModel) updateState(alertRule *v1.AlertRule) {
 }
 
 type alertNotificationTargetBaseModel struct {
-	ID          types.String `tfsdk:"id"`
-	AlertID     types.String `tfsdk:"alert_id"`
-	ServiceType types.String `tfsdk:"service_type"`
-	URL         types.String `tfsdk:"url"`
-	Description types.String `tfsdk:"description"`
-	Config      types.String `tfsdk:"config"`
+	ID             types.String `tfsdk:"id"`
+	AlertProjectID types.String `tfsdk:"alert_project_id"`
+	ServiceType    types.String `tfsdk:"service_type"`
+	URL            types.String `tfsdk:"url"`
+	Description    types.String `tfsdk:"description"`
+	Config         types.String `tfsdk:"config"`
 }
 
 func (model *alertNotificationTargetBaseModel) updateState(target *v1.NotificationTarget) {
 	model.ID = types.StringValue(target.UID.String())
-	model.AlertID = types.StringValue(strconv.FormatInt(target.ProjectID.Value, 10))
+	model.AlertProjectID = types.StringValue(strconv.FormatInt(target.ProjectID.Value, 10))
 	model.ServiceType = flattenAlertNotificationTargetServiceType(string(target.ServiceType))
 	// URLはAPIのレスポンスでは空文字列になることがあるため、空文字列の場合はNullとする
 	if target.URL.Value != "" {
@@ -111,7 +111,7 @@ func flattenAlertNotificationTargetServiceType(st string) types.String {
 
 type alertNotificationRoutingBaseModel struct {
 	ID                    types.String                              `tfsdk:"id"`
-	AlertID               types.String                              `tfsdk:"alert_id"`
+	AlertProjectID        types.String                              `tfsdk:"alert_project_id"`
 	NotificationTargetID  types.String                              `tfsdk:"notification_target_id"`
 	MatchLabels           []alertNotificationRoutingMatchLabelModel `tfsdk:"match_labels"`
 	ResendIntervalMinutes types.Int32                               `tfsdk:"resend_interval_minutes"`
@@ -125,7 +125,7 @@ type alertNotificationRoutingMatchLabelModel struct {
 
 func (model *alertNotificationRoutingBaseModel) updateState(routing *v1.NotificationRouting) {
 	model.ID = types.StringValue(routing.UID.String())
-	model.AlertID = types.StringValue(strconv.FormatInt(routing.ProjectID.Value, 10))
+	model.AlertProjectID = types.StringValue(strconv.FormatInt(routing.ProjectID.Value, 10))
 	model.NotificationTargetID = types.StringValue(routing.NotificationTarget.UID.String())
 	model.ResendIntervalMinutes = types.Int32Value(int32(routing.ResendIntervalMinutes.Value))
 	model.Order = types.Int32Value(int32(routing.Order))
@@ -144,7 +144,7 @@ type alertLogMeasureRuleBaseModel struct {
 	ID              types.String                  `tfsdk:"id"`
 	Name            types.String                  `tfsdk:"name"`
 	Description     types.String                  `tfsdk:"description"`
-	AlertID         types.String                  `tfsdk:"alert_id"`
+	AlertProjectID  types.String                  `tfsdk:"alert_project_id"`
 	LogStorageID    types.String                  `tfsdk:"log_storage_id"`
 	MetricStorageID types.String                  `tfsdk:"metric_storage_id"`
 	Rule            *alertLogMeasureRuleRuleModel `tfsdk:"rule"`
@@ -165,7 +165,7 @@ func (model *alertLogMeasureRuleBaseModel) updateState(rule *v1.LogMeasureRule) 
 	model.ID = types.StringValue(rule.UID.String())
 	model.Name = types.StringValue(rule.Name.Value)
 	model.Description = types.StringValue(rule.Description.Value)
-	model.AlertID = types.StringValue(strconv.Itoa(int(rule.GetProjectID().Value)))
+	model.AlertProjectID = types.StringValue(strconv.Itoa(int(rule.GetProjectID().Value)))
 	model.LogStorageID = types.StringValue(strconv.Itoa(int(rule.LogStorage.ID)))
 	model.MetricStorageID = types.StringValue(strconv.Itoa(int(rule.MetricsStorage.ID)))
 	model.CreatedAt = types.StringValue(rule.CreatedAt.String())

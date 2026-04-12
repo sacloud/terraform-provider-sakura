@@ -43,7 +43,7 @@ func TestAccSakuraMonitoringSuiteAlertLogMeasureRule_basic(t *testing.T) {
 					testCheckSakuraMonitoringSuiteAlertLogMeasureRuleExists(resourceName, &routing),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "log_storage_id", lsId),
 					resource.TestCheckResourceAttr(resourceName, "metric_storage_id", msId),
 					resource.TestCheckResourceAttr(resourceName, "rule.version", "v1"),
@@ -72,7 +72,7 @@ func TestAccSakuraMonitoringSuiteAlertLogMeasureRule_basic(t *testing.T) {
 					testCheckSakuraMonitoringSuiteAlertLogMeasureRuleExists(resourceName, &routing),
 					resource.TestCheckResourceAttr(resourceName, "name", name+"-updated"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "log_storage_id", lsId),
 					resource.TestCheckResourceAttr(resourceName, "metric_storage_id", msId),
 					resource.TestCheckResourceAttr(resourceName, "rule.version", "v1"),
@@ -111,7 +111,7 @@ func testCheckSakuraMonitoringSuiteAlertLogMeasureRuleDestroy(s *terraform.State
 			continue
 		}
 
-		_, err := op.Read(context.Background(), rs.Primary.Attributes["alert_id"], uuid.MustParse(rs.Primary.ID))
+		_, err := op.Read(context.Background(), rs.Primary.Attributes["alert_project_id"], uuid.MustParse(rs.Primary.ID))
 		if err == nil {
 			return fmt.Errorf("still exists monitoring suite alert log measure rule: %s", rs.Primary.ID)
 		}
@@ -133,7 +133,7 @@ func testCheckSakuraMonitoringSuiteAlertLogMeasureRuleExists(n string, routing *
 
 		client := test.AccClientGetter()
 		op := monitoringsuite.NewLogMeasureRuleOp(client.MonitoringSuiteClient)
-		found, err := op.Read(context.Background(), rs.Primary.Attributes["alert_id"], uuid.MustParse(rs.Primary.ID))
+		found, err := op.Read(context.Background(), rs.Primary.Attributes["alert_project_id"], uuid.MustParse(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
@@ -148,7 +148,7 @@ func testCheckSakuraMonitoringSuiteAlertLogMeasureRuleExists(n string, routing *
 }
 
 var testAccSakuraMonitoringSuiteAlertLogMeasureRule_basic = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
@@ -156,7 +156,7 @@ resource "sakura_monitoring_suite_alert" "foobar" {
 resource "sakura_monitoring_suite_alert_log_measure_rule" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   log_storage_id = {{ .arg1 }}
   metric_storage_id = {{ .arg2 }}
   rule = {
@@ -176,7 +176,7 @@ resource "sakura_monitoring_suite_alert_log_measure_rule" "foobar" {
 }`
 
 var testAccSakuraMonitoringSuiteAlertLogMeasureRule_update = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
@@ -184,7 +184,7 @@ resource "sakura_monitoring_suite_alert" "foobar" {
 resource "sakura_monitoring_suite_alert_log_measure_rule" "foobar" {
   name = "{{ .arg0 }}-updated"
   description = "description-updated"
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   log_storage_id = {{ .arg1 }}
   metric_storage_id = {{ .arg2 }}
   rule = {

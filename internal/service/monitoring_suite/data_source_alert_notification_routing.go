@@ -49,8 +49,8 @@ type alertNotificationRoutingDataSourceModel struct {
 func (d *alertNotificationRoutingDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":       common.SchemaDataSourceId("Monitoring Suite Alert Notification Routing"),
-			"alert_id": schemaDataSourceAlertId(),
+			"id":               common.SchemaDataSourceId("Monitoring Suite Alert Notification Routing"),
+			"alert_project_id": schemaDataSourceAlertProjectId(),
 			"notification_target_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The ID of the Alert Notification Target.",
@@ -105,7 +105,7 @@ func (d *alertNotificationRoutingDataSource) Read(ctx context.Context, req datas
 	id := uuid.MustParse(sid)
 
 	op := monitoringsuite.NewNotificationRoutingOp(d.client)
-	routing, err := op.Read(ctx, data.AlertID.ValueString(), id)
+	routing, err := op.Read(ctx, data.AlertProjectID.ValueString(), id)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Alert Notification Routing[%s]: %s", sid, err))
 		return

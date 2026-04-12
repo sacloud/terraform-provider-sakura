@@ -49,10 +49,10 @@ type alertLogMeasureRuleDataSourceModel struct {
 func (d *alertLogMeasureRuleDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("Monitoring Suite Alert Log Measure Rule"),
-			"name":        common.SchemaDataSourceName("Monitoring Suite Alert Log Measure Rule"),
-			"description": common.SchemaDataSourceDescription("Monitoring Suite Alert Log Measure Rule"),
-			"alert_id":    schemaDataSourceAlertId(),
+			"id":               common.SchemaDataSourceId("Monitoring Suite Alert Log Measure Rule"),
+			"name":             common.SchemaDataSourceName("Monitoring Suite Alert Log Measure Rule"),
+			"description":      common.SchemaDataSourceDescription("Monitoring Suite Alert Log Measure Rule"),
+			"alert_project_id": schemaDataSourceAlertProjectId(),
 			"log_storage_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the Log Storage.",
@@ -107,13 +107,13 @@ func (d *alertLogMeasureRuleDataSource) Read(ctx context.Context, req datasource
 	var rule *v1.LogMeasureRule
 	var err error
 	if id != "" {
-		rule, err = op.Read(ctx, data.AlertID.ValueString(), uuid.MustParse(id))
+		rule, err = op.Read(ctx, data.AlertProjectID.ValueString(), uuid.MustParse(id))
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Log Measure Rule[%s]: %s", id, err))
 			return
 		}
 	} else {
-		rules, err := op.List(ctx, data.AlertID.ValueString(), nil, nil)
+		rules, err := op.List(ctx, data.AlertProjectID.ValueString(), nil, nil)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Log Measure Rule resources: %s", err))
 			return

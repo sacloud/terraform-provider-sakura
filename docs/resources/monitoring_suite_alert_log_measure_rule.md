@@ -16,8 +16,8 @@ Manages a Monitoring Suite Alert Log Measure Rule.
 resource "sakura_monitoring_suite_log_measure_rule" "foobar" {
   name = "foobar"
   description = "description"
-  alert_id = "alert-project-resource-id" # e.g. sakura_monitoring_suite_alert.foobar.id
-  log_storage_id = "log-storage-resource-id" # e.g. sakura_monitoring_suite_log_storage.foobar.id
+  alert_project_id  = "alert-project-resource-id"  # e.g. sakura_monitoring_suite_alert_project.foobar.id
+  log_storage_id    = "log-storage-resource-id"    # e.g. sakura_monitoring_suite_log_storage.foobar.id
   metric_storage_id = "metric-storage-resource-id" # e.g. sakura_monitoring_suite_metric_storage.foobar.id 
   rule = {
     version = "v1"
@@ -60,7 +60,7 @@ resource "sakura_monitoring_suite_log_measure_rule" "foobar" {
 
 ### Required
 
-- `alert_id` (String) The resource ID of the Alert Project.
+- `alert_project_id` (String) The resource ID of the Alert Project.
 - `log_storage_id` (String) The resource ID of the Log Storage.
 - `metric_storage_id` (String) The resource ID of the Metric Storage.
 - `name` (String) The name of the Monitoring Suite Alert Log Measure Rule.

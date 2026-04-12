@@ -26,7 +26,7 @@ func TestAccSakuraMonitoringSuiteAlertNotificationRoutingDataSource_basic(t *tes
 					resource.TestCheckResourceAttr(resourceName, "match_labels.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "match_labels.0.name", "name1"),
 					resource.TestCheckResourceAttr(resourceName, "match_labels.0.value", "value1"),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttrPair(resourceName, "notification_target_id", "sakura_monitoring_suite_alert_notification_target.foobar", "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "order"),
 					resource.TestCheckResourceAttrPair(resourceName, "id", "sakura_monitoring_suite_alert_notification_routing.foobar", "id"),
@@ -37,20 +37,20 @@ func TestAccSakuraMonitoringSuiteAlertNotificationRoutingDataSource_basic(t *tes
 }
 
 var testAccSakuraMonitoringSuiteAlertNotificationRoutingDataSource_basic = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 
 resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   service_type = "simple_notification"
   url = "https://example.com/notify"
   description = "notification-target"
 }
 
 resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   notification_target_id = sakura_monitoring_suite_alert_notification_target.foobar.id
   resend_interval_minutes = 10
   match_labels = [
@@ -63,6 +63,6 @@ resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
 
 data "sakura_monitoring_suite_alert_notification_routing" "foobar" {
   id = sakura_monitoring_suite_alert_notification_routing.foobar.id
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
 }
 `

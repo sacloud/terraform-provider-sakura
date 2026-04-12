@@ -48,9 +48,9 @@ type alertRuleDataSourceModel struct {
 func (d *alertRuleDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":       common.SchemaDataSourceId("Monitoring Suite Alert Rule"),
-			"name":     common.SchemaDataSourceName("Monitoring Suite Alert Rule"),
-			"alert_id": schemaDataSourceAlertId(),
+			"id":               common.SchemaDataSourceId("Monitoring Suite Alert Rule"),
+			"name":             common.SchemaDataSourceName("Monitoring Suite Alert Rule"),
+			"alert_project_id": schemaDataSourceAlertProjectId(),
 			"metric_storage_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The metric storage ID of the Alert Rule.",
@@ -118,13 +118,13 @@ func (d *alertRuleDataSource) Read(ctx context.Context, req datasource.ReadReque
 	var alertRule *monitoringsuiteapi.AlertRule
 	var err error
 	if id != "" {
-		alertRule, err = op.Read(ctx, data.AlertID.ValueString(), uuid.MustParse(id))
+		alertRule, err = op.Read(ctx, data.AlertProjectID.ValueString(), uuid.MustParse(id))
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Alert Rule[%s]: %s", id, err))
 			return
 		}
 	} else {
-		alertRules, err := op.List(ctx, data.AlertID.ValueString(), nil, nil)
+		alertRules, err := op.List(ctx, data.AlertProjectID.ValueString(), nil, nil)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Alert Rule resources: %s", err))
 			return

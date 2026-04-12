@@ -30,7 +30,7 @@ func TestAccSakuraMonitoringSuiteAlertLogMeasureRuleDataSource_basic(t *testing.
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", name),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "log_storage_id", lsId),
 					resource.TestCheckResourceAttr(resourceName, "metric_storage_id", msId),
 					resource.TestCheckResourceAttr(resourceName, "rule.version", "v1"),
@@ -45,13 +45,13 @@ func TestAccSakuraMonitoringSuiteAlertLogMeasureRuleDataSource_basic(t *testing.
 }
 
 var testAccSakuraMonitoringSuiteLogMeasureRuleDataSource_basic = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 
 resource "sakura_monitoring_suite_alert_log_measure_rule" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   log_storage_id = {{ .arg1 }}
   metric_storage_id = {{ .arg2 }}
   name = "{{ .arg0 }}"
@@ -74,5 +74,5 @@ resource "sakura_monitoring_suite_alert_log_measure_rule" "foobar" {
 
 data "sakura_monitoring_suite_alert_log_measure_rule" "foobar" {
   id = sakura_monitoring_suite_alert_log_measure_rule.foobar.id
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
 }`

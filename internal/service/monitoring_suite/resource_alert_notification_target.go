@@ -60,9 +60,9 @@ type alertNotificationTargetResourceModel struct {
 func (r *alertNotificationTargetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId("Monitoring Suite Alert Notification Target"),
-			"description": common.SchemaResourceDescription("Monitoring Suite Alert Notification Target"),
-			"alert_id":    schemaResourceAlertId(),
+			"id":               common.SchemaResourceId("Monitoring Suite Alert Notification Target"),
+			"description":      common.SchemaResourceDescription("Monitoring Suite Alert Notification Target"),
+			"alert_project_id": schemaResourceAlertProjectId(),
 			"service_type": schema.StringAttribute{
 				Required:    true,
 				Description: "The service type of the Alert Notification Target.",
@@ -104,7 +104,7 @@ func (r *alertNotificationTargetResource) Create(ctx context.Context, req resour
 	defer cancel()
 
 	op := monitoringsuite.NewNotificationTargetOp(r.client)
-	created, err := op.Create(ctx, plan.AlertID.ValueString(), monitoringsuite.NotificationTargetCreateParams{
+	created, err := op.Create(ctx, plan.AlertProjectID.ValueString(), monitoringsuite.NotificationTargetCreateParams{
 		Description: expandOptionalString(plan.Description),
 		ServiceType: expandAlertNotificationTargetServiceType(plan.ServiceType.ValueString()),
 		URL:         expandNotificationTargetURL(plan.URL.ValueString()),
@@ -125,7 +125,7 @@ func (r *alertNotificationTargetResource) Read(ctx context.Context, req resource
 		return
 	}
 
-	target := getAlertNotificationTarget(ctx, r.client, state.AlertID.ValueString(), state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	target := getAlertNotificationTarget(ctx, r.client, state.AlertProjectID.ValueString(), state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if target == nil {
 		return
 	}
@@ -146,7 +146,7 @@ func (r *alertNotificationTargetResource) Update(ctx context.Context, req resour
 
 	op := monitoringsuite.NewNotificationTargetOp(r.client)
 	st := v1.PatchedNotificationTargetRequestServiceType(expandAlertNotificationTargetServiceType(plan.ServiceType.ValueString()))
-	updated, err := op.Update(ctx, plan.AlertID.ValueString(), uuid.MustParse(plan.ID.ValueString()), monitoringsuite.NotificationTargetUpdateParams{
+	updated, err := op.Update(ctx, plan.AlertProjectID.ValueString(), uuid.MustParse(plan.ID.ValueString()), monitoringsuite.NotificationTargetUpdateParams{
 		Description: expandOptionalString(plan.Description),
 		ServiceType: &st,
 		URL:         expandOptionalString(plan.URL),
@@ -171,7 +171,7 @@ func (r *alertNotificationTargetResource) Delete(ctx context.Context, req resour
 	defer cancel()
 
 	op := monitoringsuite.NewNotificationTargetOp(r.client)
-	if err := op.Delete(ctx, state.AlertID.ValueString(), uuid.MustParse(state.ID.ValueString())); err != nil {
+	if err := op.Delete(ctx, state.AlertProjectID.ValueString(), uuid.MustParse(state.ID.ValueString())); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Alert Notification Target[%s]: %s", state.ID.ValueString(), err))
 		return
 	}

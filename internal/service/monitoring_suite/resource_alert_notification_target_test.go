@@ -35,7 +35,7 @@ func TestAccSakuraMonitoringSuiteAlertNotificationTarget_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "url", "https://example.com/notify"),
 					resource.TestCheckResourceAttr(resourceName, "description", "notification-target"),
 					resource.TestCheckResourceAttrSet(resourceName, "config"),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 				),
 			},
@@ -47,7 +47,7 @@ func TestAccSakuraMonitoringSuiteAlertNotificationTarget_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "url", "https://example.com/notify-updated"),
 					resource.TestCheckResourceAttr(resourceName, "description", "notification-target-updated"),
 					resource.TestCheckResourceAttrSet(resourceName, "config"),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
 				),
 			},
@@ -67,7 +67,7 @@ func testCheckSakuraMonitoringSuiteAlertNotificationTargetDestroy(s *terraform.S
 			continue
 		}
 
-		_, err := op.Read(context.Background(), rs.Primary.Attributes["alert_id"], uuid.MustParse(rs.Primary.ID))
+		_, err := op.Read(context.Background(), rs.Primary.Attributes["alert_project_id"], uuid.MustParse(rs.Primary.ID))
 		if err == nil {
 			return fmt.Errorf("still exists monitoring suite alert notification target: %s", rs.Primary.ID)
 		}
@@ -89,7 +89,7 @@ func testCheckSakuraMonitoringSuiteAlertNotificationTargetExists(n string, targe
 
 		client := test.AccClientGetter()
 		op := monitoringsuite.NewNotificationTargetOp(client.MonitoringSuiteClient)
-		found, err := op.Read(context.Background(), rs.Primary.Attributes["alert_id"], uuid.MustParse(rs.Primary.ID))
+		found, err := op.Read(context.Background(), rs.Primary.Attributes["alert_project_id"], uuid.MustParse(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
@@ -104,13 +104,13 @@ func testCheckSakuraMonitoringSuiteAlertNotificationTargetExists(n string, targe
 }
 
 var testAccSakuraMonitoringSuiteAlertNotificationTarget_basic = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 
 resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   service_type = "simple_notification"
   url = "https://example.com/notify"
   description = "notification-target"
@@ -118,13 +118,13 @@ resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
 `
 
 var testAccSakuraMonitoringSuiteAlertNotificationTarget_update = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 
 resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   service_type = "simple_notification"
   url = "https://example.com/notify-updated"
   description = "notification-target-updated"

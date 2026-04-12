@@ -10,8 +10,8 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-func TestAccSakuraMonitoringSuiteAlertDataSource_basic(t *testing.T) {
-	resourceName := "data.sakura_monitoring_suite_alert.foobar"
+func TestAccSakuraMonitoringSuiteAlertProjectDataSource_basic(t *testing.T) {
+	resourceName := "data.sakura_monitoring_suite_alert_project.foobar"
 	rand := test.RandomName()
 
 	resource.Test(t, resource.TestCase{
@@ -19,7 +19,7 @@ func TestAccSakuraMonitoringSuiteAlertDataSource_basic(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertDataSource_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertProjectDataSource_basic, rand),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -34,13 +34,12 @@ func TestAccSakuraMonitoringSuiteAlertDataSource_basic(t *testing.T) {
 	})
 }
 
-var testAccSakuraMonitoringSuiteAlertDataSource_basic = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+var testAccSakuraMonitoringSuiteAlertProjectDataSource_basic = `
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 
-data "sakura_monitoring_suite_alert" "foobar" {
-  id = sakura_monitoring_suite_alert.foobar.id
-}
-`
+data "sakura_monitoring_suite_alert_project" "foobar" {
+  id = sakura_monitoring_suite_alert_project.foobar.id
+}`

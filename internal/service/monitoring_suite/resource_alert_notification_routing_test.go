@@ -35,7 +35,7 @@ func TestAccSakuraMonitoringSuiteAlertNotificationRouting_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "match_labels.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "match_labels.0.name", "name1"),
 					resource.TestCheckResourceAttr(resourceName, "match_labels.0.value", "value1"),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttrPair(resourceName, "notification_target_id", "sakura_monitoring_suite_alert_notification_target.foobar", "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "order"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
@@ -51,7 +51,7 @@ func TestAccSakuraMonitoringSuiteAlertNotificationRouting_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "match_labels.0.value", "value1"),
 					resource.TestCheckResourceAttr(resourceName, "match_labels.1.name", "name2"),
 					resource.TestCheckResourceAttr(resourceName, "match_labels.1.value", "value2"),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttrPair(resourceName, "notification_target_id", "sakura_monitoring_suite_alert_notification_target.foobar", "id"),
 					resource.TestCheckResourceAttrSet(resourceName, "order"),
 					resource.TestCheckResourceAttrSet(resourceName, "id"),
@@ -73,7 +73,7 @@ func testCheckSakuraMonitoringSuiteAlertNotificationRoutingDestroy(s *terraform.
 			continue
 		}
 
-		_, err := op.Read(context.Background(), rs.Primary.Attributes["alert_id"], uuid.MustParse(rs.Primary.ID))
+		_, err := op.Read(context.Background(), rs.Primary.Attributes["alert_project_id"], uuid.MustParse(rs.Primary.ID))
 		if err == nil {
 			return fmt.Errorf("still exists monitoring suite alert notification routing: %s", rs.Primary.ID)
 		}
@@ -95,7 +95,7 @@ func testCheckSakuraMonitoringSuiteAlertNotificationRoutingExists(n string, rout
 
 		client := test.AccClientGetter()
 		op := monitoringsuite.NewNotificationRoutingOp(client.MonitoringSuiteClient)
-		found, err := op.Read(context.Background(), rs.Primary.Attributes["alert_id"], uuid.MustParse(rs.Primary.ID))
+		found, err := op.Read(context.Background(), rs.Primary.Attributes["alert_project_id"], uuid.MustParse(rs.Primary.ID))
 		if err != nil {
 			return err
 		}
@@ -110,20 +110,20 @@ func testCheckSakuraMonitoringSuiteAlertNotificationRoutingExists(n string, rout
 }
 
 var testAccSakuraMonitoringSuiteAlertNotificationRouting_basic = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 
 resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   service_type = "simple_notification"
   url = "https://example.com/notify"
   description = "notification-target"
 }
 
 resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   notification_target_id = sakura_monitoring_suite_alert_notification_target.foobar.id
   resend_interval_minutes = 10
   match_labels = [
@@ -136,20 +136,20 @@ resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
 `
 
 var testAccSakuraMonitoringSuiteAlertNotificationRouting_update = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 
 resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   service_type = "simple_notification"
   url = "https://example.com/notify"
   description = "notification-target"
 }
 
 resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   notification_target_id = sakura_monitoring_suite_alert_notification_target.foobar.id
   resend_interval_minutes = 20
   match_labels = [

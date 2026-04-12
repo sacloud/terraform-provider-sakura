@@ -11,7 +11,7 @@ import (
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
-func schemaResourceAlertId() schema.Attribute {
+func schemaResourceAlertProjectId() schema.Attribute {
 	return schema.StringAttribute{
 		Required:    true,
 		Description: "The resource ID of the Alert Project.",

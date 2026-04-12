@@ -19,25 +19,25 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-type alertResource struct {
+type alertProjectResource struct {
 	client *monitoringsuiteapi.Client
 }
 
 var (
-	_ resource.Resource                = &alertResource{}
-	_ resource.ResourceWithConfigure   = &alertResource{}
-	_ resource.ResourceWithImportState = &alertResource{}
+	_ resource.Resource                = &alertProjectResource{}
+	_ resource.ResourceWithConfigure   = &alertProjectResource{}
+	_ resource.ResourceWithImportState = &alertProjectResource{}
 )
 
-func NewAlertResource() resource.Resource {
-	return &alertResource{}
+func NewAlertProjectResource() resource.Resource {
+	return &alertProjectResource{}
 }
 
-func (r *alertResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_alert"
+func (r *alertProjectResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_alert_project"
 }
 
-func (r *alertResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *alertProjectResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -45,12 +45,12 @@ func (r *alertResource) Configure(ctx context.Context, req resource.ConfigureReq
 	r.client = apiclient.MonitoringSuiteClient
 }
 
-type alertResourceModel struct {
-	alertBaseModel
+type alertProjectResourceModel struct {
+	alertProjectBaseModel
 	Timeouts timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *alertResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+func (r *alertProjectResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaResourceId("Monitoring Suite Alert Project"),
@@ -59,7 +59,7 @@ func (r *alertResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 			"resource_id": common.SchemaResourceId("Monitoring Suite Alert Project"),
 			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The project ID of the Alert Project.",
+				Description: "The resource ID of the project to which the Alert Project belongs.",
 			},
 			"created_at": common.SchemaResourceCreatedAt("Monitoring Suite Alert Project"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -70,12 +70,12 @@ func (r *alertResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 	}
 }
 
-func (r *alertResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *alertProjectResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *alertResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan alertResourceModel
+func (r *alertProjectResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan alertProjectResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -98,8 +98,8 @@ func (r *alertResource) Create(ctx context.Context, req resource.CreateRequest, 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *alertResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state alertResourceModel
+func (r *alertProjectResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state alertProjectResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -114,8 +114,8 @@ func (r *alertResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *alertResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan alertResourceModel
+func (r *alertProjectResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan alertProjectResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -138,8 +138,8 @@ func (r *alertResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *alertResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state alertResourceModel
+func (r *alertProjectResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state alertProjectResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return

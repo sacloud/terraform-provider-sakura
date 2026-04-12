@@ -26,7 +26,7 @@ func TestAccSakuraMonitoringSuiteAlertNotificationTargetDataSource_basic(t *test
 					resource.TestCheckResourceAttr(resourceName, "url", "https://example.com/notify"),
 					resource.TestCheckResourceAttr(resourceName, "description", "notification-target"),
 					resource.TestCheckResourceAttrSet(resourceName, "config"),
-					resource.TestCheckResourceAttrPair(resourceName, "alert_id", "sakura_monitoring_suite_alert.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
 					resource.TestCheckResourceAttrPair(resourceName, "id", "sakura_monitoring_suite_alert_notification_target.foobar", "id"),
 				),
 			},
@@ -35,13 +35,13 @@ func TestAccSakuraMonitoringSuiteAlertNotificationTargetDataSource_basic(t *test
 }
 
 var testAccSakuraMonitoringSuiteAlertNotificationTargetDataSource_basic = `
-resource "sakura_monitoring_suite_alert" "foobar" {
+resource "sakura_monitoring_suite_alert_project" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
 }
 
 resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
   service_type = "simple_notification"
   url = "https://example.com/notify"
   description = "notification-target"
@@ -49,6 +49,6 @@ resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
 
 data "sakura_monitoring_suite_alert_notification_target" "foobar" {
   id = sakura_monitoring_suite_alert_notification_target.foobar.id
-  alert_id = sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
 }
 `

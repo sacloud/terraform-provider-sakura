@@ -58,8 +58,8 @@ type alertNotificationRoutingResourceModel struct {
 func (r *alertNotificationRoutingResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":       common.SchemaResourceId("Monitoring Suite Alert Notification Routing"),
-			"alert_id": schemaResourceAlertId(),
+			"id":               common.SchemaResourceId("Monitoring Suite Alert Notification Routing"),
+			"alert_project_id": schemaResourceAlertProjectId(),
 			"notification_target_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The ID of the Alert Notification Target.",
@@ -117,7 +117,7 @@ func (r *alertNotificationRoutingResource) Create(ctx context.Context, req resou
 	defer cancel()
 
 	op := monitoringsuite.NewNotificationRoutingOp(r.client)
-	created, err := op.Create(ctx, plan.AlertID.ValueString(), monitoringsuite.NotificationRoutingCreateParams{
+	created, err := op.Create(ctx, plan.AlertProjectID.ValueString(), monitoringsuite.NotificationRoutingCreateParams{
 		NotificationTargetUID: uuid.MustParse(plan.NotificationTargetID.ValueString()),
 		ResendIntervalMinutes: expandResendIntervalMinutes(&plan),
 		MatchLabels:           expandAlertNotificationRoutingMatchLabels(&plan),
@@ -138,7 +138,7 @@ func (r *alertNotificationRoutingResource) Read(ctx context.Context, req resourc
 		return
 	}
 
-	routing := getAlertNotificationRouting(ctx, r.client, state.AlertID.ValueString(), state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	routing := getAlertNotificationRouting(ctx, r.client, state.AlertProjectID.ValueString(), state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if routing == nil {
 		return
 	}
@@ -159,13 +159,13 @@ func (r *alertNotificationRoutingResource) Update(ctx context.Context, req resou
 
 	op := monitoringsuite.NewNotificationRoutingOp(r.client)
 	uid := uuid.MustParse(plan.NotificationTargetID.ValueString())
-	updated, err := op.Update(ctx, plan.AlertID.ValueString(), uuid.MustParse(plan.ID.ValueString()), monitoringsuite.NotificationRoutingUpdateParams{
+	updated, err := op.Update(ctx, plan.AlertProjectID.ValueString(), uuid.MustParse(plan.ID.ValueString()), monitoringsuite.NotificationRoutingUpdateParams{
 		NotificationTargetUID: &uid,
 		ResendIntervalMinutes: expandResendIntervalMinutes(&plan),
 		MatchLabels:           expandAlertNotificationRoutingMatchLabels(&plan),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Alert Notification Target[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Alert Notification Routing[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
@@ -184,7 +184,7 @@ func (r *alertNotificationRoutingResource) Delete(ctx context.Context, req resou
 	defer cancel()
 
 	op := monitoringsuite.NewNotificationRoutingOp(r.client)
-	if err := op.Delete(ctx, state.AlertID.ValueString(), uuid.MustParse(state.ID.ValueString())); err != nil {
+	if err := op.Delete(ctx, state.AlertProjectID.ValueString(), uuid.MustParse(state.ID.ValueString())); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Alert Notification Routing[%s]: %s", state.ID.ValueString(), err))
 		return
 	}

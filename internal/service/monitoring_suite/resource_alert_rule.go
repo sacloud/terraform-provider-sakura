@@ -57,9 +57,9 @@ type alertRuleResourceModel struct {
 func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":       common.SchemaResourceId("Monitoring Suite Alert Rule"),
-			"name":     common.SchemaResourceName("Monitoring Suite Alert Rule"),
-			"alert_id": schemaResourceAlertId(),
+			"id":               common.SchemaResourceId("Monitoring Suite Alert Rule"),
+			"name":             common.SchemaResourceName("Monitoring Suite Alert Rule"),
+			"alert_project_id": schemaResourceAlertProjectId(),
 			"metric_storage_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The metric storage ID of the Alert Rule.",
@@ -145,7 +145,7 @@ func (r *alertRuleResource) Create(ctx context.Context, req resource.CreateReque
 	defer cancel()
 
 	op := monitoringsuite.NewAlertRuleOp(r.client)
-	created, err := op.Create(ctx, plan.AlertID.ValueString(), monitoringsuite.AlertRuleCreateParams{
+	created, err := op.Create(ctx, plan.AlertProjectID.ValueString(), monitoringsuite.AlertRuleCreateParams{
 		MetricsStorageID:          plan.MetricStorageID.ValueString(),
 		Name:                      expandOptionalString(plan.Name),
 		Query:                     plan.Query.ValueString(),
@@ -174,7 +174,7 @@ func (r *alertRuleResource) Read(ctx context.Context, req resource.ReadRequest, 
 		return
 	}
 
-	alertRule := getAlertRule(ctx, r.client, state.AlertID.ValueString(), state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	alertRule := getAlertRule(ctx, r.client, state.AlertProjectID.ValueString(), state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if alertRule == nil {
 		return
 	}
@@ -194,7 +194,7 @@ func (r *alertRuleResource) Update(ctx context.Context, req resource.UpdateReque
 	defer cancel()
 
 	op := monitoringsuite.NewAlertRuleOp(r.client)
-	updated, err := op.Update(ctx, plan.AlertID.ValueString(), uuid.MustParse(plan.ID.ValueString()), monitoringsuite.AlertRuleUpdateParams{
+	updated, err := op.Update(ctx, plan.AlertProjectID.ValueString(), uuid.MustParse(plan.ID.ValueString()), monitoringsuite.AlertRuleUpdateParams{
 		MetricsStorageID:          expandOptionalString(plan.MetricStorageID),
 		Name:                      expandOptionalString(plan.Name),
 		Query:                     expandOptionalString(plan.Query),
@@ -227,7 +227,7 @@ func (r *alertRuleResource) Delete(ctx context.Context, req resource.DeleteReque
 	defer cancel()
 
 	op := monitoringsuite.NewAlertRuleOp(r.client)
-	if err := op.Delete(ctx, state.AlertID.ValueString(), uuid.MustParse(state.ID.ValueString())); err != nil {
+	if err := op.Delete(ctx, state.AlertProjectID.ValueString(), uuid.MustParse(state.ID.ValueString())); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Alert Rule[%s]: %s", state.ID.ValueString(), err))
 		return
 	}

@@ -14,7 +14,7 @@ Manages a Monitoring Suite Alert Notification Target.
 
 ```terraform
 resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
-  alert_id = "alert-project-resource-id" # e.g. sakura_monitoring_suite_alert.foobar.id
+  alert_project_id = "alert-project-resource-id" # e.g. sakura_monitoring_suite_alert_project.foobar.id
   description = "description"
   service_type = "simple_notification" # or "eventbus"
 }
@@ -25,7 +25,7 @@ resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
 
 ### Required
 
-- `alert_id` (String) The resource ID of the Alert Project.
+- `alert_project_id` (String) The resource ID of the Alert Project.
 - `service_type` (String) The service type of the Alert Notification Target.
 
 ### Optional

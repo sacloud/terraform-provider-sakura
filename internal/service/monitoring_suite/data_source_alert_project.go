@@ -15,24 +15,24 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
-type alertDataSource struct {
+type alertProjectDataSource struct {
 	client *monitoringsuiteapi.Client
 }
 
 var (
-	_ datasource.DataSource              = &alertDataSource{}
-	_ datasource.DataSourceWithConfigure = &alertDataSource{}
+	_ datasource.DataSource              = &alertProjectDataSource{}
+	_ datasource.DataSourceWithConfigure = &alertProjectDataSource{}
 )
 
-func NewAlertDataSource() datasource.DataSource {
-	return &alertDataSource{}
+func NewAlertProjectDataSource() datasource.DataSource {
+	return &alertProjectDataSource{}
 }
 
-func (d *alertDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_alert"
+func (d *alertProjectDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_monitoring_suite_alert_project"
 }
 
-func (d *alertDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *alertProjectDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiclient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiclient == nil {
 		return
@@ -40,11 +40,11 @@ func (d *alertDataSource) Configure(ctx context.Context, req datasource.Configur
 	d.client = apiclient.MonitoringSuiteClient
 }
 
-type alertDataSourceModel struct {
-	alertBaseModel
+type alertProjectDataSourceModel struct {
+	alertProjectBaseModel
 }
 
-func (d *alertDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+func (d *alertProjectDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaDataSourceId("Monitoring Suite Alert Project"),
@@ -53,7 +53,7 @@ func (d *alertDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 			"resource_id": common.SchemaDataSourceId("Monitoring Suite Alert Project"),
 			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The project ID of the Alert Project.",
+				Description: "The resource ID of the project to which the Alert Project belongs.",
 			},
 			"created_at": common.SchemaDataSourceCreatedAt("Monitoring Suite Alert Project"),
 		},
@@ -61,8 +61,8 @@ func (d *alertDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 	}
 }
 
-func (d *alertDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data alertDataSourceModel
+func (d *alertProjectDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data alertProjectDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -90,7 +90,7 @@ func (d *alertDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Alert Project resources: %s", err))
 			return
 		}
-		alert, err = filterAlertByName(alerts, name)
+		alert, err = filterAlertProjectByName(alerts, name)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: Search Error", err.Error())
 			return
@@ -101,7 +101,7 @@ func (d *alertDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func filterAlertByName(alerts []monitoringsuiteapi.AlertProject, name string) (*monitoringsuiteapi.AlertProject, error) {
+func filterAlertProjectByName(alerts []monitoringsuiteapi.AlertProject, name string) (*monitoringsuiteapi.AlertProject, error) {
 	match := slices.Collect(func(yield func(monitoringsuiteapi.AlertProject) bool) {
 		for _, alert := range alerts {
 			if alert.Name.Value != name {

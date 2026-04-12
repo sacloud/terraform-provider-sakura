@@ -57,10 +57,10 @@ type alertLogMeasureRuleResourceModel struct {
 func (r *alertLogMeasureRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaResourceId("Monitoring Suite Alert Log Measure Rule"),
-			"name":        common.SchemaResourceName("Monitoring Suite Alert Log Measure Rule"),
-			"description": common.SchemaResourceDescription("Monitoring Suite Alert Log Measure Rule"),
-			"alert_id":    schemaResourceAlertId(),
+			"id":               common.SchemaResourceId("Monitoring Suite Alert Log Measure Rule"),
+			"name":             common.SchemaResourceName("Monitoring Suite Alert Log Measure Rule"),
+			"description":      common.SchemaResourceDescription("Monitoring Suite Alert Log Measure Rule"),
+			"alert_project_id": schemaResourceAlertProjectId(),
 			"log_storage_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The resource ID of the Log Storage.",
@@ -128,7 +128,7 @@ func (r *alertLogMeasureRuleResource) Create(ctx context.Context, req resource.C
 	}
 
 	op := monitoringsuite.NewLogMeasureRuleOp(r.client)
-	created, err := op.Create(ctx, plan.AlertID.ValueString(), monitoringsuite.LogMeasureRuleCreateParams{
+	created, err := op.Create(ctx, plan.AlertProjectID.ValueString(), monitoringsuite.LogMeasureRuleCreateParams{
 		Name:             expandOptionalString(plan.Name),
 		Description:      expandOptionalString(plan.Description),
 		LogStorageID:     plan.LogStorageID.ValueString(),
@@ -151,7 +151,7 @@ func (r *alertLogMeasureRuleResource) Read(ctx context.Context, req resource.Rea
 		return
 	}
 
-	rule := getLogMeasureRule(ctx, r.client, state.AlertID.ValueString(), state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	rule := getLogMeasureRule(ctx, r.client, state.AlertProjectID.ValueString(), state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if rule == nil {
 		return
 	}
@@ -177,7 +177,7 @@ func (r *alertLogMeasureRuleResource) Update(ctx context.Context, req resource.U
 	}
 
 	op := monitoringsuite.NewLogMeasureRuleOp(r.client)
-	updated, err := op.Update(ctx, plan.AlertID.ValueString(), uuid.MustParse(plan.ID.ValueString()), monitoringsuite.LogMeasureRuleUpdateParams{
+	updated, err := op.Update(ctx, plan.AlertProjectID.ValueString(), uuid.MustParse(plan.ID.ValueString()), monitoringsuite.LogMeasureRuleUpdateParams{
 		Name:             expandOptionalString(plan.Name),
 		Description:      expandOptionalString(plan.Description),
 		LogStorageID:     expandOptionalString(plan.LogStorageID),
@@ -204,15 +204,15 @@ func (r *alertLogMeasureRuleResource) Delete(ctx context.Context, req resource.D
 	defer cancel()
 
 	op := monitoringsuite.NewLogMeasureRuleOp(r.client)
-	if err := op.Delete(ctx, state.AlertID.ValueString(), uuid.MustParse(state.ID.ValueString())); err != nil {
+	if err := op.Delete(ctx, state.AlertProjectID.ValueString(), uuid.MustParse(state.ID.ValueString())); err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Log Measure Rule[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
 
-func getLogMeasureRule(ctx context.Context, client *v1.Client, alertID, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.LogMeasureRule {
+func getLogMeasureRule(ctx context.Context, client *v1.Client, alertProjectID, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.LogMeasureRule {
 	op := monitoringsuite.NewLogMeasureRuleOp(client)
-	logMeasureRule, err := op.Read(ctx, alertID, uuid.MustParse(id))
+	logMeasureRule, err := op.Read(ctx, alertProjectID, uuid.MustParse(id))
 	if err != nil {
 		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)

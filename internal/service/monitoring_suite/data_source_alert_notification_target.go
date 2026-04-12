@@ -47,9 +47,9 @@ type alertNotificationTargetDataSourceModel struct {
 func (d *alertNotificationTargetDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"id":          common.SchemaDataSourceId("Monitoring Suite Alert Notification Target"),
-			"description": common.SchemaDataSourceDescription("Monitoring Suite Alert Notification Target"),
-			"alert_id":    schemaDataSourceAlertId(),
+			"id":               common.SchemaDataSourceId("Monitoring Suite Alert Notification Target"),
+			"description":      common.SchemaDataSourceDescription("Monitoring Suite Alert Notification Target"),
+			"alert_project_id": schemaDataSourceAlertProjectId(),
 			"service_type": schema.StringAttribute{
 				Computed:    true,
 				Description: "The service type of the Alert Notification Target.",
@@ -84,7 +84,7 @@ func (d *alertNotificationTargetDataSource) Read(ctx context.Context, req dataso
 	op := monitoringsuite.NewNotificationTargetOp(d.client)
 	var alert *v1.NotificationTarget
 	var err error
-	alert, err = op.Read(ctx, data.AlertID.ValueString(), id)
+	alert, err = op.Read(ctx, data.AlertProjectID.ValueString(), id)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read Alert Notification Target[%s]: %s", sid, err))
 		return
