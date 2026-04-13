@@ -108,7 +108,11 @@ type logRoutingBaseModel struct {
 
 func (model *logRoutingBaseModel) updateState(routing *monitoringsuiteapi.LogRouting) {
 	model.ID = types.StringValue(routing.UID.String())
-	model.ResourceID = types.StringValue(strconv.Itoa(int(routing.ResourceID.Value)))
+	if v, ok := routing.ResourceID.Get(); ok {
+		model.ResourceID = types.StringValue(strconv.FormatInt(v, 10))
+	} else {
+		model.ResourceID = types.StringNull()
+	}
 	model.StorageID = types.StringValue(strconv.Itoa(int(routing.LogStorage.ID)))
 	model.PublisherCode = types.StringValue(routing.Publisher.Code)
 	model.Variant = types.StringValue(routing.Variant)

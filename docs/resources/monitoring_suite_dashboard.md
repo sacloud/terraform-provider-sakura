@@ -35,7 +35,7 @@ resource "sakura_monitoring_suite_dashboard" "foobar" {
 
 - `created_at` (String) The creation timestamp of the Monitoring Suite Dashboard
 - `id` (String) The ID of the Monitoring Suite Dashboard.
-- `project_id` (String) The project ID of the Dashboard.
+- `project_id` (String) The resource ID of the project to which the Dashboard belongs.
 - `resource_id` (String) The ID of the Monitoring Suite Dashboard.
 
 <a id="nestedatt--timeouts"></a>
