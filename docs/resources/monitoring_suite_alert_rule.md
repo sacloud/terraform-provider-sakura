@@ -33,7 +33,7 @@ resource "sakura_monitoring_suite_alert_rule" "foobar" {
 ### Required
 
 - `alert_project_id` (String) The resource ID of the Alert Project.
-- `metric_storage_id` (String) The metric storage ID of the Alert Rule.
+- `metric_storage_id` (String) The resource ID of the Metric Storage.
 - `name` (String) The name of the Monitoring Suite Alert Rule.
 - `query` (String) The query of the Alert Rule.
 

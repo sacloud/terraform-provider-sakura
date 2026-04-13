@@ -22,6 +22,7 @@ import (
 	v1 "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
 type alertNotificationRoutingResource struct {
@@ -62,7 +63,10 @@ func (r *alertNotificationRoutingResource) Schema(ctx context.Context, _ resourc
 			"alert_project_id": schemaResourceAlertProjectId(),
 			"notification_target_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the Alert Notification Target.",
+				Description: "The UUID based ID of the Alert Notification Target.",
+				Validators: []validator.String{
+					sacloudvalidator.UUIDValidator,
+				},
 			},
 			"resend_interval_minutes": schema.Int32Attribute{
 				Optional:    true,

@@ -38,7 +38,7 @@ data "sakura_monitoring_suite_alert_rule" "foobar" {
 - `enabled_critical` (Boolean) Whether to enable critical level of the Alert Rule.
 - `enabled_warning` (Boolean) Whether to enable warning level of the Alert Rule.
 - `format` (String) The format of the Alert Rule.
-- `metric_storage_id` (String) The metric storage ID of the Alert Rule.
+- `metric_storage_id` (String) The resource ID of the Metric Storage.
 - `open` (Boolean) Whether the Alert Rule is open.
 - `query` (String) The query of the Alert Rule.
 - `template` (String) The template of the Alert Rule.

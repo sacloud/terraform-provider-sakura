@@ -34,7 +34,7 @@ data "sakura_monitoring_suite_metric_storage" "foobar" {
 - `description` (String) The description of the Monitoring Suite Metric Storage.
 - `endpoints` (Attributes) The endpoints of the Metric Storage. (see [below for nested schema](#nestedatt--endpoints))
 - `is_system` (Boolean) The flag to indicate whether this is a system Metric Storage.
-- `project_id` (String) The project ID of the Metric Storage.
+- `project_id` (String) The resource ID of the project to which the Metric Storage belongs.
 - `resource_id` (String) The resource ID of the Metric Storage.
 - `usage` (Attributes) The usage of the Metric Storage. (see [below for nested schema](#nestedatt--usage))
 

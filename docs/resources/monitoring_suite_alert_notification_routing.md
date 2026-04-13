@@ -31,7 +31,7 @@ resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
 
 - `alert_project_id` (String) The resource ID of the Alert Project.
 - `match_labels` (Attributes List) The list of match label of the Alert Notification Routing. (see [below for nested schema](#nestedatt--match_labels))
-- `notification_target_id` (String) The ID of the Alert Notification Target.
+- `notification_target_id` (String) The UUID based ID of the Alert Notification Target.
 
 ### Optional
 

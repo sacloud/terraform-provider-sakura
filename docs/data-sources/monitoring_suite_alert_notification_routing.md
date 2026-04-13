@@ -33,7 +33,7 @@ data "sakura_monitoring_suite_alert_notification_routing" "foobar" {
 ### Read-Only
 
 - `match_labels` (Attributes List) The list of match label of the Alert Notification Routing. (see [below for nested schema](#nestedatt--match_labels))
-- `notification_target_id` (String) The ID of the Alert Notification Target.
+- `notification_target_id` (String) The UUID based ID of the Alert Notification Target.
 - `order` (Number) The order of the Alert Notification Routing.
 - `resend_interval_minutes` (Number) The resend interval in minutes of the Alert Notification Routing.
 

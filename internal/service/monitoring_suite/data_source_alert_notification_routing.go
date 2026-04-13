@@ -53,7 +53,7 @@ func (d *alertNotificationRoutingDataSource) Schema(_ context.Context, _ datasou
 			"alert_project_id": schemaDataSourceAlertProjectId(),
 			"notification_target_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The ID of the Alert Notification Target.",
+				Description: "The UUID based ID of the Alert Notification Target.",
 			},
 			"resend_interval_minutes": schema.Int32Attribute{
 				Computed:    true,

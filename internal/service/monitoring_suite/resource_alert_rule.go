@@ -62,7 +62,7 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			"alert_project_id": schemaResourceAlertProjectId(),
 			"metric_storage_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The metric storage ID of the Alert Rule.",
+				Description: "The resource ID of the Metric Storage.",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},

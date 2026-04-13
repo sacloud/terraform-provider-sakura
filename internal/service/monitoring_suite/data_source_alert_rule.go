@@ -53,7 +53,7 @@ func (d *alertRuleDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 			"alert_project_id": schemaDataSourceAlertProjectId(),
 			"metric_storage_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The metric storage ID of the Alert Rule.",
+				Description: "The resource ID of the Metric Storage.",
 			},
 			"query": schema.StringAttribute{
 				Computed:    true,

@@ -30,7 +30,7 @@ resource "sakura_monitoring_suite_metric_routing" "foobar" {
 
 - `publisher_code` (String) The publisher code of the target service.
 - `resource_id` (String) The resource ID of the target service.
-- `storage_id` (String) The ID of the Metric Storage.
+- `storage_id` (String) The resource ID of the Metric Storage.
 - `variant` (String) The variant of the Metric Routing.
 
 ### Optional
