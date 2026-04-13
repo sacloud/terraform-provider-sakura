@@ -58,7 +58,7 @@ func (r *logRoutingResource) Schema(ctx context.Context, _ resource.SchemaReques
 		Attributes: map[string]schema.Attribute{
 			"id": common.SchemaResourceId("Monitoring Suite Log Routing"),
 			"resource_id": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "The resource ID of the target service.",
 			},
 			"storage_id": schema.StringAttribute{
