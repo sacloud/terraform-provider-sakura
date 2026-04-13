@@ -47,6 +47,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/nfs"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/nosql"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/object_storage"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/ondemand_db"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/packet_filter"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/private_host"
 	secret_manager "github.com/sacloud/terraform-provider-sakura/internal/service/s3cret_manager"
@@ -337,6 +338,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		object_storage.NewObjectStorageBucketDataSource,
 		object_storage.NewObjectStorageObjectDataSource,
 		object_storage.NewObjectStorageSiteDataSource,
+		ondemand_db.NewOnDemandDBDataSource,
 		packet_filter.NewPacketFilterDataSource,
 		private_host.NewPrivateHostDataSource,
 		script.NewScriptDataSource,
@@ -453,6 +455,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		object_storage.NewObjectStorageBucketVersioningResource,
 		object_storage.NewObjectStorageObjectResource,
 		object_storage.NewObjectStoragePermissionResource,
+		ondemand_db.NewOnDemandDBResource,
 		packet_filter.NewPacketFilterResource,
 		packet_filter.NewPacketFilterRulesResource,
 		private_host.NewPrivateHostResource,

@@ -1,7 +1,7 @@
 // Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package enhanced_db
+package ondemand_db
 
 import (
 	"context"
@@ -26,25 +26,25 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
-type enhancedDBResource struct {
+type onDemandDBResource struct {
 	client *common.APIClient
 }
 
 var (
-	_ resource.Resource                = &enhancedDBResource{}
-	_ resource.ResourceWithConfigure   = &enhancedDBResource{}
-	_ resource.ResourceWithImportState = &enhancedDBResource{}
+	_ resource.Resource                = &onDemandDBResource{}
+	_ resource.ResourceWithConfigure   = &onDemandDBResource{}
+	_ resource.ResourceWithImportState = &onDemandDBResource{}
 )
 
-func NewEnhancedDBResource() resource.Resource {
-	return &enhancedDBResource{}
+func NewOnDemandDBResource() resource.Resource {
+	return &onDemandDBResource{}
 }
 
-func (r *enhancedDBResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_enhanced_db"
+func (r *onDemandDBResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_ondemand_db"
 }
 
-func (r *enhancedDBResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+func (r *onDemandDBResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
 	apiClient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiClient == nil {
 		return
@@ -52,15 +52,15 @@ func (r *enhancedDBResource) Configure(ctx context.Context, req resource.Configu
 	r.client = apiClient
 }
 
-type enhancedDBResourceModel struct {
-	enhancedDBBaseModel
+type onDemandDBResourceModel struct {
+	onDemandDBBaseModel
 	PasswordWO        types.String   `tfsdk:"password_wo"`
 	PasswordWOVersion types.Int32    `tfsdk:"password_wo_version"`
 	Timeouts          timeouts.Value `tfsdk:"timeouts"`
 }
 
-func (r *enhancedDBResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resourceName := "Enhanced Database"
+func (r *onDemandDBResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resourceName := "OnDemand Database"
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaResourceId(resourceName),
@@ -128,17 +128,16 @@ func (r *enhancedDBResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Deprecated: use sakura_ondemand_db resource instead",
-		DeprecationMessage:  "use sakura_ondemand_db resource instead",
+		MarkdownDescription: "Manages an OnDemand Database.",
 	}
 }
 
-func (r *enhancedDBResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+func (r *onDemandDBResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-func (r *enhancedDBResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan, config enhancedDBResourceModel
+func (r *onDemandDBResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var plan, config onDemandDBResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
@@ -148,10 +147,10 @@ func (r *enhancedDBResource) Create(ctx context.Context, req resource.CreateRequ
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	edbBuilder := expandEnhancedDBBuilder(&plan, &config, r.client, "")
+	edbBuilder := expandOnDemandDBBuilder(&plan, &config, r.client, "")
 	created, err := edbBuilder.Build(ctx)
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create EnhancedDB: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create OnDemand Database: %s", err))
 		return
 	}
 
@@ -159,14 +158,14 @@ func (r *enhancedDBResource) Create(ctx context.Context, req resource.CreateRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *enhancedDBResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state enhancedDBResourceModel
+func (r *onDemandDBResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var state onDemandDBResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	edb := getEnhancedDB(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	edb := getOnDemandDB(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if edb == nil {
 		return
 	}
@@ -175,8 +174,8 @@ func (r *enhancedDBResource) Read(ctx context.Context, req resource.ReadRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
-func (r *enhancedDBResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, config enhancedDBResourceModel
+func (r *onDemandDBResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var plan, config onDemandDBResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
@@ -186,18 +185,18 @@ func (r *enhancedDBResource) Update(ctx context.Context, req resource.UpdateRequ
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	reg := getEnhancedDB(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	reg := getOnDemandDB(ctx, r.client, plan.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if reg == nil {
 		return
 	}
 
-	edbBuilder := expandEnhancedDBBuilder(&plan, &config, r.client, reg.SettingsHash)
+	edbBuilder := expandOnDemandDBBuilder(&plan, &config, r.client, reg.SettingsHash)
 	if _, err := edbBuilder.Build(ctx); err != nil {
-		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update EnhancedDB[%s]: %s", plan.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update OnDemand Database[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
 
-	edb := getEnhancedDB(ctx, r.client, reg.ID.String(), &resp.State, &resp.Diagnostics)
+	edb := getOnDemandDB(ctx, r.client, reg.ID.String(), &resp.State, &resp.Diagnostics)
 	if edb == nil {
 		return
 	}
@@ -206,8 +205,8 @@ func (r *enhancedDBResource) Update(ctx context.Context, req resource.UpdateRequ
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
-func (r *enhancedDBResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state enhancedDBResourceModel
+func (r *onDemandDBResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var state onDemandDBResourceModel
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -216,18 +215,18 @@ func (r *enhancedDBResource) Delete(ctx context.Context, req resource.DeleteRequ
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	edb := getEnhancedDB(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
+	edb := getOnDemandDB(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if edb == nil {
 		return
 	}
 
 	if err := iaas.NewEnhancedDBOp(r.client).Delete(ctx, edb.ID); err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete EnhancedDB[%s]: %s", state.ID.ValueString(), err))
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete OnDemand Database[%s]: %s", state.ID.ValueString(), err))
 		return
 	}
 }
 
-func getEnhancedDB(ctx context.Context, client *common.APIClient, id string, state *tfsdk.State, diags *diag.Diagnostics) *builder.EnhancedDB {
+func getOnDemandDB(ctx context.Context, client *common.APIClient, id string, state *tfsdk.State, diags *diag.Diagnostics) *builder.EnhancedDB {
 	edbOp := iaas.NewEnhancedDBOp(client)
 	edb, err := builder.Read(ctx, edbOp, common.SakuraCloudID(id))
 	if err != nil {
@@ -235,13 +234,13 @@ func getEnhancedDB(ctx context.Context, client *common.APIClient, id string, sta
 			state.RemoveResource(ctx)
 			return nil
 		}
-		diags.AddError("API Error", fmt.Sprintf("failed to read EnhancedDB[%s]: %s", id, err))
+		diags.AddError("API Error", fmt.Sprintf("failed to read OnDemand Database[%s]: %s", id, err))
 		return nil
 	}
 	return edb
 }
 
-func expandEnhancedDBBuilder(m, conf *enhancedDBResourceModel, client *common.APIClient, settingsHash string) *builder.Builder {
+func expandOnDemandDBBuilder(m, conf *onDemandDBResourceModel, client *common.APIClient, settingsHash string) *builder.Builder {
 	return &builder.Builder{
 		ID:              common.ExpandSakuraCloudID(m.ID),
 		Name:            m.Name.ValueString(),
