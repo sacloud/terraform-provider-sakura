@@ -58,7 +58,7 @@ func (r *metricRoutingResource) Schema(ctx context.Context, _ resource.SchemaReq
 		Attributes: map[string]schema.Attribute{
 			"id": common.SchemaResourceId("Monitoring Suite Metric Routing"),
 			"resource_id": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Description: "The resource ID of the target service.",
 			},
 			"storage_id": schema.StringAttribute{

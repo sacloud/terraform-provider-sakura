@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -18,8 +19,11 @@ import (
 )
 
 func TestAccSakuraMonitoringSuiteMetricRouting_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
 	resourceName := "sakura_monitoring_suite_metric_routing.foobar"
 	rand := test.RandomName()
+	msId := os.Getenv("SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
 
 	var storage monitoringsuiteapi.MetricsRouting
 	resource.Test(t, resource.TestCase{
@@ -36,7 +40,7 @@ func TestAccSakuraMonitoringSuiteMetricRouting_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
 					resource.TestCheckResourceAttrPair(resourceName, "resource_id", "sakura_simple_mq.foobar", "id"),
-					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "sakura_monitoring_suite_metric_storage.foobar1", "id"),
+					resource.TestCheckResourceAttr(resourceName, "storage_id", msId),
 				),
 			},
 			{
@@ -49,6 +53,47 @@ func TestAccSakuraMonitoringSuiteMetricRouting_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
 					resource.TestCheckResourceAttrPair(resourceName, "resource_id", "sakura_simple_mq.foobar", "id"),
 					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "sakura_monitoring_suite_metric_storage.foobar2", "id"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraMonitoringSuiteMetricRouting_withoutResourceID(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
+	resourceName := "sakura_monitoring_suite_metric_routing.foobar"
+	rand := test.RandomName()
+	msId := os.Getenv("SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
+	var storage monitoringsuiteapi.MetricsRouting
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraMonitoringSuiteMetricRoutingDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricRouting_basicWithoutResourceID, rand, msId),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraMonitoringSuiteMetricRoutingExists(resourceName, &storage),
+					resource.TestCheckResourceAttr(resourceName, "publisher_code", "simplemq"),
+					resource.TestCheckResourceAttr(resourceName, "variant", "simplemq_metrics"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckNoResourceAttr(resourceName, "resource_id"),
+					resource.TestCheckResourceAttr(resourceName, "storage_id", msId),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricRouting_updateWithoutResourceID, rand, msId),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraMonitoringSuiteMetricRoutingExists(resourceName, &storage),
+					resource.TestCheckResourceAttr(resourceName, "publisher_code", "simplemq"),
+					resource.TestCheckResourceAttr(resourceName, "variant", "simplemq_metrics"),
+					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "updated_at"),
+					resource.TestCheckResourceAttrPair(resourceName, "resource_id", "sakura_simple_mq.foobar", "id"),
+					resource.TestCheckResourceAttr(resourceName, "storage_id", msId),
 				),
 			},
 		},
@@ -108,9 +153,8 @@ resource "sakura_simple_mq" "foobar" {
   name = "{{ .arg0 }}"
 }
 
-resource "sakura_monitoring_suite_metric_storage" "foobar1" {
-  name = "{{ .arg0 }}-1"
-  description = "description1"
+data "sakura_monitoring_suite_metric_storage" "foobar1" {
+  id = "{{ .arg1 }}"
 }
 
 resource "sakura_monitoring_suite_metric_storage" "foobar2" {
@@ -120,20 +164,18 @@ resource "sakura_monitoring_suite_metric_storage" "foobar2" {
 
 resource "sakura_monitoring_suite_metric_routing" "foobar" {
   resource_id = sakura_simple_mq.foobar.id
-  storage_id = sakura_monitoring_suite_metric_storage.foobar1.id
+  storage_id = data.sakura_monitoring_suite_metric_storage.foobar1.id
   publisher_code = "simplemq"
   variant = "simplemq_metrics"
-}
-`
+}`
 
 var testAccSakuraMonitoringSuiteMetricRouting_update = `
 resource "sakura_simple_mq" "foobar" {
   name = "{{ .arg0 }}"
 }
 
-resource "sakura_monitoring_suite_metric_storage" "foobar1" {
-  name = "{{ .arg0 }}-1"
-  description = "description1"
+data "sakura_monitoring_suite_metric_storage" "foobar1" {
+  id = "{{ .arg1 }}"
 }
 
 resource "sakura_monitoring_suite_metric_storage" "foobar2" {
@@ -146,5 +188,35 @@ resource "sakura_monitoring_suite_metric_routing" "foobar" {
   storage_id = sakura_monitoring_suite_metric_storage.foobar2.id
   publisher_code = "simplemq"
   variant = "simplemq_metrics"
+}`
+
+var testAccSakuraMonitoringSuiteMetricRouting_basicWithoutResourceID = `
+resource "sakura_simple_mq" "foobar" {
+  name = "{{ .arg0 }}"
 }
-`
+
+data "sakura_monitoring_suite_metric_storage" "foobar" {
+  id = "{{ .arg1 }}"
+}
+
+resource "sakura_monitoring_suite_metric_routing" "foobar" {
+  storage_id = data.sakura_monitoring_suite_metric_storage.foobar.id
+  publisher_code = "simplemq"
+  variant = "simplemq_metrics"
+}`
+
+var testAccSakuraMonitoringSuiteMetricRouting_updateWithoutResourceID = `
+resource "sakura_simple_mq" "foobar" {
+  name = "{{ .arg0 }}"
+}
+
+data "sakura_monitoring_suite_metric_storage" "foobar" {
+  id = "{{ .arg1 }}"
+}
+
+resource "sakura_monitoring_suite_metric_routing" "foobar" {
+  resource_id = sakura_simple_mq.foobar.id
+  storage_id = data.sakura_monitoring_suite_metric_storage.foobar.id
+  publisher_code = "simplemq"
+  variant = "simplemq_metrics"
+}`
