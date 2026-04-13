@@ -65,7 +65,7 @@ func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"description": common.SchemaResourceDescription("Monitoring Suite Log Storage"),
 			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The project ID of the Log Storage.",
+				Description: "The resource ID of the project to which the Log Storage belongs.",
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,

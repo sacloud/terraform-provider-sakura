@@ -52,7 +52,7 @@ func (d *traceStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 			"description": common.SchemaDataSourceDescription("Monitoring Suite Trace Storage"),
 			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The project ID of the Trace Storage.",
+				Description: "The resource ID of the project to which the Trace Storage belongs.",
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,

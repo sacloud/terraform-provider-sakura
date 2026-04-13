@@ -53,7 +53,7 @@ func (d *dashboardDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 			"resource_id": common.SchemaDataSourceId("Monitoring Suite Dashboard"),
 			"project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The project ID of the Dashboard.",
+				Description: "The resource ID of the project to which the Dashboard belongs.",
 			},
 			"created_at": common.SchemaDataSourceCreatedAt("Monitoring Suite Dashboard"),
 		},

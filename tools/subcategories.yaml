@@ -82,6 +82,11 @@ Application Integration:
   - simple_notification_routing 
 Monitoring:
   - simple_monitor
+  - monitoring_suite_alert_project
+  - monitoring_suite_alert_log_measure_rule
+  - monitoring_suite_alert_notification_routing
+  - monitoring_suite_alert_notification_target
+  - monitoring_suite_alert_rule
   - monitoring_suite_dashboard
   - monitoring_suite_log_storage
   - monitoring_suite_log_storage_access_key

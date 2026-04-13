@@ -13,11 +13,13 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	api "github.com/sacloud/api-client-go"
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
 type logRoutingResource struct {
@@ -61,7 +63,10 @@ func (r *logRoutingResource) Schema(ctx context.Context, _ resource.SchemaReques
 			},
 			"storage_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The ID of the Log Storage.",
+				Description: "The resource ID of the Log Storage.",
+				Validators: []validator.String{
+					sacloudvalidator.SakuraIDValidator(),
+				},
 			},
 			"publisher_code": schema.StringAttribute{
 				Required:    true,

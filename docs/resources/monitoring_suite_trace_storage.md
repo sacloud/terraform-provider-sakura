@@ -36,7 +36,7 @@ resource "sakura_monitoring_suite_trace_storage" "foobar" {
 - `created_at` (String) The creation timestamp of the Monitoring Suite Trace Storage
 - `endpoints` (Attributes) The endpoints of the Trace Storage. (see [below for nested schema](#nestedatt--endpoints))
 - `id` (String) The ID of the Monitoring Suite Trace Storage.
-- `project_id` (String) The project ID of the Trace Storage.
+- `project_id` (String) The resource ID of the project to which the Trace Storage belongs.
 - `resource_id` (String) The resource ID of the Trace Storage.
 - `retention_period_days` (Number) The retention period days of the Trace Storage.
 
