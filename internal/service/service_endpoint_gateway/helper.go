@@ -204,9 +204,7 @@ func expandDNSForwardingSettings(d types.Object) v1.OptModelsSettingsDNSForwardi
 }
 
 func waitForInstanceStatus(ctx context.Context, api seg.ServiceEndpointGatewayAPI, id string, status v1.ModelsInstanceInstanceStatus) error {
-	withTimeout, cancel := context.WithTimeout(ctx, 5*time.Minute)
-	defer cancel()
-
+	// Polling every 5 seconds until the instance reaches the desired status or context timeout occurs
 	ticker := time.NewTicker(5 * time.Second)
 	defer ticker.Stop()
 
@@ -219,7 +217,7 @@ func waitForInstanceStatus(ctx context.Context, api seg.ServiceEndpointGatewayAP
 			return nil // desired status reached
 		}
 		select {
-		case <-withTimeout.Done():
+		case <-ctx.Done():
 			return errors.New("timeout waiting for condition")
 		case <-ticker.C:
 			// retry
