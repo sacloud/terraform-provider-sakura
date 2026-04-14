@@ -17,7 +17,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	api "github.com/sacloud/api-client-go"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/simplemq-api-go"
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -228,7 +228,7 @@ func getMessageQueue(ctx context.Context, client *queue.Client, id string, state
 	queueOp := simplemq.NewQueueOp(client)
 	mq, err := queueOp.Read(ctx, id)
 	if err != nil {
-		if api.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}

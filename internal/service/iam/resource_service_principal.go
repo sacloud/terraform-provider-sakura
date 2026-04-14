@@ -14,10 +14,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iam-api-go"
 	"github.com/sacloud/iam-api-go/apis/serviceprincipal"
 	v1 "github.com/sacloud/iam-api-go/apis/v1"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
@@ -177,7 +177,7 @@ func getServicePrincipal(ctx context.Context, client *v1.Client, id string, stat
 	spOp := iam.NewServicePrincipalOp(client)
 	sp, err := spOp.Read(ctx, utils.MustAtoI(id))
 	if err != nil {
-		if iaas.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}

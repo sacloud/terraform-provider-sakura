@@ -8,6 +8,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/hashicorp/terraform-plugin-framework v1.19.0
+	github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0
 	github.com/hashicorp/terraform-plugin-framework-timeouts v0.7.0
 	github.com/hashicorp/terraform-plugin-framework-validators v0.19.0
 	github.com/hashicorp/terraform-plugin-go v0.31.0
@@ -32,11 +33,11 @@ require (
 	github.com/sacloud/nosql-api-go v0.3.0
 	github.com/sacloud/object-storage-api-go v0.2.0
 	github.com/sacloud/packages-go v0.0.12
-	github.com/sacloud/saclient-go v0.3.5
-	github.com/sacloud/secretmanager-api-go v0.4.0
+	github.com/sacloud/saclient-go v0.3.6
+	github.com/sacloud/secretmanager-api-go v0.4.1
 	github.com/sacloud/security-control-api-go v0.3.0
 	github.com/sacloud/simple-notification-api-go v0.3.0
-	github.com/sacloud/simplemq-api-go v0.5.0
+	github.com/sacloud/simplemq-api-go v0.5.1
 	github.com/sacloud/workflows-api-go v0.4.0
 	github.com/stretchr/testify v1.11.1
 )
@@ -87,7 +88,6 @@ require (
 	github.com/hashicorp/logutils v1.0.0 // indirect
 	github.com/hashicorp/terraform-exec v0.25.0 // indirect
 	github.com/hashicorp/terraform-json v0.27.2 // indirect
-	github.com/hashicorp/terraform-plugin-framework-jsontypes v0.2.0 // indirect
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.40.0 // indirect
 	github.com/hashicorp/terraform-registry-address v0.4.0 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
