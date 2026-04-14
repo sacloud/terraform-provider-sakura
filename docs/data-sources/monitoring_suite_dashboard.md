@@ -33,4 +33,4 @@ data "sakura_monitoring_suite_dashboard" "foobar" {
 
 - `created_at` (String) The creation timestamp of the Monitoring Suite Dashboard
 - `description` (String) The description of the Monitoring Suite Dashboard.
-- `project_id` (String) The project ID of the Dashboard.
+- `project_id` (String) The resource ID of the project to which the Dashboard belongs.

@@ -87,7 +87,11 @@ type metricRoutingBaseModel struct {
 
 func (model *metricRoutingBaseModel) updateState(routing *monitoringsuiteapi.MetricsRouting) {
 	model.ID = types.StringValue(routing.UID.String())
-	model.ResourceID = types.StringValue(strconv.Itoa(int(routing.ResourceID.Value)))
+	if v, ok := routing.ResourceID.Get(); ok {
+		model.ResourceID = types.StringValue(strconv.FormatInt(v, 10))
+	} else {
+		model.ResourceID = types.StringNull()
+	}
 	model.StorageID = types.StringValue(strconv.Itoa(int(routing.MetricsStorage.ID)))
 	model.PublisherCode = types.StringValue(routing.Publisher.Code)
 	model.Variant = types.StringValue(routing.Variant)
