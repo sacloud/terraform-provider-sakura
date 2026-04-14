@@ -5,9 +5,7 @@ package service_endpoint_gateway
 
 import (
 	"context"
-	"errors"
 	"fmt"
-	"net/http"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -15,12 +13,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/sacloud/saclient-go"
 	seg "github.com/sacloud/service-endpoint-gateway-api-go"
 	v1 "github.com/sacloud/service-endpoint-gateway-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -118,14 +118,16 @@ func (r *segResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 						Description: "The list of AI engine endpoints to connect to the Service Endpoint Gateway",
 						// validator is not added here because api is not required validation and endpoint is validated by server side,
 					},
-					"app_run_dedicated_control_enabled": schema.BoolAttribute{
+					"apprun_dedicated_control_enabled": schema.BoolAttribute{
 						Optional:    true,
 						Description: "The flag to enable AppRun Dedicated Control Plane endpoint on the Service Endpoint Gateway",
 					},
 				},
 			},
-			"monitoring_suite_enable": schema.BoolAttribute{
+			"monitoring_suite_enabled": schema.BoolAttribute{
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "The flag to enable monitoring suite endpoint on the Service Endpoint Gateway",
 			},
 			"dns_forwarding": schema.SingleNestedAttribute{
@@ -198,7 +200,7 @@ func (r *segResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	err = plan.updateState(appliance)
+	err = plan.updateState(appliance, zone)
 	if err != nil {
 		resp.State.RemoveResource(ctx)
 		resp.Diagnostics.AddError("Create: Terraform Error", fmt.Sprintf("failed to update state for seg resource: %s", err))
@@ -235,7 +237,7 @@ func (r *segResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 		return
 	}
 
-	err = state.updateState(appliance)
+	err = state.updateState(appliance, zone)
 	if err != nil {
 		resp.State.RemoveResource(ctx)
 		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for seg resource: %s", err))
@@ -274,7 +276,7 @@ func (r *segResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	if err := plan.updateState(appliance); err != nil {
+	if err := plan.updateState(appliance, zone); err != nil {
 		resp.State.RemoveResource(ctx)
 		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update state for seg resource: %s", err))
 		return
@@ -335,8 +337,7 @@ func getSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAPI, 
 	seg, err := segAPI.Read(ctx, id.ValueString())
 
 	if err != nil {
-		var e *v1.ModelsCommonDefaultErrorResponseBodyStatusCode
-		if errors.As(err, &e) && e.StatusCode == http.StatusNotFound {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil, err
 		}

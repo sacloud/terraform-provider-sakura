@@ -89,14 +89,14 @@ func (d *segDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 						Description: "The list of AI engine endpoints to connect to the Service Endpoint Gateway",
 						Computed:    true,
 					},
-					"app_run_dedicated_control_enabled": schema.BoolAttribute{
+					"apprun_dedicated_control_enabled": schema.BoolAttribute{
 						Optional:    true,
 						Description: "The flag to enable AppRun Dedicated Control Plane endpoint on the Service Endpoint Gateway",
 						Computed:    true,
 					},
 				},
 			},
-			"monitoring_suite_enable": schema.BoolAttribute{
+			"monitoring_suite_enabled": schema.BoolAttribute{
 				Optional:    true,
 				Description: "The flag to enable monitoring suite endpoint on the Service Endpoint Gateway",
 				Computed:    true,

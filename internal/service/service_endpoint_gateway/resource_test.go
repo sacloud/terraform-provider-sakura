@@ -18,8 +18,8 @@ import (
 )
 
 const (
-	envSEGObjectStorageEndpoint1    = "SAKURA_SEG_ENDPOINT_OBJECT_STORAGE_ENDPOINT_1"
-	envSEGObjectStorageEndpoint2    = "SAKURA_SEG_ENDPOINT_OBJECT_STORAGE_ENDPOINT_2"
+	envSEGObjectStorageEndpoint1    = "SAKURA_SEG_OBJECT_STORAGE_ENDPOINT_1"
+	envSEGObjectStorageEndpoint2    = "SAKURA_SEG_OBJECT_STORAGE_ENDPOINT_2"
 	envSEGMonitoringSuiteEndpoint   = "SAKURA_SEG_MONITORING_SUITE_ENDPOINT"
 	envSEGContainerRegistryEndpoint = "SAKURA_SEG_CONTAINER_REGISTRY_ENDPOINT"
 	envSEGAIEngineEndpoint          = "SAKURA_SEG_AI_ENGINE_ENDPOINT"
@@ -65,8 +65,8 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.monitoring_suite_endpoints.0", monitoringSuiteEndpoint),
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.container_registry_endpoints.0", containerRegistryEndpoint),
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.ai_engine_endpoints.0", aiEngineEndpoint),
-					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.app_run_dedicated_control_enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "monitoring_suite_enable", "true"),
+					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.apprun_dedicated_control_enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "monitoring_suite_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.private_hosted_zone", dnsPrivateHostedZone),
 					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.upstream_dns_1", dnsUpstreamServer1),
@@ -173,9 +173,9 @@ resource "sakura_service_endpoint_gateway" "foobar" {
 		monitoring_suite_endpoints = ["{{ .arg3 }}"]
 		container_registry_endpoints = ["{{ .arg4 }}"]
 		ai_engine_endpoints = ["{{ .arg5 }}"]
-		app_run_dedicated_control_enabled = false
+		apprun_dedicated_control_enabled = false
 	}
-	monitoring_suite_enable = true
+	monitoring_suite_enabled = true
 	dns_forwarding = {
 		enabled = true
 		private_hosted_zone = "{{ .arg6 }}"
@@ -199,6 +199,6 @@ resource "sakura_service_endpoint_gateway" "foobar" {
 	endpoint_setting = {
 		object_storage_endpoints = ["{{ .arg1 }}"]
 	}
-	monitoring_suite_enable = false
+	monitoring_suite_enabled = false
 }
 `
