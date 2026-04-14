@@ -19,7 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	iaas "github.com/sacloud/iaas-api-go"
+	"github.com/sacloud/saclient-go"
 	seccon "github.com/sacloud/security-control-api-go"
 	v1 "github.com/sacloud/security-control-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -207,7 +207,7 @@ func getEvaluationRule(ctx context.Context, client *v1.Client, id string, state 
 	erOp := seccon.NewEvaluationRulesOp(client)
 	evaluationRule, err := erOp.Read(ctx, id)
 	if err != nil {
-		if iaas.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}

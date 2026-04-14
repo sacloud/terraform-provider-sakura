@@ -21,9 +21,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/kms-api-go"
 	v1 "github.com/sacloud/kms-api-go/apis/v1"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -254,7 +254,7 @@ func getKMS(ctx context.Context, client *v1.Client, id string, state *tfsdk.Stat
 	keyOp := kms.NewKeyOp(client)
 	key, err := keyOp.Read(ctx, id)
 	if err != nil {
-		if api.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}

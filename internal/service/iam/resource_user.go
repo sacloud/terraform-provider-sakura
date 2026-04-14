@@ -17,7 +17,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iam-api-go"
 	"github.com/sacloud/iam-api-go/apis/user"
 	v1 "github.com/sacloud/iam-api-go/apis/v1"
@@ -235,7 +234,7 @@ func getUser(ctx context.Context, client *v1.Client, id string, state *tfsdk.Sta
 	userOp := iam.NewUserOp(client)
 	user, err := userOp.Read(ctx, utils.MustAtoI(id))
 	if err != nil {
-		if iaas.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}
