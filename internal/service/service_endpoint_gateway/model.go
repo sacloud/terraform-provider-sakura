@@ -18,7 +18,7 @@ type segEndpointSettingModel struct {
 	MonitoringSuiteEndpoints      types.List `tfsdk:"monitoring_suite_endpoints"`
 	ContainerRegistryEndpoints    types.List `tfsdk:"container_registry_endpoints"`
 	AIEngineEndpoints             types.List `tfsdk:"ai_engine_endpoints"`
-	AppRunDedicatedControlEnabled types.Bool `tfsdk:"app_run_dedicated_control_enabled"`
+	AppRunDedicatedControlEnabled types.Bool `tfsdk:"apprun_dedicated_control_enabled"`
 }
 
 type segDNSForwardingModel struct {
@@ -35,7 +35,7 @@ type segBaseModel struct {
 	ServerIPAddresses      types.List   `tfsdk:"server_ip_addresses"`
 	NetMask                types.Int32  `tfsdk:"netmask"`
 	EndpointSetting        types.Object `tfsdk:"endpoint_setting"`
-	MonitoringSuiteEnabled types.Bool   `tfsdk:"monitoring_suite_enable"`
+	MonitoringSuiteEnabled types.Bool   `tfsdk:"monitoring_suite_enabled"`
 	DNSForwarding          types.Object `tfsdk:"dns_forwarding"`
 }
 
