@@ -61,49 +61,42 @@ func (d *segDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 				Computed:    true,
 			},
 			"endpoint_setting": schema.SingleNestedAttribute{
-				Optional:    true,
 				Description: "The endpoint settings of the Service Endpoint Gateway",
 				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"object_storage_endpoints": schema.ListAttribute{
-						Optional:    true,
 						ElementType: types.StringType,
 						Description: "The list of sakura object storage endpoints to connect to the Service Endpoint Gateway",
 						Computed:    true,
 					},
 					"monitoring_suite_endpoints": schema.ListAttribute{
-						Optional:    true,
 						ElementType: types.StringType,
 						Description: "The list of monitoring suite endpoints to connect to the Service Endpoint Gateway",
 						Computed:    true,
 					},
 					"container_registry_endpoints": schema.ListAttribute{
-						Optional:    true,
 						ElementType: types.StringType,
 						Description: "The list of sakura container registry endpoints to connect to the Service Endpoint Gateway",
 						Computed:    true,
 					},
 					"ai_engine_endpoints": schema.ListAttribute{
-						Optional:    true,
 						ElementType: types.StringType,
 						Description: "The list of AI engine endpoints to connect to the Service Endpoint Gateway",
 						Computed:    true,
 					},
 					"apprun_dedicated_control_enabled": schema.BoolAttribute{
-						Optional:    true,
 						Description: "The flag to enable AppRun Dedicated Control Plane endpoint on the Service Endpoint Gateway",
 						Computed:    true,
 					},
 				},
 			},
 			"monitoring_suite_enabled": schema.BoolAttribute{
-				Optional:    true,
 				Description: "The flag to enable monitoring suite endpoint on the Service Endpoint Gateway",
 				Computed:    true,
 			},
 			"dns_forwarding": schema.SingleNestedAttribute{
-				Optional:    true,
 				Description: "The DNS forwarding settings of the Service Endpoint Gateway",
+				Computed:    true,
 				Attributes: map[string]schema.Attribute{
 					"enabled": schema.BoolAttribute{
 						Description: "The flag to enable DNS forwarding on the Service Endpoint Gateway",
