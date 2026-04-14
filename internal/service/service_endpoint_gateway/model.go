@@ -144,11 +144,11 @@ func flattenServerIPAddreses(servers []v1.ModelsRemarkServerRemark) types.List {
 // segEndpointSettingAttrTypes returns the attribute types for segEndpointSettingModel
 func (dns segEndpointSettingModel) AttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
-		"object_storage_endpoints":          types.ListType{ElemType: types.StringType},
-		"monitoring_suite_endpoints":        types.ListType{ElemType: types.StringType},
-		"container_registry_endpoints":      types.ListType{ElemType: types.StringType},
-		"ai_engine_endpoints":               types.ListType{ElemType: types.StringType},
-		"app_run_dedicated_control_enabled": types.BoolType,
+		"object_storage_endpoints":         types.ListType{ElemType: types.StringType},
+		"monitoring_suite_endpoints":       types.ListType{ElemType: types.StringType},
+		"container_registry_endpoints":     types.ListType{ElemType: types.StringType},
+		"ai_engine_endpoints":              types.ListType{ElemType: types.StringType},
+		"apprun_dedicated_control_enabled": types.BoolType,
 	}
 }
 

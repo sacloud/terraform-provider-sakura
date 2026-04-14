@@ -82,7 +82,7 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "server_ip_addresses.0", "192.168.128.129"),
 					resource.TestCheckResourceAttr(resourceName, "netmask", "28"),
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.object_storage_endpoints.0", objectStorageEndpoint1),
-					resource.TestCheckResourceAttr(resourceName, "monitoring_suite_enable", "false"),
+					resource.TestCheckResourceAttr(resourceName, "monitoring_suite_enabled", "false"),
 				),
 			},
 		},
