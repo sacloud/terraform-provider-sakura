@@ -39,13 +39,13 @@ type segBaseModel struct {
 	DNSForwarding          types.Object `tfsdk:"dns_forwarding"`
 }
 
-func (model *segBaseModel) updateState(appliance *v1.ModelsApplianceAppliance) error {
+func (model *segBaseModel) updateState(appliance *v1.ModelsApplianceAppliance, zone string) error {
 	if appliance.Availability != v1.ModelsApplianceApplianceAvailabilityAvailable {
 		return fmt.Errorf("got unexpected state: Appliance[%s].Availability is failed", appliance.ID)
 	}
 
 	model.ID = types.StringValue(appliance.ID)
-	model.Zone = types.StringValue(appliance.Switch.Zone.Name)
+	model.Zone = types.StringValue(zone)
 	model.VSwitchID = types.StringValue(appliance.Switch.ID)
 	model.ServerIPAddresses = flattenServerIPAddreses(appliance.Remark.Value.Servers)
 	model.NetMask = types.Int32Value(appliance.Remark.Value.Network.NetworkMaskLen)
