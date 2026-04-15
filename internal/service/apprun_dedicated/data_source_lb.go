@@ -179,14 +179,14 @@ func (state *lbDataSourceModel) byName(ctx context.Context, r *lbDataSource) (_ 
 
 	if err != nil {
 		d.AddError("Read: Invalid Cluster ID", fmt.Sprintf("failed to parse cluster ID: %s", err))
-		return
+		return nil, nil, nil, d
 	}
 
 	asgID, err := state.asgID()
 
 	if err != nil {
 		d.AddError("Read: Invalid Auto Scaling Group ID", fmt.Sprintf("failed to parse auto scaling group ID: %s", err))
-		return
+		return nil, nil, nil, d
 	}
 
 	api := r.api(clusterID, asgID)
@@ -194,7 +194,7 @@ func (state *lbDataSourceModel) byName(ctx context.Context, r *lbDataSource) (_ 
 
 	if err != nil {
 		d.AddError("Read: API Error", fmt.Sprintf("failed to list AppRun Dedicated load balancers: %s", err))
-		return
+		return nil, nil, nil, d
 	}
 
 	name := state.Name.ValueString()
@@ -205,7 +205,7 @@ func (state *lbDataSourceModel) byName(ctx context.Context, r *lbDataSource) (_ 
 	}
 
 	d.AddError("Read: API Error", fmt.Sprintf("load balancer with name %q not found", name))
-	return
+	return nil, nil, nil, d
 }
 
 func (d *lbDataSource) api(cid clusterID, asgID asgID) lb.LoadBalancerAPI {

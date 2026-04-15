@@ -217,5 +217,5 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 		v.EnvVars = buf
 	}
 
-	return
+	return ret
 }
