@@ -5,31 +5,7 @@
 
 ## クイックスタート
 
-```terraform
-terraform {
-  required_providers {
-    sakura = {
-      source = "sacloud/sakura"
-
-      # We recommend pinning to the specific version of the Sakura Provider you're using
-      # since new versions are released frequently
-      version = "3.0.0"
-      #version = "~> 3"
-    }
-  }
-}
-
-# Configure the Sakura Provider
-provider "sakura" {
-  # More information on the authentication methods supported by
-  # the Sakura Provider can be found here:
-  # https://docs.usacloud.jp/terraform/provider/
-
-  # profile = "..."
-}
-```
-
-より実践的な構成例は[examples](./examples/)を参照してください。
+実践的な構成例は[examples](./examples/)を参照してください。
 
 Terraform 自体については [Terraform の公式ドキュメント](https://developer.hashicorp.com/terraform) を参照してください。
 設定方法については [Provider Registry](https://registry.terraform.io/providers/sacloud/sakura) を参照してください。
