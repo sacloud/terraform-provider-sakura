@@ -1,5 +1,8 @@
 # Changelog
 
+## [v3.8.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.8.1...v3.8.2) - 2026-04-16
+- doc: split document for contributors by @tokuhirom in https://github.com/sacloud/terraform-provider-sakura/pull/200
+
 ## [v3.8.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.8.0...v3.8.1) - 2026-04-14
 - go: bump github.com/sacloud/workflows-api-go from 0.3.0 to 0.4.0 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/183
 - CI: improvements by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/190
