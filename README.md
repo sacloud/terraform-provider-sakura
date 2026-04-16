@@ -38,10 +38,6 @@ v3 における変更点は [CHANGES.md](./CHANGES.md) をご覧ください。
 - webaccel_acl
 - webaccel_certificate
 
-### 新規サービス群の実装
-
-APIGW、IAM、セキュリティコントロール等の最近リリースされたリソースは一部実装されていません。
-
 ## 開発者向け
 
 本プロジェクトの開発者向けドキュメントは[CONTRIBUTING.md](./CONTRIBUTING.md)を参照してください。
