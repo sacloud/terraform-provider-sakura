@@ -36,7 +36,7 @@ variable users {
 resource "sakura_container_registry" "foobar" {
   name            = "foobar"
   subdomain_label = "your-subdomain-label"
-  access_level    = "readwrite" # this must be one of ["readwrite"/"readonly"/"none"]
+  access_level    = "none" # this must be one of ["none"/"readonly"]
 
   description = "description"
   tags        = ["tag1", "tag2"]
@@ -57,7 +57,7 @@ resource "sakura_container_registry" "foobar" {
 
 ### Required
 
-- `access_level` (String) The level of access that allow to users. This must be one of [`readwrite`/`readonly`/`none`]
+- `access_level` (String) The level of access that allow to users. This must be one of [`readonly`/`none`]
 - `name` (String) The name of the Container Registry.
 - `subdomain_label` (String) The label at the lowest of the FQDN used when be accessed from users. The length of this value must be in the range [`1`-`64`]
 

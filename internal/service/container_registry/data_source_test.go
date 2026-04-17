@@ -27,6 +27,7 @@ func TestAccSakuraDataSourceContainerRegistry_basic(t *testing.T) {
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "access_level", "none"),
 					resource.TestCheckResourceAttr(resourceName, "user.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "user.0.name", "user1"),
 					resource.TestCheckResourceAttr(resourceName, "user.0.permission", "readwrite"),
@@ -42,7 +43,7 @@ var testAccSakuraDataSourceContainerRegistry_basic = `
 resource "sakura_container_registry" "foobar" {
   name            = "{{ .arg0 }}"
   subdomain_label = "{{ .arg1 }}"
-  access_level    = "readwrite"
+  access_level    = "none"
 
   description = "description"
   tags        = ["tag1", "tag2"]
