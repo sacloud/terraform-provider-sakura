@@ -177,7 +177,8 @@ func (r *logStorageResource) Create(ctx context.Context, req resource.CreateRequ
 		id := utils.ItoA(created.ID)
 		res, err := op.SetExpire(ctx, id, int(plan.RetentionPeriodDays.ValueInt32()))
 		if err != nil {
-			resp.Diagnostics.AddWarning("Create: API Error", fmt.Sprintf("failed to set retention period days for Log Storage[%s]. Set manually via Control Panels: %s", id, err))
+			// 保持期間の設定はクリティカルではないため、エラーが発生しても警告を出すのみとする
+			resp.Diagnostics.AddWarning("Create: API Error", fmt.Sprintf("failed to set retention period days for Log Storage[%s]. Set manually via Control Panel: %s", id, err))
 			return
 		}
 		created.ExpireDay = res.ExpireDay
@@ -229,7 +230,7 @@ func (r *logStorageResource) Update(ctx context.Context, req resource.UpdateRequ
 		id := utils.ItoA(updated.ID)
 		res, err := op.SetExpire(ctx, id, int(plan.RetentionPeriodDays.ValueInt32()))
 		if err != nil {
-			resp.Diagnostics.AddWarning("Update: API Error", fmt.Sprintf("failed to set expire day for Log Storage[%s]. Set manually via Control Panels: %s", id, err))
+			resp.Diagnostics.AddWarning("Update: API Error", fmt.Sprintf("failed to set retention period days for Log Storage[%s]. Set manually via Control Panel: %s", id, err))
 			return
 		}
 		updated.ExpireDay = res.ExpireDay
