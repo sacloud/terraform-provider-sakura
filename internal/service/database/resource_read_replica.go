@@ -56,14 +56,14 @@ func (r *databaseReadReplicaResource) Configure(ctx context.Context, req resourc
 
 type databaseReadReplicaResourceModel struct {
 	common.SakuraBaseModel
-	IconID                       types.String                   `tfsdk:"icon_id"`
-	Zone                         types.String                   `tfsdk:"zone"`
-	MasterID                     types.String                   `tfsdk:"master_id"`
+	IconID                   types.String                   `tfsdk:"icon_id"`
+	Zone                     types.String                   `tfsdk:"zone"`
+	MasterID                 types.String                   `tfsdk:"master_id"`
 	ReplicaPasswordWO        types.String                   `tfsdk:"replica_password_wo"`
 	ReplicaPasswordWOVersion types.Int32                    `tfsdk:"replica_password_wo_version"`
-	NetworkInterface             *databaseNetworkInterfaceModel `tfsdk:"network_interface"`
-	Disk                         types.Object                   `tfsdk:"disk"`
-	Timeouts                     timeouts.Value                 `tfsdk:"timeouts"`
+	NetworkInterface         *databaseNetworkInterfaceModel `tfsdk:"network_interface"`
+	Disk                     types.Object                   `tfsdk:"disk"`
+	Timeouts                 timeouts.Value                 `tfsdk:"timeouts"`
 }
 
 func (r *databaseReadReplicaResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
