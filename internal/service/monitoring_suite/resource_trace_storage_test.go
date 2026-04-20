@@ -32,10 +32,10 @@ func TestAccSakuraMonitoringSuiteTraceStorage_basic(t *testing.T) {
 					testCheckSakuraMonitoringSuiteTraceStorageExists(resourceName, &storage),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "retention_period_days", "80"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "retention_period_days"),
 					resource.TestCheckResourceAttrSet(resourceName, "endpoints.ingester.address"),
 				),
 			},
@@ -45,10 +45,10 @@ func TestAccSakuraMonitoringSuiteTraceStorage_basic(t *testing.T) {
 					testCheckSakuraMonitoringSuiteTraceStorageExists(resourceName, &storage),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
+					resource.TestCheckResourceAttr(resourceName, "retention_period_days", "55"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "retention_period_days"),
 					resource.TestCheckResourceAttrSet(resourceName, "endpoints.ingester.address"),
 				),
 			},
@@ -64,8 +64,9 @@ func TestAccImportSakuraMonitoringSuiteTraceStorage_basic(t *testing.T) {
 			return fmt.Errorf("expected 1 state: %#v", s)
 		}
 		expects := map[string]string{
-			"name":        rand,
-			"description": "description",
+			"name":                  rand,
+			"description":           "description",
+			"retention_period_days": "80",
 		}
 
 		if err := test.CompareStateMulti(s[0], expects); err != nil {
@@ -75,7 +76,6 @@ func TestAccImportSakuraMonitoringSuiteTraceStorage_basic(t *testing.T) {
 			"created_at",
 			"project_id",
 			"resource_id",
-			"retention_period_days",
 			"endpoints.ingester.address",
 		)
 	}
@@ -154,6 +154,7 @@ var testAccSakuraMonitoringSuiteTraceStorage_basic = `
 resource "sakura_monitoring_suite_trace_storage" "foobar" {
   name = "{{ .arg0 }}"
   description = "description"
+  retention_period_days = 80
 }
 `
 
@@ -161,5 +162,6 @@ var testAccSakuraMonitoringSuiteTraceStorage_update = `
 resource "sakura_monitoring_suite_trace_storage" "foobar" {
   name = "{{ .arg0 }}"
   description = "description-updated"
+  retention_period_days = 55
 }
 `

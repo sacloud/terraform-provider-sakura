@@ -16,6 +16,7 @@ Manages a Monitoring Suite Trace Storage.
 resource "sakura_monitoring_suite_trace_storage" "foobar" {
   name = "foobar"
   description = "description"
+  # retention_period_days = 30 # default: 40
 }
 ```
 
@@ -29,6 +30,7 @@ resource "sakura_monitoring_suite_trace_storage" "foobar" {
 ### Optional
 
 - `description` (String) The description of the Monitoring Suite Trace Storage. The length of this value must be in the range [`1`-`512`]
+- `retention_period_days` (Number) The retention period days of the Trace Storage.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -38,7 +40,6 @@ resource "sakura_monitoring_suite_trace_storage" "foobar" {
 - `id` (String) The ID of the Monitoring Suite Trace Storage.
 - `project_id` (String) The resource ID of the project to which the Trace Storage belongs.
 - `resource_id` (String) The resource ID of the Trace Storage.
-- `retention_period_days` (Number) The retention period days of the Trace Storage.
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

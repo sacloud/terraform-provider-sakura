@@ -18,6 +18,7 @@ resource "sakura_monitoring_suite_log_storage" "foobar" {
   description = "description"
   classification = "shared" # or "dedicated"
   is_system = false
+  # retention_period_days = 30 # default: 40
 }
 ```
 
@@ -33,13 +34,13 @@ resource "sakura_monitoring_suite_log_storage" "foobar" {
 - `classification` (String) The bucket classification of the Log Storage.
 - `description` (String) The description of the Monitoring Suite Log Storage. The length of this value must be in the range [`1`-`512`]
 - `is_system` (Boolean) The flag to indicate whether this is a system Log Storage.
+- `retention_period_days` (Number) The retention period days of the Log Storage.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
 
 - `created_at` (String) The creation timestamp of the Monitoring Suite Log Storage
 - `endpoints` (Attributes) The endpoints of the Log Storage. (see [below for nested schema](#nestedatt--endpoints))
-- `expire_day` (Number) The expiration day of the Log Storage.
 - `id` (String) The ID of the Monitoring Suite Log Storage.
 - `project_id` (String) The resource ID of the project to which the Log Storage belongs.
 - `resource_id` (String) The resource ID of the Log Storage.

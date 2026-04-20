@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -24,6 +25,7 @@ import (
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
 	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type logStorageResource struct {
@@ -95,9 +97,13 @@ func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaReques
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
-			"expire_day": schema.Int64Attribute{
+			"retention_period_days": schema.Int32Attribute{
+				Optional:    true,
 				Computed:    true,
-				Description: "The expiration day of the Log Storage.",
+				Description: "The retention period days of the Log Storage.",
+				Validators: []validator.Int32{
+					int32validator.Between(1, 730),
+				},
 			},
 			"created_at": common.SchemaResourceCreatedAt("Monitoring Suite Log Storage"),
 			"endpoints": schema.SingleNestedAttribute{
@@ -167,6 +173,16 @@ func (r *logStorageResource) Create(ctx context.Context, req resource.CreateRequ
 		return
 	}
 
+	if utils.IsKnown(plan.RetentionPeriodDays) {
+		id := utils.ItoA(created.ID)
+		res, err := op.SetExpire(ctx, id, int(plan.RetentionPeriodDays.ValueInt32()))
+		if err != nil {
+			resp.Diagnostics.AddWarning("Create: API Error", fmt.Sprintf("failed to set retention period days for Log Storage[%s]. Set manually via Control Panels: %s", id, err))
+			return
+		}
+		created.ExpireDay = res.ExpireDay
+	}
+
 	plan.updateState(created)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -188,8 +204,9 @@ func (r *logStorageResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *logStorageResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan logStorageResourceModel
+	var plan, state logStorageResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -206,6 +223,16 @@ func (r *logStorageResource) Update(ctx context.Context, req resource.UpdateRequ
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Log Storage[%s]: %s", plan.ID.ValueString(), err))
 		return
+	}
+
+	if utils.IsKnown(plan.RetentionPeriodDays) && plan.RetentionPeriodDays.ValueInt32() != state.RetentionPeriodDays.ValueInt32() {
+		id := utils.ItoA(updated.ID)
+		res, err := op.SetExpire(ctx, id, int(plan.RetentionPeriodDays.ValueInt32()))
+		if err != nil {
+			resp.Diagnostics.AddWarning("Update: API Error", fmt.Sprintf("failed to set expire day for Log Storage[%s]. Set manually via Control Panels: %s", id, err))
+			return
+		}
+		updated.ExpireDay = res.ExpireDay
 	}
 
 	plan.updateState(updated)

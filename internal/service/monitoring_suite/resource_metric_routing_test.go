@@ -32,7 +32,7 @@ func TestAccSakuraMonitoringSuiteMetricRouting_basic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraMonitoringSuiteMetricRoutingDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricRouting_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricRouting_basic, rand, msId),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraMonitoringSuiteMetricRoutingExists(resourceName, &storage),
 					resource.TestCheckResourceAttr(resourceName, "publisher_code", "simplemq"),
@@ -44,7 +44,7 @@ func TestAccSakuraMonitoringSuiteMetricRouting_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricRouting_update, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricRouting_update, rand, msId),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraMonitoringSuiteMetricRoutingExists(resourceName, &storage),
 					resource.TestCheckResourceAttr(resourceName, "publisher_code", "simplemq"),
