@@ -40,7 +40,7 @@ func TestAccSakuraContainerRegistry_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "subdomain_label", subDomainLabel),
 					resource.TestCheckResourceAttr(resourceName, "virtual_domain", subDomainLabel+".usacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "fqdn", subDomainLabel+".sakuracr.jp"),
-					resource.TestCheckResourceAttr(resourceName, "access_level", "readwrite"),
+					resource.TestCheckResourceAttr(resourceName, "access_level", "readonly"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
@@ -66,7 +66,7 @@ func TestAccSakuraContainerRegistry_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "subdomain_label", subDomainLabel),
 					resource.TestCheckResourceAttr(resourceName, "virtual_domain", subDomainLabel+"-upd.usacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "fqdn", subDomainLabel+".sakuracr.jp"),
-					resource.TestCheckResourceAttr(resourceName, "access_level", "readonly"),
+					resource.TestCheckResourceAttr(resourceName, "access_level", "none"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-upd"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1-upd"),
@@ -137,7 +137,7 @@ resource "sakura_container_registry" "foobar" {
   name            = "{{ .arg0 }}"
   virtual_domain  = "{{ .arg1 }}.usacloud.jp"
   subdomain_label = "{{ .arg1 }}"
-  access_level    = "readwrite"
+  access_level    = "readonly"
 
   description = "description"
   tags        = ["tag1", "tag2"]
@@ -166,7 +166,7 @@ resource "sakura_container_registry" "foobar" {
   name            = "{{ .arg0 }}-upd"
   virtual_domain  = "{{ .arg1 }}-upd.usacloud.jp"
   subdomain_label = "{{ .arg1 }}"
-  access_level    = "readonly"
+  access_level    = "none"
 
   description = "description-upd"
   tags        = ["tag1-upd", "tag2-upd"]
