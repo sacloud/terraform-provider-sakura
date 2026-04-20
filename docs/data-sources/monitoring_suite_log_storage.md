@@ -34,10 +34,10 @@ data "sakura_monitoring_suite_log_storage" "foobar" {
 - `created_at` (String) The creation timestamp of the Monitoring Suite Log Storage
 - `description` (String) The description of the Monitoring Suite Log Storage.
 - `endpoints` (Attributes) The endpoints of the Log Storage. (see [below for nested schema](#nestedatt--endpoints))
-- `expire_day` (Number) The expiration day of the Log Storage.
 - `is_system` (Boolean) The flag to indicate whether this is a system Log Storage.
 - `project_id` (String) The resource ID of the project to which the Log Storage belongs.
 - `resource_id` (String) The resource ID of the Log Storage.
+- `retention_period_days` (Number) The retention period days of the Log Storage.
 - `usage` (Attributes) The usage of the Log Storage. (see [below for nested schema](#nestedatt--usage))
 
 <a id="nestedatt--endpoints"></a>

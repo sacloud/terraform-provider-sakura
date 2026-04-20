@@ -58,7 +58,7 @@ func (d *traceStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRe
 				Computed:    true,
 				Description: "The resource ID of the Trace Storage.",
 			},
-			"retention_period_days": schema.Int64Attribute{
+			"retention_period_days": schema.Int32Attribute{
 				Computed:    true,
 				Description: "The retention period days of the Trace Storage.",
 			},

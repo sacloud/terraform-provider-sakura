@@ -14,14 +14,14 @@ import (
 
 type logStorageBaseModel struct {
 	msBaseModel
-	ProjectID      types.String `tfsdk:"project_id"`
-	ResourceID     types.String `tfsdk:"resource_id"`
-	IsSystem       types.Bool   `tfsdk:"is_system"`
-	Classification types.String `tfsdk:"classification"`
-	ExpireDay      types.Int64  `tfsdk:"expire_day"`
-	CreatedAt      types.String `tfsdk:"created_at"`
-	Endpoints      types.Object `tfsdk:"endpoints"`
-	Usage          types.Object `tfsdk:"usage"`
+	ProjectID           types.String `tfsdk:"project_id"`
+	ResourceID          types.String `tfsdk:"resource_id"`
+	IsSystem            types.Bool   `tfsdk:"is_system"`
+	Classification      types.String `tfsdk:"classification"`
+	RetentionPeriodDays types.Int32  `tfsdk:"retention_period_days"`
+	CreatedAt           types.String `tfsdk:"created_at"`
+	Endpoints           types.Object `tfsdk:"endpoints"`
+	Usage               types.Object `tfsdk:"usage"`
 }
 
 type logStorageEndpointsModel struct {
@@ -63,7 +63,7 @@ func (model *logStorageBaseModel) updateState(storage *monitoringsuiteapi.LogSto
 	model.ProjectID = types.StringValue(storage.GetAccountID())
 	model.ResourceID = types.StringValue(strconv.FormatInt(storage.GetResourceID().Value, 10))
 	model.IsSystem = types.BoolValue(storage.GetIsSystem())
-	model.ExpireDay = types.Int64Value(int64(storage.GetExpireDay()))
+	model.RetentionPeriodDays = types.Int32Value(int32(storage.GetExpireDay()))
 	model.CreatedAt = types.StringValue(storage.GetCreatedAt().String())
 	model.Classification = types.StringValue(string(storage.GetClassification()))
 
