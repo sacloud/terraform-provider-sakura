@@ -29,10 +29,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/nosql-api-go"
 	v1 "github.com/sacloud/nosql-api-go/apis/v1"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
@@ -660,7 +660,7 @@ func getNosql(ctx context.Context, client *v1.Client, id string, state *tfsdk.St
 	dbOp := nosql.NewDatabaseOp(client)
 	res, err := dbOp.Read(ctx, id)
 	if err != nil {
-		if iaas.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			if state != nil {
 				state.RemoveResource(ctx)
 			}

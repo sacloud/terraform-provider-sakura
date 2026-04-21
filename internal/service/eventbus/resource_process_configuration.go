@@ -15,9 +15,9 @@ import (
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/eventbus-api-go"
 	v1 "github.com/sacloud/eventbus-api-go/apis/v1"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
@@ -304,7 +304,7 @@ func getProcessConfiguration(ctx context.Context, client *v1.Client, id string, 
 	processConfigurationOp := eventbus.NewProcessConfigurationOp(client)
 	pc, err := processConfigurationOp.Read(ctx, id)
 	if err != nil {
-		if api.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}

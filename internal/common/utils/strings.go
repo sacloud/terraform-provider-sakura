@@ -31,3 +31,7 @@ func MustAtoInt64(target string) int64 {
 	v, _ := strconv.ParseInt(target, 10, 64)
 	return v
 }
+
+func ItoA[I ~int | ~int32 | ~int64](s I) string {
+	return strconv.FormatInt(int64(s), 10)
+}

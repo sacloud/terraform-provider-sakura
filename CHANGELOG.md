@@ -1,5 +1,14 @@
 # Changelog
 
+## [v3.8.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.8.0...v3.8.1) - 2026-04-14
+- go: bump github.com/sacloud/workflows-api-go from 0.3.0 to 0.4.0 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/183
+- CI: improvements by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/190
+- go: bump the sacloud group across 1 directory with 6 updates by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/185
+- Add Monitoring Suite Alert resources by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/187
+- monitoring_suite: Make resource_id optional in routing resources. fix #188 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/192
+- [CI] "no such file or directory" is UNIX by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/196
+- Unify error check with saclient by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/195
+
 ## [v3.8.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.7.1...v3.8.0) - 2026-04-08
 - モニタリングスイート　ストレージ/ルーティング追加 by @lvctr in https://github.com/sacloud/terraform-provider-sakura/pull/159
 - monitoring_suite: Add Dashboard resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/172

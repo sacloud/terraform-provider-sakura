@@ -24,9 +24,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	api "github.com/sacloud/api-client-go"
 	"github.com/sacloud/apigw-api-go"
 	v1 "github.com/sacloud/apigw-api-go/apis/v1"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
@@ -390,7 +390,7 @@ func getAPIGWService(ctx context.Context, client *v1.Client, id string, state *t
 	serviceOp := apigw.NewServiceOp(client)
 	service, err := serviceOp.Read(ctx, uuid.MustParse(id))
 	if err != nil {
-		if api.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}

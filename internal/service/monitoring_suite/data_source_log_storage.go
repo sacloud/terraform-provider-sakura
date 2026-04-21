@@ -66,9 +66,9 @@ func (d *logStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Computed:    true,
 				Description: "The bucket classification of the Log Storage.",
 			},
-			"expire_day": schema.Int64Attribute{
+			"retention_period_days": schema.Int32Attribute{
 				Computed:    true,
-				Description: "The expiration day of the Log Storage.",
+				Description: "The retention period days of the Log Storage.",
 			},
 			"created_at": common.SchemaDataSourceCreatedAt("Monitoring Suite Log Storage"),
 			"endpoints": schema.SingleNestedAttribute{

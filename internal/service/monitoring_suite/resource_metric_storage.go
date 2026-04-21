@@ -16,9 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	api "github.com/sacloud/api-client-go"
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
+	saclient "github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -202,7 +202,7 @@ func getMetricsStorage(ctx context.Context, client *monitoringsuiteapi.Client, i
 	op := monitoringsuite.NewMetricsStorageOp(client)
 	storage, err := op.Read(ctx, id)
 	if err != nil {
-		if api.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}

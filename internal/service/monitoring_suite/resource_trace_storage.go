@@ -8,15 +8,18 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	api "github.com/sacloud/api-client-go"
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
 	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
+	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type traceStorageResource struct {
@@ -64,9 +67,13 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 				Computed:    true,
 				Description: "The resource ID of the Trace Storage.",
 			},
-			"retention_period_days": schema.Int64Attribute{
+			"retention_period_days": schema.Int32Attribute{
+				Optional:    true,
 				Computed:    true,
 				Description: "The retention period days of the Trace Storage.",
+				Validators: []validator.Int32{
+					int32validator.Between(1, 730),
+				},
 			},
 			"created_at": common.SchemaResourceCreatedAt("Monitoring Suite Trace Storage"),
 			"endpoints": schema.SingleNestedAttribute{
@@ -119,6 +126,17 @@ func (r *traceStorageResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
+	if utils.IsKnown(plan.RetentionPeriodDays) {
+		id := utils.ItoA(created.ID)
+		res, err := op.SetExpire(ctx, id, int(plan.RetentionPeriodDays.ValueInt32()))
+		if err != nil {
+			// 保持期間の設定はクリティカルではないため、エラーが発生しても警告を出すのみとする
+			resp.Diagnostics.AddWarning("Create: API Error", fmt.Sprintf("failed to set retention period days for Trace Storage[%s]. Set manually via Control Panel: %s", id, err))
+			return
+		}
+		created.RetentionPeriodDays = res.RetentionPeriodDays
+	}
+
 	plan.updateState(created)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -140,8 +158,9 @@ func (r *traceStorageResource) Read(ctx context.Context, req resource.ReadReques
 }
 
 func (r *traceStorageResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan traceStorageResourceModel
+	var plan, state traceStorageResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -158,6 +177,16 @@ func (r *traceStorageResource) Update(ctx context.Context, req resource.UpdateRe
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Trace Storage[%s]: %s", plan.ID.ValueString(), err))
 		return
+	}
+
+	if utils.IsKnown(plan.RetentionPeriodDays) && plan.RetentionPeriodDays.ValueInt32() != state.RetentionPeriodDays.ValueInt32() {
+		id := utils.ItoA(updated.ID)
+		res, err := op.SetExpire(ctx, id, int(plan.RetentionPeriodDays.ValueInt32()))
+		if err != nil {
+			resp.Diagnostics.AddWarning("Update: API Error", fmt.Sprintf("failed to set retention period days for Trace Storage[%s]. Set manually via Control Panel: %s", id, err))
+			return
+		}
+		updated.RetentionPeriodDays = res.RetentionPeriodDays
 	}
 
 	plan.updateState(updated)
@@ -185,7 +214,7 @@ func getTraceStorage(ctx context.Context, client *monitoringsuiteapi.Client, id 
 	op := monitoringsuite.NewTracesStorageOp(client)
 	storage, err := op.Read(ctx, id)
 	if err != nil {
-		if api.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}

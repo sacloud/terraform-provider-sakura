@@ -230,7 +230,7 @@ func getAPIGWSubscription(ctx context.Context, client *v1.Client, id string, sta
 	subOp := apigw.NewSubscriptionOp(client)
 	sub, err := subOp.Read(ctx, uuid.MustParse(id))
 	if err != nil {
-		if api.IsNotFoundError(err) {
+		if saclient.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}

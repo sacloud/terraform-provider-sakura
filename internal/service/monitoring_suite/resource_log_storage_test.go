@@ -34,10 +34,10 @@ func TestAccSakuraMonitoringSuiteLogStorage_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "classification", "shared"),
 					resource.TestCheckResourceAttr(resourceName, "is_system", "false"),
+					resource.TestCheckResourceAttr(resourceName, "retention_period_days", "90"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "expire_day"),
 					resource.TestCheckResourceAttrSet(resourceName, "endpoints.ingester.address"),
 					resource.TestCheckResourceAttrSet(resourceName, "usage.log_routings"),
 				),
@@ -50,10 +50,10 @@ func TestAccSakuraMonitoringSuiteLogStorage_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
 					resource.TestCheckResourceAttr(resourceName, "classification", "shared"),
 					resource.TestCheckResourceAttr(resourceName, "is_system", "false"),
+					resource.TestCheckResourceAttr(resourceName, "retention_period_days", "60"),
 					resource.TestCheckResourceAttrSet(resourceName, "created_at"),
 					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
-					resource.TestCheckResourceAttrSet(resourceName, "expire_day"),
 					resource.TestCheckResourceAttrSet(resourceName, "endpoints.ingester.address"),
 					resource.TestCheckResourceAttrSet(resourceName, "usage.log_routings"),
 				),
@@ -70,10 +70,11 @@ func TestAccImportSakuraMonitoringSuiteLogStorage_basic(t *testing.T) {
 			return fmt.Errorf("expected 1 state: %#v", s)
 		}
 		expects := map[string]string{
-			"name":           rand,
-			"description":    "description",
-			"classification": "shared",
-			"is_system":      "false",
+			"name":                  rand,
+			"description":           "description",
+			"classification":        "shared",
+			"is_system":             "false",
+			"retention_period_days": "90",
 		}
 
 		if err := test.CompareStateMulti(s[0], expects); err != nil {
@@ -83,7 +84,6 @@ func TestAccImportSakuraMonitoringSuiteLogStorage_basic(t *testing.T) {
 			"created_at",
 			"project_id",
 			"resource_id",
-			"expire_day",
 			"endpoints.ingester.address",
 			"usage.log_routings",
 		)
@@ -165,6 +165,7 @@ resource "sakura_monitoring_suite_log_storage" "foobar" {
   description = "description"
   classification = "shared"
   is_system = false
+  retention_period_days = 90
 }
 `
 
@@ -174,5 +175,6 @@ resource "sakura_monitoring_suite_log_storage" "foobar" {
   description = "description-updated"
   classification = "shared"
   is_system = false
+  retention_period_days = 60
 }
 `
