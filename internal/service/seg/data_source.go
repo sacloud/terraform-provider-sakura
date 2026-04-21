@@ -117,7 +117,7 @@ func (d *segDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 				},
 			},
 		},
-		MarkdownDescription: "Get information about an existing seg.",
+		MarkdownDescription: "Get information about an existing seg(Service Endpoint Gateway).",
 	}
 }
 
