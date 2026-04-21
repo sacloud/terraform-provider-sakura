@@ -1,7 +1,7 @@
 // Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package service_endpoint_gateway
+package seg
 
 import (
 	"context"
@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/sacloud/iaas-api-go"
+	"github.com/sacloud/saclient-go"
 	seg "github.com/sacloud/service-endpoint-gateway-api-go"
 	v1 "github.com/sacloud/service-endpoint-gateway-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -34,11 +35,14 @@ func isAvailableZoneForVSwitch(ctx context.Context, client *common.APIClient, zo
 }
 
 func getServiceEndpointGatewayAPIClient(client *common.APIClient, zone string) (*v1.Client, error) {
-	apiRoot := fmt.Sprintf("https://secure.sakura.ad.jp/cloud/zone/%s/api/cloud/1.1", zone)
-	return seg.NewClientWithAPIRootURL(client.SaClient, apiRoot)
+	clientAPI, err := client.SaClient.DupWith(saclient.WithZone(zone))
+	if err != nil {
+		return nil, err
+	}
+	return seg.NewClient(clientAPI)
 }
 
-func expandSeversIPAddresses(d types.List) []v1.ModelsRemarkServerRemark {
+func expandServersIPAddresses(d types.List) []v1.ModelsRemarkServerRemark {
 	var servers []v1.ModelsRemarkServerRemark
 
 	if d.IsNull() || d.IsUnknown() {
@@ -64,7 +68,7 @@ func expandSEGCreateRequest(d *segResourceModel) v1.ModelsApplianceApplianceCrea
 				Network: v1.ModelsRemarkNetworkRemark{
 					NetworkMaskLen: d.NetMask.ValueInt32(),
 				},
-				Servers: expandSeversIPAddresses(d.ServerIPAddresses),
+				Servers: expandServersIPAddresses(d.ServerIPAddresses),
 			},
 		},
 	}
@@ -72,11 +76,12 @@ func expandSEGCreateRequest(d *segResourceModel) v1.ModelsApplianceApplianceCrea
 
 func expandSEGUpdateRequest(d *segResourceModel) v1.ModelsApplianceApplianceUpdateRequest {
 	dnsForwardSetting := expandDNSForwardingSettings(d.DNSForwarding)
+	enabledServices := expandEndpointSetting(d.EndpointSetting)
 	return v1.ModelsApplianceApplianceUpdateRequest{
 		Appliance: v1.ModelsApplianceApplianceUpdateBody{
 			Settings: v1.ModelsSettingsApplianceSettings{
 				ServiceEndpointGateway: v1.ModelsSettingsServiceEndpointGatewaySettings{
-					EnabledServices: expandEndpointSetting(d.EndpointSetting),
+					EnabledServices: enabledServices,
 					MonitoringSuite: func(enable types.Bool) v1.OptModelsSettingsMonitoringSuiteSettings {
 						if enable.IsNull() || enable.IsUnknown() {
 							return v1.OptModelsSettingsMonitoringSuiteSettings{
@@ -87,12 +92,11 @@ func expandSEGUpdateRequest(d *segResourceModel) v1.ModelsApplianceApplianceUpda
 						if enable.ValueBool() {
 							value = v1.ModelsSettingsMonitoringSuiteSettingsEnabledTrue
 						}
-						return v1.OptModelsSettingsMonitoringSuiteSettings{
-							Set: true,
-							Value: v1.ModelsSettingsMonitoringSuiteSettings{
+						return v1.NewOptModelsSettingsMonitoringSuiteSettings(
+							v1.ModelsSettingsMonitoringSuiteSettings{
 								Enabled: value,
 							},
-						}
+						)
 					}(d.MonitoringSuiteEnabled),
 					DNSForwarding: dnsForwardSetting,
 				},
@@ -155,15 +159,14 @@ func expandEndpointSetting(d types.Object) []v1.ModelsSettingsEnabledService {
 		settings = append(settings, v1.ModelsSettingsEnabledService{
 			Type: v1.ModelsSettingsEnabledServiceTypeAppRunDedicatedControlPlane,
 			Config: v1.ModelsSettingsServiceConfig{
-				Mode: v1.OptModelsSettingsServiceConfigMode{
-					Set: true,
-					Value: func(enabled types.Bool) v1.ModelsSettingsServiceConfigMode {
+				Mode: v1.NewOptModelsSettingsServiceConfigMode(
+					func(enabled types.Bool) v1.ModelsSettingsServiceConfigMode {
 						if enabled.ValueBool() {
 							return v1.ModelsSettingsServiceConfigModeManaged
 						}
 						return v1.ModelsSettingsServiceConfigModeEmpty
 					}(model.AppRunDedicatedControlEnabled),
-				},
+				),
 			},
 		})
 	}
@@ -187,9 +190,8 @@ func expandDNSForwardingSettings(d types.Object) v1.OptModelsSettingsDNSForwardi
 		}
 	}
 
-	return v1.OptModelsSettingsDNSForwardingSettings{
-		Set: true,
-		Value: v1.ModelsSettingsDNSForwardingSettings{
+	return v1.NewOptModelsSettingsDNSForwardingSettings(
+		v1.ModelsSettingsDNSForwardingSettings{
 			Enabled: func(enable types.Bool) v1.ModelsSettingsDNSForwardingSettingsEnabled {
 				if enable.ValueBool() {
 					return v1.ModelsSettingsDNSForwardingSettingsEnabledTrue
@@ -200,7 +202,7 @@ func expandDNSForwardingSettings(d types.Object) v1.OptModelsSettingsDNSForwardi
 			UpstreamDNS1:      model.UpstreamDNS1.ValueString(),
 			UpstreamDNS2:      model.UpstreamDNS2.ValueString(),
 		},
-	}
+	)
 }
 
 func waitForInstanceStatus(ctx context.Context, api seg.ServiceEndpointGatewayAPI, id string, status v1.ModelsInstanceInstanceStatus) error {

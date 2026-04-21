@@ -1,7 +1,7 @@
 // Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package service_endpoint_gateway
+package seg
 
 import (
 	"context"
@@ -43,7 +43,7 @@ func NewSEGResource() resource.Resource {
 }
 
 func (r *segResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_service_endpoint_gateway"
+	resp.TypeName = req.ProviderTypeName + "_seg"
 }
 
 func (r *segResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
@@ -172,7 +172,7 @@ func (r *segResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout24hour)
+	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout60min)
 	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
@@ -255,7 +255,7 @@ func (r *segResource) Update(ctx context.Context, req resource.UpdateRequest, re
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout24hour)
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout60min)
 	defer cancel()
 
 	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
@@ -293,7 +293,7 @@ func (r *segResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout20min)
+	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout60min)
 	defer cancel()
 
 	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)

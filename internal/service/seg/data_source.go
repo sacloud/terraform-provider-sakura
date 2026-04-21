@@ -1,7 +1,7 @@
 // Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package service_endpoint_gateway
+package seg
 
 import (
 	"context"
@@ -29,7 +29,7 @@ func NewSEGDataSource() datasource.DataSource {
 }
 
 func (d *segDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_service_endpoint_gateway"
+	resp.TypeName = req.ProviderTypeName + "_seg"
 }
 
 func (d *segDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {

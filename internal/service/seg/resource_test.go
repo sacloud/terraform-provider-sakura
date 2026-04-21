@@ -1,7 +1,7 @@
 // Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package service_endpoint_gateway_test
+package seg_test
 
 import (
 	"context"
@@ -12,6 +12,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/sacloud/saclient-go"
 	service_endpoint_gateway "github.com/sacloud/service-endpoint-gateway-api-go"
 	v1 "github.com/sacloud/service-endpoint-gateway-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
@@ -29,7 +30,7 @@ const (
 )
 
 func TestAccSakuraSEG_basic(t *testing.T) {
-	resourceName := "sakura_service_endpoint_gateway.foobar"
+	resourceName := "sakura_seg.foobar"
 
 	test.SkipIfEnvIsNotSet(t,
 		envSEGObjectStorageEndpoint1, envSEGObjectStorageEndpoint2, envSEGMonitoringSuiteEndpoint, envSEGContainerRegistryEndpoint, envSEGAIEngineEndpoint,
@@ -126,7 +127,7 @@ func testCheckSakuraSEGDestroy(s *terraform.State) error {
 	}
 	segOp := service_endpoint_gateway.NewServiceEndpointGatewayOp(client)
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_service_endpoint_gateway" {
+		if rs.Type != "sakura_seg" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -142,7 +143,7 @@ func testCheckSakuraSEGDestroy(s *terraform.State) error {
 
 func testGetClientFromState(s *terraform.State) (*v1.Client, error) {
 	for _, rs := range s.RootModule().Resources {
-		if rs.Type != "sakura_service_endpoint_gateway" {
+		if rs.Type != "sakura_seg" {
 			continue
 		}
 		if rs.Primary.ID == "" {
@@ -151,8 +152,12 @@ func testGetClientFromState(s *terraform.State) (*v1.Client, error) {
 
 		client := test.AccClientGetter()
 		zone := rs.Primary.Attributes["zone"]
-		apiRoot := fmt.Sprintf("https://secure.sakura.ad.jp/cloud/zone/%s/api/cloud/1.1", zone)
-		return service_endpoint_gateway.NewClientWithAPIRootURL(client.SaClient, apiRoot)
+		clientAPI, err := client.SaClient.DupWith(saclient.WithZone(zone))
+		if err != nil {
+			return nil, err
+		}
+
+		return service_endpoint_gateway.NewClient(clientAPI)
 	}
 	return nil, errors.New("Service Endpoint Gateway resource not found in state")
 }
@@ -163,7 +168,7 @@ resource "sakura_vswitch" "foobar" {
 	zone = "tk1b"
 }
 
-resource "sakura_service_endpoint_gateway" "foobar" {
+resource "sakura_seg" "foobar" {
 	zone        = "tk1b"
 	vswitch_id  = sakura_vswitch.foobar.id
 	server_ip_addresses = ["192.168.128.31"]
@@ -191,7 +196,7 @@ resource "sakura_vswitch" "foobar" {
 	zone = "tk1b"
 }
 
-resource "sakura_service_endpoint_gateway" "foobar" {
+resource "sakura_seg" "foobar" {
 	zone        = "tk1b"
 	vswitch_id  = sakura_vswitch.foobar.id
 	server_ip_addresses = ["192.168.128.129"]

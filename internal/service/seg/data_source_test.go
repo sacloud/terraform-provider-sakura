@@ -1,7 +1,7 @@
 // Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package service_endpoint_gateway_test
+package seg_test
 
 import (
 	"os"
@@ -12,13 +12,13 @@ import (
 )
 
 const (
-	envSEGObjectStorageEndpoint = "SAKURA_SEG_ENDPOINT_OBJECT_STORAGE_ENDPOINT"
+	envSEGObjectStorageEndpoint = "SAKURA_SEG_OBJECT_STORAGE_ENDPOINT"
 )
 
 func TestAccSakuraDataSourceSEG_basic(t *testing.T) {
 	test.SkipIfEnvIsNotSet(t, envSEGObjectStorageEndpoint)
 
-	resourceName := "data.sakura_service_endpoint_gateway.foobar"
+	resourceName := "data.sakura_seg.foobar"
 	rand := test.RandomName()
 	objectStorageEndpointDatasource := os.Getenv(envSEGObjectStorageEndpoint)
 
@@ -46,7 +46,7 @@ resource "sakura_vswitch" "foobar" {
 	name = "{{ .arg0 }}"
 	zone = "tk1b"
 }
-resource "sakura_service_endpoint_gateway" "foobar" {
+resource "sakura_seg" "foobar" {
 	zone        = "tk1b"
 	vswitch_id  = sakura_vswitch.foobar.id
 	server_ip_addresses = ["192.168.100.10"]
@@ -55,7 +55,7 @@ resource "sakura_service_endpoint_gateway" "foobar" {
 		object_storage_endpoints = ["{{ .arg1 }}"]
 	}
 }
-data "sakura_service_endpoint_gateway" "foobar" {
-	id = sakura_service_endpoint_gateway.foobar.id
+data "sakura_seg" "foobar" {
+	id = sakura_seg.foobar.id
 	zone = "tk1b"
 }`

@@ -3,7 +3,7 @@ resource "sakura_vswitch" "foobar" {
 	zone = "tk1b" # zone name # e.g. is1a 
 }
 
-resource "sakura_service_endpoint_gateway" "foobar" {
+resource "sakura_seg" "foobar" {
 	vswitch_id  = sakura_vswitch.foobar.id
 	zone        = sakura_vswitch.foobar.zone 
 	server_ip_addresses = ["server_ip_address"] # e,g. 192.168.1.1 
@@ -15,7 +15,7 @@ resource "sakura_service_endpoint_gateway" "foobar" {
 		ai_engine_endpoints = [""] # e.g. api.ai.sakura.ad.jp
 		app_run_dedicated_control_enabled = true 
 	}
-	monitoring_suite_enable = true
+	monitoring_suite_enabled = true
 	dns_forwarding = {
 		enabled = true
 		private_hosted_zone = "example.com" # zone name. see sakura_dns/resource.tf
