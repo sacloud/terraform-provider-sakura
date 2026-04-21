@@ -12,10 +12,10 @@ import (
 )
 
 func TestAccSakuraSecurityControlActivation_basic(t *testing.T) {
-	test.SkipIfEnvIsNotSet(t, "SAKURA_SERVICE_PRINCIPAL_ID")
+	test.SkipIfEnvIsNotSet(t, "SAKURA_SECURITY_CONTROL_SERVICE_PRINCIPAL_ID")
 
 	resourceName := "sakura_security_control_activation.foobar"
-	id := os.Getenv("SAKURA_SERVICE_PRINCIPAL_ID")
+	id := os.Getenv("SAKURA_SECURITY_CONTROL_SERVICE_PRINCIPAL_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },

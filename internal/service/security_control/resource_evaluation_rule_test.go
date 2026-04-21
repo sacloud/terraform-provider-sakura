@@ -12,13 +12,13 @@ import (
 )
 
 func TestAccSakuraSecurityControlEvaluationRule_basic(t *testing.T) {
-	test.SkipIfEnvIsNotSet(t, "SAKURA_SERVICE_PRINCIPAL_ID")
+	test.SkipIfEnvIsNotSet(t, "SAKURA_SECURITY_CONTROL_SERVICE_PRINCIPAL_ID")
 
 	resourceName1 := "sakura_security_control_evaluation_rule.foobar1"
 	resourceName2 := "sakura_security_control_evaluation_rule.foobar2"
 	resourceName3 := "sakura_security_control_evaluation_rule.foobar3"
 	resourceName4 := "sakura_security_control_evaluation_rule.foobar4"
-	id := os.Getenv("SAKURA_SERVICE_PRINCIPAL_ID")
+	id := os.Getenv("SAKURA_SECURITY_CONTROL_SERVICE_PRINCIPAL_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
