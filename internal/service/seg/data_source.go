@@ -106,12 +106,9 @@ func (d *segDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, re
 						Description: "The private hosted zone name for DNS forwarding",
 						Computed:    true,
 					},
-					"upstream_dns_1": schema.StringAttribute{
-						Description: "The IP address of the first upstream DNS server for DNS forwarding",
-						Computed:    true,
-					},
-					"upstream_dns_2": schema.StringAttribute{
-						Description: "The IP address of the second upstream DNS server for DNS forwarding",
+					"dns_servers": schema.ListAttribute{
+						ElementType: types.StringType,
+						Description: "The name of upstream DNS servers for DNS forwarding",
 						Computed:    true,
 					},
 				},
@@ -136,7 +133,7 @@ func (d *segDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 
 	apiClient, err := getServiceEndpointGatewayAPIClient(d.client, zone)
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Client Error", fmt.Sprintf("failed to create API client for Service Endpoint Gateway in zone %s: %s", data.Zone.ValueString(), err))
+		resp.Diagnostics.AddError("Read: API Client Error", fmt.Sprintf("failed to read API client for Service Endpoint Gateway in zone %s: %s", data.Zone.ValueString(), err))
 		return
 	}
 

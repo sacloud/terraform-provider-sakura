@@ -189,7 +189,7 @@ func expandDNSForwardingSettings(d types.Object) v1.OptModelsSettingsDNSForwardi
 			Set: false,
 		}
 	}
-
+	dnsServerList := common.TlistToStrings(model.DNSServers)
 	return v1.NewOptModelsSettingsDNSForwardingSettings(
 		v1.ModelsSettingsDNSForwardingSettings{
 			Enabled: func(enable types.Bool) v1.ModelsSettingsDNSForwardingSettingsEnabled {
@@ -199,8 +199,8 @@ func expandDNSForwardingSettings(d types.Object) v1.OptModelsSettingsDNSForwardi
 				return v1.ModelsSettingsDNSForwardingSettingsEnabledFalse
 			}(model.Enabled),
 			PrivateHostedZone: model.PrivateHostedZone.ValueString(),
-			UpstreamDNS1:      model.UpstreamDNS1.ValueString(),
-			UpstreamDNS2:      model.UpstreamDNS2.ValueString(),
+			UpstreamDNS1:      dnsServerList[0],
+			UpstreamDNS2:      dnsServerList[1],
 		},
 	)
 }
@@ -233,8 +233,9 @@ func checkInstanceStatus(ctx context.Context, api seg.ServiceEndpointGatewayAPI,
 	if err != nil {
 		return false, err
 	}
+	// nil check for status check
 	if resp == nil {
-		return false, nil
+		return false, errors.New("read response is nil")
 	}
 
 	currentStatus, set := resp.Appliance.Instance.Status.Get()

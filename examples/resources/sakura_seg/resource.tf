@@ -19,7 +19,6 @@ resource "sakura_seg" "foobar" {
 	dns_forwarding = {
 		enabled = true
 		private_hosted_zone = "example.com" # zone name. see sakura_dns/resource.tf
-		upstream_dns_1 = "" # DNS Server (1) ns*.*****.sakura.ad.jp
-		upstream_dns_2 = "" # DNS Server (2) ns*.*****.sakura.ad.jp
+		dns_servers = ["",""] # DNS Servers ns*.*****.sakura.ad.jp. must set two record.
 	}
 }

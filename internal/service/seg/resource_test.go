@@ -70,8 +70,8 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.private_hosted_zone", dnsPrivateHostedZone),
-					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.upstream_dns_1", dnsUpstreamServer1),
-					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.upstream_dns_2", dnsUpstreamServer2),
+					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.dns_servers.0", dnsUpstreamServer1),
+					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.dns_servers.1", dnsUpstreamServer2),
 				),
 			},
 			{
@@ -184,8 +184,7 @@ resource "sakura_seg" "foobar" {
 	dns_forwarding = {
 		enabled = true
 		private_hosted_zone = "{{ .arg6 }}"
-		upstream_dns_1 = "{{ .arg7 }}"
-		upstream_dns_2 = "{{ .arg8 }}"
+		dns_servers = ["{{ .arg7 }}","{{ .arg8 }}"]
 	}
 }
 `

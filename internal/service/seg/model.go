@@ -24,8 +24,7 @@ type segEndpointSettingModel struct {
 type segDNSForwardingModel struct {
 	Enabled           types.Bool   `tfsdk:"enabled"`
 	PrivateHostedZone types.String `tfsdk:"private_hosted_zone"`
-	UpstreamDNS1      types.String `tfsdk:"upstream_dns_1"`
-	UpstreamDNS2      types.String `tfsdk:"upstream_dns_2"`
+	DNSServers        types.List   `tfsdk:"dns_servers"`
 }
 
 type segBaseModel struct {
@@ -118,8 +117,7 @@ func flattenDNSForwarding(setting v1.NilModelsSettingsApplianceSettings) types.O
 	model := segDNSForwardingModel{
 		Enabled:           types.BoolValue(dnsForwarding.Enabled == v1.ModelsSettingsDNSForwardingSettingsEnabledTrue),
 		PrivateHostedZone: types.StringValue(dnsForwarding.PrivateHostedZone),
-		UpstreamDNS1:      types.StringValue(dnsForwarding.UpstreamDNS1),
-		UpstreamDNS2:      types.StringValue(dnsForwarding.UpstreamDNS2),
+		DNSServers:        common.StringsToTlist([]string{dnsForwarding.UpstreamDNS1, dnsForwarding.UpstreamDNS2}),
 	}
 
 	value, diags := types.ObjectValueFrom(context.Background(), model.AttributeTypes(), model)
@@ -157,7 +155,6 @@ func (dns segDNSForwardingModel) AttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"enabled":             types.BoolType,
 		"private_hosted_zone": types.StringType,
-		"upstream_dns_1":      types.StringType,
-		"upstream_dns_2":      types.StringType,
+		"dns_servers":         types.ListType{ElemType: types.StringType},
 	}
 }

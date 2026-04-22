@@ -3,12 +3,12 @@
 page_title: "sakura_seg Data Source - sakura"
 subcategory: "Networking"
 description: |-
-  Get information about an existing seg.
+  Get information about an existing seg(Service Endpoint Gateway).
 ---
 
 # sakura_seg (Data Source)
 
-Get information about an existing seg.
+Get information about an existing seg(Service Endpoint Gateway).
 
 ## Example Usage
 
@@ -41,10 +41,9 @@ data "sakura_seg" "foobar" {
 
 Read-Only:
 
+- `dns_servers` (List of String) The name of upstream DNS servers for DNS forwarding
 - `enabled` (Boolean) The flag to enable DNS forwarding on the Service Endpoint Gateway
 - `private_hosted_zone` (String) The private hosted zone name for DNS forwarding
-- `upstream_dns_1` (String) The IP address of the first upstream DNS server for DNS forwarding
-- `upstream_dns_2` (String) The IP address of the second upstream DNS server for DNS forwarding
 
 
 <a id="nestedatt--endpoint_setting"></a>

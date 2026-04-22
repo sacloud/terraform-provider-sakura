@@ -142,13 +142,13 @@ func (r *segResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 						Required:    true,
 						Description: "The private hosted zone name for DNS forwarding",
 					},
-					"upstream_dns_1": schema.StringAttribute{
+					"dns_servers": schema.ListAttribute{
 						Required:    true,
-						Description: "The IP address of the first upstream DNS server for DNS forwarding",
-					},
-					"upstream_dns_2": schema.StringAttribute{
-						Required:    true,
-						Description: "The IP address of the second upstream DNS server for DNS forwarding",
+						ElementType: types.StringType,
+						Description: "The name of upstream DNS servers for DNS forwarding",
+						Validators: []validator.List{
+							listvalidator.SizeBetween(2, 2), // must be 2 servers.
+						},
 					},
 				},
 				MarkdownDescription: "The DNS forwarding settings of the Service Endpoint Gateway. This block is required when `dns_forwarding.enabled` is `true`.",
