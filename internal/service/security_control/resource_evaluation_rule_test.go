@@ -12,13 +12,12 @@ import (
 )
 
 func TestAccSakuraSecurityControlEvaluationRule_basic(t *testing.T) {
-	test.SkipIfEnvIsNotSet(t, "SAKURA_SERVICE_PRINCIPAL_ID")
+	test.SkipIfEnvIsNotSet(t, "SAKURA_SECURITY_CONTROL_SERVICE_PRINCIPAL_ID")
 
 	resourceName1 := "sakura_security_control_evaluation_rule.foobar1"
 	resourceName2 := "sakura_security_control_evaluation_rule.foobar2"
-	resourceName3 := "sakura_security_control_evaluation_rule.foobar3"
 	resourceName4 := "sakura_security_control_evaluation_rule.foobar4"
-	id := os.Getenv("SAKURA_SERVICE_PRINCIPAL_ID")
+	id := os.Getenv("SAKURA_SECURITY_CONTROL_SERVICE_PRINCIPAL_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -40,10 +39,6 @@ func TestAccSakuraSecurityControlEvaluationRule_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName2, "parameters.service_principal_id", id),
 					resource.TestCheckResourceAttr(resourceName2, "iam_roles_required.#", "1"),
 					resource.TestCheckResourceAttr(resourceName2, "no_action_on_delete", "false"),
-					resource.TestCheckResourceAttr(resourceName3, "id", "addon-threat-detections"),
-					resource.TestCheckResourceAttr(resourceName3, "enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName3, "iam_roles_required.#", "1"),
-					resource.TestCheckResourceAttr(resourceName3, "no_action_on_delete", "false"),
 					resource.TestCheckResourceAttr(resourceName4, "id", "objectstorage-bucket-encryption-enabled"),
 					resource.TestCheckResourceAttr(resourceName4, "enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName4, "parameters.service_principal_id", id),
@@ -67,10 +62,6 @@ func TestAccSakuraSecurityControlEvaluationRule_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName2, "enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName2, "iam_roles_required.#", "1"),
 					resource.TestCheckResourceAttr(resourceName2, "no_action_on_delete", "true"),
-					resource.TestCheckResourceAttr(resourceName3, "id", "addon-threat-detections"),
-					resource.TestCheckResourceAttr(resourceName3, "enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName3, "iam_roles_required.#", "1"),
-					resource.TestCheckResourceAttr(resourceName3, "no_action_on_delete", "true"),
 					resource.TestCheckResourceAttr(resourceName4, "id", "objectstorage-bucket-encryption-enabled"),
 					resource.TestCheckResourceAttr(resourceName4, "enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName4, "parameters.service_principal_id", id),
@@ -100,12 +91,6 @@ resource "sakura_security_control_evaluation_rule" "foobar2" {
   parameters = {
     service_principal_id = "{{ .arg0 }}"
   }
-  no_action_on_delete = false
-}
-
-resource "sakura_security_control_evaluation_rule" "foobar3" {
-  id      = "addon-threat-detections"
-  enabled = true
   no_action_on_delete = false
 }
 
@@ -139,12 +124,6 @@ resource "sakura_security_control_evaluation_rule" "foobar2" {
   no_action_on_delete = true
 }
 
-resource "sakura_security_control_evaluation_rule" "foobar3" {
-  id      = "addon-threat-detections"
-  enabled = false
-  no_action_on_delete = true
-}
-
 resource "sakura_security_control_evaluation_rule" "foobar4" {
   id      = "objectstorage-bucket-encryption-enabled"
   enabled = false
@@ -153,4 +132,50 @@ resource "sakura_security_control_evaluation_rule" "foobar4" {
     service_principal_id = "{{ .arg0 }}"
     targets = []
   }
+}`
+
+func TestAccSakuraSecurityControlEvaluationRule_addon(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_SECURITY_CONTROL_SERVICE_PRINCIPAL_ID")
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ENABLE_ADDON_TEST")
+
+	resourceName := "sakura_security_control_evaluation_rule.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccSakuraSecurityControlEvaluationRule_addon_basic,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "id", "addon-threat-detections"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "iam_roles_required.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "no_action_on_delete", "false"),
+				),
+			},
+			{
+				Config: testAccSakuraSecurityControlEvaluationRule_addon_update,
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "id", "addon-threat-detections"),
+					resource.TestCheckResourceAttr(resourceName, "enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "iam_roles_required.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "no_action_on_delete", "true"),
+				),
+			},
+		},
+	})
+}
+
+const testAccSakuraSecurityControlEvaluationRule_addon_basic = `
+resource "sakura_security_control_evaluation_rule" "foobar" {
+  id      = "addon-threat-detections"
+  enabled = true
+  no_action_on_delete = false
+}`
+
+const testAccSakuraSecurityControlEvaluationRule_addon_update = `
+resource "sakura_security_control_evaluation_rule" "foobar" {
+  id      = "addon-threat-detections"
+  enabled = false
+  no_action_on_delete = true
 }`
