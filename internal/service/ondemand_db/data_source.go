@@ -1,7 +1,7 @@
 // Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
-package enhanced_db
+package ondemand_db
 
 import (
 	"context"
@@ -15,24 +15,24 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
-type enhancedDBDataSource struct {
+type onDemandDBDataSource struct {
 	client *common.APIClient
 }
 
 var (
-	_ datasource.DataSource              = &enhancedDBDataSource{}
-	_ datasource.DataSourceWithConfigure = &enhancedDBDataSource{}
+	_ datasource.DataSource              = &onDemandDBDataSource{}
+	_ datasource.DataSourceWithConfigure = &onDemandDBDataSource{}
 )
 
-func NewEnhancedDBDataSource() datasource.DataSource {
-	return &enhancedDBDataSource{}
+func NewOnDemandDBDataSource() datasource.DataSource {
+	return &onDemandDBDataSource{}
 }
 
-func (d *enhancedDBDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_enhanced_db"
+func (d *onDemandDBDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_ondemand_db"
 }
 
-func (d *enhancedDBDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+func (d *onDemandDBDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
 	apiClient := common.GetApiClientFromProvider(req.ProviderData, &resp.Diagnostics)
 	if apiClient == nil {
 		return
@@ -40,12 +40,12 @@ func (d *enhancedDBDataSource) Configure(ctx context.Context, req datasource.Con
 	d.client = apiClient
 }
 
-type enhancedDBDataSourceModel struct {
-	enhancedDBBaseModel
+type onDemandDBDataSourceModel struct {
+	onDemandDBBaseModel
 }
 
-func (d *enhancedDBDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resourceName := "EnhancedDB"
+func (d *onDemandDBDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resourceName := "OnDemand Database"
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"id":          common.SchemaDataSourceId(resourceName),
@@ -79,13 +79,12 @@ func (d *enhancedDBDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Description: "The value of max connections setting",
 			},
 		},
-		MarkdownDescription: "Deprecated: use sakura_ondemand_db data-source instead",
-		DeprecationMessage:  "use sakura_ondemand_db data-source instead",
+		MarkdownDescription: "Get information about an existing OnDemand Database.",
 	}
 }
 
-func (d *enhancedDBDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var data enhancedDBDataSourceModel
+func (d *onDemandDBDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data onDemandDBDataSourceModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
 	if resp.Diagnostics.HasError() {
 		return
@@ -94,7 +93,7 @@ func (d *enhancedDBDataSource) Read(ctx context.Context, req datasource.ReadRequ
 	edbOp := iaas.NewEnhancedDBOp(d.client)
 	res, err := edbOp.Find(ctx, common.CreateFindCondition(data.ID, data.Name, data.Tags))
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", "failed to find EnhancedDB: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find OnDemand Database: "+err.Error())
 		return
 	}
 	if res == nil || res.Count == 0 || len(res.EnhancedDBs) == 0 {
@@ -104,7 +103,7 @@ func (d *enhancedDBDataSource) Read(ctx context.Context, req datasource.ReadRequ
 
 	edb, err := enhanceddbbuilder.Read(ctx, edbOp, res.EnhancedDBs[0].ID)
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", "failed to read EnhancedDB: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to read OnDemand Database: "+err.Error())
 		return
 	}
 

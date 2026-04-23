@@ -1,4 +1,4 @@
-resource "sakura_enhanced_db" "foobar" {
+resource "sakura_ondemand_db" "foobar" {
   name          = "example"
   database_name = "exampledb"
   database_type = "tidb"
