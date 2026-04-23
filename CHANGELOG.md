@@ -1,5 +1,20 @@
 # Changelog
 
+## [v3.9.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.8.1...v3.9.0) - 2026-04-23
+- doc: split document for contributors by @tokuhirom in https://github.com/sacloud/terraform-provider-sakura/pull/200
+- container_registry: Remove readwrite usage from access_level by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/203
+- go fmt もれ by @tokuhirom in https://github.com/sacloud/terraform-provider-sakura/pull/197
+- [chore] fix lint by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/199
+- monitoring_suite: Make retention_period_days configurable by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/205
+- Add Service Endpoint Gateway by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/186
+- test(security_control): improve test structure and environment variable naming by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/207
+- ci: bump Songmu/tagpr from 1.17.1 to 1.18.2 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/204
+- ci: bump actions/checkout from 6.0.1 to 6.0.2 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/193
+- go: bump github.com/minio/minio-go/v7 from 7.0.99 to 7.0.100 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/175
+- go: bump github.com/sacloud/iam-api-go from 0.2.0 to 0.3.0 in the sacloud group across 1 directory by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/206
+- ci: bump actions/setup-go from 6.1.0 to 6.4.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/170
+- enhanced_db to ondemand_db by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/189
+
 ## [v3.8.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.8.0...v3.8.1) - 2026-04-14
 - go: bump github.com/sacloud/workflows-api-go from 0.3.0 to 0.4.0 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/183
 - CI: improvements by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/190
