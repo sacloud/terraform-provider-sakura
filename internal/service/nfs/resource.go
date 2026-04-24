@@ -129,7 +129,7 @@ func (r *nfsResource) Create(ctx context.Context, req resource.CreateRequest, re
 		return
 	}
 
-	planID, err := expandNFSDiskPlanID(ctx, r.client, &plan)
+	planID, err := expandNFSDiskPlanID(ctx, r.client, zone, &plan)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: Expand Error", err.Error())
 		return
@@ -290,7 +290,7 @@ func getNFS(ctx context.Context, client *common.APIClient, zone string, id iaast
 	return nfs
 }
 
-func expandNFSDiskPlanID(ctx context.Context, client *common.APIClient, d *nfsResourceModel) (iaastypes.ID, error) {
+func expandNFSDiskPlanID(ctx context.Context, client *common.APIClient, zone string, d *nfsResourceModel) (iaastypes.ID, error) {
 	var planID iaastypes.ID
 	planName := d.Plan.ValueString()
 	planID, ok := iaastypes.NFSPlanIDMap[planName]
@@ -299,7 +299,7 @@ func expandNFSDiskPlanID(ctx context.Context, client *common.APIClient, d *nfsRe
 	}
 	size := d.Size.ValueInt64()
 
-	return query.FindNFSPlanID(ctx, iaas.NewNoteOp(client), planID, iaastypes.ENFSSize(size))
+	return query.FindNFSPlanID(ctx, iaas.NewNoteOp(client), zone, planID, iaastypes.ENFSSize(size))
 }
 
 func expandNFSCreateRequest(d *nfsResourceModel, planID iaastypes.ID) *iaas.NFSCreateRequest {

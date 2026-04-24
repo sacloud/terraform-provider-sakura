@@ -43,7 +43,7 @@ func (model *nfsBaseModel) updateState(ctx context.Context, client *common.APICl
 		model.IconID = types.StringValue(nfs.IconID.String())
 	}
 
-	plan, size, err := flattenNFSDiskPlan(ctx, client, nfs.PlanID)
+	plan, size, err := flattenNFSDiskPlan(ctx, client, zone, nfs.PlanID)
 	if err != nil {
 		return false, err
 	}
@@ -59,8 +59,8 @@ func (model *nfsBaseModel) updateState(ctx context.Context, client *common.APICl
 	return false, nil
 }
 
-func flattenNFSDiskPlan(ctx context.Context, client *common.APIClient, planID iaastypes.ID) (string, int, error) {
-	planInfo, err := query.GetNFSPlanInfo(ctx, iaas.NewNoteOp(client), planID)
+func flattenNFSDiskPlan(ctx context.Context, client *common.APIClient, zone string, planID iaastypes.ID) (string, int, error) {
+	planInfo, err := query.GetNFSPlanInfo(ctx, iaas.NewNoteOp(client), zone, planID)
 	if err != nil {
 		return "", 0, err
 	}

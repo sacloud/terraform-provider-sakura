@@ -13,6 +13,17 @@ updates:
       default-days: 7
 
   - package-ecosystem: gomod
+    directory: /tools
+    schedule:
+      interval: daily
+      time: "05:00"
+      timezone: Asia/Tokyo
+    commit-message:
+      prefix: "go:"
+    cooldown:
+      default-days: 7
+
+  - package-ecosystem: gomod
     directory: /
     groups:
       terraform:
