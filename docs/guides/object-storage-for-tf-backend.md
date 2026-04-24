@@ -32,7 +32,6 @@ terraform {
     skip_metadata_api_check     = true
     skip_region_validation      = true
     skip_requesting_account_id  = true
-    skip_s3_checksum            = true
   }
 }
 ```
@@ -48,17 +47,6 @@ aws_secret_access_key = "object-storage-secret-key"
 ```
 
 Obtain these values by creating a site and permissions.
-
-- Additional Environment Variables
-
-You need to set following environment variables to avoid API error.
-
-```
-AWS_REQUEST_CHECKSUM_CALCULATION=WHEN_REQUIRED
-AWS_RESPONSE_CHECKSUM_VALIDATION=WHEN_REQUIRED
-```
-
-See also: https://cloud.sakura.ad.jp/news/2025/02/04/objectstorage_defectversion/
 
 ## Notes
 
