@@ -53,7 +53,7 @@ func (d *authContextDataSource) Schema(ctx context.Context, req datasource.Schem
 		Attributes: map[string]schema.Attribute{
 			"id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The resource ID of the API Key or Service Principal ID.",
+				Description: "The resource ID of the API Key or Service Principal.",
 			},
 			"auth_type": schema.StringAttribute{
 				Computed:    true,
@@ -61,7 +61,7 @@ func (d *authContextDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"limited_to_project_id": schema.StringAttribute{
 				Computed:    true,
-				Description: "The operable project ID by API Key or Service Principal",
+				Description: "The operable project ID by the API Key or Service Principal",
 			},
 		},
 		MarkdownDescription: "Get information about an existing IAM Auth Context.",

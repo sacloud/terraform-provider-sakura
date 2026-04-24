@@ -76,7 +76,7 @@ func (d *userProvisioningDataSource) Read(ctx context.Context, req datasource.Re
 		perPage := 100 // TODO: Proper pagination if needed
 		scims, err := scimOp.List(ctx, scim.ListParams{PerPage: &perPage})
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list IAM user provisioning: %s", err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list IAM User Provisioning: %s", err))
 			return
 		}
 		res, err = filterIAMScimByName(scims.Items, data.Name.ValueString())
@@ -87,7 +87,7 @@ func (d *userProvisioningDataSource) Read(ctx context.Context, req datasource.Re
 	} else {
 		res, err = scimOp.Read(ctx, data.ID.ValueString())
 		if err != nil {
-			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM user provisioning[%s]: %s", data.ID.ValueString(), err))
+			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read IAM User Provisioning[%s]: %s", data.ID.ValueString(), err))
 			return
 		}
 	}
@@ -111,7 +111,7 @@ func filterIAMScimByName(keys []v1.ScimConfigurationBase, name string) (*v1.Scim
 		return nil, fmt.Errorf("no result")
 	}
 	if len(match) > 1 {
-		return nil, fmt.Errorf("multiple IAM user provisionings found with the same condition. name=%q", name)
+		return nil, fmt.Errorf("multiple IAM User Provisionings found with the same condition. name=%q", name)
 	}
 	return &match[0], nil
 }

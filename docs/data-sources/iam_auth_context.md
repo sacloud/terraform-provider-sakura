@@ -22,5 +22,5 @@ data "sakura_iam_auth_context" "foobar" {}
 ### Read-Only
 
 - `auth_type` (String) The authentication type. This will be one of [`apikey`/`service_principal`].
-- `id` (String) The resource ID of the API Key or Service Principal ID.
-- `limited_to_project_id` (String) The operable project ID by API Key or Service Principal
+- `id` (String) The resource ID of the API Key or Service Principal.
+- `limited_to_project_id` (String) The operable project ID by the API Key or Service Principal
