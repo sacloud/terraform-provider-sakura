@@ -13,6 +13,7 @@ import (
 	"github.com/sacloud/iam-api-go"
 	v1 "github.com/sacloud/iam-api-go/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
 type roleDataSource struct {
@@ -41,10 +42,11 @@ func (d *roleDataSource) Configure(ctx context.Context, req datasource.Configure
 }
 
 type roleDataSourceModel struct {
-	ID          types.String `tfsdk:"id"`
-	Name        types.String `tfsdk:"name"`
-	Description types.String `tfsdk:"description"`
-	Category    types.String `tfsdk:"category"`
+	ID                      types.String `tfsdk:"id"`
+	Name                    types.String `tfsdk:"name"`
+	Description             types.String `tfsdk:"description"`
+	Category                types.String `tfsdk:"category"`
+	LowestGrantableResource types.String `tfsdk:"lowest_grantable_resource"`
 }
 
 func (d *roleDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -56,6 +58,10 @@ func (d *roleDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 			"category": schema.StringAttribute{
 				Computed:    true,
 				Description: "The category of the IAM Role",
+			},
+			"lowest_grantable_resource": schema.StringAttribute{
+				Computed:    true,
+				Description: desc.Sprintf("Lowest hierarchy resource where this IAM role can be granted. This will be one of [%s].", common.MapTo(v1.IamRoleLowestGrantableResourceFolder.AllValues(), common.ToString)),
 			},
 		},
 		MarkdownDescription: "Get information about an existing IAM Role.",
@@ -80,5 +86,6 @@ func (d *roleDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	data.Name = types.StringValue(res.Name)
 	data.Description = types.StringValue(res.Description)
 	data.Category = types.StringValue(res.Category)
+	data.LowestGrantableResource = types.StringValue(string(res.LowestGrantableResource))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

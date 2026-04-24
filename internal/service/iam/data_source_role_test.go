@@ -28,6 +28,7 @@ func TestAccSakuraDataSourceIAMRole_Basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "name", "セキュリティコントロールエージェント"),
 					resource.TestCheckResourceAttr(resourceName, "description", "セキュリティコントロールの全評価ルールの実行ができる"),
 					resource.TestCheckResourceAttr(resourceName, "category", "securitycontrol"),
+					resource.TestCheckResourceAttrSet(resourceName, "lowest_grantable_resource"),
 				),
 			},
 		},
