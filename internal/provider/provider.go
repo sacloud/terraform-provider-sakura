@@ -310,6 +310,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		eventbus.NewEventBusTriggerDataSource,
 		gslb.NewGSLBDataSource,
 		iam.NewAuthDataSource,
+		iam.NewAuthContextDataSource,
 		iam.NewFolderDataSource,
 		iam.NewGroupDataSource,
 		iam.NewIdRoleDataSource,
