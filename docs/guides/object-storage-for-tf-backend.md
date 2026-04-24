@@ -49,17 +49,6 @@ aws_secret_access_key = "object-storage-secret-key"
 
 Obtain these values by creating a site and permissions.
 
-- Additional Environment Variables
-
-You need to set following environment variables to avoid API error.
-
-```
-AWS_REQUEST_CHECKSUM_CALCULATION=WHEN_REQUIRED
-AWS_RESPONSE_CHECKSUM_VALIDATION=WHEN_REQUIRED
-```
-
-See also: https://cloud.sakura.ad.jp/news/2025/02/04/objectstorage_defectversion/
-
 ## Notes
 
 Due to current API limitations, the `use_lockfile` parameter cannot be used when using Sakura's Object Storage.
