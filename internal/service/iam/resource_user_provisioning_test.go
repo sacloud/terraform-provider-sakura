@@ -65,7 +65,7 @@ func testCheckSakuraIAMUserProvisioningExists(n string, up *v1.ScimConfiguration
 		}
 
 		if rs.Primary.ID == "" {
-			return errors.New("no IAM Group ID is set")
+			return errors.New("no IAM User Provisioning is set")
 		}
 
 		client := test.AccClientGetter()
