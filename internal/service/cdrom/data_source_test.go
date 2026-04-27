@@ -26,6 +26,11 @@ func TestAccSakuraDataSourceCDROM_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "size", "5"),
+					resource.TestCheckResourceAttr(resourceName, "description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
+					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
+					resource.TestCheckNoResourceAttr(resourceName, "icon_id"),
 				),
 			},
 		},
