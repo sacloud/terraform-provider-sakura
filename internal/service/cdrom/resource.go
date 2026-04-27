@@ -29,7 +29,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/ftps"
 )
 
-var cdromValidSizes = []int{5, 10, 20}
+var cdromValidSizes = []int32{5, 10, 20}
 
 type cdromResource struct {
 	client *common.APIClient
@@ -82,7 +82,7 @@ func (r *cdromResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Default:     int32default.StaticInt32(5),
 				Description: desc.Sprintf("The size of CD-ROM in GiB. This must be one of [%s]", cdromValidSizes),
 				Validators: []validator.Int32{
-					int32validator.OneOf(common.MapTo(cdromValidSizes, common.IntToInt32)...),
+					int32validator.OneOf(cdromValidSizes...),
 				},
 				PlanModifiers: []planmodifier.Int32{
 					int32planmodifier.RequiresReplaceIfConfigured(),
