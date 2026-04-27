@@ -1,5 +1,10 @@
 # Changelog
 
+## [v3.9.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.9.0...v3.9.1) - 2026-04-27
+- chore: update iaas-service-go and tool dependencies, add tools to dependabot by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/208
+- Remove S3 Checksum Skips by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/212
+- Update IAM resource to support IAM API 1.3.0 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/211
+
 ## [v3.9.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.8.1...v3.9.0) - 2026-04-23
 - doc: split document for contributors by @tokuhirom in https://github.com/sacloud/terraform-provider-sakura/pull/200
 - container_registry: Remove readwrite usage from access_level by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/203
