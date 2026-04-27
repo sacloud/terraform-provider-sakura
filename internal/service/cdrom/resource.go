@@ -93,7 +93,6 @@ func (r *cdromResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Description: "The file path to upload to as the CD-ROM.",
 			},
 			"hash": schema.StringAttribute{
-				Optional:    true,
 				Computed:    true,
 				Description: "The md5 checksum calculated from the uploaded ISO file",
 			},
@@ -205,7 +204,8 @@ func (r *cdromResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	if plan.ISOImageFile.ValueString() != state.ISOImageFile.ValueString() || plan.Hash.ValueString() != state.Hash.ValueString() {
+	newHash := expandCDROMHash(&plan)
+	if newHash != state.Hash.ValueString() {
 		sourcePath, err := common.ExpandHomeDir(plan.ISOImageFile.ValueString())
 		if err != nil {
 			resp.Diagnostics.AddError("Update: File Error", err.Error())
