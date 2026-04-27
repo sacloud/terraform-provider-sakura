@@ -42,7 +42,7 @@ func (d *cdromDataSource) Configure(ctx context.Context, req datasource.Configur
 type cdromDataSourceModel struct {
 	common.SakuraBaseModel
 	Zone   types.String `tfsdk:"zone"`
-	Size   types.Int64  `tfsdk:"size"`
+	Size   types.Int32  `tfsdk:"size"`
 	IconID types.String `tfsdk:"icon_id"`
 }
 
@@ -88,7 +88,7 @@ func (d *cdromDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	cdrom := res.CDROMs[0]
 
 	data.UpdateBaseState(cdrom.ID.String(), cdrom.Name, cdrom.Description, cdrom.Tags)
-	data.Size = types.Int64Value(int64(cdrom.GetSizeGB()))
+	data.Size = types.Int32Value(int32(cdrom.GetSizeGB()))
 	data.IconID = types.StringValue(cdrom.IconID.String())
 	data.Zone = types.StringValue(zone)
 
