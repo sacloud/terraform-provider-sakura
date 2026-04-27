@@ -55,7 +55,7 @@ func (d *cdromDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, 
 			"tags":        common.SchemaDataSourceTags("CD-ROM"),
 			"zone":        common.SchemaDataSourceZone("CD-ROM"),
 			"icon_id":     common.SchemaDataSourceIconID("CD-ROM"),
-			"size": schema.Int64Attribute{
+			"size": schema.Int32Attribute{
 				Computed:    true,
 				Description: "The size of the CD-ROM in GiB.",
 			},
