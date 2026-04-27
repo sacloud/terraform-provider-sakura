@@ -1,0 +1,1 @@
+data "sakura_iam_auth_context" "foobar" {}

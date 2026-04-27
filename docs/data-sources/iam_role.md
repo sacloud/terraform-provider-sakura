@@ -30,3 +30,4 @@ data "sakura_iam_role" "foobar" {
 
 - `category` (String) The category of the IAM Role
 - `description` (String) The description of the IAM Role.
+- `lowest_grantable_resource` (String) Lowest hierarchy resource where this IAM role can be granted. This will be one of [`organization`/`folder`/`project`].

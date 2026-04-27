@@ -110,6 +110,7 @@ Container and Image:
   - container_registry
 Platform:
   - iam_auth
+  - iam_auth_context
   - iam_folder
   - iam_group
   - iam_id_role
@@ -121,6 +122,7 @@ Platform:
   - iam_service_principal
   - iam_sso
   - iam_user
+  - iam_user_provisioning
   - security_control_activation
   - security_control_automated_action
   - security_control_evaluation_rule
