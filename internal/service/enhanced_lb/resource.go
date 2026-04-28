@@ -6,6 +6,7 @@ package enhanced_lb
 import (
 	"context"
 	"fmt"
+	"regexp"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -132,6 +133,32 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
+			"origin_guard": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: "The origin guard configuration",
+				Attributes: map[string]schema.Attribute{
+					"token": schema.StringAttribute{
+						Required:    true,
+						Description: "The token used for origin guard. This must be between 8 and 32 alphanumeric characters",
+						Validators: []validator.String{
+							stringvalidator.RegexMatches(
+								regexp.MustCompile(`^[a-zA-Z0-9]{8,32}$`),
+								"must be between 8 and 32 alphanumeric characters",
+							),
+						},
+					},
+				},
+			},
+			"strict_rule": schema.SingleNestedAttribute{
+				Optional:    true,
+				Description: "The strict rule configuration",
+				Attributes: map[string]schema.Attribute{
+					"enabled": schema.BoolAttribute{
+						Required:    true,
+						Description: "The flag to enable strict rule",
+					},
 				},
 			},
 			"syslog": schema.SingleNestedAttribute{

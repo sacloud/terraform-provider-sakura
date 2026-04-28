@@ -35,6 +35,8 @@ type enhancedLBBaseModel struct {
 	VIP                  types.String                `tfsdk:"vip"`
 	ProxyNetworks        types.List                  `tfsdk:"proxy_networks"`
 	MonitoringSuite      types.Object                `tfsdk:"monitoring_suite"`
+	OriginGuard          types.Object                `tfsdk:"origin_guard"`
+	StrictRule           types.Object                `tfsdk:"strict_rule"`
 }
 
 type enhancedLBSyslogModel struct {
@@ -175,6 +177,8 @@ func (model *enhancedLBBaseModel) updateState(ctx context.Context, client *commo
 	model.LetsEncrypt = flattenEnhancedLBACMESetting(data)
 	model.Certificate = flattenEnhancedLBCerts(certs)
 	model.MonitoringSuite = common.FlattenMonitoringSuiteLog(data.MonitoringSuiteLog)
+	model.OriginGuard = flattenEnhancedLBOriginGuard(data)
+	model.StrictRule = flattenEnhancedLBStrictRule(data)
 	if data.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
 	} else {
@@ -343,6 +347,36 @@ func flattenEnhancedLBTimeout(elb *iaas.ProxyLB) int {
 		return elb.Timeout.InactiveSec
 	}
 	return 0
+}
+
+func flattenEnhancedLBOriginGuard(elb *iaas.ProxyLB) types.Object {
+	v := types.ObjectNull(map[string]attr.Type{"token": types.StringType})
+	if elb.OriginGuard != nil {
+		m := map[string]attr.Value{
+			"token": types.StringValue(elb.OriginGuard.Token),
+		}
+		obj, diags := types.ObjectValue(map[string]attr.Type{"token": types.StringType}, m)
+		if diags.HasError() {
+			return v
+		}
+		return obj
+	}
+	return v
+}
+
+func flattenEnhancedLBStrictRule(elb *iaas.ProxyLB) types.Object {
+	v := types.ObjectNull(map[string]attr.Type{"enabled": types.BoolType})
+	if elb.StrictRule != nil {
+		m := map[string]attr.Value{
+			"enabled": types.BoolValue(elb.StrictRule.Enabled),
+		}
+		obj, diags := types.ObjectValue(map[string]attr.Type{"enabled": types.BoolType}, m)
+		if diags.HasError() {
+			return v
+		}
+		return obj
+	}
+	return v
 }
 
 func flattenEnhancedLBACMESetting(elb *iaas.ProxyLB) types.Object {

@@ -6,16 +6,17 @@ package enhanced_lb
 import (
 	"context"
 
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/types"
+	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 func expandEnhancedLBCreateRequest(model *enhancedLBResourceModel) *iaas.ProxyLBCreateRequest {
 	return &iaas.ProxyLBCreateRequest{
-		Plan:                 types.EProxyLBPlan(model.Plan.ValueInt64()),
+		Plan:                 iaastypes.EProxyLBPlan(model.Plan.ValueInt64()),
 		HealthCheck:          expandEnhancedLBHealthCheck(model),
 		SorryServer:          expandEnhancedLBSorryServer(model),
 		BindPorts:            expandEnhancedLBBindPorts(model),
@@ -28,12 +29,14 @@ func expandEnhancedLBCreateRequest(model *enhancedLBResourceModel) *iaas.ProxyLB
 		Syslog:               expandEnhancedLBSyslog(model),
 		Timeout:              expandEnhancedLBTimeout(model),
 		UseVIPFailover:       model.VIPFailover.ValueBool(),
-		Region:               types.EProxyLBRegion(model.Region.ValueString()),
+		Region:               iaastypes.EProxyLBRegion(model.Region.ValueString()),
 		Name:                 model.Name.ValueString(),
 		Description:          model.Description.ValueString(),
 		Tags:                 common.TsetToStrings(model.Tags),
 		IconID:               common.ExpandSakuraCloudID(model.IconID),
 		MonitoringSuiteLog:   common.ExpandMonitoringSuiteLog(model.MonitoringSuite),
+		OriginGuard:          expandEnhancedLBOriginGuard(model),
+		StrictRule:           expandEnhancedLBStrictRule(model),
 		// LetsEncryptフィールドはenhanced_lb_acmeで管理するためCreate時には設定しない
 	}
 }
@@ -57,7 +60,39 @@ func expandEnhancedLBUpdateRequest(model, state *enhancedLBResourceModel) *iaas.
 		Tags:                 common.TsetToStrings(model.Tags),
 		IconID:               common.ExpandSakuraCloudID(model.IconID),
 		MonitoringSuiteLog:   common.ExpandMonitoringSuiteLog(model.MonitoringSuite),
+		OriginGuard:          expandEnhancedLBOriginGuard(model),
+		StrictRule:           expandEnhancedLBStrictRule(model),
 	}
+}
+
+func expandEnhancedLBOriginGuard(model *enhancedLBResourceModel) *iaas.ProxyLBOriginGuard {
+	if !model.OriginGuard.IsNull() && !model.OriginGuard.IsUnknown() {
+		var m struct {
+			Token types.String `tfsdk:"token"`
+		}
+		diags := model.OriginGuard.As(context.Background(), &m, basetypes.ObjectAsOptions{})
+		if !diags.HasError() {
+			return &iaas.ProxyLBOriginGuard{
+				Token: m.Token.ValueString(),
+			}
+		}
+	}
+	return nil
+}
+
+func expandEnhancedLBStrictRule(model *enhancedLBResourceModel) *iaas.ProxyLBStrictRule {
+	if !model.StrictRule.IsNull() && !model.StrictRule.IsUnknown() {
+		var m struct {
+			Enabled types.Bool `tfsdk:"enabled"`
+		}
+		diags := model.StrictRule.As(context.Background(), &m, basetypes.ObjectAsOptions{})
+		if !diags.HasError() {
+			return &iaas.ProxyLBStrictRule{
+				Enabled: m.Enabled.ValueBool(),
+			}
+		}
+	}
+	return nil
 }
 
 func expandEnhancedLBStickySession(model *enhancedLBResourceModel) *iaas.ProxyLBStickySession {
@@ -82,11 +117,11 @@ func expandEnhancedLBGzip(model *enhancedLBResourceModel) *iaas.ProxyLBGzip {
 func expandEnhancedLBBackendHttpKeepAlive(model *enhancedLBResourceModel) *iaas.ProxyLBBackendHttpKeepAlive {
 	s := model.BackendHttpKeepAlive.ValueString()
 	if s == "" {
-		s = types.ProxyLBBackendHttpKeepAlive.Safe.String()
+		s = iaastypes.ProxyLBBackendHttpKeepAlive.Safe.String()
 	}
 
 	return &iaas.ProxyLBBackendHttpKeepAlive{
-		Mode: types.EProxyLBBackendHttpKeepAlive(s),
+		Mode: iaastypes.EProxyLBBackendHttpKeepAlive(s),
 	}
 }
 
@@ -123,7 +158,7 @@ func expandEnhancedLBBindPorts(model *enhancedLBResourceModel) []*iaas.ProxyLBBi
 		}
 
 		results = append(results, &iaas.ProxyLBBindPort{
-			ProxyMode:         types.EProxyLBProxyMode(bindPort.ProxyMode.ValueString()),
+			ProxyMode:         iaastypes.EProxyLBProxyMode(bindPort.ProxyMode.ValueString()),
 			Port:              int(bindPort.Port.ValueInt32()),
 			RedirectToHTTPS:   bindPort.RedirectToHTTPS.ValueBool(),
 			SupportHTTP2:      bindPort.SupportHTTP2.ValueBool(),
@@ -140,14 +175,14 @@ func expandEnhancedLBHealthCheck(model *enhancedLBResourceModel) *iaas.ProxyLBHe
 		switch protocol {
 		case "http":
 			return &iaas.ProxyLBHealthCheck{
-				Protocol:  types.ProxyLBProtocols.HTTP,
+				Protocol:  iaastypes.ProxyLBProtocols.HTTP,
 				Path:      model.HealthCheck.Path.ValueString(),
 				Host:      model.HealthCheck.HostHeader.ValueString(),
 				DelayLoop: int(model.HealthCheck.DelayLoop.ValueInt64()),
 			}
 		case "tcp":
 			return &iaas.ProxyLBHealthCheck{
-				Protocol:  types.ProxyLBProtocols.TCP,
+				Protocol:  iaastypes.ProxyLBProtocols.TCP,
 				DelayLoop: int(model.HealthCheck.DelayLoop.ValueInt64()),
 			}
 		}
@@ -194,11 +229,10 @@ func expandEnhancedLBRules(model *enhancedLBResourceModel) []*iaas.ProxyLBRule {
 				RequestHeaderValueIgnoreCase: rule.RequestHeaderValueIgnoreCase.ValueBool(),
 				RequestHeaderValueNotMatch:   rule.RequestHeaderValueNotMatch.ValueBool(),
 				ServerGroup:                  rule.Group.ValueString(),
-				Action:                       types.EProxyLBRuleAction(rule.Action.ValueString()),
-				RedirectLocation:             rule.RedirectLocation.ValueString(),
-				RedirectStatusCode:           types.EProxyLBRedirectStatusCode(utils.MustAtoI(rule.RedirectStatusCode.ValueString())),
-				FixedStatusCode:              types.EProxyLBFixedStatusCode(utils.MustAtoI(rule.FixedStatusCode.ValueString())),
-				FixedContentType:             types.EProxyLBFixedContentType(rule.FixedContentType.ValueString()),
+				Action:                       iaastypes.EProxyLBRuleAction(rule.Action.ValueString()),
+				RedirectStatusCode:           iaastypes.EProxyLBRedirectStatusCode(utils.MustAtoI(rule.RedirectStatusCode.ValueString())),
+				FixedStatusCode:              iaastypes.EProxyLBFixedStatusCode(utils.MustAtoI(rule.FixedStatusCode.ValueString())),
+				FixedContentType:             iaastypes.EProxyLBFixedContentType(rule.FixedContentType.ValueString()),
 				FixedMessageBody:             rule.FixedMessageBody.ValueString(),
 			})
 		}

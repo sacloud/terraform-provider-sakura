@@ -25,6 +25,14 @@ resource "sakura_enhanced_lb" "foobar" {
     port   = 514
   }
 
+  origin_guard = {
+    token = "exampletoken"
+  }
+
+  strict_rule = {
+    enabled = true
+  }
+
   bind_port = [{
     proxy_mode = "http"
     port       = 80
