@@ -230,6 +230,7 @@ func expandEnhancedLBRules(model *enhancedLBResourceModel) []*iaas.ProxyLBRule {
 				RequestHeaderValueNotMatch:   rule.RequestHeaderValueNotMatch.ValueBool(),
 				ServerGroup:                  rule.Group.ValueString(),
 				Action:                       iaastypes.EProxyLBRuleAction(rule.Action.ValueString()),
+				RedirectLocation:             rule.RedirectLocation.ValueString(),
 				RedirectStatusCode:           iaastypes.EProxyLBRedirectStatusCode(utils.MustAtoI(rule.RedirectStatusCode.ValueString())),
 				FixedStatusCode:              iaastypes.EProxyLBFixedStatusCode(utils.MustAtoI(rule.FixedStatusCode.ValueString())),
 				FixedContentType:             iaastypes.EProxyLBFixedContentType(rule.FixedContentType.ValueString()),
