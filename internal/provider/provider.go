@@ -63,6 +63,7 @@ import (
 	sw1tch "github.com/sacloud/terraform-provider-sakura/internal/service/switch"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/vpn_router"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/vswitch"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/webaccel"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/workflows"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/zone"
 )
@@ -202,7 +203,7 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 		AccessToken:           envvar.StringFromEnvMulti([]string{"SAKURA_ACCESS_TOKEN", "SAKURACLOUD_ACCESS_TOKEN"}, ""),
 		AccessTokenSecret:     envvar.StringFromEnvMulti([]string{"SAKURA_ACCESS_TOKEN_SECRET", "SAKURACLOUD_ACCESS_TOKEN_SECRET"}, ""),
 		ServicePrincipalID:    envvar.StringFromEnv("SAKURA_SERVICE_PRINCIPAL_ID", ""),
-		ServicePrincipalKeyID: envvar.StringFromEnv("SAKURA_SERVICE_PRINCIPAL_KEY_ID", ""),
+		ServicePrincipalKeyID: envvar.StringFromEnvMulti([]string{"SAKURA_SERVICE_PRINCIPAL_KEY_KID", "SAKURA_SERVICE_PRINCIPAL_KEY_ID"}, ""),
 		ServicePrivateKey:     envvar.StringFromEnv("SAKURA_PRIVATE_KEY", ""),
 		ServicePrivateKeyPath: envvar.StringFromEnv("SAKURA_PRIVATE_KEY_PATH", ""),
 		Zone:                  envvar.StringFromEnvMulti([]string{"SAKURA_ZONE", "SAKURACLOUD_ZONE"}, ""),
@@ -362,6 +363,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		sw1tch.NewSwitchDataSource,
 		vpn_router.NewVPNRouterDataSource,
 		vswitch.NewvSwitchDataSource,
+		webaccel.NewWebAccelDataSource,
 		workflows.NewPlanDataSource,
 		workflows.NewSubscriptionDataSource,
 		workflows.NewWorkflowsDataSource,
@@ -482,6 +484,10 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		sw1tch.NewSwitchResource,
 		vpn_router.NewVPNRouterResource,
 		vswitch.NewvSwitchResource,
+		webaccel.NewWebAccelResource,
+		webaccel.NewWebAccelACLResource,
+		webaccel.NewWebAccelActivationResource,
+		webaccel.NewWebAccelCertificateResource,
 		workflows.NewSubscriptionResource,
 		workflows.NewWorkflowsResource,
 		workflows.NewWorkflowsRevisionAliasResource,
