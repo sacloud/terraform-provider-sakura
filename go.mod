@@ -121,6 +121,7 @@ require (
 	github.com/sacloud/go-http v0.1.9 // indirect
 	github.com/sacloud/go-otelsetup v0.5.0 // indirect
 	github.com/sacloud/iaas-api-go/trace/otel v0.0.0-20251222225644-7df65ab7d2cf // indirect
+	github.com/sacloud/webaccel-api-go v1.5.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shivamMg/ppds v0.0.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
