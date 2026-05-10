@@ -33,10 +33,6 @@ v3 における変更点は [CHANGES.md](./CHANGES.md) をご覧ください。
 - esme
 - mobile_gateway
 - sim
-- webaccel
-- webaccel_activation
-- webaccel_acl
-- webaccel_certificate
 
 ## 開発者向け
 

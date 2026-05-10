@@ -52,6 +52,10 @@ Networking:
   - subnet
   - vswitch
   - vpn_router
+  - webaccel
+  - webaccel_activation
+  - webaccel_acl
+  - webaccel_certificate
 Application Integration:
   - addon_ai
   - addon_cdn

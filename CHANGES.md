@@ -1270,3 +1270,68 @@ scheduled_maintenance = {
   // ...
 }
 ```
+
+### webaccel
+
+他のリソースのオブジェクトストレージを指定するパラメータ群と統一するためにパラメータ名を変更をしています。
+
+- s3_endpoint -> endpoint
+- s3_region -> region
+- s3_bucket_name -> bucket_name
+- s3_access_key_id -> access_key
+- s3_secret_access_key -> secret_access_key
+- s3_doc_index -> doc_index
+
+`access_key` / `secret_access_key` / `onetime_url_secrets`がWriteOnlyに変更されているため、それぞれの`credentials_version` / `onetime_url_secrets_version`を一緒に指定するようにしてください。
+
+`origin_parameters` / `logging`はBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+origin_parameters {
+  // ...
+}
+logging {
+  // ...
+}
+```
+
+- v3
+
+```hcl
+origin_parameters = {
+  // ...
+}
+logging = {
+  // ...
+}
+```
+
+`cors_rules`はBlockからSet型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+cors_rules {
+  // ...
+}
+cors_rules {
+  // ...
+}
+```
+
+- v3
+
+```hcl
+cors_ruels = [{
+  // ...
+},
+{
+  // ...
+}]
+```
+
+### webaccel_certificate
+
+`certificate_chain` / `private_key` はWriteOnlyになりました。`certificate_version`を一緒に指定するようにしてください。
