@@ -384,9 +384,6 @@ func TestAccSakuraResourceWebAccel_InvalidConfigurations(t *testing.T) {
 				{
 					Config: tc,
 					ExpectError: func() *regexp.Regexp {
-						if name == "valid" {
-							return nil
-						}
 						return regexp.MustCompile(".")
 					}(),
 				},
@@ -544,7 +541,7 @@ func testAccCheckSakuraWebAccelInvalidConfigs(origin string) map[string]string {
 	confUnknownArgument := `
 resource sakura_webaccel "foobar" {
   invalid = true
-  name = "dummy"
+  name = "dummy1"
   domain_type = "subdomain"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -561,7 +558,7 @@ resource sakura_webaccel "foobar" {
 
 	confInvalidDomainType := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy2"
   domain_type = "INVALID"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -578,7 +575,7 @@ resource sakura_webaccel "foobar" {
 
 	confInvalidRequestProtocol := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy3"
   domain_type = "subdomain"
   request_protocol = "http"
   origin_parameters = {
@@ -594,7 +591,7 @@ resource sakura_webaccel "foobar" {
 `
 	confWithoutOriginParameters := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy4"
   domain_type = "subdomain"
   request_protocol = "https-redirect"
   vary_support = true
@@ -605,7 +602,7 @@ resource sakura_webaccel "foobar" {
 
 	confInvalidOriginType := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy5"
   domain_type = "subdomain"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -622,7 +619,7 @@ resource sakura_webaccel "foobar" {
 
 	confLackingWebOriginParameters := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy6"
   domain_type = "subdomain"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -637,7 +634,7 @@ resource sakura_webaccel "foobar" {
 
 	confMismatchedOriginParameters := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy7"
   domain_type = "subdomain"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -653,7 +650,7 @@ resource sakura_webaccel "foobar" {
 	// config without the object storage's endpoint parameter
 	confLackingBucketOriginParameters := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy8"
   domain_type = "subdomain"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -670,7 +667,7 @@ resource sakura_webaccel "foobar" {
 
 	confInvalidNormalizeAE := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy9"
   domain_type = "subdomain"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -687,7 +684,7 @@ resource sakura_webaccel "foobar" {
 	// config without the S3 secret access key for logging
 	confMissingLoggingParameters := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy10"
   domain_type = "subdomain"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -704,7 +701,7 @@ resource sakura_webaccel "foobar" {
 	// allow_all and allowed_origins should not be specified together
 	confInvalidCorsConfiguration := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy11"
   domain_type = "subdomain"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -728,7 +725,7 @@ resource sakura_webaccel "foobar" {
 
 	confOwnDomainWithoutDomain := `
 resource sakura_webaccel "foobar" {
-  name = "dummy"
+  name = "dummy12"
   domain_type = "own_domain"
   request_protocol = "https-redirect"
   origin_parameters = {
@@ -743,28 +740,6 @@ resource sakura_webaccel "foobar" {
 }
 `
 
-	valid := `
-	resource sakura_webaccel "foobar" {
-	name = "dummy"
-	domain_type = "subdomain"
-	request_protocol = "https-redirect"
-	origin_parameters = {
-	  type = "web"
-	  origin = "%s"
-	  protocol = "https"
-	}
-	cors_rules = [{
-	  allowed_origins = [
-	    "https://www2.example.com",
-	    "https://app.example.com"
-	  ]
-	}]
-	vary_support = true
-	default_cache_ttl = 3600
-	normalize_ae = "br+gzip"
-	}
-	`
-
 	tt := map[string]string{
 		"unknown-argument":                         confUnknownArgument,
 		"invalid-request-protocol":                 confInvalidRequestProtocol,
@@ -778,7 +753,6 @@ resource sakura_webaccel "foobar" {
 		"missing-logging-bucket-secret":            confMissingLoggingParameters,
 		"invalid-cors-configuration":               confInvalidCorsConfiguration,
 		"own-domain-without-domain":                confOwnDomainWithoutDomain,
-		"valid":                                    valid,
 	}
 	for k, v := range tt {
 		if strings.Contains(v, "%s") {

@@ -346,13 +346,6 @@ func (r *webAccelResource) Create(ctx context.Context, req resource.CreateReques
 		reqCreate.NormalizeAE = expandWebAccelNormalizeAEParameter(plan.NormalizeAE)
 	}
 
-	op := webaccel.NewOp(r.client)
-	created, err := op.Create(ctx, reqCreate)
-	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create WebAccel site: %s", err))
-		return
-	}
-
 	// NOTE: WebAccel site creation API does not accept CORS, onetime secrets, or logging.
 	// Apply them after create when configured.
 	var (
@@ -361,14 +354,26 @@ func (r *webAccelResource) Create(ctx context.Context, req resource.CreateReques
 		hasLoggingConfig    = plan.Logging != nil
 	)
 
+	if hasCorsRule {
+		// CORSルールのチェックを事前に行う。Create後にチェックするとサイトは作られるがエラーとなりリソースが残るため。
+		_, err := expandWebAccelCORSParameters(&plan)
+		if err != nil {
+			resp.Diagnostics.AddError("Create: Invalid cors_rules", err.Error())
+			return
+		}
+	}
+
+	op := webaccel.NewOp(r.client)
+	created, err := op.Create(ctx, reqCreate)
+	if err != nil {
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create WebAccel site: %s", err))
+		return
+	}
+
 	if hasCorsRule || hasOnetimeURLSecret {
 		updateReq := new(webaccel.UpdateSiteRequest)
 		if hasCorsRule {
-			corsRule, err := expandWebAccelCORSParameters(&plan)
-			if err != nil {
-				resp.Diagnostics.AddError("Create: Invalid cors_rules", err.Error())
-				return
-			}
+			corsRule, _ := expandWebAccelCORSParameters(&plan)
 			updateReq.CORSRules = &[]*webaccel.CORSRule{corsRule}
 		} else {
 			updateReq.CORSRules = &[]*webaccel.CORSRule{}
