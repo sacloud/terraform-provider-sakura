@@ -60,14 +60,14 @@ func (m *webAccelBaseModel) updateState(site *webaccel.Site) error {
 }
 
 type webAccelOriginParamModel struct {
-	Type       types.String `tfsdk:"type"`
-	Origin     types.String `tfsdk:"origin"`
-	Protocol   types.String `tfsdk:"protocol"`
-	HostHeader types.String `tfsdk:"host_header"`
-	Endpoint   types.String `tfsdk:"endpoint"`
-	Region     types.String `tfsdk:"region"`
-	BucketName types.String `tfsdk:"bucket_name"`
-	DocIndex   types.Bool   `tfsdk:"doc_index"`
+	Type             types.String `tfsdk:"type"`
+	Origin           types.String `tfsdk:"origin"`
+	Protocol         types.String `tfsdk:"protocol"`
+	HostHeader       types.String `tfsdk:"host_header"`
+	Endpoint         types.String `tfsdk:"endpoint"`
+	Region           types.String `tfsdk:"region"`
+	BucketName       types.String `tfsdk:"bucket_name"`
+	UseDocumentIndex types.Bool   `tfsdk:"use_document_index"`
 }
 
 type webAccelCorsRuleModel struct {

@@ -69,7 +69,7 @@ type webAccelOriginParamWithKeysModel struct {
 	Endpoint           types.String `tfsdk:"endpoint"`
 	Region             types.String `tfsdk:"region"`
 	BucketName         types.String `tfsdk:"bucket_name"`
-	DocIndex           types.Bool   `tfsdk:"doc_index"`
+	UseDocumentIndex   types.Bool   `tfsdk:"use_document_index"`
 	AccessKey          types.String `tfsdk:"access_key"`
 	SecretAccessKey    types.String `tfsdk:"secret_access_key"`
 	CredentialsVersion types.Int32  `tfsdk:"credentials_version"`
@@ -192,7 +192,7 @@ func (r *webAccelResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_access_key")),
 						},
 					},
-					"doc_index": schema.BoolAttribute{
+					"use_document_index": schema.BoolAttribute{
 						Optional:    true,
 						Description: "Whether the document indexing for the bucket is enabled or not. Optional for type = bucket",
 					},
@@ -664,7 +664,7 @@ func expandWebAccelOriginParametersForUpdate(plan, config, state *webAccelResour
 				req.SecretAccessKey = config.OriginParameters.SecretAccessKey.ValueString()
 			}
 		}
-		if !originParam.DocIndex.IsNull() && !originParam.DocIndex.IsUnknown() && originParam.DocIndex.ValueBool() {
+		if utils.IsKnown(originParam.UseDocumentIndex) && originParam.UseDocumentIndex.ValueBool() {
 			req.DocIndex = webaccel.DocIndexEnabled
 		} else {
 			req.DocIndex = webaccel.DocIndexDisabled
@@ -767,7 +767,7 @@ func flattenWebAccelOriginParameters(config *webAccelResourceModel, site *webacc
 		Endpoint:           types.StringNull(),
 		Region:             types.StringNull(),
 		BucketName:         types.StringNull(),
-		DocIndex:           types.BoolNull(),
+		UseDocumentIndex:   types.BoolNull(),
 		CredentialsVersion: types.Int32Null(),
 	}
 
@@ -796,8 +796,8 @@ func flattenWebAccelOriginParameters(config *webAccelResourceModel, site *webacc
 			return nil, fmt.Errorf("origin_parameters must be provided to keep bucket credentials")
 		}
 		confParam := config.OriginParameters
-		if utils.IsKnown(confParam.DocIndex) {
-			originParam.DocIndex = types.BoolValue(confParam.DocIndex.ValueBool())
+		if utils.IsKnown(confParam.UseDocumentIndex) {
+			originParam.UseDocumentIndex = types.BoolValue(confParam.UseDocumentIndex.ValueBool())
 		}
 		if utils.IsKnown(confParam.CredentialsVersion) {
 			originParam.CredentialsVersion = types.Int32Value(confParam.CredentialsVersion.ValueInt32())

@@ -1280,7 +1280,7 @@ scheduled_maintenance = {
 - s3_bucket_name -> bucket_name
 - s3_access_key_id -> access_key
 - s3_secret_access_key -> secret_access_key
-- s3_doc_index -> doc_index
+- s3_doc_index -> use_document_index
 
 `access_key` / `secret_access_key` / `onetime_url_secrets`がWriteOnlyに変更されているため、それぞれの`credentials_version` / `onetime_url_secrets_version`を一緒に指定するようにしてください。
 

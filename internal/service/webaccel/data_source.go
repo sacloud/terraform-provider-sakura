@@ -114,7 +114,7 @@ func (d *webAccelDataSource) Schema(ctx context.Context, _ datasource.SchemaRequ
 						Computed:    true,
 						Description: "S3 bucket name. Required for type = bucket",
 					},
-					"doc_index": schema.BoolAttribute{
+					"use_document_index": schema.BoolAttribute{
 						Computed:    true,
 						Description: "Whether the document indexing for the bucket is enabled or not. Optional for type = bucket",
 					},
@@ -256,14 +256,14 @@ func (d *webAccelDataSource) Read(ctx context.Context, req datasource.ReadReques
 
 func flattenWebAccelOriginParametersDataSource(site *webaccel.Site) (*webAccelOriginParamModel, error) {
 	model := webAccelOriginParamModel{
-		Type:       types.StringNull(),
-		Origin:     types.StringNull(),
-		Protocol:   types.StringNull(),
-		HostHeader: types.StringNull(),
-		Endpoint:   types.StringNull(),
-		Region:     types.StringNull(),
-		BucketName: types.StringNull(),
-		DocIndex:   types.BoolNull(),
+		Type:             types.StringNull(),
+		Origin:           types.StringNull(),
+		Protocol:         types.StringNull(),
+		HostHeader:       types.StringNull(),
+		Endpoint:         types.StringNull(),
+		Region:           types.StringNull(),
+		BucketName:       types.StringNull(),
+		UseDocumentIndex: types.BoolNull(),
 	}
 
 	switch site.OriginType {
@@ -286,6 +286,7 @@ func flattenWebAccelOriginParametersDataSource(site *webaccel.Site) (*webAccelOr
 		model.Endpoint = types.StringValue(site.S3Endpoint)
 		model.Region = types.StringValue(site.S3Region)
 		model.BucketName = types.StringValue(site.BucketName)
+		model.UseDocumentIndex = types.BoolValue(site.DocIndex == webaccel.DocIndexEnabled)
 	default:
 		return nil, fmt.Errorf("unknown origin type: %s", site.OriginType)
 	}

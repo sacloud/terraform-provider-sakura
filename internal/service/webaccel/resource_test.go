@@ -316,7 +316,7 @@ func TestAccSakuraResourceWebAccel_BucketOrigin(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.access_key"),
 					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.secret_access_key"),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.credentials_version", "1"),
-					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.doc_index", "true"),
+					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.use_document_index", "true"),
 				),
 			},
 		},
@@ -499,7 +499,7 @@ resource sakura_webaccel "foobar" {
     access_key = "%s"
     secret_access_key = "%s"
 	credentials_version = 1
-    doc_index = true
+    use_document_index = true
   }
   default_cache_ttl = 3600
   normalize_ae = "br+gzip"
