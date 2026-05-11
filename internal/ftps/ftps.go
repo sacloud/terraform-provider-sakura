@@ -7,7 +7,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"time"
