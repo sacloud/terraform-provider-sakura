@@ -16,6 +16,7 @@ Computing:
   - private_host
 Storage and Data:
   - archive
+  - cdrom
   - disk
   - dedicated_storage
   - nfs

@@ -290,6 +290,35 @@ schedule_scaling = [{
 }]
 ```
 
+### cdrom
+
+`content` / `content_file_name` フィールドは削除されました。v2では`content`に文字列を渡すと内部で`iso9660wrap`を使ってその場でISOを組み立ててアップロードしていましたが、v3ではこの機能を提供しません。事前にローカルでISOを作成し、`iso_image_file`にパスを渡してください。
+
+- v2
+
+```hcl
+resource "sakuracloud_cdrom" "foobar" {
+  name              = "foobar"
+  size              = 5
+  content           = "Hello, World!"
+  content_file_name = "hello.txt"
+}
+```
+
+- v3
+
+```hcl
+# ローカルで事前にISOを作る (例: genisoimage / mkisofs / hdiutil 等)
+#   echo "Hello, World!" > hello.txt
+#   genisoimage -V config -o hello.iso hello.txt
+
+resource "sakura_cdrom" "foobar" {
+  name           = "foobar"
+  size           = 5
+  iso_image_file = "hello.iso"
+}
+```
+
 ### container_registry
 
 `user`フィールドがBlockからSet型のAttributeに変更されたため、下記のように書き換える必要があります。

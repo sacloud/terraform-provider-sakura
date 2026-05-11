@@ -1,4 +1,4 @@
-// Copyright 2016-2025 The terraform-provider-sakura Authors
+// Copyright 2016-2026 The terraform-provider-sakura Authors
 // SPDX-License-Identifier: Apache-2.0
 
 package sakura
@@ -26,6 +26,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/service/auto_backup"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/auto_scale"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/bridge"
+	"github.com/sacloud/terraform-provider-sakura/internal/service/cdrom"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/cloudhsm"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/container_registry"
 	"github.com/sacloud/terraform-provider-sakura/internal/service/database"
@@ -293,6 +294,7 @@ func (p *sakuraProvider) DataSources(_ context.Context) []func() datasource.Data
 		archive.NewArchiveDataSource,
 		auto_scale.NewAutoScaleDataSource,
 		bridge.NewBridgeDataSource,
+		cdrom.NewCDROMDataSource,
 		cloudhsm.NewCloudHSMClientDataSource,
 		cloudhsm.NewCloudHSMDataSource,
 		cloudhsm.NewCloudHSMLicenseDataSource,
@@ -401,6 +403,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		auto_backup.NewAutoBackupResource,
 		auto_scale.NewAutoScaleResource,
 		bridge.NewBridgeResource,
+		cdrom.NewCDROMResource,
 		cloudhsm.NewCloudHSMClientResource,
 		cloudhsm.NewCloudHSMLicenseResource,
 		cloudhsm.NewCloudHSMPeerResource,
