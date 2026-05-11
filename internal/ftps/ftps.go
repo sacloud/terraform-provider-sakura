@@ -32,7 +32,6 @@ func UploadFile(ctx context.Context, user, pass, host, file string) error {
 		defer close(compCh)
 		defer close(errCh)
 
-		log.Printf("[INFO] upload file to ftps %s", host)
 		conn, err := ftp.Dial(
 			fmt.Sprintf("%s:%d", host, 21),
 			ftp.DialWithTimeout(30*time.Minute),
