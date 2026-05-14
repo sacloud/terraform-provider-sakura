@@ -239,17 +239,11 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 						Optional:    true,
 						Computed:    true,
 						Description: "The value of host header send when checking by HTTP",
-						Validators: []validator.String{
-							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("path")),
-						},
 					},
 					"path": schema.StringAttribute{
 						Optional:    true,
 						Computed:    true,
 						Description: "The path used when checking by HTTP",
-						Validators: []validator.String{
-							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("host_header")),
-						},
 					},
 				},
 			},
