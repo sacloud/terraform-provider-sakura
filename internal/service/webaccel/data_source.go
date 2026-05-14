@@ -104,15 +104,15 @@ func (d *webAccelDataSource) Schema(ctx context.Context, _ datasource.SchemaRequ
 					},
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
-						Description: "S3 endpoint without protocol scheme. Required for type = bucket",
+						Description: "Object Storage's S3 endpoint without protocol scheme. Required for type = bucket",
 					},
 					"region": schema.StringAttribute{
 						Computed:    true,
-						Description: "S3 region. Required for type = bucket",
+						Description: "Object Storage's S3 region. Required for type = bucket",
 					},
 					"bucket_name": schema.StringAttribute{
 						Computed:    true,
-						Description: "S3 bucket name. Required for type = bucket",
+						Description: "Object Storage's bucket name. Required for type = bucket",
 					},
 					"use_document_index": schema.BoolAttribute{
 						Computed:    true,
@@ -143,15 +143,15 @@ func (d *webAccelDataSource) Schema(ctx context.Context, _ datasource.SchemaRequ
 					},
 					"endpoint": schema.StringAttribute{
 						Computed:    true,
-						Description: "Logging S3 endpoint",
+						Description: "Logging Object Storage's S3 endpoint",
 					},
 					"region": schema.StringAttribute{
 						Computed:    true,
-						Description: "Logging S3 region",
+						Description: "Logging Object Storage's S3 region",
 					},
 					"bucket_name": schema.StringAttribute{
 						Computed:    true,
-						Description: "Logging S3 bucket name",
+						Description: "Logging Object Storage's bucket name",
 					},
 				},
 			},

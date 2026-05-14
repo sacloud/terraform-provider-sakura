@@ -14,10 +14,10 @@ Manages a WebAccel certificate.
 
 ```terraform
 resource "sakura_webaccel_certificate" "foobar" {
-  site_id             = "webaccel-site-id" # e.g. sakura_webaccel.foobar.id
-  certificate_chain   = file("/path/to/crt.pem")
-  private_key         = file("/path/to/key.pem")
-  certificate_version = 1
+  site_id                = "webaccel-site-id" # e.g. sakura_webaccel.foobar.id
+  certificate_chain_wo   = file("/path/to/crt.pem")
+  private_key_wo         = file("/path/to/key.pem")
+  certificate_wo_version = 1
 }
 ```
 
@@ -28,13 +28,13 @@ resource "sakura_webaccel_certificate" "foobar" {
 
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
-- `certificate_chain` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Certificate chain in PEM format.
-- `private_key` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Private key in PEM format.
+- `certificate_chain_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Certificate chain in PEM format.
+- `private_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Private key in PEM format.
 - `site_id` (String) The site ID of WebAccel.
 
 ### Optional
 
-- `certificate_version` (Number) The version of the certificate chain/key. This value must be greater than 0 when set. Increment this when changing certificate.
+- `certificate_wo_version` (Number) The version of the certificate chain/key. This value must be greater than 0 when set. Increment this when changing certificate.
 
 ### Read-Only
 

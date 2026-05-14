@@ -30,9 +30,9 @@ resource sakura_webaccel "foobar" {
     endpoint = "s3.isk01.sakurastorage.jp"
     region = "jp-north-1"
     bucket_name = "foobar-bucket"
-    access_key = "..."
-    secret_access_key = "..."
-    credentials_version = 1
+    access_key_wo = "..."
+    secret_access_key_wo = "..."
+    credentials_wo_version = 1
   }
   // other parameters, e.g. vary_support, cors_rules, etc.
 }
@@ -57,8 +57,8 @@ resource sakura_webaccel "foobar" {
 - `domain` (String) Domain name of the site. Required when domain_type is own_domain
 - `logging` (Attributes) Logging configuration of the site (see [below for nested schema](#nestedatt--logging))
 - `normalize_ae` (String) Accept-encoding normalization. This must be one of [gzip, br+gzip]
-- `onetime_url_secrets` (List of String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The site-wide onetime url secrets
-- `onetime_url_secrets_version` (Number) The version of the onetime_url_secrets field. This value must be greater than 0 when set. Increment this when changing secrets.
+- `onetime_url_secrets_wo` (List of String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The site-wide onetime url secrets
+- `onetime_url_secrets_wo_version` (Number) The version of the onetime_url_secrets field. This value must be greater than 0 when set. Increment this when changing secrets.
 - `vary_support` (Boolean) Whether the site recognizes the Vary header or not
 
 ### Read-Only
@@ -78,16 +78,16 @@ Required:
 
 Optional:
 
-- `access_key` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) access key. Required for type = bucket
+- `access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) access key. Required for type = bucket
 - `bucket_name` (String) bucket name. Required for type = bucket
-- `credentials_version` (Number) The version of the credential fields. This value must be greater than 0 when set. Increment this when changing credentials.
-- `doc_index` (Boolean) Whether the document indexing for the bucket is enabled or not. Optional for type = bucket
+- `credentials_wo_version` (Number) The version of the credential fields. This value must be greater than 0 when set. Increment this when changing credentials.
 - `endpoint` (String) S3 endpoint without protocol scheme. Required for type = bucket
 - `host_header` (String) Host header to the origin. Optional for type = web
 - `origin` (String) Origin hostname or IP address. Required for type = web
 - `protocol` (String) Request protocol for the origin host. Required for type = web
 - `region` (String) S3 region. Required for type = bucket
-- `secret_access_key` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) secret access key. Required for type = bucket
+- `secret_access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) secret access key. Required for type = bucket
+- `use_document_index` (Boolean) Whether the document indexing for the bucket is enabled or not. Optional for type = bucket
 
 
 <a id="nestedatt--cors_rules"></a>
@@ -104,13 +104,13 @@ Optional:
 
 Required:
 
-- `access_key` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage access key
+- `access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage access key
 - `bucket_name` (String) Object Storage bucket name
 - `enabled` (Boolean) Whether the site logging is enabled or not
 - `endpoint` (String) Object Storage's S3 endpoint without protocol scheme
 - `region` (String) Object Storage's S3 region
-- `secret_access_key` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage secret access key
+- `secret_access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage secret access key
 
 Optional:
 
-- `credentials_version` (Number) The version of the credentials fields. This value must be greater than 0 when set. Increment this when changing credentials.
+- `credentials_wo_version` (Number) The version of the credentials fields. This value must be greater than 0 when set. Increment this when changing credentials.

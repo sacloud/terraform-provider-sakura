@@ -106,8 +106,9 @@ data "sakura_webaccel" "site" {
 }
 resource "sakura_webaccel_certificate" "foobar" {
   site_id           = data.sakura_webaccel.site.id
-  certificate_chain = file("%s") 
-  private_key       = file("%s")
+  certificate_chain_wo = file("%s")
+  private_key_wo       = file("%s")
+  certificate_wo_version = 1
 }
 `
 	return fmt.Sprintf(tmpl, name, crt, key)

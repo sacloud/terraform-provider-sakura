@@ -1278,11 +1278,11 @@ scheduled_maintenance = {
 - s3_endpoint -> endpoint
 - s3_region -> region
 - s3_bucket_name -> bucket_name
-- s3_access_key_id -> access_key
-- s3_secret_access_key -> secret_access_key
+- s3_access_key_id -> access_key_wo
+- s3_secret_access_key -> secret_access_key_wo
 - s3_doc_index -> use_document_index
 
-`access_key` / `secret_access_key` / `onetime_url_secrets`がWriteOnlyに変更されているため、それぞれの`credentials_version` / `onetime_url_secrets_version`を一緒に指定するようにしてください。
+`access_key_wo` / `secret_access_key_wo` / `onetime_url_secrets_wo`がSensitiveからWriteOnlyに変更されているため、それぞれの`credentials_wo_version` / `onetime_url_secrets_wo_version`を一緒に指定するようにしてください。
 
 `origin_parameters` / `logging`はBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
 
@@ -1334,4 +1334,9 @@ cors_rules = [{
 
 ### webaccel_certificate
 
-`certificate_chain` / `private_key` はWriteOnlyになりました。`certificate_version`を一緒に指定するようにしてください。
+パラメータ名が変更されています。
+
+- certificate_chain -> certificate_chain_wo
+- private_key -> private_key_wo
+
+`certificate_chain_wo` / `private_key_wo` はSensitiveからWriteOnlyになりました。`certificate_wo_version`を一緒に指定するようにしてください。

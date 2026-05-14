@@ -48,18 +48,18 @@ func (r *webAccelCertificateResource) Configure(ctx context.Context, req resourc
 }
 
 type webAccelCertificateResourceModel struct {
-	ID                 types.String `tfsdk:"id"`
-	SiteID             types.String `tfsdk:"site_id"`
-	CertificateChain   types.String `tfsdk:"certificate_chain"`
-	PrivateKey         types.String `tfsdk:"private_key"`
-	CertificateVersion types.Int32  `tfsdk:"certificate_version"`
-	SerialNumber       types.String `tfsdk:"serial_number"`
-	NotBefore          types.String `tfsdk:"not_before"`
-	NotAfter           types.String `tfsdk:"not_after"`
-	IssuerCommonName   types.String `tfsdk:"issuer_common_name"`
-	SubjectCommonName  types.String `tfsdk:"subject_common_name"`
-	DNSNames           types.List   `tfsdk:"dns_names"`
-	SHA256Fingerprint  types.String `tfsdk:"sha256_fingerprint"`
+	ID                   types.String `tfsdk:"id"`
+	SiteID               types.String `tfsdk:"site_id"`
+	CertificateChainWO   types.String `tfsdk:"certificate_chain_wo"`
+	PrivateKeyWO         types.String `tfsdk:"private_key_wo"`
+	CertificateWOVersion types.Int32  `tfsdk:"certificate_wo_version"`
+	SerialNumber         types.String `tfsdk:"serial_number"`
+	NotBefore            types.String `tfsdk:"not_before"`
+	NotAfter             types.String `tfsdk:"not_after"`
+	IssuerCommonName     types.String `tfsdk:"issuer_common_name"`
+	SubjectCommonName    types.String `tfsdk:"subject_common_name"`
+	DNSNames             types.List   `tfsdk:"dns_names"`
+	SHA256Fingerprint    types.String `tfsdk:"sha256_fingerprint"`
 }
 
 func (r *webAccelCertificateResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -73,28 +73,28 @@ func (r *webAccelCertificateResource) Schema(ctx context.Context, _ resource.Sch
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
-			"certificate_chain": schema.StringAttribute{
+			"certificate_chain_wo": schema.StringAttribute{
 				Required:    true,
 				WriteOnly:   true,
 				Description: "Certificate chain in PEM format.",
 				Validators: []validator.String{
-					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("certificate_version")),
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("certificate_wo_version")),
 				},
 			},
-			"private_key": schema.StringAttribute{
+			"private_key_wo": schema.StringAttribute{
 				Required:    true,
 				WriteOnly:   true,
 				Description: "Private key in PEM format.",
 				Validators: []validator.String{
-					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("certificate_version")),
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("certificate_wo_version")),
 				},
 			},
-			"certificate_version": schema.Int32Attribute{
+			"certificate_wo_version": schema.Int32Attribute{
 				Optional:    true,
 				Description: "The version of the certificate chain/key. This value must be greater than 0 when set. Increment this when changing certificate.",
 				Validators: []validator.Int32{
 					int32validator.AtLeast(1),
-					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("certificate_chain")),
+					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("certificate_chain_wo")),
 				},
 			},
 			"serial_number": schema.StringAttribute{
@@ -144,8 +144,8 @@ func (r *webAccelCertificateResource) Create(ctx context.Context, req resource.C
 	}
 
 	res, err := webaccel.NewOp(r.client).CreateCertificate(ctx, plan.SiteID.ValueString(), &webaccel.CreateOrUpdateCertificateRequest{
-		CertificateChain: config.CertificateChain.ValueString(),
-		Key:              config.PrivateKey.ValueString(),
+		CertificateChain: config.CertificateChainWO.ValueString(),
+		Key:              config.PrivateKeyWO.ValueString(),
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create WebAccel certificate[%s]: %s", plan.SiteID.ValueString(), err))
@@ -192,11 +192,11 @@ func (r *webAccelCertificateResource) Update(ctx context.Context, req resource.U
 		return
 	}
 
-	if plan.CertificateVersion.ValueInt32() > state.CertificateVersion.ValueInt32() {
+	if plan.CertificateWOVersion.ValueInt32() > state.CertificateWOVersion.ValueInt32() {
 		siteID := state.ID.ValueString()
 		res, err := webaccel.NewOp(r.client).UpdateCertificate(ctx, siteID, &webaccel.CreateOrUpdateCertificateRequest{
-			CertificateChain: config.CertificateChain.ValueString(),
-			Key:              config.PrivateKey.ValueString(),
+			CertificateChain: config.CertificateChainWO.ValueString(),
+			Key:              config.PrivateKeyWO.ValueString(),
 		})
 		if err != nil {
 			resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update WebAccel certificate[%s]: %s", siteID, err))

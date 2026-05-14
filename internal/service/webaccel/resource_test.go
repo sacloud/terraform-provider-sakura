@@ -154,8 +154,8 @@ func TestAccSakuraResourceWebAccel_WebOriginWithOneTimeUrlSecrets(t *testing.T) 
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "name", siteName),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.type", "web"),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.origin", origin),
-					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "onetime_url_secrets"),
-					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "onetime_url_secrets_version", "1"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "onetime_url_secrets_wo"),
+					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "onetime_url_secrets_wo_version", "1"),
 				),
 			},
 		},
@@ -192,8 +192,8 @@ func TestAccSakuraResourceWebAccel_WebOriginWithCORS(t *testing.T) {
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.origin", origin),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "cors_rules.0.allow_all", "false"),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "cors_rules.0.allowed_origins.0", "https://apps.example.com"),
-					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "onetime_url_secrets"),
-					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "onetime_url_secrets_version", "1"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "onetime_url_secrets_wo"),
+					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "onetime_url_secrets_wo_version", "1"),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "normalize_ae", "gzip"),
 				),
 			},
@@ -274,9 +274,9 @@ func TestAccSakuraResourceWebAccel_Update(t *testing.T) {
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.endpoint", endpoint),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.region", region),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.bucket_name", bucketName),
-					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.access_key"),
-					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.secret_access_key"),
-					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.credentials_version", "1"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.access_key_wo"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.secret_access_key_wo"),
+					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.credentials_wo_version", "1"),
 				),
 			},
 		},
@@ -322,9 +322,9 @@ func TestAccSakuraResourceWebAccel_BucketOrigin(t *testing.T) {
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.endpoint", endpoint),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.region", region),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.bucket_name", bucketName),
-					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.access_key"),
-					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.secret_access_key"),
-					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.credentials_version", "1"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.access_key_wo"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel.foobar", "origin_parameters.secret_access_key_wo"),
+					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.credentials_wo_version", "1"),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.use_document_index", "true"),
 				),
 			},
@@ -448,10 +448,10 @@ resource sakura_webaccel "foobar" {
     host_header = "%s"
     protocol = "https"
   }
-  onetime_url_secrets = [
+  onetime_url_secrets_wo = [
     "sample-secret"
   ]
-  onetime_url_secrets_version = 1
+  onetime_url_secrets_wo_version = 1
   vary_support = true
   default_cache_ttl = 3600
   normalize_ae = "gzip"
@@ -479,10 +479,10 @@ resource sakura_webaccel "foobar" {
        "https://platform.example.com"
     ]
   }]
-  onetime_url_secrets = [
+  onetime_url_secrets_wo = [
     "sample-secret"
   ]
-  onetime_url_secrets_version = 1
+  onetime_url_secrets_wo_version = 1
   vary_support = true
   default_cache_ttl = 3600
   normalize_ae = "gzip"
@@ -502,9 +502,9 @@ resource sakura_webaccel "foobar" {
     endpoint = "%s"
     region = "%s"
     bucket_name = "%s"
-    access_key = "%s"
-    secret_access_key = "%s"
-	credentials_version = 1
+    access_key_wo = "%s"
+    secret_access_key_wo = "%s"
+    credentials_wo_version = 1
     use_document_index = true
   }
   default_cache_ttl = 3600
@@ -531,9 +531,9 @@ resource sakura_webaccel "foobar" {
 	endpoint = "%s"
 	region = "%s"
     bucket_name = "%s"
-    access_key = "%s"
-    secret_access_key = "%s"
-	credentials_version = 1
+    access_key_wo = "%s"
+    secret_access_key_wo = "%s"
+    credentials_wo_version = 1
   }
   vary_support = true
   default_cache_ttl = 3600
@@ -662,8 +662,8 @@ resource sakura_webaccel "foobar" {
   origin_parameters = {
     type = "bucket"
     region = "jp-sample-1"
-    access_key = "sample"
-    secret_access_key = "sample"
+    access_key_wo = "sample"
+    secret_access_key_wo = "sample"
   }
   vary_support = true
   default_cache_ttl = 3600
@@ -700,7 +700,7 @@ resource sakura_webaccel "foobar" {
   }
   logging = {
     bucket_name = "example-bucket"
-    access_key = "sample"
+    access_key_wo = "sample"
   }
 }
 `

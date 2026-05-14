@@ -73,10 +73,10 @@ Read-Only:
 Read-Only:
 
 - `bucket_name` (String) S3 bucket name. Required for type = bucket
-- `doc_index` (Boolean) Whether the document indexing for the bucket is enabled or not. Optional for type = bucket
 - `endpoint` (String) S3 endpoint without protocol scheme. Required for type = bucket
 - `host_header` (String) Host header to the origin. Optional for type = web
 - `origin` (String) Origin hostname or IP address. Required for type = web
 - `protocol` (String) Request protocol for the origin host. Required for type = web
 - `region` (String) S3 region. Required for type = bucket
 - `type` (String) Origin type of the site. This must be one of [web, bucket]
+- `use_document_index` (Boolean) Whether the document indexing for the bucket is enabled or not. Optional for type = bucket

@@ -54,35 +54,35 @@ func (r *webAccelResource) Configure(ctx context.Context, req resource.Configure
 
 type webAccelResourceModel struct {
 	webAccelBaseModel
-	OnetimeURLSecrets        types.List                        `tfsdk:"onetime_url_secrets"`
-	OnetimeURLSecretsVersion types.Int32                       `tfsdk:"onetime_url_secrets_version"`
-	Logging                  *webAccelLoggingWithKeysModel     `tfsdk:"logging"`
-	OriginParameters         *webAccelOriginParamWithKeysModel `tfsdk:"origin_parameters"`
+	OnetimeURLSecretsWO        types.List                        `tfsdk:"onetime_url_secrets_wo"`
+	OnetimeURLSecretsWOVersion types.Int32                       `tfsdk:"onetime_url_secrets_wo_version"`
+	Logging                    *webAccelLoggingWithKeysModel     `tfsdk:"logging"`
+	OriginParameters           *webAccelOriginParamWithKeysModel `tfsdk:"origin_parameters"`
 }
 
 type webAccelOriginParamWithKeysModel struct {
 	// go-cmp doesn't support embed struct, so redefine the fields here with the same tags.
-	Type               types.String `tfsdk:"type"`
-	Origin             types.String `tfsdk:"origin"`
-	Protocol           types.String `tfsdk:"protocol"`
-	HostHeader         types.String `tfsdk:"host_header"`
-	Endpoint           types.String `tfsdk:"endpoint"`
-	Region             types.String `tfsdk:"region"`
-	BucketName         types.String `tfsdk:"bucket_name"`
-	UseDocumentIndex   types.Bool   `tfsdk:"use_document_index"`
-	AccessKey          types.String `tfsdk:"access_key"`
-	SecretAccessKey    types.String `tfsdk:"secret_access_key"`
-	CredentialsVersion types.Int32  `tfsdk:"credentials_version"`
+	Type                 types.String `tfsdk:"type"`
+	Origin               types.String `tfsdk:"origin"`
+	Protocol             types.String `tfsdk:"protocol"`
+	HostHeader           types.String `tfsdk:"host_header"`
+	Endpoint             types.String `tfsdk:"endpoint"`
+	Region               types.String `tfsdk:"region"`
+	BucketName           types.String `tfsdk:"bucket_name"`
+	UseDocumentIndex     types.Bool   `tfsdk:"use_document_index"`
+	AccessKeyWO          types.String `tfsdk:"access_key_wo"`
+	SecretAccessKeyWO    types.String `tfsdk:"secret_access_key_wo"`
+	CredentialsWOVersion types.Int32  `tfsdk:"credentials_wo_version"`
 }
 
 type webAccelLoggingWithKeysModel struct {
-	Enabled            types.Bool   `tfsdk:"enabled"`
-	Endpoint           types.String `tfsdk:"endpoint"`
-	Region             types.String `tfsdk:"region"`
-	BucketName         types.String `tfsdk:"bucket_name"`
-	AccessKey          types.String `tfsdk:"access_key"`
-	SecretAccessKey    types.String `tfsdk:"secret_access_key"`
-	CredentialsVersion types.Int32  `tfsdk:"credentials_version"`
+	Enabled              types.Bool   `tfsdk:"enabled"`
+	Endpoint             types.String `tfsdk:"endpoint"`
+	Region               types.String `tfsdk:"region"`
+	BucketName           types.String `tfsdk:"bucket_name"`
+	AccessKeyWO          types.String `tfsdk:"access_key_wo"`
+	SecretAccessKeyWO    types.String `tfsdk:"secret_access_key_wo"`
+	CredentialsWOVersion types.Int32  `tfsdk:"credentials_wo_version"`
 }
 
 func (r *webAccelResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -154,42 +154,42 @@ func (r *webAccelResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 					},
 					"endpoint": schema.StringAttribute{
 						Optional:    true,
-						Description: "S3 endpoint without protocol scheme. Required for type = bucket",
+						Description: "Object Storage's S3 endpoint without protocol scheme. Required for type = bucket",
 						Validators: []validator.String{
 							sacloudvalidator.HostnameValidator(),
 						},
 					},
 					"region": schema.StringAttribute{
 						Optional:    true,
-						Description: "S3 region. Required for type = bucket",
+						Description: "Object Storage's S3 region. Required for type = bucket",
 					},
 					"bucket_name": schema.StringAttribute{
 						Optional:    true,
-						Description: "bucket name. Required for type = bucket",
+						Description: "Object Storage's bucket name. Required for type = bucket",
 					},
-					"access_key": schema.StringAttribute{
+					"access_key_wo": schema.StringAttribute{
 						Optional:    true,
 						WriteOnly:   true,
-						Description: "access key. Required for type = bucket",
+						Description: "Object Storage's access key. Required for type = bucket",
 						Validators: []validator.String{
-							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_version")),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_wo_version")),
 						},
 					},
-					"secret_access_key": schema.StringAttribute{
+					"secret_access_key_wo": schema.StringAttribute{
 						Optional:    true,
 						WriteOnly:   true,
-						Description: "secret access key. Required for type = bucket",
+						Description: "Object Storage's secret access key. Required for type = bucket",
 						Validators: []validator.String{
-							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_version")),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_wo_version")),
 						},
 					},
-					"credentials_version": schema.Int32Attribute{
+					"credentials_wo_version": schema.Int32Attribute{
 						Optional:    true,
 						Description: "The version of the credential fields. This value must be greater than 0 when set. Increment this when changing credentials.",
 						Validators: []validator.Int32{
 							int32validator.AtLeast(1),
-							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("access_key")),
-							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_access_key")),
+							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("access_key_wo")),
+							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_access_key_wo")),
 						},
 					},
 					"use_document_index": schema.BoolAttribute{
@@ -235,50 +235,50 @@ func (r *webAccelResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 					},
 					"bucket_name": schema.StringAttribute{
 						Required:    true,
-						Description: "Object Storage bucket name",
+						Description: "Object Storage's bucket name",
 					},
-					"access_key": schema.StringAttribute{
+					"access_key_wo": schema.StringAttribute{
 						Required:    true,
 						WriteOnly:   true,
-						Description: "Object Storage access key",
+						Description: "Object Storage's access key",
 						Validators: []validator.String{
-							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_version")),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_wo_version")),
 						},
 					},
-					"secret_access_key": schema.StringAttribute{
+					"secret_access_key_wo": schema.StringAttribute{
 						Required:    true,
 						WriteOnly:   true,
-						Description: "Object Storage secret access key",
+						Description: "Object Storage's secret access key",
 						Validators: []validator.String{
-							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_version")),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_wo_version")),
 						},
 					},
-					"credentials_version": schema.Int32Attribute{
+					"credentials_wo_version": schema.Int32Attribute{
 						Optional:    true,
 						Description: "The version of the credentials fields. This value must be greater than 0 when set. Increment this when changing credentials.",
 						Validators: []validator.Int32{
 							int32validator.AtLeast(1),
-							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("access_key")),
-							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_access_key")),
+							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("access_key_wo")),
+							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_access_key_wo")),
 						},
 					},
 				},
 			},
-			"onetime_url_secrets": schema.ListAttribute{
+			"onetime_url_secrets_wo": schema.ListAttribute{
 				Optional:    true,
 				WriteOnly:   true,
 				ElementType: types.StringType,
 				Description: "The site-wide onetime url secrets",
 				Validators: []validator.List{
-					listvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("onetime_url_secrets_version")),
+					listvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("onetime_url_secrets_wo_version")),
 				},
 			},
-			"onetime_url_secrets_version": schema.Int32Attribute{
+			"onetime_url_secrets_wo_version": schema.Int32Attribute{
 				Optional:    true,
 				Description: "The version of the onetime_url_secrets field. This value must be greater than 0 when set. Increment this when changing secrets.",
 				Validators: []validator.Int32{
 					int32validator.AtLeast(1),
-					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("onetime_url_secrets")),
+					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("onetime_url_secrets_wo")),
 				},
 			},
 			"vary_support": schema.BoolAttribute{
@@ -350,7 +350,7 @@ func (r *webAccelResource) Create(ctx context.Context, req resource.CreateReques
 	// Apply them after create when configured.
 	var (
 		hasCorsRule         = len(plan.CorsRules) > 0
-		hasOnetimeURLSecret = utils.IsKnown(config.OnetimeURLSecrets)
+		hasOnetimeURLSecret = utils.IsKnown(config.OnetimeURLSecretsWO)
 		hasLoggingConfig    = plan.Logging != nil
 	)
 
@@ -379,7 +379,7 @@ func (r *webAccelResource) Create(ctx context.Context, req resource.CreateReques
 			updateReq.CORSRules = &[]*webaccel.CORSRule{}
 		}
 		if hasOnetimeURLSecret {
-			updateReq.OnetimeURLSecrets = expandWebAccelOnetimeURLSecrets(config.OnetimeURLSecrets)
+			updateReq.OnetimeURLSecrets = expandWebAccelOnetimeURLSecrets(config.OnetimeURLSecretsWO)
 		} else {
 			updateReq.OnetimeURLSecrets = &[]string{}
 		}
@@ -473,8 +473,8 @@ func (r *webAccelResource) Update(ctx context.Context, req resource.UpdateReques
 		updateReq.Name = plan.Name.ValueString()
 		updateReq.RequestProtocol = expandWebAccelRequestProtocol(plan.RequestProtocol)
 
-		if isVersionIncremented(plan.OnetimeURLSecretsVersion, state.OnetimeURLSecretsVersion) {
-			updateReq.OnetimeURLSecrets = expandWebAccelOnetimeURLSecrets(config.OnetimeURLSecrets)
+		if isVersionIncremented(plan.OnetimeURLSecretsWOVersion, state.OnetimeURLSecretsWOVersion) {
+			updateReq.OnetimeURLSecrets = expandWebAccelOnetimeURLSecrets(config.OnetimeURLSecretsWO)
 		}
 		if utils.IsKnown(plan.VarySupport) {
 			updateReq.VarySupport = expandWebAccelVarySupportParameter(plan.VarySupport)
@@ -566,9 +566,9 @@ func (m *webAccelResourceModel) updateModel(site *webaccel.Site, logUploadConfig
 	m.OriginParameters = originParams
 
 	if logUploadConfig != nil {
-		ver := m.Logging.CredentialsVersion // preserve the version in state when log upload config exists
+		ver := m.Logging.CredentialsWOVersion // preserve the version in state when log upload config exists
 		m.Logging = flattenWebAccelLogUploadConfig(logUploadConfig)
-		m.Logging.CredentialsVersion = ver
+		m.Logging.CredentialsWOVersion = ver
 	} else {
 		m.Logging = nil
 	}
@@ -582,7 +582,7 @@ func isWebAccelSiteUpdateRequired(plan, state *webAccelResourceModel) bool {
 		utils.HasChange(plan.OriginParameters, state.OriginParameters, cmpopts.EquateComparable(webAccelOriginParamModel{})) ||
 		utils.HasChange(plan.CorsRules, state.CorsRules) ||
 		isOriginCredentialsUpdateRequired(plan, state) ||
-		isVersionIncremented(plan.OnetimeURLSecretsVersion, state.OnetimeURLSecretsVersion) ||
+		isVersionIncremented(plan.OnetimeURLSecretsWOVersion, state.OnetimeURLSecretsWOVersion) ||
 		!plan.VarySupport.Equal(state.VarySupport) ||
 		!plan.DefaultCacheTTL.Equal(state.DefaultCacheTTL) ||
 		!plan.NormalizeAE.Equal(state.NormalizeAE)
@@ -595,7 +595,7 @@ func isOriginCredentialsUpdateRequired(plan, state *webAccelResourceModel) bool 
 	if plan.OriginParameters.Type.ValueString() != "bucket" {
 		return false
 	}
-	return isVersionIncremented(plan.OriginParameters.CredentialsVersion, state.OriginParameters.CredentialsVersion)
+	return isVersionIncremented(plan.OriginParameters.CredentialsWOVersion, state.OriginParameters.CredentialsWOVersion)
 }
 
 func isVersionIncremented(planVal, stateVal types.Int32) bool {
@@ -625,8 +625,8 @@ func expandWebAccelOriginParamsForCreation(plan, config *webAccelResourceModel) 
 	req.SecretAccessKey = upd.SecretAccessKey
 	req.DocIndex = upd.DocIndex
 	if plan.OriginParameters.Type.ValueString() == "bucket" && config != nil && config.OriginParameters != nil {
-		req.AccessKeyID = config.OriginParameters.AccessKey.ValueString()
-		req.SecretAccessKey = config.OriginParameters.SecretAccessKey.ValueString()
+		req.AccessKeyID = config.OriginParameters.AccessKeyWO.ValueString()
+		req.SecretAccessKey = config.OriginParameters.SecretAccessKeyWO.ValueString()
 	}
 
 	return req, diags
@@ -659,9 +659,9 @@ func expandWebAccelOriginParametersForUpdate(plan, config, state *webAccelResour
 		req.S3Region = originParam.Region.ValueString()
 		req.BucketName = originParam.BucketName.ValueString()
 		if config != nil && config.OriginParameters != nil && state != nil && state.OriginParameters != nil {
-			if isVersionIncremented(plan.OriginParameters.CredentialsVersion, state.OriginParameters.CredentialsVersion) {
-				req.AccessKeyID = config.OriginParameters.AccessKey.ValueString()
-				req.SecretAccessKey = config.OriginParameters.SecretAccessKey.ValueString()
+			if isVersionIncremented(plan.OriginParameters.CredentialsWOVersion, state.OriginParameters.CredentialsWOVersion) {
+				req.AccessKeyID = config.OriginParameters.AccessKeyWO.ValueString()
+				req.SecretAccessKey = config.OriginParameters.SecretAccessKeyWO.ValueString()
 			}
 		}
 		if utils.IsKnown(originParam.UseDocumentIndex) && originParam.UseDocumentIndex.ValueBool() {
@@ -726,8 +726,8 @@ func expandLoggingParameters(plan, config *webAccelResourceModel) *webaccel.LogU
 		req.Status = "disabled"
 	}
 	req.Bucket = logCfg.BucketName.ValueString()
-	req.AccessKeyID = logCfgKeys.AccessKey.ValueString()
-	req.SecretAccessKey = logCfgKeys.SecretAccessKey.ValueString()
+	req.AccessKeyID = logCfgKeys.AccessKeyWO.ValueString()
+	req.SecretAccessKey = logCfgKeys.SecretAccessKeyWO.ValueString()
 	req.Endpoint = "https://" + logCfg.Endpoint.ValueString()
 	req.Region = logCfg.Region.ValueString()
 
@@ -759,15 +759,15 @@ func expandWebAccelNormalizeAEParameter(v types.String) string {
 
 func flattenWebAccelOriginParameters(config *webAccelResourceModel, site *webaccel.Site) (*webAccelOriginParamWithKeysModel, error) {
 	originParam := &webAccelOriginParamWithKeysModel{
-		Type:               types.StringNull(),
-		Origin:             types.StringNull(),
-		Protocol:           types.StringNull(),
-		HostHeader:         types.StringNull(),
-		Endpoint:           types.StringNull(),
-		Region:             types.StringNull(),
-		BucketName:         types.StringNull(),
-		UseDocumentIndex:   types.BoolNull(),
-		CredentialsVersion: types.Int32Null(),
+		Type:                 types.StringNull(),
+		Origin:               types.StringNull(),
+		Protocol:             types.StringNull(),
+		HostHeader:           types.StringNull(),
+		Endpoint:             types.StringNull(),
+		Region:               types.StringNull(),
+		BucketName:           types.StringNull(),
+		UseDocumentIndex:     types.BoolNull(),
+		CredentialsWOVersion: types.Int32Null(),
 	}
 
 	switch site.OriginType {
@@ -798,8 +798,8 @@ func flattenWebAccelOriginParameters(config *webAccelResourceModel, site *webacc
 		if utils.IsKnown(confParam.UseDocumentIndex) {
 			originParam.UseDocumentIndex = types.BoolValue(confParam.UseDocumentIndex.ValueBool())
 		}
-		if utils.IsKnown(confParam.CredentialsVersion) {
-			originParam.CredentialsVersion = types.Int32Value(confParam.CredentialsVersion.ValueInt32())
+		if utils.IsKnown(confParam.CredentialsWOVersion) {
+			originParam.CredentialsWOVersion = types.Int32Value(confParam.CredentialsWOVersion.ValueInt32())
 		}
 	default:
 		return nil, fmt.Errorf("unknown origin type: %s", site.OriginType)
@@ -815,10 +815,10 @@ func flattenWebAccelLogUploadConfig(cfg *webaccel.LogUploadConfig) *webAccelLogg
 
 	ep, _ := strings.CutPrefix(cfg.Endpoint, "https://") // WebAccel API returns logging's endpoint with https:// prefix
 	return &webAccelLoggingWithKeysModel{
-		Enabled:            types.BoolValue(cfg.Status == "enabled"),
-		Endpoint:           types.StringValue(ep),
-		Region:             types.StringValue(cfg.Region),
-		BucketName:         types.StringValue(cfg.Bucket),
-		CredentialsVersion: types.Int32Null(),
+		Enabled:              types.BoolValue(cfg.Status == "enabled"),
+		Endpoint:             types.StringValue(ep),
+		Region:               types.StringValue(cfg.Region),
+		BucketName:           types.StringValue(cfg.Bucket),
+		CredentialsWOVersion: types.Int32Null(),
 	}
 }

@@ -15,9 +15,9 @@ resource sakura_webaccel "foobar" {
     endpoint = "s3.isk01.sakurastorage.jp"
     region = "jp-north-1"
     bucket_name = "foobar-bucket"
-    access_key = "..."
-    secret_access_key = "..."
-    credentials_version = 1
+    access_key_wo = "..."
+    secret_access_key_wo = "..."
+    credentials_wo_version = 1
   }
   // other parameters, e.g. vary_support, cors_rules, etc.
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
+// This value should be different from SALURA_WEBACCEL_DOMAIN_NAME to avoid conflict
 const envWebAccelDomain = "SAKURA_WEBACCEL_DOMAIN"
 
 func TestAccSakuraDataSourceWebAccel_ByName(t *testing.T) {
