@@ -1324,7 +1324,7 @@ cors_rules {
 - v3
 
 ```hcl
-cors_ruels = [{
+cors_rules = [{
   // ...
 },
 {

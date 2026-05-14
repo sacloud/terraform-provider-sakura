@@ -4,6 +4,7 @@
 package webaccel_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"testing"
@@ -11,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
+	"github.com/sacloud/webaccel-api-go"
 )
 
 func TestAccResourceSakuraWebAccelACL_basic(t *testing.T) {
@@ -19,7 +21,7 @@ func TestAccResourceSakuraWebAccelACL_basic(t *testing.T) {
 	}
 	for _, k := range envKeys {
 		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is requilred. skip", k)
+			t.Skipf("ENV %q is required. skip", k)
 			return
 		}
 	}
@@ -29,9 +31,7 @@ func TestAccResourceSakuraWebAccelACL_basic(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy: func(*terraform.State) error {
-			return nil
-		},
+		CheckDestroy:             testCheckSakuraWebAccelACLDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSakuraWebAccelACLConfig(siteName),
@@ -41,6 +41,26 @@ func TestAccResourceSakuraWebAccelACL_basic(t *testing.T) {
 			},
 		},
 	})
+}
+
+func testCheckSakuraWebAccelACLDestroy(s *terraform.State) error {
+	client := test.AccClientGetter()
+	op := webaccel.NewOp(client.WebaccelClient)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "sakura_webaccel_acl" {
+			continue
+		}
+		if rs.Primary.ID == "" {
+			continue
+		}
+
+		res, err := op.ReadACL(context.Background(), rs.Primary.ID)
+		if err == nil && res.ACL != "" {
+			return fmt.Errorf("still exists WebAccel ACL: %s", rs.Primary.ID)
+		}
+	}
+	return nil
 }
 
 func testAccCheckSakuraWebAccelACLConfig(name string) string {

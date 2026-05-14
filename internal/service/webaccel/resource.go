@@ -730,7 +730,6 @@ func expandLoggingParameters(plan, config *webAccelResourceModel) *webaccel.LogU
 	req.SecretAccessKey = logCfgKeys.SecretAccessKey.ValueString()
 	req.Endpoint = "https://" + logCfg.Endpoint.ValueString()
 	req.Region = logCfg.Region.ValueString()
-	req.Status = "enabled"
 
 	return req
 }

@@ -4,6 +4,7 @@
 package webaccel_test
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"regexp"
@@ -13,6 +14,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
+	"github.com/sacloud/webaccel-api-go"
 )
 
 const (
@@ -34,7 +36,7 @@ func TestAccSakuraResourceWebAccel_WebOrigin(t *testing.T) {
 	}
 	for _, k := range envKeys {
 		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is requilred. skip", k)
+			t.Skipf("ENV %q is required. skip", k)
 			return
 		}
 	}
@@ -47,9 +49,7 @@ func TestAccSakuraResourceWebAccel_WebOrigin(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy: func(*terraform.State) error {
-			return nil
-		},
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSakuraWebAccelWebOriginConfigBasic(siteName, origin),
@@ -67,6 +67,26 @@ func TestAccSakuraResourceWebAccel_WebOrigin(t *testing.T) {
 	})
 }
 
+func testCheckSakuraWebAccelDestroy(s *terraform.State) error {
+	client := test.AccClientGetter()
+	op := webaccel.NewOp(client.WebaccelClient)
+
+	for _, rs := range s.RootModule().Resources {
+		if rs.Type != "sakura_webaccel" {
+			continue
+		}
+		if rs.Primary.ID == "" {
+			continue
+		}
+
+		_, err := op.Read(context.Background(), rs.Primary.ID)
+		if err == nil {
+			return fmt.Errorf("still exists WebAccel site: %s", rs.Primary.ID)
+		}
+	}
+	return nil
+}
+
 func TestAccSakuraResourceWebAccel_OwnDomain(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
@@ -76,7 +96,7 @@ func TestAccSakuraResourceWebAccel_OwnDomain(t *testing.T) {
 	}
 	for _, k := range envKeys {
 		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is requilred. skip", k)
+			t.Skipf("ENV %q is required. skip", k)
 			return
 		}
 	}
@@ -88,9 +108,7 @@ func TestAccSakuraResourceWebAccel_OwnDomain(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy: func(*terraform.State) error {
-			return nil
-		},
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSakuraWebAccelOwnDomainConfig(siteName, origin, domainName),
@@ -117,7 +135,7 @@ func TestAccSakuraResourceWebAccel_WebOriginWithOneTimeUrlSecrets(t *testing.T) 
 	}
 	for _, k := range envKeys {
 		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is requilred. skip", k)
+			t.Skipf("ENV %q is required. skip", k)
 			return
 		}
 	}
@@ -128,9 +146,7 @@ func TestAccSakuraResourceWebAccel_WebOriginWithOneTimeUrlSecrets(t *testing.T) 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy: func(*terraform.State) error {
-			return nil
-		},
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSakuraWebAccelWebOriginConfigWithOneTimeUrlSecrets(siteName, origin),
@@ -154,7 +170,7 @@ func TestAccSakuraResourceWebAccel_WebOriginWithCORS(t *testing.T) {
 	}
 	for _, k := range envKeys {
 		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is requilred. skip", k)
+			t.Skipf("ENV %q is required. skip", k)
 			return
 		}
 	}
@@ -166,9 +182,7 @@ func TestAccSakuraResourceWebAccel_WebOriginWithCORS(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy: func(*terraform.State) error {
-			return nil
-		},
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSakuraWebAccelWebOriginConfigWithCors(siteName, origin),
@@ -200,7 +214,7 @@ func TestAccSakuraResourceWebAccel_Update(t *testing.T) {
 	}
 	for _, k := range envKeys {
 		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is requilred. skip", k)
+			t.Skipf("ENV %q is required. skip", k)
 			return
 		}
 	}
@@ -209,7 +223,6 @@ func TestAccSakuraResourceWebAccel_Update(t *testing.T) {
 	// domainName := os.Getenv(envWebAccelDomainName)
 	origin := os.Getenv(envWebAccelOrigin)
 	endpoint, _ := strings.CutPrefix(os.Getenv(envObjectStorageEndpoint), "https://")
-	// endpoint := os.Getenv(envObjectStorageEndpoint)
 	region := os.Getenv(envObjectStorageRegion)
 	bucketName := os.Getenv(envObjectStorageBucketName)
 	accessKey := os.Getenv(envObjectStorageAccessKeyId)
@@ -218,9 +231,7 @@ func TestAccSakuraResourceWebAccel_Update(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy: func(*terraform.State) error {
-			return nil
-		},
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSakuraWebAccelWebOriginConfigBasic(siteName, origin),
@@ -285,7 +296,7 @@ func TestAccSakuraResourceWebAccel_BucketOrigin(t *testing.T) {
 	}
 	for _, k := range envKeys {
 		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is requilred. skip", k)
+			t.Skipf("ENV %q is required. skip", k)
 			return
 		}
 	}
@@ -301,9 +312,7 @@ func TestAccSakuraResourceWebAccel_BucketOrigin(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy: func(*terraform.State) error {
-			return nil
-		},
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSakuraWebAccelBucketOriginConfig(siteName, endpoint, region, bucketName, accessKey, secretKey),
@@ -334,13 +343,12 @@ func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 	}
 	for _, k := range envKeys {
 		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is requilred. skip", k)
+			t.Skipf("ENV %q is required. skip", k)
 			return
 		}
 	}
 
 	siteName := "your-site-name"
-	// domainName := os.Getenv(envWebAccelDomainName)
 	origin := os.Getenv(envWebAccelOrigin)
 	bucketName := os.Getenv(envObjectStorageBucketName)
 	accessKey := os.Getenv(envObjectStorageAccessKeyId)
@@ -349,9 +357,7 @@ func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy: func(*terraform.State) error {
-			return nil
-		},
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
 		Steps: []resource.TestStep{
 			{
 				Config: testAccCheckSakuraWebAccelWebOriginLoggingConfig(siteName, origin, "s3.isk01.sakurastorage.jp", "jp-north-1", bucketName, accessKey, secretKey),
@@ -369,7 +375,7 @@ func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 
 func TestAccSakuraResourceWebAccel_InvalidConfigurations(t *testing.T) {
 	if os.Getenv(envWebAccelOrigin) == "" {
-		t.Skipf("ENV %q is requilred. skip", envWebAccelOrigin)
+		t.Skipf("ENV %q is required. skip", envWebAccelOrigin)
 		return
 	}
 	origin := os.Getenv(envWebAccelOrigin)
