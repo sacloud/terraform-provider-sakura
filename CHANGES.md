@@ -1299,3 +1299,73 @@ scheduled_maintenance = {
   // ...
 }
 ```
+
+### webaccel
+
+他のリソースのオブジェクトストレージを指定するパラメータ群と統一するためにパラメータ名を変更をしています。
+
+- s3_endpoint -> endpoint
+- s3_region -> region
+- s3_bucket_name -> bucket_name
+- s3_access_key_id -> access_key_wo
+- s3_secret_access_key -> secret_access_key_wo
+- s3_doc_index -> use_document_index
+
+`access_key_wo` / `secret_access_key_wo` / `onetime_url_secrets_wo`がSensitiveからWriteOnlyに変更されているため、それぞれの`credentials_wo_version` / `onetime_url_secrets_wo_version`を一緒に指定するようにしてください。
+
+`origin_parameters` / `logging`はBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+origin_parameters {
+  // ...
+}
+logging {
+  // ...
+}
+```
+
+- v3
+
+```hcl
+origin_parameters = {
+  // ...
+}
+logging = {
+  // ...
+}
+```
+
+`cors_rules`はBlockからSet型のAttributeに変更されたため、下記のように書き換える必要があります。
+
+- v2
+
+```hcl
+cors_rules {
+  // ...
+}
+cors_rules {
+  // ...
+}
+```
+
+- v3
+
+```hcl
+cors_rules = [{
+  // ...
+},
+{
+  // ...
+}]
+```
+
+### webaccel_certificate
+
+パラメータ名が変更されています。
+
+- certificate_chain -> certificate_chain_wo
+- private_key -> private_key_wo
+
+`certificate_chain_wo` / `private_key_wo` はSensitiveからWriteOnlyになりました。`certificate_wo_version`を一緒に指定するようにしてください。

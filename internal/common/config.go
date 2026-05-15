@@ -47,6 +47,7 @@ import (
 	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
+	"github.com/sacloud/webaccel-api-go"
 	"github.com/sacloud/workflows-api-go"
 	workflowsapi "github.com/sacloud/workflows-api-go/apis/v1"
 )
@@ -126,6 +127,7 @@ type APIClient struct {
 	WorkflowsClient                  *workflowsapi.Client
 	SimpleNotificationClient         *simple_notification_api.Client
 	MonitoringSuiteClient            *monitoringsuiteapi.Client
+	WebaccelClient                   *webaccel.Client
 }
 
 func (c *APIClient) CheckReferencedOption() query.CheckReferencedOption {
@@ -479,6 +481,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		WorkflowsClient:                  workflowsClient,
 		SimpleNotificationClient:         simpleNotificationClient,
 		MonitoringSuiteClient:            monitoringSuiteClient,
+		WebaccelClient:                   &webaccel.Client{Saclient: theClient},
 	}, nil
 }
 

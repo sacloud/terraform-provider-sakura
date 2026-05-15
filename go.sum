@@ -289,6 +289,8 @@ github.com/sacloud/simple-notification-api-go v0.3.0 h1:txporbiluz/7nKxyYZ0vlcIS
 github.com/sacloud/simple-notification-api-go v0.3.0/go.mod h1:sCDnlmrbFy59aXpaZW0qC1PRAldXLATn5gXelJtcqpU=
 github.com/sacloud/simplemq-api-go v0.5.1 h1:yi/Eok5mElsBE/Iaq3p176/5/Na8ryEwJXXtWSZXT5Y=
 github.com/sacloud/simplemq-api-go v0.5.1/go.mod h1:WXsvbY6CMozhD/Gq4/kuY7hszubnMy266s98YV21TTE=
+github.com/sacloud/webaccel-api-go v1.5.0 h1:tWNlUwPphMTUGnM6tpH+Z2fEsh9IpEnv+pDMrdOrkwM=
+github.com/sacloud/webaccel-api-go v1.5.0/go.mod h1:osKWoZQV32D+c7DGPv+/o7PYgRut0Ob0LTDN019Oazs=
 github.com/sacloud/workflows-api-go v0.4.0 h1:x/VRGnBbT9DFrDSVmsdl6g68I9UsUr80gHTJg+MyxD4=
 github.com/sacloud/workflows-api-go v0.4.0/go.mod h1:Acxo/7P2dycmuYf2wRQTSs7fYDc1XzyPsPHycrRrSmk=
 github.com/segmentio/asm v1.2.1 h1:DTNbBqs57ioxAD4PrArqftgypG4/qNpXoJx8TVXxPR0=
