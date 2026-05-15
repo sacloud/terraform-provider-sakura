@@ -52,7 +52,7 @@ func TestAccResourceSakuraWebAccelCertificate_basic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraWebAccelCertificateDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckSakuraWebAccelCertificateConfig(siteName, crt, key),
+				Config: testAccCheckSakuraWebAccelCertificateConfig(siteName, crt, key, "1"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "id", regexpNotEmpty),
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "site_id", regexpNotEmpty),
@@ -61,10 +61,13 @@ func TestAccResourceSakuraWebAccelCertificate_basic(t *testing.T) {
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "issuer_common_name", regexpNotEmpty),
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "subject_common_name", regexpNotEmpty),
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "sha256_fingerprint", regexpNotEmpty),
+					resource.TestCheckResourceAttr("sakura_webaccel_certificate.foobar", "certificate_wo_version", "1"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel_certificate.foobar", "certificate_chain_wo"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel_certificate.foobar", "private_key_wo"),
 				),
 			},
 			{
-				Config: testAccCheckSakuraWebAccelCertificateConfig(siteName, crtUpd, keyUpd),
+				Config: testAccCheckSakuraWebAccelCertificateConfig(siteName, crtUpd, keyUpd, "2"),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "id", regexpNotEmpty),
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "site_id", regexpNotEmpty),
@@ -73,6 +76,9 @@ func TestAccResourceSakuraWebAccelCertificate_basic(t *testing.T) {
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "issuer_common_name", regexpNotEmpty),
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "subject_common_name", regexpNotEmpty),
 					resource.TestMatchResourceAttr("sakura_webaccel_certificate.foobar", "sha256_fingerprint", regexpNotEmpty),
+					resource.TestCheckResourceAttr("sakura_webaccel_certificate.foobar", "certificate_wo_version", "2"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel_certificate.foobar", "certificate_chain_wo"),
+					resource.TestCheckNoResourceAttr("sakura_webaccel_certificate.foobar", "private_key_wo"),
 				),
 			},
 		},
@@ -99,7 +105,7 @@ func testCheckSakuraWebAccelCertificateDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testAccCheckSakuraWebAccelCertificateConfig(name, crt, key string) string {
+func testAccCheckSakuraWebAccelCertificateConfig(name, crt, key, version string) string {
 	tmpl := `
 data "sakura_webaccel" "site" {
   name = "%s"
@@ -108,8 +114,8 @@ resource "sakura_webaccel_certificate" "foobar" {
   site_id           = data.sakura_webaccel.site.id
   certificate_chain_wo = file("%s")
   private_key_wo       = file("%s")
-  certificate_wo_version = 1
+  certificate_wo_version = %s
 }
 `
-	return fmt.Sprintf(tmpl, name, crt, key)
+	return fmt.Sprintf(tmpl, name, crt, key, version)
 }

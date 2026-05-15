@@ -95,6 +95,7 @@ func (r *webAccelCertificateResource) Schema(ctx context.Context, _ resource.Sch
 				Validators: []validator.Int32{
 					int32validator.AtLeast(1),
 					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("certificate_chain_wo")),
+					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("private_key_wo")),
 				},
 			},
 			"serial_number": schema.StringAttribute{
