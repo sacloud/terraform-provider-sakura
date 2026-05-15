@@ -19,7 +19,7 @@ func QuoteAndJoin(a []string, quote, sep string) string {
 	return strings.Join(ret, sep)
 }
 
-func QuoteAndJoinInt(a []int, quote, sep string) string {
+func QuoteAndJoinInt[T ~int | ~int32 | ~int64](a []T, quote, sep string) string {
 	if quote == "" {
 		quote = `"`
 	}
@@ -39,6 +39,10 @@ func Sprintf(format string, a ...interface{}) string {
 			v = QuoteAndJoin(a, "`", "/")
 		case []int:
 			v = QuoteAndJoinInt(a, "`", "/")
+		case []int32:
+			v = QuoteAndJoinInt[int32](a, "`", "/")
+		case []int64:
+			v = QuoteAndJoinInt[int64](a, "`", "/")
 		default:
 			v = a
 		}

@@ -283,6 +283,13 @@ func ExpandBackupDaysOfWeek(d types.Set) []iaastypes.EDayOfTheWeek {
 	return vs
 }
 
+func FlattenIconID(id iaastypes.ID) types.String {
+	if id.IsEmpty() {
+		return types.StringNull()
+	}
+	return types.StringValue(id.String())
+}
+
 func FlattenBackupDaysOfWeek(daysOfWeek []iaastypes.EDayOfTheWeek) types.Set {
 	set := make([]string, 0, len(daysOfWeek))
 	for _, w := range daysOfWeek {
