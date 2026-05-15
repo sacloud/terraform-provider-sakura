@@ -6,7 +6,6 @@ package enhanced_lb
 import (
 	"context"
 
-	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
@@ -66,30 +65,18 @@ func expandEnhancedLBUpdateRequest(model, state *enhancedLBResourceModel) *iaas.
 }
 
 func expandEnhancedLBOriginGuard(model *enhancedLBResourceModel) *iaas.ProxyLBOriginGuard {
-	if !model.OriginGuard.IsNull() && !model.OriginGuard.IsUnknown() {
-		var m struct {
-			Token types.String `tfsdk:"token"`
-		}
-		diags := model.OriginGuard.As(context.Background(), &m, basetypes.ObjectAsOptions{})
-		if !diags.HasError() {
-			return &iaas.ProxyLBOriginGuard{
-				Token: m.Token.ValueString(),
-			}
+	if model.OriginGuard != nil {
+		return &iaas.ProxyLBOriginGuard{
+			Token: model.OriginGuard.Token.ValueString(),
 		}
 	}
 	return nil
 }
 
 func expandEnhancedLBStrictRule(model *enhancedLBResourceModel) *iaas.ProxyLBStrictRule {
-	if !model.StrictRule.IsNull() && !model.StrictRule.IsUnknown() {
-		var m struct {
-			Enabled types.Bool `tfsdk:"enabled"`
-		}
-		diags := model.StrictRule.As(context.Background(), &m, basetypes.ObjectAsOptions{})
-		if !diags.HasError() {
-			return &iaas.ProxyLBStrictRule{
-				Enabled: m.Enabled.ValueBool(),
-			}
+	if model.StrictRule != nil {
+		return &iaas.ProxyLBStrictRule{
+			Enabled: model.StrictRule.Enabled.ValueBool(),
 		}
 	}
 	return nil

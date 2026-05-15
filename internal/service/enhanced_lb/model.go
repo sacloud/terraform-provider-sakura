@@ -35,8 +35,8 @@ type enhancedLBBaseModel struct {
 	VIP                  types.String                `tfsdk:"vip"`
 	ProxyNetworks        types.List                  `tfsdk:"proxy_networks"`
 	MonitoringSuite      types.Object                `tfsdk:"monitoring_suite"`
-	OriginGuard          types.Object                `tfsdk:"origin_guard"`
-	StrictRule           types.Object                `tfsdk:"strict_rule"`
+	OriginGuard          *enhancedLBOriginGuardModel `tfsdk:"origin_guard"`
+	StrictRule           *enhancedLBStrictRuleModel  `tfsdk:"strict_rule"`
 }
 
 type enhancedLBSyslogModel struct {
@@ -93,6 +93,14 @@ type enhancedLBRuleModel struct {
 	FixedStatusCode              types.String `tfsdk:"fixed_status_code"`
 	FixedContentType             types.String `tfsdk:"fixed_content_type"`
 	FixedMessageBody             types.String `tfsdk:"fixed_message_body"`
+}
+
+type enhancedLBOriginGuardModel struct {
+	Token types.String `tfsdk:"token"`
+}
+
+type enhancedLBStrictRuleModel struct {
+	Enabled types.Bool `tfsdk:"enabled"`
 }
 
 type enhancedLBCertificateModel struct {
@@ -349,34 +357,22 @@ func flattenEnhancedLBTimeout(elb *iaas.ProxyLB) int {
 	return 0
 }
 
-func flattenEnhancedLBOriginGuard(elb *iaas.ProxyLB) types.Object {
-	v := types.ObjectNull(map[string]attr.Type{"token": types.StringType})
+func flattenEnhancedLBOriginGuard(elb *iaas.ProxyLB) *enhancedLBOriginGuardModel {
 	if elb.OriginGuard != nil {
-		m := map[string]attr.Value{
-			"token": types.StringValue(elb.OriginGuard.Token),
+		return &enhancedLBOriginGuardModel{
+			Token: types.StringValue(elb.OriginGuard.Token),
 		}
-		obj, diags := types.ObjectValue(map[string]attr.Type{"token": types.StringType}, m)
-		if diags.HasError() {
-			return v
-		}
-		return obj
 	}
-	return v
+	return nil
 }
 
-func flattenEnhancedLBStrictRule(elb *iaas.ProxyLB) types.Object {
-	v := types.ObjectNull(map[string]attr.Type{"enabled": types.BoolType})
+func flattenEnhancedLBStrictRule(elb *iaas.ProxyLB) *enhancedLBStrictRuleModel {
 	if elb.StrictRule != nil {
-		m := map[string]attr.Value{
-			"enabled": types.BoolValue(elb.StrictRule.Enabled),
+		return &enhancedLBStrictRuleModel{
+			Enabled: types.BoolValue(elb.StrictRule.Enabled),
 		}
-		obj, diags := types.ObjectValue(map[string]attr.Type{"enabled": types.BoolType}, m)
-		if diags.HasError() {
-			return v
-		}
-		return obj
 	}
-	return v
+	return nil
 }
 
 func flattenEnhancedLBACMESetting(elb *iaas.ProxyLB) types.Object {
