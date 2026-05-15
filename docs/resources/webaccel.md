@@ -78,15 +78,15 @@ Required:
 
 Optional:
 
-- `access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) access key. Required for type = bucket
-- `bucket_name` (String) bucket name. Required for type = bucket
+- `access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage's access key. Required for type = bucket
+- `bucket_name` (String) Object Storage's bucket name. Required for type = bucket
 - `credentials_wo_version` (Number) The version of the credential fields. This value must be greater than 0 when set. Increment this when changing credentials.
-- `endpoint` (String) S3 endpoint without protocol scheme. Required for type = bucket
+- `endpoint` (String) Object Storage's S3 endpoint without protocol scheme. Required for type = bucket
 - `host_header` (String) Host header to the origin. Optional for type = web
 - `origin` (String) Origin hostname or IP address. Required for type = web
 - `protocol` (String) Request protocol for the origin host. Required for type = web
-- `region` (String) S3 region. Required for type = bucket
-- `secret_access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) secret access key. Required for type = bucket
+- `region` (String) Object Storage's S3 region. Required for type = bucket
+- `secret_access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage's secret access key. Required for type = bucket
 - `use_document_index` (Boolean) Whether the document indexing for the bucket is enabled or not. Optional for type = bucket
 
 
@@ -104,12 +104,12 @@ Optional:
 
 Required:
 
-- `access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage access key
-- `bucket_name` (String) Object Storage bucket name
+- `access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage's access key
+- `bucket_name` (String) Object Storage's bucket name
 - `enabled` (Boolean) Whether the site logging is enabled or not
 - `endpoint` (String) Object Storage's S3 endpoint without protocol scheme
 - `region` (String) Object Storage's S3 region
-- `secret_access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage secret access key
+- `secret_access_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Object Storage's secret access key
 
 Optional:
 
