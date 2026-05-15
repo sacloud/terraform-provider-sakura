@@ -1,5 +1,13 @@
 # Changelog
 
+## [v3.10.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.9.1...v3.10.0) - 2026-05-15
+- test: update AppRun shared test container registry URLs by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/215
+- Remove skip s3 checksum from templates guides by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/225
+- feat(cdrom): add data source and resource by @tokuhirom in https://github.com/sacloud/terraform-provider-sakura/pull/214
+- enhanced_lb: Remove wrong validation of health_check parameters by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/226
+- Add webaccel by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/224
+- cdrom: Fix icon id handling and update docs by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/227
+
 ## [v3.9.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.9.0...v3.9.1) - 2026-04-27
 - chore: update iaas-service-go and tool dependencies, add tools to dependabot by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/208
 - Remove S3 Checksum Skips by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/212
