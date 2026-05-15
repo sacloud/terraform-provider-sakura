@@ -288,11 +288,7 @@ func (model *cdromResourceModel) updateState(cdrom *iaas.CDROM, zone string) {
 	model.Size = types.Int32Value(int32(cdrom.GetSizeGB()))
 	model.Zone = types.StringValue(zone)
 	model.Hash = types.StringValue(expandCDROMHash(model))
-	if cdrom.IconID.IsEmpty() {
-		model.IconID = types.StringNull()
-	} else {
-		model.IconID = types.StringValue(cdrom.IconID.String())
-	}
+	model.IconID = common.FlattenIconID(cdrom.IconID)
 }
 
 func getCDROM(ctx context.Context, client *common.APIClient, id iaastypes.ID, zone string, state *tfsdk.State, diags *diag.Diagnostics) *iaas.CDROM {

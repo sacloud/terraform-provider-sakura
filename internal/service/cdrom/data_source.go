@@ -89,7 +89,7 @@ func (d *cdromDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 
 	data.UpdateBaseState(cdrom.ID.String(), cdrom.Name, cdrom.Description, cdrom.Tags)
 	data.Size = types.Int32Value(int32(cdrom.GetSizeGB()))
-	data.IconID = types.StringValue(cdrom.IconID.String())
+	data.IconID = common.FlattenIconID(cdrom.IconID)
 	data.Zone = types.StringValue(zone)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
