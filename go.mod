@@ -20,14 +20,14 @@ require (
 	github.com/sacloud/addon-api-go v0.1.0
 	github.com/sacloud/api-client-go v0.3.5
 	github.com/sacloud/apigw-api-go v0.3.0
-	github.com/sacloud/apprun-api-go v0.7.1
+	github.com/sacloud/apprun-api-go v0.8.0
 	github.com/sacloud/apprun-dedicated-api-go v0.2.0
 	github.com/sacloud/autoscaler v0.19.3
 	github.com/sacloud/cloudhsm-api-go v0.4.0
 	github.com/sacloud/dedicated-storage-api-go v0.2.0
 	github.com/sacloud/eventbus-api-go v0.6.1
-	github.com/sacloud/iaas-api-go v1.28.0
-	github.com/sacloud/iaas-service-go v1.24.0
+	github.com/sacloud/iaas-api-go v1.29.0
+	github.com/sacloud/iaas-service-go v1.25.0
 	github.com/sacloud/iam-api-go v0.3.0
 	github.com/sacloud/kms-api-go v0.4.0
 	github.com/sacloud/monitoring-suite-api-go v0.2.0
@@ -38,8 +38,9 @@ require (
 	github.com/sacloud/secretmanager-api-go v0.4.1
 	github.com/sacloud/security-control-api-go v0.3.0
 	github.com/sacloud/service-endpoint-gateway-api-go v0.1.2
-	github.com/sacloud/simple-notification-api-go v0.3.0
+	github.com/sacloud/simple-notification-api-go v0.3.1
 	github.com/sacloud/simplemq-api-go v0.5.1
+	github.com/sacloud/webaccel-api-go v1.5.0
 	github.com/sacloud/workflows-api-go v0.4.0
 	github.com/stretchr/testify v1.11.1
 )
@@ -47,7 +48,6 @@ require (
 require (
 	github.com/ProtonMail/go-crypto v1.4.1 // indirect
 	github.com/agext/levenshtein v1.2.2 // indirect
-	github.com/apapsch/go-jsonmerge/v2 v2.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/benbjohnson/clock v1.3.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -108,8 +108,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/oapi-codegen/runtime v1.1.2 // indirect
-	github.com/ogen-go/ogen v1.20.2 // indirect
+	github.com/ogen-go/ogen v1.20.3 // indirect
 	github.com/oklog/run v1.1.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
@@ -121,7 +120,6 @@ require (
 	github.com/sacloud/go-http v0.1.9 // indirect
 	github.com/sacloud/go-otelsetup v0.5.0 // indirect
 	github.com/sacloud/iaas-api-go/trace/otel v0.0.0-20251222225644-7df65ab7d2cf // indirect
-	github.com/sacloud/webaccel-api-go v1.5.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shivamMg/ppds v0.0.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
