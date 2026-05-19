@@ -39,6 +39,7 @@ data "sakura_enhanced_lb" "foobar" {
 - `icon_id` (String) The icon id attached to the Enhanced LB
 - `letsencrypt` (Attributes) (see [below for nested schema](#nestedatt--letsencrypt))
 - `monitoring_suite` (Attributes) The monitoring suite settings of the Enhanced LB. (see [below for nested schema](#nestedatt--monitoring_suite))
+- `origin_guard` (Attributes) The origin guard configuration (see [below for nested schema](#nestedatt--origin_guard))
 - `plan` (Number) The plan of the Enhanced LB
 - `proxy_networks` (List of String) A list of CIDR block used by the Enhanced LB to access the server
 - `proxy_protocol` (Boolean) The flag to enable proxy protocol v2
@@ -47,6 +48,7 @@ data "sakura_enhanced_lb" "foobar" {
 - `server` (Attributes List) (see [below for nested schema](#nestedatt--server))
 - `sorry_server` (Attributes) (see [below for nested schema](#nestedatt--sorry_server))
 - `sticky_session` (Boolean) The flag to enable sticky session
+- `strict_rule` (Attributes) The strict rule configuration (see [below for nested schema](#nestedatt--strict_rule))
 - `syslog` (Attributes) (see [below for nested schema](#nestedatt--syslog))
 - `timeout` (Number) The timeout duration in seconds
 - `vip` (String) The virtual IP address assigned to the Enhanced LB
@@ -126,6 +128,14 @@ Read-Only:
 - `enabled` (Boolean) Enable sending signals to Monitoring Suite
 
 
+<a id="nestedatt--origin_guard"></a>
+### Nested Schema for `origin_guard`
+
+Read-Only:
+
+- `token` (String) The token used for origin guard
+
+
 <a id="nestedatt--rule"></a>
 ### Nested Schema for `rule`
 
@@ -166,6 +176,14 @@ Read-Only:
 
 - `ip_address` (String) The IP address of the SorryServer. This will be used when all servers are down
 - `port` (Number) The port number of the SorryServer. This will be used when all servers are down
+
+
+<a id="nestedatt--strict_rule"></a>
+### Nested Schema for `strict_rule`
+
+Read-Only:
+
+- `enabled` (Boolean) The flag to enable strict rule
 
 
 <a id="nestedatt--syslog"></a>

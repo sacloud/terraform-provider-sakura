@@ -100,6 +100,8 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 						"sakura_icon.foobar", "id",
 					),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "origin_guard.token", "abcdefgh"),
+					resource.TestCheckResourceAttr(resourceName, "strict_rule.enabled", "true"),
 				),
 			},
 			{
@@ -152,6 +154,8 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 						"sakura_server.foobar", "ip_address",
 					),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "origin_guard.token", "ijklmnop"),
+					resource.TestCheckResourceAttr(resourceName, "strict_rule.enabled", "false"),
 				),
 			},
 		},
@@ -244,6 +248,8 @@ func TestAccImportSakuraEnhancedLB_basic(t *testing.T) {
 			"rule.0.path":              "/",
 			"rule.0.group":             "group1",
 			"monitoring_suite.enabled": "true",
+			"origin_guard.token":       "abcdefgh",
+			"strict_rule.enabled":      "true",
 		}
 
 		if err := test.CompareStateMulti(s[0], expects); err != nil {
@@ -333,6 +339,14 @@ resource "sakura_enhanced_lb" "foobar" {
     request_header_value_not_match = true
   }]
 
+  origin_guard = {
+    token = "abcdefgh"
+  }
+
+  strict_rule = {
+    enabled = true
+  }
+
   monitoring_suite = {
     enabled = true
   }
@@ -393,6 +407,14 @@ resource "sakura_enhanced_lb" "foobar" {
     redirect_location    = "https://redirect.usacloud.jp"
   }]
 
+  origin_guard = {
+    token = "ijklmnop"
+  }
+
+  strict_rule = {
+    enabled = false
+  }
+
   monitoring_suite = {
     enabled = false
   }
@@ -441,6 +463,14 @@ resource "sakura_enhanced_lb" "foobar" {
     source_ips = "192.0.2.1,192.0.2.2"
     group      = "group1"
   }]
+
+  origin_guard = {
+    token = "abcdefgh"
+  }
+
+  strict_rule = {
+    enabled = true
+  }
 
   monitoring_suite = {
     enabled = true

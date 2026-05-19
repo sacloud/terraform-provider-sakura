@@ -40,6 +40,14 @@ resource "sakura_enhanced_lb" "foobar" {
     port   = 514
   }
 
+  origin_guard = {
+    token = "exampletoken"
+  }
+
+  strict_rule = {
+    enabled = true
+  }
+
   bind_port = [{
     proxy_mode = "http"
     port       = 80
@@ -113,6 +121,7 @@ resource "sakura_server" "foobar" {
 - `gzip` (Boolean) The flag to enable gzip compression
 - `icon_id` (String) The icon id to attach to the Enhanced LB
 - `monitoring_suite` (Attributes) The monitoring suite settings of the Enhanced LB. (see [below for nested schema](#nestedatt--monitoring_suite))
+- `origin_guard` (Attributes) The origin guard configuration (see [below for nested schema](#nestedatt--origin_guard))
 - `plan` (Number) The plan name of the Enhanced LB. This must be one of [`100`/`500`/`1000`/`5000`/`10000`/`50000`/`100000`/`400000`]
 - `proxy_protocol` (Boolean) The flag to enable proxy protocol v2
 - `region` (String) The name of region that the Enhanced LB is in. This must be one of [`tk1`/`is1`/`anycast`]
@@ -120,6 +129,7 @@ resource "sakura_server" "foobar" {
 - `server` (Attributes List) (see [below for nested schema](#nestedatt--server))
 - `sorry_server` (Attributes) (see [below for nested schema](#nestedatt--sorry_server))
 - `sticky_session` (Boolean) The flag to enable sticky session
+- `strict_rule` (Attributes) The strict rule configuration (see [below for nested schema](#nestedatt--strict_rule))
 - `syslog` (Attributes) (see [below for nested schema](#nestedatt--syslog))
 - `tags` (Set of String) The tags of the Enhanced LB.
 - `timeout` (Number) The timeout duration in seconds
@@ -210,6 +220,14 @@ Optional:
 - `enabled` (Boolean) Enable sending signals to Monitoring Suite
 
 
+<a id="nestedatt--origin_guard"></a>
+### Nested Schema for `origin_guard`
+
+Required:
+
+- `token` (String) The token used for origin guard. This must be between 8 and 32 alphanumeric characters
+
+
 <a id="nestedatt--rule"></a>
 ### Nested Schema for `rule`
 
@@ -253,6 +271,14 @@ Required:
 
 - `ip_address` (String) The IP address of the SorryServer. This will be used when all servers are down
 - `port` (Number) The port number of the SorryServer. This will be used when all servers are down
+
+
+<a id="nestedatt--strict_rule"></a>
+### Nested Schema for `strict_rule`
+
+Required:
+
+- `enabled` (Boolean) The flag to enable strict rule
 
 
 <a id="nestedatt--syslog"></a>

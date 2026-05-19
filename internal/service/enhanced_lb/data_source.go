@@ -84,6 +84,26 @@ func (d *enhancedLBDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Computed:    true,
 				Description: desc.Sprintf("The name of region that the Enhanced LB is in. This will be one of [%s]", iaastypes.ProxyLBRegionStrings),
 			},
+			"origin_guard": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: "The origin guard configuration",
+				Attributes: map[string]schema.Attribute{
+					"token": schema.StringAttribute{
+						Computed:    true,
+						Description: "The token used for origin guard",
+					},
+				},
+			},
+			"strict_rule": schema.SingleNestedAttribute{
+				Computed:    true,
+				Description: "The strict rule configuration",
+				Attributes: map[string]schema.Attribute{
+					"enabled": schema.BoolAttribute{
+						Computed:    true,
+						Description: "The flag to enable strict rule",
+					},
+				},
+			},
 			"syslog": schema.SingleNestedAttribute{
 				Computed: true,
 				Attributes: map[string]schema.Attribute{

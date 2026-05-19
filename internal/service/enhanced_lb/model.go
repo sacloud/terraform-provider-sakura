@@ -35,6 +35,8 @@ type enhancedLBBaseModel struct {
 	VIP                  types.String                `tfsdk:"vip"`
 	ProxyNetworks        types.List                  `tfsdk:"proxy_networks"`
 	MonitoringSuite      types.Object                `tfsdk:"monitoring_suite"`
+	OriginGuard          *enhancedLBOriginGuardModel `tfsdk:"origin_guard"`
+	StrictRule           *enhancedLBStrictRuleModel  `tfsdk:"strict_rule"`
 }
 
 type enhancedLBSyslogModel struct {
@@ -91,6 +93,14 @@ type enhancedLBRuleModel struct {
 	FixedStatusCode              types.String `tfsdk:"fixed_status_code"`
 	FixedContentType             types.String `tfsdk:"fixed_content_type"`
 	FixedMessageBody             types.String `tfsdk:"fixed_message_body"`
+}
+
+type enhancedLBOriginGuardModel struct {
+	Token types.String `tfsdk:"token"`
+}
+
+type enhancedLBStrictRuleModel struct {
+	Enabled types.Bool `tfsdk:"enabled"`
 }
 
 type enhancedLBCertificateModel struct {
@@ -175,6 +185,8 @@ func (model *enhancedLBBaseModel) updateState(ctx context.Context, client *commo
 	model.LetsEncrypt = flattenEnhancedLBACMESetting(data)
 	model.Certificate = flattenEnhancedLBCerts(certs)
 	model.MonitoringSuite = common.FlattenMonitoringSuiteLog(data.MonitoringSuiteLog)
+	model.OriginGuard = flattenEnhancedLBOriginGuard(data)
+	model.StrictRule = flattenEnhancedLBStrictRule(data)
 	if data.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
 	} else {
@@ -343,6 +355,24 @@ func flattenEnhancedLBTimeout(elb *iaas.ProxyLB) int {
 		return elb.Timeout.InactiveSec
 	}
 	return 0
+}
+
+func flattenEnhancedLBOriginGuard(elb *iaas.ProxyLB) *enhancedLBOriginGuardModel {
+	if elb.OriginGuard != nil {
+		return &enhancedLBOriginGuardModel{
+			Token: types.StringValue(elb.OriginGuard.Token),
+		}
+	}
+	return nil
+}
+
+func flattenEnhancedLBStrictRule(elb *iaas.ProxyLB) *enhancedLBStrictRuleModel {
+	if elb.StrictRule != nil {
+		return &enhancedLBStrictRuleModel{
+			Enabled: types.BoolValue(elb.StrictRule.Enabled),
+		}
+	}
+	return nil
 }
 
 func flattenEnhancedLBACMESetting(elb *iaas.ProxyLB) types.Object {

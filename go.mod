@@ -26,8 +26,8 @@ require (
 	github.com/sacloud/cloudhsm-api-go v0.4.0
 	github.com/sacloud/dedicated-storage-api-go v0.2.0
 	github.com/sacloud/eventbus-api-go v0.6.1
-	github.com/sacloud/iaas-api-go v1.28.0
-	github.com/sacloud/iaas-service-go v1.24.0
+	github.com/sacloud/iaas-api-go v1.29.0
+	github.com/sacloud/iaas-service-go v1.25.0
 	github.com/sacloud/iam-api-go v0.3.0
 	github.com/sacloud/kms-api-go v0.4.0
 	github.com/sacloud/monitoring-suite-api-go v0.2.0
