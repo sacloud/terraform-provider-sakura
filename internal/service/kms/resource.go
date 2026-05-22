@@ -56,6 +56,7 @@ func (r *kmsResource) Configure(ctx context.Context, req resource.ConfigureReque
 type kmsResourceModel struct {
 	kmsBaseModel
 	PlainKey                types.String   `tfsdk:"plain_key"`
+	PlainKeyWO              types.String   `tfsdk:"plain_key_wo"`
 	ScheduleDestructionDays types.Int32    `tfsdk:"schedule_destruction_days"`
 	RotateVersion           types.Int64    `tfsdk:"rotate_version"`
 	Timeouts                timeouts.Value `tfsdk:"timeouts"`
@@ -90,6 +91,18 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Sensitive:   true,
 				Description: "Plain key for imported KMS key. Required when `key_origin` is 'imported'.",
+				Validators: []validator.String{
+					stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("plain_key_wo")),
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("plain_key_wo")),
+				},
+			},
+			"plain_key_wo": schema.StringAttribute{
+				Optional:    true,
+				WriteOnly:   true,
+				Description: "Plain key for imported KMS key. Required when `key_origin` is 'imported'.",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("plain_key")),
+				},
 			},
 			"schedule_destruction_days": schema.Int32Attribute{
 				Optional:    true,
@@ -129,8 +142,9 @@ func (r *kmsResource) ImportState(ctx context.Context, req resource.ImportStateR
 }
 
 func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan kmsResourceModel
+	var plan, config kmsResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -138,7 +152,7 @@ func (r *kmsResource) Create(ctx context.Context, req resource.CreateRequest, re
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	keyReq, err := expandKMSCreateKey(&plan)
+	keyReq, err := expandKMSCreateKey(&plan, &config)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: Expand Error", fmt.Sprintf("failed to expand create key request: %s", err))
 		return
@@ -265,7 +279,7 @@ func getKMS(ctx context.Context, client *v1.Client, id string, state *tfsdk.Stat
 	return key
 }
 
-func expandKMSCreateKey(model *kmsResourceModel) (v1.CreateKey, error) {
+func expandKMSCreateKey(model, config *kmsResourceModel) (v1.CreateKey, error) {
 	keyOrig := model.KeyOrigin.ValueString()
 	var req v1.CreateKey
 	if keyOrig == "generated" {
@@ -275,6 +289,9 @@ func expandKMSCreateKey(model *kmsResourceModel) (v1.CreateKey, error) {
 		}
 	} else {
 		plainKey := model.PlainKey.ValueString()
+		if config != nil && config.PlainKeyWO.ValueString() != "" {
+			plainKey = config.PlainKeyWO.ValueString()
+		}
 		if plainKey == "" {
 			return v1.CreateKey{}, errors.New("plain_key is required when key_origin is 'imported'")
 		}

@@ -97,6 +97,35 @@ func TestAccSakuraResourceKMS_imported(t *testing.T) {
 	})
 }
 
+func TestAccSakuraResourceKMS_importedWithWO(t *testing.T) {
+	resourceName := "sakura_kms.foobar"
+	rand := test.RandomName()
+
+	var key v1.Key
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraKMSDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraKMS_importedWithWO, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraKMSExists(resourceName, &key),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "description", "description with plain key"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
+					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
+					resource.TestCheckResourceAttr(resourceName, "key_origin", "imported"),
+					resource.TestCheckResourceAttr(resourceName, "latest_version", "0"),
+					resource.TestCheckResourceAttr(resourceName, "status", "active"),
+					resource.TestCheckNoResourceAttr(resourceName, "plain_key_wo"),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraKMSDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	keyOp := kms.NewKeyOp(client.KmsClient)
@@ -177,4 +206,13 @@ resource "sakura_kms" "foobar2" {
   tags        = ["tag1"]
   key_origin  = "imported"
   rotate_version = 1
+}`
+
+var testAccSakuraKMS_importedWithWO = `
+resource "sakura_kms" "foobar" {
+  name         = "{{ .arg0 }}"
+  description  = "description with plain key"
+  tags         = ["tag1", "tag2"]
+  key_origin   = "imported"
+  plain_key_wo = "AfL5zzjD4RgeFQm3vvAADwPNrurNUc616877wsa8v4w="
 }`
