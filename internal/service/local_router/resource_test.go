@@ -274,8 +274,11 @@ func TestAccSakuraLocalRouter_peering(t *testing.T) {
 		t.Skip("This test only run if SAKURA_RESOURCE_REQUIRED_TEST environment variable is set")
 	}
 
-	resourceName1 := "sakura_local_router.foobar1"
-	resourceName2 := "sakura_local_router.foobar2"
+	test.SkipIfEnvIsNotSet(t, "SAKURA_LOCAL_ROUTER_PEER_ID", "SAKURA_LOCAL_ROUTER_SECRET_KEY")
+
+	resourceName := "sakura_local_router.foobar"
+	peerID := os.Getenv("SAKURA_LOCAL_ROUTER_PEER_ID")
+	secretKey := os.Getenv("SAKURA_LOCAL_ROUTER_SECRET_KEY")
 	rand := test.RandomName()
 
 	resource.Test(t, resource.TestCase{
@@ -288,18 +291,49 @@ func TestAccSakuraLocalRouter_peering(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraLocalRouter_peering, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraLocalRouter_peering, rand, peerID, secretKey),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttrPair(resourceName1, "id", resourceName2, "peer.0.peer_id"),
-					resource.TestCheckResourceAttrPair(resourceName1, "secret_keys.0", resourceName2, "peer.0.secret_key"),
-					resource.TestCheckResourceAttr(resourceName2, "peer.0.description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "peer.0.secret_key", secretKey),
+					resource.TestCheckResourceAttr(resourceName, "peer.0.description", "description"),
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraLocalRouter_peeringDisconnect, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraLocalRouter_peeringDisconnect, rand, peerID, secretKey),
 				Check: resource.ComposeTestCheckFunc(
-					resource.TestCheckResourceAttr(resourceName1, "peer.#", "0"),
-					resource.TestCheckResourceAttr(resourceName2, "peer.#", "0"),
+					resource.TestCheckResourceAttr(resourceName, "peer.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraLocalRouter_peeringWithWO(t *testing.T) {
+	if !test.IsResourceRequiredTest() {
+		t.Skip("This test only run if SAKURA_RESOURCE_REQUIRED_TEST environment variable is set")
+	}
+
+	test.SkipIfEnvIsNotSet(t, "SAKURA_LOCAL_ROUTER_PEER_ID", "SAKURA_LOCAL_ROUTER_SECRET_KEY")
+
+	resourceName := "sakura_local_router.foobar"
+	peerID := os.Getenv("SAKURA_LOCAL_ROUTER_PEER_ID")
+	secretKey := os.Getenv("SAKURA_LOCAL_ROUTER_SECRET_KEY")
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			test.CheckSakuraIconDestroy,
+			testCheckSakuraLocalRouterDestroy,
+			test.CheckSakuravSwitchDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraLocalRouter_peeringWithWO, rand, peerID, secretKey),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "peer.0.description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "peer.0.secret_key_wo_version", "1"),
+					resource.TestCheckNoResourceAttr(resourceName, "peer.0.secret_key_wo"),
 				),
 			},
 		},
@@ -307,34 +341,15 @@ func TestAccSakuraLocalRouter_peering(t *testing.T) {
 }
 
 const testAccSakuraLocalRouter_peering = `
-resource "sakura_vswitch" "foobar1" {
-  name = "{{ .arg0 }}"
-}
-resource "sakura_vswitch" "foobar2" {
+resource "sakura_vswitch" "foobar" {
   name = "{{ .arg0 }}"
 }
 
 data "sakura_zone" "current" {}
 
-resource "sakura_local_router" "foobar1" {
+resource "sakura_local_router" "foobar" {
   switch = {
-    code     = sakura_vswitch.foobar1.id
-    category = "cloud"
-    zone     = data.sakura_zone.current.name
-  }
-  network_interface = {
-    vip          = "192.168.11.1"
-    ip_addresses = ["192.168.11.11", "192.168.11.12"]
-    netmask      = 24
-    vrid         = 1
-  }
-
-  name        = "{{ .arg0 }}"
-}
-
-resource "sakura_local_router" "foobar2" {
-  switch = {
-    code     = sakura_vswitch.foobar2.id
+    code     = sakura_vswitch.foobar.id
     category = "cloud"
     zone     = data.sakura_zone.current.name
   }
@@ -345,44 +360,25 @@ resource "sakura_local_router" "foobar2" {
     vrid         = 1
   }
   peer = [{
-    peer_id     = sakura_local_router.foobar1.id
-    secret_key  = sakura_local_router.foobar1.secret_keys.0
+    peer_id     = "{{ .arg1 }}"
+    secret_key  = "{{ .arg2 }}"
     description = "description"
   }]
 
-  name        = "{{ .arg0 }}"
+  name = "{{ .arg0 }}"
 }
 `
 
 const testAccSakuraLocalRouter_peeringDisconnect = `
-resource "sakura_vswitch" "foobar1" {
-  name = "{{ .arg0 }}"
-}
-resource "sakura_vswitch" "foobar2" {
+resource "sakura_vswitch" "foobar" {
   name = "{{ .arg0 }}"
 }
 
 data "sakura_zone" "current" {}
 
-resource "sakura_local_router" "foobar1" {
+resource "sakura_local_router" "foobar" {
   switch = {
-    code     = sakura_vswitch.foobar1.id
-    category = "cloud"
-    zone     = data.sakura_zone.current.name
-  }
-  network_interface = {
-    vip          = "192.168.11.1"
-    ip_addresses = ["192.168.11.11", "192.168.11.12"]
-    netmask      = 24
-    vrid         = 1
-  }
-
-  name        = "{{ .arg0 }}"
-}
-
-resource "sakura_local_router" "foobar2" {
-  switch = {
-    code     = sakura_vswitch.foobar2.id
+    code     = sakura_vswitch.foobar.id
     category = "cloud"
     zone     = data.sakura_zone.current.name
   }
@@ -393,6 +389,36 @@ resource "sakura_local_router" "foobar2" {
     vrid         = 1
   }
 
-  name        = "{{ .arg0 }}"
+  name = "{{ .arg0 }}"
+}
+`
+
+const testAccSakuraLocalRouter_peeringWithWO = `
+resource "sakura_vswitch" "foobar" {
+  name = "{{ .arg0 }}"
+}
+
+data "sakura_zone" "current" {}
+
+resource "sakura_local_router" "foobar" {
+  switch = {
+    code     = sakura_vswitch.foobar.id
+    category = "cloud"
+    zone     = data.sakura_zone.current.name
+  }
+  network_interface = {
+    vip          = "192.168.13.1"
+    ip_addresses = ["192.168.13.11", "192.168.13.12"]
+    netmask      = 24
+    vrid         = 1
+  }
+  peer = [{
+    peer_id       = "{{ .arg1 }}"
+    secret_key_wo = "{{ .arg2 }}"
+	secret_key_wo_version = 1
+    description = "description"
+  }]
+
+  name = "{{ .arg0 }}"
 }
 `

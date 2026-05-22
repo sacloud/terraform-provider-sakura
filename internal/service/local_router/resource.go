@@ -10,6 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -132,9 +133,30 @@ func (r *localRouterResource) Schema(ctx context.Context, req resource.SchemaReq
 							},
 						},
 						"secret_key": schema.StringAttribute{
-							Required:    true,
+							Optional:    true,
 							Sensitive:   true,
 							Description: "The secret key of the peer LocalRouter",
+							Validators: []validator.String{
+								stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("peer").AtAnyListIndex().AtName("secret_key_wo")),
+								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("secret_key_wo")),
+							},
+						},
+						"secret_key_wo": schema.StringAttribute{
+							Optional:    true,
+							WriteOnly:   true,
+							Description: "The secret key of the peer LocalRouter",
+							Validators: []validator.String{
+								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("secret_key")),
+								stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_key_wo_version")),
+							},
+						},
+						"secret_key_wo_version": schema.Int32Attribute{
+							Optional:    true,
+							Description: "The version of the secret_key_wo field. This value must be greater than 0 when set. Increment this when changing secret_key_wo.",
+							Validators: []validator.Int32{
+								int32validator.AtLeast(1),
+								int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("secret_key_wo")),
+							},
 						},
 						"enabled": schema.BoolAttribute{
 							Optional:    true,
@@ -183,8 +205,9 @@ func (r *localRouterResource) ImportState(ctx context.Context, req resource.Impo
 }
 
 func (r *localRouterResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan localRouterResourceModel
+	var plan, config localRouterResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -192,7 +215,7 @@ func (r *localRouterResource) Create(ctx context.Context, req resource.CreateReq
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout20min)
 	defer cancel()
 
-	builder := expandLocalRouterBuilder(&plan, r.client)
+	builder := expandLocalRouterBuilder(&plan, &config, r.client)
 	if err := builder.Validate(ctx); err != nil {
 		resp.Diagnostics.AddError("Create: Validation Error", fmt.Sprintf("failed to validate parameter for LocalRouter: %s", err))
 		return
@@ -224,8 +247,9 @@ func (r *localRouterResource) Read(ctx context.Context, req resource.ReadRequest
 }
 
 func (r *localRouterResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan localRouterResourceModel
+	var plan, config localRouterResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -237,7 +261,7 @@ func (r *localRouterResource) Update(ctx context.Context, req resource.UpdateReq
 	common.SakuraMutexKV.Lock(id)
 	defer common.SakuraMutexKV.Unlock(id)
 
-	builder := expandLocalRouterBuilder(&plan, r.client)
+	builder := expandLocalRouterBuilder(&plan, &config, r.client)
 	if err := builder.Validate(ctx); err != nil {
 		resp.Diagnostics.AddError("Update: Validation Error", fmt.Sprintf("failed to validate parameter for LocalRouter[%s]: %s", id, err))
 		return
@@ -296,13 +320,26 @@ func getLocalRouter(ctx context.Context, client *common.APIClient, id string, st
 	return lr
 }
 
-func expandLocalRouterBuilder(model *localRouterResourceModel, client *common.APIClient) *localrouter.Builder {
+func expandLocalRouterBuilder(model, config *localRouterResourceModel, client *common.APIClient) *localrouter.Builder {
 	b := &localrouter.Builder{
 		Name:        model.Name.ValueString(),
 		Description: model.Description.ValueString(),
 		Tags:        common.TsetToStrings(model.Tags),
 		IconID:      common.ExpandSakuraCloudID(model.IconID),
 		Client:      localrouter.NewAPIClient(client),
+	}
+
+	secretKeys := map[string]string{}
+	for i, p := range model.Peer {
+		peerID := p.PeerID.ValueString()
+		if peerID == "" {
+			continue
+		}
+		key := p.SecretKey.ValueString()
+		if config != nil && config.Peer[i].SecretKeyWO.ValueString() != "" {
+			key = config.Peer[i].SecretKeyWO.ValueString()
+		}
+		secretKeys[peerID] = key
 	}
 
 	if model.Switch != nil {
@@ -324,9 +361,13 @@ func expandLocalRouterBuilder(model *localRouterResourceModel, client *common.AP
 
 	if len(model.Peer) > 0 {
 		for _, p := range model.Peer {
+			secretKey := p.SecretKey.ValueString()
+			if v, ok := secretKeys[p.PeerID.ValueString()]; ok {
+				secretKey = v
+			}
 			b.Peers = append(b.Peers, &iaas.LocalRouterPeer{
 				ID:          common.ExpandSakuraCloudID(p.PeerID),
-				SecretKey:   p.SecretKey.ValueString(),
+				SecretKey:   secretKey,
 				Enabled:     p.Enabled.ValueBool(),
 				Description: p.Description.ValueString(),
 			})

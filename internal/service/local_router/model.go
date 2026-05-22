@@ -8,6 +8,7 @@ import (
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type localRouterBaseModel struct {
@@ -34,10 +35,12 @@ type localRouterNetworkInterfaceModel struct {
 }
 
 type localRouterPeerModel struct {
-	PeerID      types.String `tfsdk:"peer_id"`
-	SecretKey   types.String `tfsdk:"secret_key"`
-	Enabled     types.Bool   `tfsdk:"enabled"`
-	Description types.String `tfsdk:"description"`
+	PeerID             types.String `tfsdk:"peer_id"`
+	SecretKey          types.String `tfsdk:"secret_key"`
+	SecretKeyWO        types.String `tfsdk:"secret_key_wo"`
+	SecretKeyWOVersion types.Int32  `tfsdk:"secret_key_wo_version"`
+	Enabled            types.Bool   `tfsdk:"enabled"`
+	Description        types.String `tfsdk:"description"`
 }
 
 type localRouterStaticRouteModel struct {
@@ -73,11 +76,24 @@ func (model *localRouterBaseModel) updateState(lr *iaas.LocalRouter) {
 	if len(lr.Peers) > 0 {
 		var peers []localRouterPeerModel
 		for _, p := range lr.Peers {
+			key := types.StringNull()
+			version := types.Int32Null()
+			for _, v := range model.Peer {
+				if v.PeerID.ValueString() == p.ID.String() {
+					if utils.IsKnown(v.SecretKeyWOVersion) {
+						version = types.Int32Value(v.SecretKeyWOVersion.ValueInt32())
+					} else {
+						key = types.StringValue(v.SecretKey.ValueString())
+					}
+					break
+				}
+			}
 			peers = append(peers, localRouterPeerModel{
-				PeerID:      types.StringValue(p.ID.String()),
-				SecretKey:   types.StringValue(p.SecretKey),
-				Enabled:     types.BoolValue(p.Enabled),
-				Description: types.StringValue(p.Description),
+				PeerID:             types.StringValue(p.ID.String()),
+				SecretKey:          key,
+				SecretKeyWOVersion: version,
+				Enabled:            types.BoolValue(p.Enabled),
+				Description:        types.StringValue(p.Description),
 			})
 		}
 		model.Peer = peers
@@ -94,5 +110,6 @@ func (model *localRouterBaseModel) updateState(lr *iaas.LocalRouter) {
 		model.StaticRoute = routes
 	}
 
+	// 将来的には空が返るようになるが、現状このフィールドに依存しているユーザがいる可能性があるため、レスポンスを利用する
 	model.SecretKeys = common.StringsToTlist(lr.SecretKeys)
 }
