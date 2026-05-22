@@ -61,16 +61,18 @@ func (r *archiveResource) Configure(ctx context.Context, req resource.ConfigureR
 
 type archiveResourceModel struct {
 	common.SakuraBaseModel
-	Zone              types.String   `tfsdk:"zone"`
-	Size              types.Int32    `tfsdk:"size"`
-	Hash              types.String   `tfsdk:"hash"`
-	IconID            types.String   `tfsdk:"icon_id"`
-	ArchiveFile       types.String   `tfsdk:"archive_file"`
-	SourceDiskID      types.String   `tfsdk:"source_disk_id"`
-	SourceSharedKey   types.String   `tfsdk:"source_shared_key"`
-	SourceArchiveID   types.String   `tfsdk:"source_archive_id"`
-	SourceArchiveZone types.String   `tfsdk:"source_archive_zone"`
-	Timeouts          timeouts.Value `tfsdk:"timeouts"`
+	Zone                     types.String   `tfsdk:"zone"`
+	Size                     types.Int32    `tfsdk:"size"`
+	Hash                     types.String   `tfsdk:"hash"`
+	IconID                   types.String   `tfsdk:"icon_id"`
+	ArchiveFile              types.String   `tfsdk:"archive_file"`
+	SourceDiskID             types.String   `tfsdk:"source_disk_id"`
+	SourceSharedKey          types.String   `tfsdk:"source_shared_key"`
+	SourceSharedKeyWO        types.String   `tfsdk:"source_shared_key_wo"`
+	SourceSharedKeyWOVersion types.Int32    `tfsdk:"source_shared_key_wo_version"`
+	SourceArchiveID          types.String   `tfsdk:"source_archive_id"`
+	SourceArchiveZone        types.String   `tfsdk:"source_archive_zone"`
+	Timeouts                 timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -162,10 +164,36 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 						}
 						return nil
 					}),
+					stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("source_shared_key_wo")),
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("source_shared_key_wo")),
 					stringvalidator.ConflictsWith(sizePath, sourceArchiveIdPath, sourceArchiveZonePath, sourceDiskIdPath),
 				},
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
+			"source_shared_key_wo": schema.StringAttribute{
+				Optional:    true,
+				WriteOnly:   true,
+				Description: "The share key of source shared archive",
+				Validators: []validator.String{
+					sacloudvalidator.StringFuncValidator(func(v string) error {
+						key := iaastypes.ArchiveShareKey(v)
+						if !key.ValidFormat() {
+							return fmt.Errorf("%q must be formatted in '<ZONE>:<ID>:<TOKEN>'", key)
+						}
+						return nil
+					}),
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("source_shared_key")),
+					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("source_shared_key_wo_version")),
+				},
+			},
+			"source_shared_key_wo_version": schema.Int32Attribute{
+				Optional:    true,
+				Description: "The version of the source_shared_key_wo field. This value must be greater than 0 when set. Increment this when changing source_shared_key_wo.",
+				Validators: []validator.Int32{
+					int32validator.AtLeast(1),
+					int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("source_shared_key_wo")),
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -181,8 +209,9 @@ func (r *archiveResource) ImportState(ctx context.Context, req resource.ImportSt
 }
 
 func (r *archiveResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan archiveResourceModel
+	var plan, config archiveResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -195,7 +224,7 @@ func (r *archiveResource) Create(ctx context.Context, req resource.CreateRequest
 		return
 	}
 
-	builder, cleanup, err := expandArchiveBuilder(&plan, zone, r.client)
+	builder, cleanup, err := expandArchiveBuilder(&plan, &config, zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: Expand Builder Error", err.Error())
 		return
@@ -299,7 +328,9 @@ func (model *archiveResourceModel) updateState(archive *iaas.Archive, zone strin
 	model.Hash = types.StringValue(expandArchiveHash(model))
 	model.SourceArchiveID = types.StringValue(model.SourceArchiveID.ValueString())
 	model.SourceDiskID = types.StringValue(model.SourceDiskID.ValueString())
-	model.SourceSharedKey = types.StringValue(model.SourceSharedKey.ValueString())
+	if !utils.IsKnown(model.SourceSharedKey) {
+		model.SourceSharedKey = types.StringNull()
+	}
 	if archive.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
 	} else {
@@ -322,7 +353,7 @@ func getArchive(ctx context.Context, client *common.APIClient, id iaastypes.ID, 
 	return archive
 }
 
-func expandArchiveBuilder(d *archiveResourceModel, zone string, client *common.APIClient) (archiveUtil.Builder, func(), error) {
+func expandArchiveBuilder(d, config *archiveResourceModel, zone string, client *common.APIClient) (archiveUtil.Builder, func(), error) {
 	var reader io.ReadCloser
 	source := d.ArchiveFile.ValueString()
 	if source != "" {
@@ -353,6 +384,11 @@ func expandArchiveBuilder(d *archiveResourceModel, zone string, client *common.A
 
 	// Note: APIとしてはディスクやアーカイブをソースとした場合Sizeの指定はできないが、
 	//       archiveUtil.Director側でAPIに渡すパラメータを制御しているためここでは常に渡して問題ない
+	sourceSharedKey := d.SourceSharedKey.ValueString()
+	if config != nil && config.SourceSharedKeyWO.ValueString() != "" {
+		sourceSharedKey = config.SourceSharedKeyWO.ValueString()
+	}
+
 	director := &archiveUtil.Director{
 		Name:              d.Name.ValueString(),
 		Description:       d.Description.ValueString(),
@@ -363,7 +399,7 @@ func expandArchiveBuilder(d *archiveResourceModel, zone string, client *common.A
 		SourceDiskID:      common.ExpandSakuraCloudID(d.SourceDiskID),
 		SourceArchiveID:   common.ExpandSakuraCloudID(d.SourceArchiveID),
 		SourceArchiveZone: sourceArchiveZone,
-		SourceSharedKey:   iaastypes.ArchiveShareKey(d.SourceSharedKey.ValueString()),
+		SourceSharedKey:   iaastypes.ArchiveShareKey(sourceSharedKey),
 		Client:            archiveUtil.NewAPIClient(client),
 	}
 	return director.Builder(), func() {
