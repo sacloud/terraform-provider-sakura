@@ -1,5 +1,13 @@
 # Changelog
 
+## [v3.11.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.10.0...v3.11.0) - 2026-05-25
+- feat: add origin_guard and strict_rule to sakura_enhanced_lb by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/216
+- ci: bump Songmu/tagpr from 1.18.2 to 1.19.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/228
+- go: bump github.com/minio/minio-go/v7 from 7.0.100 to 7.1.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/222
+- ci: bump goreleaser/goreleaser-action from 7.0.0 to 7.2.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/221
+- go: bump github.com/hashicorp/terraform-plugin-testing from 1.15.0 to 1.16.0 in the terraform group across 1 directory by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/219
+- fix: add missing OriginGuard/StrictRule in enhanced_lb_acme resource by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/232
+
 ## [v3.10.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.9.1...v3.10.0) - 2026-05-15
 - test: update AppRun shared test container registry URLs by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/215
 - Remove skip s3 checksum from templates guides by @to-shoji in https://github.com/sacloud/terraform-provider-sakura/pull/225
