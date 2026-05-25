@@ -31,6 +31,7 @@ import (
 	"github.com/sacloud/iaas-api-go/helper/power"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
@@ -65,8 +66,28 @@ func (d *vpnRouterResource) Configure(ctx context.Context, req resource.Configur
 
 type vpnRouterResourceModel struct {
 	vpnRouterBaseModel
-	User     []vpnRouterUserModel `tfsdk:"user"`
-	Timeouts timeouts.Value       `tfsdk:"timeouts"`
+	L2TP          *vpnRouterL2TPModel           `tfsdk:"l2tp"`
+	SiteToSiteVPN []vpnRouterSiteToSiteVPNModel `tfsdk:"site_to_site_vpn"`
+	User          []vpnRouterUserModel          `tfsdk:"user"`
+	Timeouts      timeouts.Value                `tfsdk:"timeouts"`
+}
+
+type vpnRouterL2TPModel struct {
+	PreSharedSecret          types.String `tfsdk:"pre_shared_secret"`
+	PreSharedSecretWO        types.String `tfsdk:"pre_shared_secret_wo"`
+	PreSharedSecretWOVersion types.Int32  `tfsdk:"pre_shared_secret_wo_version"`
+	RangeStart               types.String `tfsdk:"range_start"`
+	RangeStop                types.String `tfsdk:"range_stop"`
+}
+
+type vpnRouterSiteToSiteVPNModel struct {
+	Peer                     types.String `tfsdk:"peer"`
+	RemoteID                 types.String `tfsdk:"remote_id"`
+	PreSharedSecret          types.String `tfsdk:"pre_shared_secret"`
+	PreSharedSecretWO        types.String `tfsdk:"pre_shared_secret_wo"`
+	PreSharedSecretWOVersion types.Int32  `tfsdk:"pre_shared_secret_wo_version"`
+	Routes                   types.List   `tfsdk:"routes"`
+	LocalPrefix              types.List   `tfsdk:"local_prefix"`
 }
 
 type vpnRouterUserModel struct {
@@ -345,11 +366,31 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 				Optional: true,
 				Attributes: map[string]schema.Attribute{
 					"pre_shared_secret": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						Sensitive:   true,
 						Description: "The pre shared secret for L2TP/IPsec",
 						Validators: []validator.String{
 							stringvalidator.LengthBetween(0, 40),
+							stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("l2tp").AtName("pre_shared_secret_wo")),
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("pre_shared_secret_wo")),
+						},
+					},
+					"pre_shared_secret_wo": schema.StringAttribute{
+						Optional:    true,
+						WriteOnly:   true,
+						Description: "The pre shared secret for L2TP/IPsec",
+						Validators: []validator.String{
+							stringvalidator.LengthBetween(0, 40),
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("pre_shared_secret")),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("pre_shared_secret_wo_version")),
+						},
+					},
+					"pre_shared_secret_wo_version": schema.Int32Attribute{
+						Optional:    true,
+						Description: "The version of the pre_shared_secret_wo field. This value must be greater than 0 when set. Increment this when changing pre_shared_secret_wo.",
+						Validators: []validator.Int32{
+							int32validator.AtLeast(1),
+							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("pre_shared_secret_wo")),
 						},
 					},
 					"range_start": schema.StringAttribute{
@@ -468,11 +509,31 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 							Description: "The id of the opposing appliance connected to the VPN Router. This is typically set same as value of `peer`",
 						},
 						"pre_shared_secret": schema.StringAttribute{
-							Required:    true,
+							Optional:    true,
 							Sensitive:   true,
 							Description: desc.Sprintf("The pre shared secret for the VPN. %s", desc.Length(0, 40)),
 							Validators: []validator.String{
 								stringvalidator.LengthBetween(0, 40),
+								stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("site_to_site_vpn").AtAnyListIndex().AtName("pre_shared_secret_wo")),
+								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("pre_shared_secret_wo")),
+							},
+						},
+						"pre_shared_secret_wo": schema.StringAttribute{
+							Optional:    true,
+							WriteOnly:   true,
+							Description: desc.Sprintf("The pre shared secret for the VPN. %s", desc.Length(0, 40)),
+							Validators: []validator.String{
+								stringvalidator.LengthBetween(0, 40),
+								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("pre_shared_secret")),
+								stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("pre_shared_secret_wo_version")),
+							},
+						},
+						"pre_shared_secret_wo_version": schema.Int32Attribute{
+							Optional:    true,
+							Description: "The version of the pre_shared_secret_wo field. This value must be greater than 0 when set. Increment this when changing pre_shared_secret_wo.",
+							Validators: []validator.Int32{
+								int32validator.AtLeast(1),
+								int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("pre_shared_secret_wo")),
 							},
 						},
 						"routes": schema.ListAttribute{
@@ -791,7 +852,7 @@ func (r *vpnRouterResource) Update(ctx context.Context, req resource.UpdateReque
 		return
 	}
 
-	if rmResource, err := plan.updateState(ctx, r.client, zone, vpnRouter); err != nil {
+	if rmResource, err := plan.updateModel(ctx, r.client, zone, vpnRouter); err != nil {
 		if rmResource {
 			resp.State.RemoveResource(ctx)
 		}
@@ -852,4 +913,78 @@ func getRouter(ctx context.Context, client *common.APIClient, zone string, id ia
 		return nil
 	}
 	return vpnRouter
+}
+
+func (model *vpnRouterResourceModel) updateModel(ctx context.Context, client *common.APIClient, zone string, vpnRouter *iaas.VPCRouter) (bool, error) {
+	if rmResource, err := model.updateState(ctx, client, zone, vpnRouter); err != nil {
+		return rmResource, err
+	}
+
+	previousS2SVersions := map[string]types.Int32{}
+	for _, s := range model.SiteToSiteVPN {
+		peer := s.Peer.ValueString()
+		if peer == "" {
+			continue
+		}
+		if utils.IsKnown(s.PreSharedSecretWOVersion) {
+			previousS2SVersions[peer] = s.PreSharedSecretWOVersion
+		}
+	}
+
+	model.L2TP = flattenVPNRouterL2TP(vpnRouter, model.L2TP)
+	model.SiteToSiteVPN = flattenVPNRouterSiteToSiteConfig(vpnRouter, model.SiteToSiteVPN)
+
+	return false, nil
+}
+
+func flattenVPNRouterL2TP(vpcRouter *iaas.VPCRouter, previousL2TP *vpnRouterL2TPModel) *vpnRouterL2TPModel {
+	if vpcRouter.Settings.L2TPIPsecServerEnabled.Bool() {
+		pre := types.StringNull()
+		preVer := types.Int32Null()
+		if previousL2TP != nil {
+			if utils.IsKnown(previousL2TP.PreSharedSecretWOVersion) {
+				preVer = types.Int32Value(previousL2TP.PreSharedSecretWOVersion.ValueInt32())
+			} else {
+				// PreSharedSecretは将来的にレスポンスから削除されるため、レスポンスではなく設定の値を引き継ぐ
+				pre = types.StringValue(previousL2TP.PreSharedSecret.ValueString())
+			}
+		}
+		m := vpnRouterL2TPModel{
+			PreSharedSecret:          pre,
+			PreSharedSecretWOVersion: preVer,
+			RangeStart:               types.StringValue(vpcRouter.Settings.L2TPIPsecServer.RangeStart),
+			RangeStop:                types.StringValue(vpcRouter.Settings.L2TPIPsecServer.RangeStop),
+		}
+		return &m
+	}
+	return nil
+}
+
+func flattenVPNRouterSiteToSiteConfig(vpcRouter *iaas.VPCRouter, confs []vpnRouterSiteToSiteVPNModel) []vpnRouterSiteToSiteVPNModel {
+	var s2sSettings []vpnRouterSiteToSiteVPNModel
+	if vpcRouter.Settings.SiteToSiteIPsecVPN != nil {
+		for _, s := range vpcRouter.Settings.SiteToSiteIPsecVPN.Config {
+			pre := types.StringNull()
+			preVer := types.Int32Null()
+			for _, c := range confs {
+				if c.Peer.ValueString() == s.Peer {
+					if utils.IsKnown(c.PreSharedSecretWOVersion) {
+						preVer = types.Int32Value(c.PreSharedSecretWOVersion.ValueInt32())
+					} else {
+						// PreSharedSecretは将来的にレスポンスから削除されるため、レスポンスではなく設定の値を引き継ぐ
+						pre = types.StringValue(c.PreSharedSecret.ValueString())
+					}
+				}
+			}
+			s2sSettings = append(s2sSettings, vpnRouterSiteToSiteVPNModel{
+				Peer:                     types.StringValue(s.Peer),
+				RemoteID:                 types.StringValue(s.RemoteID),
+				PreSharedSecret:          pre,
+				PreSharedSecretWOVersion: preVer,
+				Routes:                   common.StringsToTlist(s.Routes),
+				LocalPrefix:              common.StringsToTlist(s.LocalPrefix),
+			})
+		}
+	}
+	return s2sSettings
 }

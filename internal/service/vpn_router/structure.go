@@ -134,10 +134,10 @@ func expandVPNRouterSettings(model, config *vpnRouterResourceModel) *builder.Rou
 		DHCPStaticMapping:         expandVPNRouterDHCPStaticMappingList(model),
 		DNSForwarding:             expandVPNRouterDNSForwarding(model),
 		PPTPServer:                expandVPNRouterPPTP(model),
-		L2TPIPsecServer:           expandVPNRouterL2TP(model),
+		L2TPIPsecServer:           expandVPNRouterL2TP(model, config),
 		RemoteAccessUsers:         expandVPNRouterUserList(model, config),
 		WireGuard:                 expandVPNRouterWireGuard(model),
-		SiteToSiteIPsecVPN:        expandVPNRouterSiteToSite(model),
+		SiteToSiteIPsecVPN:        expandVPNRouterSiteToSite(model, config),
 		StaticRoute:               expandVPNRouterStaticRouteList(model),
 		SyslogHost:                model.SyslogHost.ValueString(),
 		ScheduledMaintenance:      expandVPNRouterScheduledMaintenance(model),
@@ -322,21 +322,22 @@ func expandVPNRouterPPTP(model *vpnRouterResourceModel) *iaas.VPCRouterPPTPServe
 	}
 }
 
-func expandVPNRouterL2TP(model *vpnRouterResourceModel) *iaas.VPCRouterL2TPIPsecServer {
-	if model.L2TP.IsNull() || model.L2TP.IsUnknown() {
+func expandVPNRouterL2TP(model, config *vpnRouterResourceModel) *iaas.VPCRouterL2TPIPsecServer {
+	if model.L2TP == nil {
 		return nil
 	}
 
-	var d vpnRouterL2TPModel
-	diags := model.L2TP.As(context.Background(), &d, basetypes.ObjectAsOptions{})
-	if diags.HasError() {
-		return nil
+	preSharedSecret := model.L2TP.PreSharedSecret.ValueString()
+	if config != nil && config.L2TP != nil {
+		if config.L2TP.PreSharedSecretWO.ValueString() != "" {
+			preSharedSecret = config.L2TP.PreSharedSecretWO.ValueString()
+		}
 	}
 
 	return &iaas.VPCRouterL2TPIPsecServer{
-		RangeStart:      d.RangeStart.ValueString(),
-		RangeStop:       d.RangeStop.ValueString(),
-		PreSharedSecret: d.PreSharedSecret.ValueString(),
+		RangeStart:      model.L2TP.RangeStart.ValueString(),
+		RangeStop:       model.L2TP.RangeStop.ValueString(),
+		PreSharedSecret: preSharedSecret,
 	}
 }
 
@@ -389,11 +390,11 @@ func expandVPNRouterPortForwarding(model *vpnRouterPortForwardingModel) *iaas.VP
 	}
 }
 
-func expandVPNRouterSiteToSite(model *vpnRouterResourceModel) *iaas.VPCRouterSiteToSiteIPsecVPN {
+func expandVPNRouterSiteToSite(model, config *vpnRouterResourceModel) *iaas.VPCRouterSiteToSiteIPsecVPN {
 	siteToSiteVPN := &iaas.VPCRouterSiteToSiteIPsecVPN{}
 	if values := model.SiteToSiteVPN; len(values) > 0 {
-		for _, v := range values {
-			siteToSiteVPN.Config = append(siteToSiteVPN.Config, expandVPNRouterSiteToSiteConfig(&v))
+		for i, v := range values {
+			siteToSiteVPN.Config = append(siteToSiteVPN.Config, expandVPNRouterSiteToSiteConfig(&v, config, i))
 		}
 	}
 
@@ -416,11 +417,19 @@ func expandVPNRouterSiteToSite(model *vpnRouterResourceModel) *iaas.VPCRouterSit
 	return siteToSiteVPN
 }
 
-func expandVPNRouterSiteToSiteConfig(model *vpnRouterSiteToSiteVPNModel) *iaas.VPCRouterSiteToSiteIPsecVPNConfig {
+func expandVPNRouterSiteToSiteConfig(model *vpnRouterSiteToSiteVPNModel, config *vpnRouterResourceModel, index int) *iaas.VPCRouterSiteToSiteIPsecVPNConfig {
+	preSharedSecret := model.PreSharedSecret.ValueString()
+	if config != nil && index < len(config.SiteToSiteVPN) {
+		cfg := config.SiteToSiteVPN[index]
+		if cfg.PreSharedSecretWO.ValueString() != "" {
+			preSharedSecret = cfg.PreSharedSecretWO.ValueString()
+		}
+	}
+
 	return &iaas.VPCRouterSiteToSiteIPsecVPNConfig{
 		Peer:            model.Peer.ValueString(),
 		RemoteID:        model.RemoteID.ValueString(),
-		PreSharedSecret: model.PreSharedSecret.ValueString(),
+		PreSharedSecret: preSharedSecret,
 		Routes:          common.TlistToStringsOrDefault(model.Routes),
 		LocalPrefix:     common.TlistToStringsOrDefault(model.LocalPrefix),
 	}

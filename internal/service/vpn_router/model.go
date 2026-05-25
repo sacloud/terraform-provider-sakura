@@ -31,11 +31,9 @@ type vpnRouterBaseModel struct {
 	DHCPStaticMapping       []vpnRouterDHCPStaticMappingModel       `tfsdk:"dhcp_static_mapping"`
 	DNSForwarding           types.Object                            `tfsdk:"dns_forwarding"`
 	Firewall                []vpnRouterFirewallModel                `tfsdk:"firewall"`
-	L2TP                    types.Object                            `tfsdk:"l2tp"`
 	PortForwarding          []vpnRouterPortForwardingModel          `tfsdk:"port_forwarding"`
 	PPTP                    types.Object                            `tfsdk:"pptp"`
 	WireGuard               types.Object                            `tfsdk:"wire_guard"`
-	SiteToSiteVPN           []vpnRouterSiteToSiteVPNModel           `tfsdk:"site_to_site_vpn"`
 	SiteToSiteVPNParameter  types.Object                            `tfsdk:"site_to_site_vpn_parameter"`
 	StaticNAT               []vpnRouterStaticNATModel               `tfsdk:"static_nat"`
 	StaticRoute             []vpnRouterStaticRouteModel             `tfsdk:"static_route"`
@@ -110,20 +108,6 @@ type vpnRouterFirewallExprModel struct {
 	Description        types.String `tfsdk:"description"`
 }
 
-type vpnRouterL2TPModel struct {
-	PreSharedSecret types.String `tfsdk:"pre_shared_secret"`
-	RangeStart      types.String `tfsdk:"range_start"`
-	RangeStop       types.String `tfsdk:"range_stop"`
-}
-
-func (m vpnRouterL2TPModel) AttributeTypes() map[string]attr.Type {
-	return map[string]attr.Type{
-		"pre_shared_secret": types.StringType,
-		"range_start":       types.StringType,
-		"range_stop":        types.StringType,
-	}
-}
-
 type vpnRouterPortForwardingModel struct {
 	Protocol    types.String `tfsdk:"protocol"`
 	PrivateIP   types.String `tfsdk:"private_ip"`
@@ -170,14 +154,6 @@ func (m vpnRouterWireGuardPeerModel) AttributeTypes() map[string]attr.Type {
 		"ip_address": types.StringType,
 		"public_key": types.StringType,
 	}
-}
-
-type vpnRouterSiteToSiteVPNModel struct {
-	Peer            types.String `tfsdk:"peer"`
-	RemoteID        types.String `tfsdk:"remote_id"`
-	PreSharedSecret types.String `tfsdk:"pre_shared_secret"`
-	Routes          types.List   `tfsdk:"routes"`
-	LocalPrefix     types.List   `tfsdk:"local_prefix"`
 }
 
 type vpnRouterSiteToSiteVPNParameterModel struct {
@@ -272,7 +248,7 @@ func (model *vpnRouterBaseModel) updateState(ctx context.Context, client *common
 	model.DHCPStaticMapping = flattenVPNRouterDHCPStaticMappings(vpnRouter)
 	model.DNSForwarding = flattenVPNRouterDNSForwarding(vpnRouter)
 	model.Firewall = flattenVPNRouterFirewalls(vpnRouter)
-	model.L2TP = flattenVPNRouterL2TP(vpnRouter)
+
 	model.PPTP = flattenVPNRouterPPTP(vpnRouter)
 	if vpnRouter.Settings.SyslogHost != "" {
 		model.SyslogHost = types.StringValue(vpnRouter.Settings.SyslogHost)
@@ -296,7 +272,6 @@ func (model *vpnRouterBaseModel) updateState(ctx context.Context, client *common
 	}
 	model.WireGuard = flattenVPNRouterWireGuard(vpnRouter, wireGuardPublicKey)
 	model.PortForwarding = flattenVPNRouterPortForwardings(vpnRouter)
-	model.SiteToSiteVPN = flattenVPNRouterSiteToSiteConfig(vpnRouter)
 	model.SiteToSiteVPNParameter = flattenVPNRouterSiteToSiteParameter(vpnRouter)
 	model.StaticNAT = flattenVPNRouterStaticNAT(vpnRouter)
 	model.StaticRoute = flattenVPNRouterStaticRoutes(vpnRouter)
@@ -520,23 +495,6 @@ func flattenVPNRouterPPTP(vpcRouter *iaas.VPCRouter) types.Object {
 	return v
 }
 
-func flattenVPNRouterL2TP(vpcRouter *iaas.VPCRouter) types.Object {
-	v := types.ObjectNull(vpnRouterL2TPModel{}.AttributeTypes())
-	if vpcRouter.Settings.L2TPIPsecServerEnabled.Bool() {
-		m := vpnRouterL2TPModel{
-			PreSharedSecret: types.StringValue(vpcRouter.Settings.L2TPIPsecServer.PreSharedSecret),
-			RangeStart:      types.StringValue(vpcRouter.Settings.L2TPIPsecServer.RangeStart),
-			RangeStop:       types.StringValue(vpcRouter.Settings.L2TPIPsecServer.RangeStop),
-		}
-		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
-		if diags.HasError() {
-			return v
-		}
-		return value
-	}
-	return v
-}
-
 func flattenVPNRouterWireGuard(vpcRouter *iaas.VPCRouter, publicKey string) types.Object {
 	v := types.ObjectNull(vpnRouterWireGuardModel{}.AttributeTypes())
 	if vpcRouter.Settings.WireGuardEnabled.Bool() {
@@ -577,22 +535,6 @@ func flattenVPNRouterPortForwardings(vpcRouter *iaas.VPCRouter) []vpnRouterPortF
 		})
 	}
 	return portForwardings
-}
-
-func flattenVPNRouterSiteToSiteConfig(vpcRouter *iaas.VPCRouter) []vpnRouterSiteToSiteVPNModel {
-	var s2sSettings []vpnRouterSiteToSiteVPNModel
-	if vpcRouter.Settings.SiteToSiteIPsecVPN != nil {
-		for _, s := range vpcRouter.Settings.SiteToSiteIPsecVPN.Config {
-			s2sSettings = append(s2sSettings, vpnRouterSiteToSiteVPNModel{
-				Peer:            types.StringValue(s.Peer),
-				RemoteID:        types.StringValue(s.RemoteID),
-				PreSharedSecret: types.StringValue(s.PreSharedSecret),
-				Routes:          common.StringsToTlist(s.Routes),
-				LocalPrefix:     common.StringsToTlist(s.LocalPrefix),
-			})
-		}
-	}
-	return s2sSettings
 }
 
 func flattenVPNRouterSiteToSiteParameter(vpcRouter *iaas.VPCRouter) types.Object {
