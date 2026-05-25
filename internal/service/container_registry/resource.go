@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -17,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	registryBuilder "github.com/sacloud/iaas-service-go/containerregistry/builder"
@@ -52,7 +54,16 @@ func (r *containerRegistryResource) Configure(ctx context.Context, req resource.
 
 type containerRegistryResourceModel struct {
 	containerRegistryBaseModel
-	Timeouts timeouts.Value `tfsdk:"timeouts"`
+	User     []*containerRegistryUserModel `tfsdk:"user"`
+	Timeouts timeouts.Value                `tfsdk:"timeouts"`
+}
+
+type containerRegistryUserModel struct {
+	Name              types.String `tfsdk:"name"`
+	Password          types.String `tfsdk:"password"`
+	PasswordWO        types.String `tfsdk:"password_wo"`
+	PasswordWOVersion types.Int32  `tfsdk:"password_wo_version"`
+	Permission        types.String `tfsdk:"permission"`
 }
 
 func (r *containerRegistryResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -95,7 +106,8 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 				Computed:    true,
 				Description: "The FQDN for accessing the Container Registry. FQDN is built from `subdomain_label` + `.sakuracr.jp`",
 			},
-			"user": schema.SetNestedAttribute{
+			// Setではwrite-onlyが使えないため、Listにする。CR API経由でのユーザ取得は順序が不定なため、レスポンスはチェックせず、configの値をそのまま使う。
+			"user": schema.ListNestedAttribute{
 				Optional:    true,
 				Description: "User accounts for accessing the Container Registry",
 				NestedObject: schema.NestedAttributeObject{
@@ -105,9 +117,30 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 							Description: "The user name used to authenticate remote access",
 						},
 						"password": schema.StringAttribute{
-							Required:    true,
+							Optional:    true,
 							Sensitive:   true,
 							Description: "The password used to authenticate remote access",
+							Validators: []validator.String{
+								stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("user").AtAnyListIndex().AtName("password_wo")),
+								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
+							},
+						},
+						"password_wo": schema.StringAttribute{
+							Optional:    true,
+							WriteOnly:   true,
+							Description: "The password used to authenticate remote access",
+							Validators: []validator.String{
+								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
+								stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
+							},
+						},
+						"password_wo_version": schema.Int32Attribute{
+							Optional:    true,
+							Description: "The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.",
+							Validators: []validator.Int32{
+								int32validator.AtLeast(1),
+								int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo")),
+							},
 						},
 						"permission": schema.StringAttribute{
 							Required: true,
@@ -135,8 +168,9 @@ func (r *containerRegistryResource) ImportState(ctx context.Context, req resourc
 }
 
 func (r *containerRegistryResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan containerRegistryResourceModel
+	var plan, config containerRegistryResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -144,7 +178,7 @@ func (r *containerRegistryResource) Create(ctx context.Context, req resource.Cre
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	builder := expandContainerRegistryBuilder(&plan, r.client, "")
+	builder := expandContainerRegistryBuilder(&plan, &config, r.client, "")
 	reg, err := builder.Build(ctx)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create SakuraCloud Container Registry: %s", err))
@@ -156,7 +190,7 @@ func (r *containerRegistryResource) Create(ctx context.Context, req resource.Cre
 		return
 	}
 
-	plan.updateState(ctx, r.client, gotReg, true, &resp.Diagnostics)
+	plan.updateState(gotReg)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
@@ -171,14 +205,24 @@ func (r *containerRegistryResource) Read(ctx context.Context, req resource.ReadR
 	if reg == nil {
 		return
 	}
-	state.updateState(ctx, r.client, reg, true, &resp.Diagnostics)
-
+	state.updateState(reg)
+	if len(state.User) == 0 {
+		users := getContainerRegistryUsers(ctx, r.client, reg)
+		if users == nil {
+			resp.Diagnostics.AddError("Read: API Error", "failed to get users for Container Registry")
+			return
+		}
+		if len(users) > 0 {
+			state.User = flattenContainerRegistryUsers(users)
+		}
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, state)...)
 }
 
 func (r *containerRegistryResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan containerRegistryResourceModel
+	var plan, config containerRegistryResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -192,7 +236,7 @@ func (r *containerRegistryResource) Update(ctx context.Context, req resource.Upd
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to read SakuraCloud Container Registry[%s]: %s", plan.ID.ValueString(), err))
 		return
 	}
-	builder := expandContainerRegistryBuilder(&plan, r.client, reg.SettingsHash)
+	builder := expandContainerRegistryBuilder(&plan, &config, r.client, reg.SettingsHash)
 	builder.ID = reg.ID
 	if _, err := builder.Build(ctx); err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update SakuraCloud Container Registry[%s]: %s", plan.ID.ValueString(), err))
@@ -203,8 +247,7 @@ func (r *containerRegistryResource) Update(ctx context.Context, req resource.Upd
 	if gotReg == nil {
 		return
 	}
-
-	plan.updateState(ctx, r.client, gotReg, true, &resp.Diagnostics)
+	plan.updateState(gotReg)
 	resp.Diagnostics.Append(resp.State.Set(ctx, plan)...)
 }
 
@@ -230,7 +273,7 @@ func (r *containerRegistryResource) Delete(ctx context.Context, req resource.Del
 	}
 }
 
-func expandContainerRegistryBuilder(d *containerRegistryResourceModel, c *common.APIClient, settingsHash string) *registryBuilder.Builder {
+func expandContainerRegistryBuilder(d, config *containerRegistryResourceModel, c *common.APIClient, settingsHash string) *registryBuilder.Builder {
 	return &registryBuilder.Builder{
 		Name:           d.Name.ValueString(),
 		Description:    d.Description.ValueString(),
@@ -239,7 +282,7 @@ func expandContainerRegistryBuilder(d *containerRegistryResourceModel, c *common
 		AccessLevel:    iaastypes.EContainerRegistryAccessLevel(d.AccessLevel.ValueString()),
 		VirtualDomain:  d.VirtualDomain.ValueString(),
 		SubDomainLabel: d.SubDomainLabel.ValueString(),
-		Users:          expandContainerRegistryUsers(d.User),
+		Users:          expandContainerRegistryUsers(d.User, config.User),
 		SettingsHash:   settingsHash,
 		Client:         iaas.NewContainerRegistryOp(c),
 	}
@@ -258,4 +301,19 @@ func getContainerRegistry(ctx context.Context, client *common.APIClient, id iaas
 	}
 
 	return reg
+}
+
+func flattenContainerRegistryUsers(users []*iaas.ContainerRegistryUser) []*containerRegistryUserModel {
+	var results []*containerRegistryUserModel
+	for _, user := range users {
+		v := &containerRegistryUserModel{
+			Name:              types.StringValue(user.UserName),
+			Password:          types.StringNull(),
+			PasswordWO:        types.StringNull(),
+			PasswordWOVersion: types.Int32Null(),
+			Permission:        types.StringValue(string(user.Permission)),
+		}
+		results = append(results, v)
+	}
+	return results
 }

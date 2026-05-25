@@ -82,6 +82,72 @@ func TestAccSakuraContainerRegistry_basic(t *testing.T) {
 	})
 }
 
+func TestAccSakuraContainerRegistry_WObasic(t *testing.T) {
+	resourceName := "sakura_container_registry.foobar"
+	rand := test.RandomName()
+	subDomainLabel := acctest.RandStringFromCharSet(60, acctest.CharSetAlpha)
+	password := test.RandomPassword()
+
+	var reg iaas.ContainerRegistry
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraContainerRegistryDestroy,
+			test.CheckSakuraIconDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraContainerRegistry_basicWO, rand, subDomainLabel, password),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraContainerRegistryExists(resourceName, &reg),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "subdomain_label", subDomainLabel),
+					resource.TestCheckResourceAttr(resourceName, "virtual_domain", subDomainLabel+".usacloud.jp"),
+					resource.TestCheckResourceAttr(resourceName, "fqdn", subDomainLabel+".sakuracr.jp"),
+					resource.TestCheckResourceAttr(resourceName, "access_level", "none"),
+					resource.TestCheckResourceAttr(resourceName, "description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
+					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
+					resource.TestCheckResourceAttr(resourceName, "user.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "user.0.name", "user1"),
+					resource.TestCheckNoResourceAttr(resourceName, "user.0.password"),
+					resource.TestCheckNoResourceAttr(resourceName, "user.0.password_wo"),
+					resource.TestCheckResourceAttr(resourceName, "user.0.permission", "readwrite"),
+					resource.TestCheckResourceAttr(resourceName, "user.0.password_wo_version", "1"),
+					resource.TestCheckResourceAttr(resourceName, "user.1.name", "user2"),
+					resource.TestCheckNoResourceAttr(resourceName, "user.1.password"),
+					resource.TestCheckNoResourceAttr(resourceName, "user.1.password_wo"),
+					resource.TestCheckResourceAttr(resourceName, "user.1.permission", "readonly"),
+					resource.TestCheckResourceAttr(resourceName, "user.1.password_wo_version", "1"),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraContainerRegistry_updateWO, rand, subDomainLabel, password),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraContainerRegistryExists(resourceName, &reg),
+					resource.TestCheckResourceAttr(resourceName, "name", rand+"-upd"),
+					resource.TestCheckResourceAttr(resourceName, "subdomain_label", subDomainLabel),
+					resource.TestCheckResourceAttr(resourceName, "virtual_domain", subDomainLabel+"-upd.usacloud.jp"),
+					resource.TestCheckResourceAttr(resourceName, "fqdn", subDomainLabel+".sakuracr.jp"),
+					resource.TestCheckResourceAttr(resourceName, "access_level", "none"),
+					resource.TestCheckResourceAttr(resourceName, "description", "description-upd"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1-upd"),
+					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2-upd"),
+					resource.TestCheckResourceAttr(resourceName, "user.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "user.0.name", "user1"),
+					resource.TestCheckNoResourceAttr(resourceName, "user.0.password"),
+					resource.TestCheckNoResourceAttr(resourceName, "user.0.password_wo"),
+					resource.TestCheckResourceAttr(resourceName, "user.0.permission", "readonly"),
+					resource.TestCheckResourceAttr(resourceName, "user.0.password_wo_version", "2"),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraContainerRegistryExists(n string, cr *iaas.ContainerRegistry) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -175,6 +241,50 @@ resource "sakura_container_registry" "foobar" {
     name       = "user1"
     password   = "{{ .arg2 }}"
     permission = "all"
+  }]
+}
+`
+
+var testAccSakuraContainerRegistry_basicWO = `
+resource "sakura_container_registry" "foobar" {
+  name            = "{{ .arg0 }}"
+  virtual_domain  = "{{ .arg1 }}.usacloud.jp"
+  subdomain_label = "{{ .arg1 }}"
+  access_level    = "none"
+
+  description = "description"
+  tags        = ["tag1", "tag2"]
+
+  user = [{
+    name        = "user1"
+    permission  = "readwrite"
+    password_wo = "{{ .arg2 }}"
+    password_wo_version = 1
+  },
+  {
+    name        = "user2"
+    permission  = "readonly"
+    password_wo = "{{ .arg2 }}"
+    password_wo_version = 1
+  }]
+}
+`
+
+var testAccSakuraContainerRegistry_updateWO = `
+resource "sakura_container_registry" "foobar" {
+  name            = "{{ .arg0 }}-upd"
+  virtual_domain  = "{{ .arg1 }}-upd.usacloud.jp"
+  subdomain_label = "{{ .arg1 }}"
+  access_level    = "none"
+
+  description = "description-upd"
+  tags        = ["tag1-upd", "tag2-upd"]
+
+  user = [{
+    name        = "user1"
+    permission  = "readonly"
+    password_wo = "{{ .arg2 }}abc"
+    password_wo_version = 2
   }]
 }
 `

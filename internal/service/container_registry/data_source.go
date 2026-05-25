@@ -8,6 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
@@ -39,6 +40,13 @@ func (d *containerRegistryDataSource) Configure(ctx context.Context, req datasou
 
 type containerRegistryDataSourceModel struct {
 	containerRegistryBaseModel
+	User []*containerRegistryUserDSModel `tfsdk:"user"`
+}
+
+type containerRegistryUserDSModel struct {
+	Name       types.String `tfsdk:"name"`
+	Password   types.String `tfsdk:"password"`
+	Permission types.String `tfsdk:"permission"`
 }
 
 func (d *containerRegistryDataSource) Schema(_ context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -65,7 +73,7 @@ func (d *containerRegistryDataSource) Schema(_ context.Context, _ datasource.Sch
 				Computed:    true,
 				Description: "The FQDN for accessing the Container Registry. FQDN is built from `subdomain_label` + `.sakuracr.jp`",
 			},
-			"user": schema.SetNestedAttribute{
+			"user": schema.ListNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -109,6 +117,20 @@ func (d *containerRegistryDataSource) Read(ctx context.Context, req datasource.R
 	}
 
 	cr := res.ContainerRegistries[0]
-	data.updateState(ctx, d.client, cr, true, &resp.Diagnostics)
+	data.updateState(cr)
+	data.User = flattenContainerRegistryUsersDataSource(getContainerRegistryUsers(ctx, d.client, cr))
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func flattenContainerRegistryUsersDataSource(users []*iaas.ContainerRegistryUser) []*containerRegistryUserDSModel {
+	var results []*containerRegistryUserDSModel
+	for _, user := range users {
+		v := &containerRegistryUserDSModel{
+			Name:       types.StringValue(user.UserName),
+			Password:   types.StringValue(""),
+			Permission: types.StringValue(string(user.Permission)),
+		}
+		results = append(results, v)
+	}
+	return results
 }
