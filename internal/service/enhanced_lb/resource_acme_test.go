@@ -47,6 +47,8 @@ func TestAccSakuraEnhancedLBACME_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "proxy_protocol", "true"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "backend_http_keep_alive", "aggressive"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "rule.#", "1"),
+					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token", "abcdefgh"),
+					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "strict_rule.enabled", "true"),
 
 					resource.TestCheckResourceAttr(resourceName, "certificate.common_name", subDomain+"."+elbDomain),
 					resource.TestCheckResourceAttr(resourceName, "certificate.subject_alt_names",
@@ -102,6 +104,14 @@ resource "sakura_enhanced_lb" "foobar" {
     path  = "/"
     group = "group1"
   }]
+
+  origin_guard = {
+    token = "abcdefgh"
+  }
+
+  strict_rule = {
+    enabled = true
+  }
 }
 
 resource "sakura_enhanced_lb_acme" "foobar" {

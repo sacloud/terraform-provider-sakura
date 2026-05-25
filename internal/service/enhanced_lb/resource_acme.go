@@ -225,6 +225,8 @@ func (r *enhancedLBACMEResource) Create(ctx context.Context, req resource.Create
 		BackendHttpKeepAlive: elb.BackendHttpKeepAlive,
 		ProxyProtocol:        elb.ProxyProtocol,
 		Syslog:               elb.Syslog,
+		OriginGuard:          elb.OriginGuard,
+		StrictRule:           elb.StrictRule,
 		SettingsHash:         elb.SettingsHash,
 	})
 	if err != nil {
@@ -305,6 +307,8 @@ func (r *enhancedLBACMEResource) Delete(ctx context.Context, req resource.Delete
 		BackendHttpKeepAlive: elb.BackendHttpKeepAlive,
 		ProxyProtocol:        elb.ProxyProtocol,
 		Syslog:               elb.Syslog,
+		OriginGuard:          elb.OriginGuard,
+		StrictRule:           elb.StrictRule,
 		SettingsHash:         elb.SettingsHash,
 	})
 	if err != nil {
