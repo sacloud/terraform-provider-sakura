@@ -8,6 +8,7 @@ import (
 	"github.com/sacloud/iaas-api-go"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type simpleMonitorBaseModel struct {
@@ -62,7 +63,9 @@ func (m *simpleMonitorBaseModel) updateState(sm *iaas.SimpleMonitor) {
 	m.NotifyEmailEnabled = types.BoolValue(sm.NotifyEmailEnabled.Bool())
 	m.NotifyEmailHTML = types.BoolValue(sm.NotifyEmailHTML.Bool())
 	m.NotifySlackEnabled = types.BoolValue(sm.NotifySlackEnabled.Bool())
-	m.NotifySlackWebhook = types.StringValue(sm.SlackWebhooksURL)
+	if !utils.IsKnown(m.NotifySlackWebhook) {
+		m.NotifySlackWebhook = types.StringValue("")
+	}
 	m.NotifyInterval = types.Int32Value(int32(flattenSimpleMonitorNotifyInterval(sm)))
 	m.MonitoringSuite = common.FlattenMonitoringSuiteLog(sm.MonitoringSuiteLog)
 	if sm.IconID.IsEmpty() {

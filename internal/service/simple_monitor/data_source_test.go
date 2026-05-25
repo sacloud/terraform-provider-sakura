@@ -36,7 +36,7 @@ func TestAccSakuraDataSourceSimpleMonitor_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "health_check.host_header", "usacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "notify_email_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "notify_slack_enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "notify_slack_webhook", testAccSlackWebhook),
+					resource.TestCheckResourceAttr(resourceName, "notify_slack_webhook", ""),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
 				),
 			},
