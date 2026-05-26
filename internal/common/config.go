@@ -78,26 +78,26 @@ var (
 
 // Config type of SakuraCloud Config
 type Config struct {
-	Profile               string
-	AccessToken           string
-	AccessTokenSecret     string
-	ServicePrincipalID    string
-	ServicePrincipalKeyID string
-	ServicePrivateKey     string
-	ServicePrivateKeyPath string
-	Zone                  string
-	Zones                 []string
-	DefaultZone           string
-	TraceMode             string
-	AcceptLanguage        string
-	APIRootURL            string
-	RetryMax              int
-	RetryWaitMin          int
-	RetryWaitMax          int
-	APIRequestTimeout     int
-	APIRequestRateLimit   int
-	TerraformVersion      string
-	Endpoints             map[string]string
+	Profile                string
+	AccessToken            string
+	AccessTokenSecret      string
+	ServicePrincipalID     string
+	ServicePrincipalKeyKID string
+	ServicePrivateKey      string
+	ServicePrivateKeyPath  string
+	Zone                   string
+	Zones                  []string
+	DefaultZone            string
+	TraceMode              string
+	AcceptLanguage         string
+	APIRootURL             string
+	RetryMax               int
+	RetryWaitMin           int
+	RetryWaitMax           int
+	APIRequestTimeout      int
+	APIRequestRateLimit    int
+	TerraformVersion       string
+	Endpoints              map[string]string
 }
 
 // APIClient for SakuraCloud API
@@ -154,8 +154,8 @@ func (c *Config) FillWith(other *Config) {
 	if c.ServicePrincipalID == "" {
 		c.ServicePrincipalID = other.ServicePrincipalID
 	}
-	if c.ServicePrincipalKeyID == "" {
-		c.ServicePrincipalKeyID = other.ServicePrincipalKeyID
+	if c.ServicePrincipalKeyKID == "" {
+		c.ServicePrincipalKeyKID = other.ServicePrincipalKeyKID
 	}
 	if c.ServicePrivateKey == "" {
 		c.ServicePrivateKey = other.ServicePrivateKey
@@ -257,7 +257,10 @@ func (c *Config) LoadFromProfile() (*Config, error) {
 		conf.ServicePrincipalID = v
 	}
 	if v, ok := attrs["ServicePrincipalKeyID"].(string); ok {
-		conf.ServicePrincipalKeyID = v
+		conf.ServicePrincipalKeyKID = v
+	}
+	if v, ok := attrs["ServicePrincipalKeyKID"].(string); ok {
+		conf.ServicePrincipalKeyKID = v
 	}
 	if v, ok := attrs["PrivateKeyPEMPath"].(string); ok {
 		conf.ServicePrivateKeyPath = v
@@ -316,8 +319,8 @@ func (c *Config) validate() error {
 		if c.ServicePrincipalID == "" {
 			err = multierror.Append(err, errors.New("service_principal_id is required when service_private_key or service_private_key_path is specified"))
 		}
-		if c.ServicePrincipalKeyID == "" {
-			err = multierror.Append(err, errors.New("service_principal_key_id is required when service_private_key or service_private_key_path is specified"))
+		if c.ServicePrincipalKeyKID == "" {
+			err = multierror.Append(err, errors.New("service_principal_key_kid is required when service_private_key or service_private_key_path is specified"))
 		}
 	} else {
 		if c.AccessToken == "" {
@@ -518,8 +521,8 @@ func (c *Config) createSaclientEnvConfig() []string {
 	if c.ServicePrincipalID != "" {
 		envs = append(envs, fmt.Sprintf("SAKURA_SERVICE_PRINCIPAL_ID=%s", c.ServicePrincipalID))
 	}
-	if c.ServicePrincipalKeyID != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_SERVICE_PRINCIPAL_KEY_ID=%s", c.ServicePrincipalKeyID))
+	if c.ServicePrincipalKeyKID != "" {
+		envs = append(envs, fmt.Sprintf("SAKURA_SERVICE_PRINCIPAL_KEY_KID=%s", c.ServicePrincipalKeyKID))
 	}
 	if c.ServicePrivateKey != "" {
 		envs = append(envs, fmt.Sprintf("SAKURA_PRIVATE_KEY=%s", c.ServicePrivateKey))
