@@ -326,7 +326,7 @@ func (model *enhancedLBACMEResourceModel) updateState(ctx context.Context, clien
 	}
 
 	model.ID = types.StringValue(data.ID.String())
-	model.Certificate = flattenEnhancedLBCerts(certs)
+	model.Certificate = flattenEnhancedLBCerts(certs, model.Certificate)
 
 	return nil
 }
