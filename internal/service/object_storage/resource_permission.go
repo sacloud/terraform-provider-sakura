@@ -75,10 +75,12 @@ func (r *objectStoragePermissionResource) Schema(ctx context.Context, _ resource
 			},
 			"access_key": schema.StringAttribute{
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The access key for the Object Storage Permission.",
 			},
 			"secret_key": schema.StringAttribute{
 				Computed:    true,
+				Sensitive:   true,
 				Description: "The secret key for the Object Storage Permission.",
 			},
 			"bucket_controls": schema.ListNestedAttribute{
