@@ -39,9 +39,9 @@ resource "sakura_object_storage_permission" "foobar" {
 
 ### Read-Only
 
-- `access_key` (String) The access key for the Object Storage Permission.
+- `access_key` (String, Sensitive) The access key for the Object Storage Permission.
 - `id` (String) The ID of the Object Storage Permission.
-- `secret_key` (String) The secret key for the Object Storage Permission.
+- `secret_key` (String, Sensitive) The secret key for the Object Storage Permission.
 
 <a id="nestedatt--bucket_controls"></a>
 ### Nested Schema for `bucket_controls`
