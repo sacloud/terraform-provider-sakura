@@ -5,11 +5,14 @@ package enhanced_lb
 
 import (
 	"context"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type enhancedLBBaseModel struct {
@@ -183,7 +186,7 @@ func (model *enhancedLBBaseModel) updateState(ctx context.Context, client *commo
 	model.Server = flattenEnhancedLBServers(data)
 	model.Rule = flattenEnhancedLBRules(data)
 	model.LetsEncrypt = flattenEnhancedLBACMESetting(data)
-	model.Certificate = flattenEnhancedLBCerts(certs)
+	model.Certificate = flattenEnhancedLBCerts(certs, model.Certificate)
 	model.MonitoringSuite = common.FlattenMonitoringSuiteLog(data.MonitoringSuiteLog)
 	model.OriginGuard = flattenEnhancedLBOriginGuard(data)
 	model.StrictRule = flattenEnhancedLBStrictRule(data)
@@ -289,27 +292,52 @@ func flattenEnhancedLBRules(elb *iaas.ProxyLB) []enhancedLBRuleModel {
 	return results
 }
 
-func flattenEnhancedLBCerts(certs *iaas.ProxyLBCertificates) types.Object {
+func flattenEnhancedLBCerts(certs *iaas.ProxyLBCertificates, modelObj types.Object) types.Object {
 	v := types.ObjectNull(enhancedLBCertificateModel{}.AttributeTypes())
 	if certs == nil {
 		return v
+	}
+
+	// null/unknownの場合はAsで変換できないので事前にチェックし、それらの場合はnilとしてPrivateKeyとかは設定しないようにする
+	model := &enhancedLBCertificateModel{}
+	if utils.IsKnown(modelObj) {
+		diags := modelObj.As(context.Background(), model, basetypes.ObjectAsOptions{})
+		if diags.HasError() {
+			model = nil
+		}
+	} else {
+		model = nil
 	}
 
 	elbCert := enhancedLBCertificateModel{}
 	if certs.PrimaryCert != nil {
 		elbCert.ServerCert = types.StringValue(certs.PrimaryCert.ServerCertificate)
 		elbCert.IntermediateCert = types.StringValue(certs.PrimaryCert.IntermediateCertificate)
-		elbCert.PrivateKey = types.StringValue(certs.PrimaryCert.PrivateKey)
+		if model != nil {
+			elbCert.PrivateKey = types.StringValue(model.PrivateKey.ValueString()) // 秘密鍵はAPIレスポンスに含まれなくなるため、既存の状態から引き継ぐ
+		} else {
+			elbCert.PrivateKey = types.StringValue("")
+		}
 		elbCert.CommonName = types.StringValue(certs.PrimaryCert.CertificateCommonName)
 		elbCert.SubjectAltNames = types.StringValue(certs.PrimaryCert.CertificateAltNames)
 	}
 	if len(certs.AdditionalCerts) > 0 {
 		var additionalCerts []enhancedLBAdditionalCertificateModel
 		for _, ac := range certs.AdditionalCerts {
+			pKey := types.StringValue("")
+			if model != nil {
+				for _, c := range model.AdditionalCertificate {
+					if strings.TrimSpace(c.ServerCert.ValueString()) == strings.TrimSpace(ac.ServerCertificate) &&
+						strings.TrimSpace(c.IntermediateCert.ValueString()) == strings.TrimSpace(ac.IntermediateCertificate) {
+						pKey = types.StringValue(c.PrivateKey.ValueString())
+						break
+					}
+				}
+			}
 			additionalCerts = append(additionalCerts, enhancedLBAdditionalCertificateModel{
 				ServerCert:       types.StringValue(ac.ServerCertificate),
 				IntermediateCert: types.StringValue(ac.IntermediateCertificate),
-				PrivateKey:       types.StringValue(ac.PrivateKey),
+				PrivateKey:       pKey,
 			})
 		}
 		elbCert.AdditionalCertificate = additionalCerts

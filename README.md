@@ -28,7 +28,6 @@ v3 における変更点は [CHANGES.md](./CHANGES.md) をご覧ください。
 以下のリソースは未移植です。必要な場合はv2との併用を検討してください。
 
 - archive_share
-- cdrom
 - certificate_authority
 - esme
 - mobile_gateway

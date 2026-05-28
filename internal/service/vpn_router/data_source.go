@@ -43,7 +43,23 @@ func (d *vpnRouterDataSource) Configure(ctx context.Context, req datasource.Conf
 
 type vpnRouterDataSourceModel struct {
 	vpnRouterBaseModel
-	User []vpnRouterUserDataSourceModel `tfsdk:"user"`
+	L2TP          *vpnRouterL2TPDSModel           `tfsdk:"l2tp"`
+	SiteToSiteVPN []vpnRouterSiteToSiteVPNDSModel `tfsdk:"site_to_site_vpn"`
+	User          []vpnRouterUserDataSourceModel  `tfsdk:"user"`
+}
+
+type vpnRouterL2TPDSModel struct {
+	PreSharedSecret types.String `tfsdk:"pre_shared_secret"`
+	RangeStart      types.String `tfsdk:"range_start"`
+	RangeStop       types.String `tfsdk:"range_stop"`
+}
+
+type vpnRouterSiteToSiteVPNDSModel struct {
+	Peer            types.String `tfsdk:"peer"`
+	RemoteID        types.String `tfsdk:"remote_id"`
+	PreSharedSecret types.String `tfsdk:"pre_shared_secret"`
+	Routes          types.List   `tfsdk:"routes"`
+	LocalPrefix     types.List   `tfsdk:"local_prefix"`
 }
 
 type vpnRouterUserDataSourceModel struct {
@@ -471,7 +487,38 @@ func (d *vpnRouterDataSource) Read(ctx context.Context, req datasource.ReadReque
 		return
 	}
 	data.User = flattenVPNRouterDataSourceUsers(vpnRouter)
+	data.L2TP = flattenVPNRouterDataSourceL2TP(vpnRouter)
+	data.SiteToSiteVPN = flattenVPNRouterDataSourceSiteToSite(vpnRouter)
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
+}
+
+func flattenVPNRouterDataSourceL2TP(vpcRouter *iaas.VPCRouter) *vpnRouterL2TPDSModel {
+	if vpcRouter.Settings.L2TPIPsecServerEnabled.Bool() {
+		v := vpnRouterL2TPDSModel{
+			PreSharedSecret: types.StringValue(""),
+			RangeStart:      types.StringValue(vpcRouter.Settings.L2TPIPsecServer.RangeStart),
+			RangeStop:       types.StringValue(vpcRouter.Settings.L2TPIPsecServer.RangeStop),
+		}
+		return &v
+	}
+	return nil
+}
+
+func flattenVPNRouterDataSourceSiteToSite(vpcRouter *iaas.VPCRouter) []vpnRouterSiteToSiteVPNDSModel {
+	var s2sSettings []vpnRouterSiteToSiteVPNDSModel
+	if vpcRouter.Settings.SiteToSiteIPsecVPN != nil {
+		for _, s := range vpcRouter.Settings.SiteToSiteIPsecVPN.Config {
+			s2sSettings = append(s2sSettings, vpnRouterSiteToSiteVPNDSModel{
+				Peer:            types.StringValue(s.Peer),
+				RemoteID:        types.StringValue(s.RemoteID),
+				PreSharedSecret: types.StringValue(""),
+				Routes:          common.StringsToTlist(s.Routes),
+				LocalPrefix:     common.StringsToTlist(s.LocalPrefix),
+			})
+		}
+	}
+	return s2sSettings
 }
 
 func flattenVPNRouterDataSourceUsers(vpcRouter *iaas.VPCRouter) []vpnRouterUserDataSourceModel {

@@ -293,6 +293,7 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 					},
 				},
 			},
+			// WriteOnlyにしたいがするとComputedを外す必要があり、互換性問題が起きる可能性が高いので現状はSensitiveのみを維持
 			"certificate": schema.SingleNestedAttribute{
 				Optional: true,
 				Computed: true,

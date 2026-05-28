@@ -206,6 +206,69 @@ func TestAccSakuraVPNRouter_Full(t *testing.T) {
 	})
 }
 
+func TestAccSakuraVPNRouter_WOFull(t *testing.T) {
+	resourceName := "sakura_vpn_router.foobar"
+	rand := test.RandomName()
+
+	var vpcRouter iaas.VPCRouter
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			test.CheckSakuraInternetDestroy,
+			test.CheckSakuravSwitchDestroy,
+			testCheckSakuraVPNRouterDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraVPNRouter_fullWithWO, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraVPNRouterExists(resourceName, &vpcRouter),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "version", "2"),
+					resource.TestCheckResourceAttrSet(resourceName, "public_ip"),
+					resource.TestCheckResourceAttrSet(resourceName, "public_netmask"),
+					resource.TestCheckResourceAttr(resourceName, "private_network_interface.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "private_network_interface.0.vip", "192.168.11.1"),
+					resource.TestCheckResourceAttr(resourceName, "private_network_interface.0.ip_addresses.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "private_network_interface.0.ip_addresses.0", "192.168.11.2"),
+					resource.TestCheckResourceAttr(resourceName, "private_network_interface.0.ip_addresses.1", "192.168.11.3"),
+					resource.TestCheckResourceAttr(resourceName, "private_network_interface.0.netmask", "24"),
+					resource.TestCheckNoResourceAttr(resourceName, "l2tp.pre_shared_secret_wo"),
+					resource.TestCheckResourceAttr(resourceName, "l2tp.pre_shared_secret_wo_version", "1"),
+					resource.TestCheckResourceAttr(resourceName, "l2tp.range_start", "192.168.11.21"),
+					resource.TestCheckResourceAttr(resourceName, "l2tp.range_stop", "192.168.11.30"),
+					resource.TestCheckResourceAttr(resourceName, "pptp.range_start", "192.168.11.31"),
+					resource.TestCheckResourceAttr(resourceName, "pptp.range_stop", "192.168.11.40"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn.0.peer", "8.8.8.8"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn.0.remote_id", "8.8.8.8"),
+					resource.TestCheckNoResourceAttr(resourceName, "site_to_site_vpn.0.pre_shared_secret_wo"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn.0.pre_shared_secret_wo_version", "1"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn.0.routes.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn.0.routes.0", "10.0.0.0/8"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn.0.local_prefix.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn.0.local_prefix.0", "192.168.21.0/24"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn_parameter.ike.lifetime", "28801"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn_parameter.ike.dpd.interval", "16"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn_parameter.ike.dpd.timeout", "31"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn_parameter.esp.lifetime", "1801"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn_parameter.encryption_algo", "aes256"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn_parameter.hash_algo", "sha256"),
+					resource.TestCheckResourceAttr(resourceName, "site_to_site_vpn_parameter.dh_group", "modp2048"),
+					resource.TestCheckResourceAttr(resourceName, "static_nat.#", "1"),
+					resource.TestCheckResourceAttrPair(resourceName, "static_nat.0.public_ip", "sakura_internet.foobar", "ip_addresses.3"),
+					resource.TestCheckResourceAttr(resourceName, "static_nat.0.private_ip", "192.168.11.12"),
+					resource.TestCheckResourceAttr(resourceName, "static_nat.0.description", "desc"),
+					resource.TestCheckResourceAttr(resourceName, "user.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "user.0.name", "username"),
+					resource.TestCheckResourceAttr(resourceName, "user.0.password_wo_version", "1"),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraVPNRouterExists(n string, vpcRouter *iaas.VPCRouter) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -469,5 +532,89 @@ resource "sakura_vpn_router" "foobar" {
     aliases      = [sakura_internet.foobar.ip_addresses[3]]
     vrid         = 1
   }
+}
+`
+
+var testAccSakuraVPNRouter_fullWithWO = `
+resource "sakura_internet" "foobar" {
+  name = "{{ .arg0 }}"
+}
+resource "sakura_vswitch" "foobar" {
+  name = "{{ .arg0 }}"
+}
+
+resource "sakura_vpn_router" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+  tags        = ["tag1" , "tag2"]
+  plan        = "premium"
+  version     = 2
+
+  internet_connection = true
+
+  public_network_interface = {
+    vswitch_id   = sakura_internet.foobar.vswitch_id
+    vip          = sakura_internet.foobar.ip_addresses[0]
+    ip_addresses = [sakura_internet.foobar.ip_addresses[1], sakura_internet.foobar.ip_addresses[2]]
+    aliases      = [sakura_internet.foobar.ip_addresses[3]]
+    vrid         = 1
+  }
+
+  private_network_interface = [{
+    index        = 1
+    vswitch_id   = sakura_vswitch.foobar.id
+    vip          = "192.168.11.1"
+    ip_addresses = ["192.168.11.2", "192.168.11.3"]
+    netmask      = 24
+  }]
+
+  l2tp = {
+    range_start = "192.168.11.21"
+    range_stop  = "192.168.11.30"
+    pre_shared_secret_wo = "example"
+	pre_shared_secret_wo_version = 1
+  }
+
+  pptp = {
+    range_start = "192.168.11.31"
+    range_stop  = "192.168.11.40"
+  }
+
+  site_to_site_vpn = [{
+    peer         = "8.8.8.8"
+    remote_id    = "8.8.8.8"
+    routes       = ["10.0.0.0/8"]
+    local_prefix = ["192.168.21.0/24"]
+    pre_shared_secret_wo = "example"
+	pre_shared_secret_wo_version = 1
+  }]
+
+  site_to_site_vpn_parameter = {
+    ike = {
+      lifetime = 28801
+      dpd = {
+        interval = 16
+        timeout  = 31
+      }
+    }
+    esp = {
+      lifetime = 1801
+    }
+    encryption_algo = "aes256"
+    hash_algo       = "sha256"
+    dh_group        = "modp2048"
+  }
+
+  static_nat = [{
+    public_ip   = sakura_internet.foobar.ip_addresses[3]
+    private_ip  = "192.168.11.12"
+    description = "desc"
+  }]
+
+  user = [{
+    name                = "username"
+	password_wo         = "password"
+	password_wo_version = 1
+  }]
 }
 `

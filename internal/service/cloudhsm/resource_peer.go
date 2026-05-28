@@ -8,6 +8,7 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -49,9 +50,10 @@ func (r *cloudHSMPeerResource) Configure(ctx context.Context, req resource.Confi
 
 type cloudHSMPeerResourceModel struct {
 	cloudHSMPeerBaseModel
-	RouterID  types.String   `tfsdk:"router_id"`
-	SecretKey types.String   `tfsdk:"secret_key"`
-	Timeouts  timeouts.Value `tfsdk:"timeouts"`
+	RouterID    types.String   `tfsdk:"router_id"`
+	SecretKey   types.String   `tfsdk:"secret_key"`
+	SecretKeyWO types.String   `tfsdk:"secret_key_wo"`
+	Timeouts    timeouts.Value `tfsdk:"timeouts"`
 }
 
 func (r *cloudHSMPeerResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -71,9 +73,21 @@ func (r *cloudHSMPeerResource) Schema(ctx context.Context, _ resource.SchemaRequ
 				Description: "The router ID to associate with the peer",
 			},
 			"secret_key": schema.StringAttribute{
-				Required:    true,
+				Optional:    true,
 				Sensitive:   true,
+				Description: "The secret key for the CloudHSM Peer.",
+				Validators: []validator.String{
+					stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("secret_key_wo")),
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("secret_key_wo")),
+				},
+			},
+			"secret_key_wo": schema.StringAttribute{
+				Optional:    true,
+				WriteOnly:   true,
 				Description: "The secret key for the CloudHSM Peer",
+				Validators: []validator.String{
+					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("secret_key")),
+				},
 			},
 			"index": schema.Int64Attribute{
 				Computed:    true,
@@ -101,8 +115,9 @@ func (r *cloudHSMPeerResource) ImportState(ctx context.Context, req resource.Imp
 }
 
 func (r *cloudHSMPeerResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan cloudHSMPeerResourceModel
+	var plan, config cloudHSMPeerResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -123,9 +138,18 @@ func (r *cloudHSMPeerResource) Create(ctx context.Context, req resource.CreateRe
 		return
 	}
 
+	secretKey := plan.SecretKey.ValueString()
+	if config.SecretKeyWO.ValueString() != "" {
+		secretKey = config.SecretKeyWO.ValueString()
+	}
+	if secretKey == "" {
+		resp.Diagnostics.AddError("Create: Attribute Error", "either secret_key or secret_key_wo must be provided")
+		return
+	}
+
 	err = peerOp.Create(ctx, cloudhsm.CloudHSMPeerCreateParams{
 		RouterID:  plan.RouterID.ValueString(),
-		SecretKey: plan.SecretKey.ValueString(),
+		SecretKey: secretKey,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create CloudHSM Peer: %s", err))

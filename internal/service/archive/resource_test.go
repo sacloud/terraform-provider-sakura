@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -125,12 +126,13 @@ func TestAccSakuraArchive_transfer(t *testing.T) {
 	})
 }
 
-/*
 func TestAccSakuraArchive_fromShared(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
+	test.SkipIfEnvIsNotSet(t, "SAKURA_ARCHIVE_SHARE_KEY")
 
 	resourceName := "sakura_archive.foobar"
 	rand := test.RandomName()
+	key := os.Getenv("SAKURA_ARCHIVE_SHARE_KEY")
 
 	var archive iaas.Archive
 	resource.Test(t, resource.TestCase{
@@ -142,7 +144,7 @@ func TestAccSakuraArchive_fromShared(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraArchive_fromShared, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraArchive_fromShared, rand, key),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraArchiveExists(resourceName, &archive),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -150,14 +152,14 @@ func TestAccSakuraArchive_fromShared(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
-					resource.TestCheckResourceAttrPair(resourceName, "source_shared_key",
-						"sakura_archive_share.share", "share_key"),
+					resource.TestCheckNoResourceAttr(resourceName, "source_shared_key"),
+					resource.TestCheckNoResourceAttr(resourceName, "source_shared_key_wo"),
+					resource.TestCheckResourceAttr(resourceName, "source_shared_key_wo_version", "1"),
 				),
 			},
 		},
 	})
 }
-*/
 
 func testCheckSakuraArchiveExists(n string, archive *iaas.Archive) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
@@ -312,30 +314,15 @@ resource "sakura_archive" "foobar" {
 }
 `
 
-/*
 var testAccSakuraArchive_fromShared = `
-resource "sakura_archive" "source" {
-  name         = "{{ .arg0 }}"
-  size         = 20
-  archive_file = "test/dummy.raw"
-
-  zone = "is1a"
-}
-
-resource "sakura_archive_share" "share" {
-  archive_id = sakura_archive.source.id
-
-  zone = "is1a"
-}
-
 resource "sakura_archive" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
 
-  source_shared_key = sakura_archive_share.share.share_key
+  source_shared_key_wo = "{{ .arg1 }}"
+  source_shared_key_wo_version = 1
 
   zone = "is1b"
 }
 `
-*/

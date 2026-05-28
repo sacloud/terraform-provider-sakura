@@ -34,7 +34,7 @@ data "sakura_container_registry" "foobar" {
 - `fqdn` (String) The FQDN for accessing the Container Registry. FQDN is built from `subdomain_label` + `.sakuracr.jp`
 - `icon_id` (String) The icon id attached to the Container Registry
 - `subdomain_label` (String) The label at the lowest of the FQDN used when be accessed from users
-- `user` (Attributes Set) (see [below for nested schema](#nestedatt--user))
+- `user` (Attributes List) (see [below for nested schema](#nestedatt--user))
 - `virtual_domain` (String) The alias for accessing the Container Registry
 
 <a id="nestedatt--user"></a>
