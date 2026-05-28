@@ -193,8 +193,9 @@ func (r *objectStoragePermissionResource) Read(ctx context.Context, req resource
 }
 
 func (r *objectStoragePermissionResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan objectStoragePermissionResourceModel
+	var plan, state objectStoragePermissionResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -215,7 +216,9 @@ func (r *objectStoragePermissionResource) Update(ctx context.Context, req resour
 		return
 	}
 
-	// Need AccessKey/SecretKey update?
+	// Access KeyとSecret Keyは更新APIがないためStateから引き継ぐ
+	plan.AccessKey = state.AccessKey
+	plan.SecretKey = state.SecretKey
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
