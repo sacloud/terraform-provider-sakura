@@ -67,7 +67,7 @@ resource "sakura_container_registry" "foobar" {
 - `icon_id` (String) The icon id to attach to the Container Registry
 - `tags` (Set of String) The tags of the Container Registry.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `user` (Attributes Set) User accounts for accessing the Container Registry (see [below for nested schema](#nestedatt--user))
+- `user` (Attributes List) User accounts for accessing the Container Registry (see [below for nested schema](#nestedatt--user))
 - `virtual_domain` (String) The alias for accessing the Container Registry
 
 ### Read-Only
@@ -91,5 +91,10 @@ Optional:
 Required:
 
 - `name` (String) The user name used to authenticate remote access
-- `password` (String, Sensitive) The password used to authenticate remote access
 - `permission` (String) The level of access that allow to the user. This must be one of [`all`/`readwrite`/`readonly`]
+
+Optional:
+
+- `password` (String, Sensitive) The password used to authenticate remote access
+- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The password used to authenticate remote access
+- `password_wo_version` (Number) The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.

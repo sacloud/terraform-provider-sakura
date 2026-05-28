@@ -129,6 +129,11 @@ timeouts = {
 }
 ```
 
+### WriteOnlyの活用
+
+リソースの中には`password`/`password_wo`等同じパラメータに対してSensitive/WriteOnlyに分かれた名前が2つ提供されている属性があります。これらに関してはWriteOnlyバージョンの属性を優先して使ってください。Sensitiveの方は互換性のために残しており、将来削除される可能性があります。
+これらの属性は現在APIが値を返しているものもありますが、将来的にはAPIから取得できなくなる設定となっており、WriteOnlyでtfstateに残さないようにするのが適切なものとなっています。
+
 ### apprun_shared
 
 v3.1.0からwrite-only版の`password_wo`/`password_wo_version`が提供されました。今後はこちらを利用してください。
@@ -686,6 +691,8 @@ resource "sakura_dns_record" "record2" {
 `switch_id`フィールドは`vswitch_id`に変更されました。
 
 ### local_router
+
+将来的に`secret_keys`属性は値を持たなくなります。依存した処理をしないようにしてください。
 
 `switch` / `network_interface`フィールドがBlockからSingle型のAttributeに変更されたため、下記のように書き換える必要があります。
 

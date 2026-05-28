@@ -32,10 +32,13 @@ resource "sakura_cloudhsm_peer" "foobar" {
 
 - `cloudhsm_id` (String) The ID of the CloudHSM to associate with the peer
 - `router_id` (String) The router ID to associate with the peer
-- `secret_key` (String, Sensitive) The secret key for the CloudHSM Peer
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
+- `secret_key` (String, Sensitive) The secret key for the CloudHSM Peer.
+- `secret_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The secret key for the CloudHSM Peer
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `zone` (String) The zone of the CloudHSM Peer. This must be one of [`is1b`/`tk1a`]
 

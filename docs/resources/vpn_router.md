@@ -289,9 +289,14 @@ Optional:
 
 Required:
 
-- `pre_shared_secret` (String, Sensitive) The pre shared secret for L2TP/IPsec
 - `range_start` (String) The start value of IP address range to assign to L2TP/IPsec client
 - `range_stop` (String) The end value of IP address range to assign to L2TP/IPsec client
+
+Optional:
+
+- `pre_shared_secret` (String, Sensitive) The pre shared secret for L2TP/IPsec
+- `pre_shared_secret_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The pre shared secret for L2TP/IPsec
+- `pre_shared_secret_wo_version` (Number) The version of the pre_shared_secret_wo field. This value must be greater than 0 when set. Increment this when changing pre_shared_secret_wo.
 
 
 <a id="nestedatt--monitoring_suite"></a>
@@ -369,9 +374,14 @@ Required:
 
 - `local_prefix` (List of String) A list of CIDR block of the network under the VPN Router
 - `peer` (String) The IP address of the opposing appliance connected to the VPN Router
-- `pre_shared_secret` (String, Sensitive) The pre shared secret for the VPN. The length of this value must be in the range [`0`-`40`]
 - `remote_id` (String) The id of the opposing appliance connected to the VPN Router. This is typically set same as value of `peer`
 - `routes` (List of String) A list of CIDR block of VPN connected networks
+
+Optional:
+
+- `pre_shared_secret` (String, Sensitive) The pre shared secret for the VPN. The length of this value must be in the range [`0`-`40`]
+- `pre_shared_secret_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The pre shared secret for the VPN. The length of this value must be in the range [`0`-`40`]
+- `pre_shared_secret_wo_version` (Number) The version of the pre_shared_secret_wo field. This value must be greater than 0 when set. Increment this when changing pre_shared_secret_wo.
 
 
 <a id="nestedatt--site_to_site_vpn_parameter"></a>

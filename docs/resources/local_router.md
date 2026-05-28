@@ -111,12 +111,14 @@ Optional:
 Required:
 
 - `peer_id` (String) The ID of the peer LocalRouter
-- `secret_key` (String, Sensitive) The secret key of the peer LocalRouter
 
 Optional:
 
 - `description` (String) The description of the Local Router Peer. The length of this value must be in the range [`1`-`512`]
 - `enabled` (Boolean) The flag to enable the LocalRouter
+- `secret_key` (String, Sensitive) The secret key of the peer LocalRouter
+- `secret_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The secret key of the peer LocalRouter
+- `secret_key_wo_version` (Number) The version of the secret_key_wo field. This value must be greater than 0 when set. Increment this when changing secret_key_wo.
 
 
 <a id="nestedatt--static_route"></a>

@@ -52,6 +52,8 @@ resource "sakura_archive" "foobar" {
 
 ### Optional
 
+> **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
+
 - `archive_file` (String) The file path to upload to the SakuraCloud Archive.
 - `description` (String) The description of the Archive. The length of this value must be in the range [`1`-`512`]
 - `hash` (String) The md5 checksum calculated from the base64 encoded file body
@@ -61,6 +63,8 @@ resource "sakura_archive" "foobar" {
 - `source_archive_zone` (String) The share key of source shared archive
 - `source_disk_id` (String) The id of the source disk. This conflicts with [`source_archive_id`]
 - `source_shared_key` (String, Sensitive) The share key of source shared archive
+- `source_shared_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The share key of source shared archive
+- `source_shared_key_wo_version` (Number) The version of the source_shared_key_wo field. This value must be greater than 0 when set. Increment this when changing source_shared_key_wo.
 - `tags` (Set of String) The tags of the Archive.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `zone` (String) The name of zone that the Archive will be created (e.g. `is1a`, `tk1a`)
