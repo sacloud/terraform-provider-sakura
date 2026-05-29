@@ -21,7 +21,7 @@ func TestAccSakuraApprunShared_basic(t *testing.T) {
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
 
-	var application v1.Application
+	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -71,7 +71,7 @@ func TestAccSakuraApprunShared_withCRUser(t *testing.T) {
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
 
-	var application v1.Application
+	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -106,7 +106,7 @@ func TestAccSakuraApprunShared_withCRUserWithWO(t *testing.T) {
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
 
-	var application v1.Application
+	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -141,7 +141,7 @@ func TestAccSakuraApprunShared_withEnv(t *testing.T) {
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
 
-	var application v1.Application
+	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -176,7 +176,7 @@ func TestAccSakuraApprunShared_withEnvUpdate(t *testing.T) {
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
 
-	var application v1.Application
+	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -218,7 +218,7 @@ func TestAccSakuraApprunShared_withProbe(t *testing.T) {
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
 
-	var application v1.Application
+	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -272,7 +272,7 @@ func TestAccSakuraApprunShared_withTraffic(t *testing.T) {
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
 
-	var application v1.Application
+	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -515,7 +515,7 @@ func TestAccImportSakuraApprunShared_withEnv(t *testing.T) {
 	})
 }
 
-func testCheckSakuraApprunSharedExists(n string, application *v1.Application) resource.TestCheckFunc {
+func testCheckSakuraApprunSharedExists(n string, application *v1.HandlerGetApplication) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -535,7 +535,7 @@ func testCheckSakuraApprunSharedExists(n string, application *v1.Application) re
 			return err
 		}
 
-		if found.Id != rs.Primary.ID {
+		if found.ID != rs.Primary.ID {
 			return fmt.Errorf("not found AppRun Application: %s", rs.Primary.ID)
 		}
 
@@ -544,14 +544,14 @@ func testCheckSakuraApprunSharedExists(n string, application *v1.Application) re
 	}
 }
 
-func testCheckSakuraApprunSharedAttributes(application *v1.Application) resource.TestCheckFunc {
+func testCheckSakuraApprunSharedAttributes(application *v1.HandlerGetApplication) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if len(application.Components) == 0 {
 			return errors.New("unexpected application components: components is nil")
 		}
 
 		c := (application.Components)[0]
-		if c.DeploySource.ContainerRegistry == nil {
+		if _, ok := c.DeploySource.ContainerRegistry.Get(); !ok {
 			return errors.New("unexpected application components: container_registry is nil")
 		}
 
