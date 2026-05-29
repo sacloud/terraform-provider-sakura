@@ -18,9 +18,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
-	"github.com/sacloud/addon-api-go"
-	v1 "github.com/sacloud/addon-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/addon"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/addon/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

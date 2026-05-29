@@ -12,9 +12,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/sacloud/saclient-go"
-	service_endpoint_gateway "github.com/sacloud/service-endpoint-gateway-api-go"
-	v1 "github.com/sacloud/service-endpoint-gateway-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
+	service_endpoint_gateway "github.com/sacloud/sacloud-sdk-go/api/service-endpoint-gateway"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/service-endpoint-gateway/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 

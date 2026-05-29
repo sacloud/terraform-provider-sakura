@@ -8,9 +8,9 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/helper/query"
-	iaastypes "github.com/sacloud/iaas-api-go/types"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/query"
+	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

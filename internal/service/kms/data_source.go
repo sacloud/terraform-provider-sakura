@@ -10,8 +10,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	kms "github.com/sacloud/kms-api-go"
-	v1 "github.com/sacloud/kms-api-go/apis/v1"
+	kms "github.com/sacloud/sacloud-sdk-go/api/kms"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/kms/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

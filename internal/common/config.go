@@ -12,45 +12,44 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-multierror"
-	"github.com/sacloud/addon-api-go"
-	addonapi "github.com/sacloud/addon-api-go/apis/v1"
-	client "github.com/sacloud/api-client-go"
-	"github.com/sacloud/apigw-api-go"
-	apigwapi "github.com/sacloud/apigw-api-go/apis/v1"
-	"github.com/sacloud/apprun-api-go"
-	apprunapi "github.com/sacloud/apprun-api-go/apis/v1"
-	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
-	apprundedicatedapi "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
-	dedicatedstorage "github.com/sacloud/dedicated-storage-api-go"
-	dedicatedstorageapi "github.com/sacloud/dedicated-storage-api-go/apis/v1"
-	"github.com/sacloud/eventbus-api-go"
-	eventbus_api "github.com/sacloud/eventbus-api-go/apis/v1"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/helper/api"
-	"github.com/sacloud/iaas-api-go/helper/query"
-	"github.com/sacloud/iam-api-go"
-	iamapi "github.com/sacloud/iam-api-go/apis/v1"
-	kms "github.com/sacloud/kms-api-go"
-	kmsapi "github.com/sacloud/kms-api-go/apis/v1"
-	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
-	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
-	nosql "github.com/sacloud/nosql-api-go"
-	nosqlapi "github.com/sacloud/nosql-api-go/apis/v1"
-	objectstorage "github.com/sacloud/object-storage-api-go"
-	"github.com/sacloud/saclient-go"
-	sm "github.com/sacloud/secretmanager-api-go"
-	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
-	seccon "github.com/sacloud/security-control-api-go"
-	secconapi "github.com/sacloud/security-control-api-go/apis/v1"
-	simple_notification "github.com/sacloud/simple-notification-api-go"
-	simple_notification_api "github.com/sacloud/simple-notification-api-go/apis/v1"
-	"github.com/sacloud/simplemq-api-go"
-	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
+	"github.com/sacloud/sacloud-sdk-go/api/addon"
+	addonapi "github.com/sacloud/sacloud-sdk-go/api/addon/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/apigw"
+	apigwapi "github.com/sacloud/sacloud-sdk-go/api/apigw/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/apprun"
+	apprun_dedicated "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated"
+	apprundedicatedapi "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
+	apprunapi "github.com/sacloud/sacloud-sdk-go/api/apprun/apis/v1"
+	dedicatedstorage "github.com/sacloud/sacloud-sdk-go/api/dedicated-storage"
+	dedicatedstorageapi "github.com/sacloud/sacloud-sdk-go/api/dedicated-storage/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/eventbus"
+	eventbus_api "github.com/sacloud/sacloud-sdk-go/api/eventbus/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/api"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/query"
+	"github.com/sacloud/sacloud-sdk-go/api/iam"
+	iamapi "github.com/sacloud/sacloud-sdk-go/api/iam/apis/v1"
+	kms "github.com/sacloud/sacloud-sdk-go/api/kms"
+	kmsapi "github.com/sacloud/sacloud-sdk-go/api/kms/apis/v1"
+	monitoringsuite "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite"
+	monitoringsuiteapi "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite/apis/v1"
+	nosql "github.com/sacloud/sacloud-sdk-go/api/nosql"
+	nosqlapi "github.com/sacloud/sacloud-sdk-go/api/nosql/apis/v1"
+	objectstorage "github.com/sacloud/sacloud-sdk-go/api/object-storage"
+	sm "github.com/sacloud/sacloud-sdk-go/api/secretmanager"
+	smapi "github.com/sacloud/sacloud-sdk-go/api/secretmanager/apis/v1"
+	seccon "github.com/sacloud/sacloud-sdk-go/api/security-control"
+	secconapi "github.com/sacloud/sacloud-sdk-go/api/security-control/apis/v1"
+	simple_notification "github.com/sacloud/sacloud-sdk-go/api/simple-notification"
+	simple_notification_api "github.com/sacloud/sacloud-sdk-go/api/simple-notification/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/simplemq"
+	"github.com/sacloud/sacloud-sdk-go/api/simplemq/apis/v1/queue"
+	"github.com/sacloud/sacloud-sdk-go/api/webaccel"
+	"github.com/sacloud/sacloud-sdk-go/api/workflows"
+	workflowsapi "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
-	"github.com/sacloud/webaccel-api-go"
-	"github.com/sacloud/workflows-api-go"
-	workflowsapi "github.com/sacloud/workflows-api-go/apis/v1"
 )
 
 const (
@@ -110,7 +109,7 @@ type APIClient struct {
 	deletionWaiterPollingInterval    time.Duration
 	databaseWaitAfterCreateDuration  time.Duration
 	vpcRouterWaitAfterCreateDuration time.Duration
-	CallerOptions                    *client.Options
+	CallerOptions                    *api.ClientOptions
 	SaClient                         *saclient.Client
 	AppRunClient                     *apprunapi.Client
 	AppRunDedicatedClient            *apprundedicatedapi.Client
@@ -221,7 +220,11 @@ func (c *Config) FillWithDefault() {
 }
 
 func (c *Config) LoadFromProfile() (*Config, error) {
-	profileOp := saclient.NewProfileOp(os.Environ())
+	profileOp, err := saclient.NewProfileOp(os.Environ())
+	if err != nil {
+		return nil, err
+	}
+
 	var attrs map[string]any
 	if c.Profile == "" {
 		if name, err := profileOp.GetCurrentName(); err != nil {
@@ -369,7 +372,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 			enableAPITrace = false
 		}
 	}
-	callerOptions := &client.Options{
+	callerOptions := &api.ClientOptions{
 		AccessToken:          c.AccessToken,
 		AccessTokenSecret:    c.AccessTokenSecret,
 		AcceptLanguage:       c.AcceptLanguage,

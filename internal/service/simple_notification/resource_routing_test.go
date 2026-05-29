@@ -11,7 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	simple_notification "github.com/sacloud/simple-notification-api-go"
+	simple_notification "github.com/sacloud/sacloud-sdk-go/api/simple-notification"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 

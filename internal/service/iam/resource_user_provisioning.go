@@ -17,10 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/iam-api-go"
-	"github.com/sacloud/iam-api-go/apis/scim"
-	v1 "github.com/sacloud/iam-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/iam"
+	"github.com/sacloud/sacloud-sdk-go/api/iam/apis/scim"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/iam/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

@@ -19,9 +19,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/iaas-api-go"
-	iaastypes "github.com/sacloud/iaas-api-go/types"
-	registryBuilder "github.com/sacloud/iaas-service-go/containerregistry/builder"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
+	registryBuilder "github.com/sacloud/sacloud-sdk-go/service/iaas/containerregistry/builder"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )

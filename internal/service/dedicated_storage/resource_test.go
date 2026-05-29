@@ -10,7 +10,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/sacloud/eventbus-api-go"
+	"github.com/sacloud/sacloud-sdk-go/api/eventbus"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 

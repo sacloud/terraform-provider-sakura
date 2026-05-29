@@ -5,8 +5,8 @@ package dsr_lb
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	iaas "github.com/sacloud/iaas-api-go"
-	iaastypes "github.com/sacloud/iaas-api-go/types"
+	iaas "github.com/sacloud/sacloud-sdk-go/api/iaas"
+	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
