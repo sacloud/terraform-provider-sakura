@@ -234,7 +234,7 @@ func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRe
 	var keyKID string
 	if utils.IsKnown(config.ServicePrincipalKeyKID) {
 		keyKID = config.ServicePrincipalKeyKID.ValueString()
-	} else {
+	} else if utils.IsKnown(config.ServicePrincipalKeyID) {
 		resp.Diagnostics.AddWarning("Deprecated Configuration", "The `service_principal_key_id` attribute is deprecated and will be removed in the future. Use `service_principal_key_kid` instead.")
 		keyKID = config.ServicePrincipalKeyID.ValueString()
 	}
