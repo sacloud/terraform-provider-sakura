@@ -580,6 +580,10 @@ func expandApprunApplicationComponentsForUpdate(model, config *apprunSharedResou
 				})
 		}
 
+		if env == nil {
+			env = make([]v1.PatchApplicationBodyComponentsItemEnvItem, 0)
+		}
+
 		probe := v1.OptNilPatchApplicationBodyComponentsItemProbe{}
 		if !component.Probe.IsNull() && !component.Probe.IsUnknown() {
 			var d apprunSharedProbeModel
@@ -659,6 +663,10 @@ func expandApprunApplicationComponents(model, config *apprunSharedResourceModel)
 					Key:   v1.NewOptString(key),
 					Value: v1.NewOptString(value),
 				})
+		}
+
+		if env == nil {
+			env = make([]v1.PostApplicationBodyComponentsItemEnvItem, 0)
 		}
 
 		probe := v1.OptNilPostApplicationBodyComponentsItemProbe{}
