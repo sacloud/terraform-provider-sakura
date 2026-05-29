@@ -138,6 +138,11 @@ func (r *objectStoragePermissionResource) Create(ctx context.Context, req resour
 		return
 	}
 
+	if err := createAccountIfNotExist(ctx, siteClient); err != nil {
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to ensure Object Storage account exists: %s", err))
+		return
+	}
+
 	permissionOp := objectstorage.NewPermissionOp(siteClient)
 	permission, err := permissionOp.Create(ctx, plan.Name.ValueString(), getBucketControls(&plan))
 	if err != nil {

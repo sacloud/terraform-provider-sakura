@@ -113,6 +113,11 @@ func (r *objectStorageBucketResource) Create(ctx context.Context, req resource.C
 		return
 	}
 
+	if err := createAccountIfNotExist(ctx, siteClient); err != nil {
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to ensure Object Storage account exists: %s", err))
+		return
+	}
+
 	bucketAPI := objectstorage.NewBucketOp(r.fedClient, siteClient)
 	bucket, err := bucketAPI.Create(ctx, &objectstorage.BucketCreateParams{Bucket: plan.Name.ValueString(), SiteId: siteId})
 	if err != nil {
@@ -176,4 +181,21 @@ func (r *objectStorageBucketResource) Delete(ctx context.Context, req resource.D
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Object Storage Bucket: %s", err))
 		return
 	}
+}
+
+// コンパネからサイトにアクセスするとアカウントが自動で作られるが、terraformだけで管理している場合にはアカウントが存在しない可能性があるため、必要に応じて作成する
+func createAccountIfNotExist(ctx context.Context, client *objectstorage.SiteClient) error {
+	accountOp := objectstorage.NewAccountOp(client)
+	_, err := accountOp.Read(ctx)
+	if err != nil {
+		if saclient.IsNotFoundError(err) {
+			_, err = accountOp.Create(ctx)
+			if err != nil {
+				return fmt.Errorf("failed to create Object Storage account: %w", err)
+			}
+			return nil
+		}
+		return fmt.Errorf("failed to read Object Storage account: %w", err)
+	}
+	return nil
 }
