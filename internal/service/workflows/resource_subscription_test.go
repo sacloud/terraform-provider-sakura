@@ -59,8 +59,11 @@ func testCheckSakuraWorkflowsSubscriptionDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := subscriptionOp.Read(context.Background())
-		if err == nil {
+		data, err := subscriptionOp.Read(context.Background())
+		if err != nil {
+			return fmt.Errorf("failed to read subscription: %s", rs.Primary.ID)
+		}
+		if !data.CurrentPlan.IsNull() { // NOTE: 当月中はサブスクリプションを削除してもMonthAppliedPlanの値が返る。判定にはCurrentPlanがnullかを見る必要あり
 			return fmt.Errorf("subscription still exists: %s", rs.Primary.ID)
 		}
 	}
