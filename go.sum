@@ -278,8 +278,8 @@ github.com/sacloud/security-control-api-go v0.3.0 h1:JsLVgT8EsU5sOiqPmk7v0VvxzXK
 github.com/sacloud/security-control-api-go v0.3.0/go.mod h1:SB9gu4NcDqY5FGjtAlh4T8iynkbnWGF2es2UUW0X6gc=
 github.com/sacloud/service-endpoint-gateway-api-go v0.1.2 h1:bgfAat3nvM411r5ws2Ui2lIoraDqypY6t0WAuqx52DY=
 github.com/sacloud/service-endpoint-gateway-api-go v0.1.2/go.mod h1:A2z0RO3RHLb681imeTwoWt67RQRac3YHEclbEMybvAI=
-github.com/sacloud/simple-notification-api-go v0.3.0 h1:txporbiluz/7nKxyYZ0vlcISxDxN/e0ROWAPtSS1FJ4=
-github.com/sacloud/simple-notification-api-go v0.3.0/go.mod h1:sCDnlmrbFy59aXpaZW0qC1PRAldXLATn5gXelJtcqpU=
+github.com/sacloud/simple-notification-api-go v0.3.1 h1:m44N9/qkh19WPcCVS0HMX40rOcpcLqt9fQlXeUKVi/8=
+github.com/sacloud/simple-notification-api-go v0.3.1/go.mod h1:PPrg9hFZn3Fv802Q8ki8k+nYjqPNPr5jaCx5swGhK9c=
 github.com/sacloud/simplemq-api-go v0.5.1 h1:yi/Eok5mElsBE/Iaq3p176/5/Na8ryEwJXXtWSZXT5Y=
 github.com/sacloud/simplemq-api-go v0.5.1/go.mod h1:WXsvbY6CMozhD/Gq4/kuY7hszubnMy266s98YV21TTE=
 github.com/sacloud/webaccel-api-go v1.5.0 h1:tWNlUwPphMTUGnM6tpH+Z2fEsh9IpEnv+pDMrdOrkwM=
@@ -409,7 +409,6 @@ golang.org/x/tools v0.43.0/go.mod h1:uHkMso649BX2cZK6+RpuIPXS3ho2hZo4FVwfoy1vIk0
 golang.org/x/xerrors v0.0.0-20190717185122-a985d3407aa7/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 golang.org/x/xerrors v0.0.0-20191204190536-9bdfabe68543/go.mod h1:I/5z698sn9Ka8TeJc9MKroUUfqBBauWjQqLJ2OPfmY0=
 gonum.org/v1/gonum v0.16.0 h1:5+ul4Swaf3ESvrOnidPp4GZbzf0mxVQpDCYUQE7OJfk=
-gonum.org/v1/gonum v0.16.0/go.mod h1:fef3am4MQ93R2HHpKnLk4/Tbh/s0+wqD5nfa6Pnwy4E=
 google.golang.org/appengine v1.1.0/go.mod h1:EbEs0AVv82hx2wNQdGPgUI5lhzA/G0D9YwlJXL52JkM=
 google.golang.org/appengine v1.6.8 h1:IhEN5q69dyKagZPYMSdIjS2HqprW324FRQZJcGqPAsM=
 google.golang.org/appengine v1.6.8/go.mod h1:1jJ3jBArFh5pcgW8gCtRJnepW8FzD1V44FJffLiz/Ds=
