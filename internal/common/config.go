@@ -18,6 +18,7 @@ import (
 	"github.com/sacloud/apigw-api-go"
 	apigwapi "github.com/sacloud/apigw-api-go/apis/v1"
 	"github.com/sacloud/apprun-api-go"
+	apprunapi "github.com/sacloud/apprun-api-go/apis/v1"
 	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
 	apprundedicatedapi "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	dedicatedstorage "github.com/sacloud/dedicated-storage-api-go"
@@ -111,7 +112,7 @@ type APIClient struct {
 	vpcRouterWaitAfterCreateDuration time.Duration
 	CallerOptions                    *client.Options
 	SaClient                         *saclient.Client
-	AppRunClient                     *apprun.Client
+	AppRunClient                     *apprunapi.Client
 	AppRunDedicatedClient            *apprundedicatedapi.Client
 	KmsClient                        *kmsapi.Client
 	SecretManagerClient              *smapi.Client
@@ -401,6 +402,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
+	apprunClient, err := apprun.NewClient(theClient)
+	if err != nil {
+		return nil, err
+	}
 	kmsClient, err := kms.NewClient(theClient)
 	if err != nil {
 		return nil, err
@@ -472,7 +477,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,
 		EventBusClient:                   eventbusClient,
-		AppRunClient:                     &apprun.Client{Saclient: theClient},
+		AppRunClient:                     apprunClient,
 		AppRunDedicatedClient:            apprundedicatedClient,
 		ObjectStorageFedClient:           fedClient,
 		NosqlClient:                      nosqlClient,

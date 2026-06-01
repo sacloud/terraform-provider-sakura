@@ -119,9 +119,16 @@ func (m apprunSharedPacketFilterSettingsModel) AttributeTypes() map[string]attr.
 	}
 }
 
-func (model *apprunSharedBaseModel) updateState(application *v1.Application, pf *v1.HandlerGetPacketFilter) {
-	model.ID = types.StringValue(application.Id)
-	model.ResourceID = types.StringValue(application.ResourceId)
+func stringValueFromOptString(value v1.OptString) types.String {
+	if v, ok := value.Get(); ok {
+		return types.StringValue(v)
+	}
+	return types.StringNull()
+}
+
+func (model *apprunSharedBaseModel) updateState(application *v1.HandlerGetApplication, pf *v1.HandlerGetPacketFilter) {
+	model.ID = types.StringValue(application.ID)
+	model.ResourceID = types.StringValue(application.ResourceID)
 	model.Name = types.StringValue(application.Name)
 	model.TimeoutSeconds = types.Int32Value(int32(application.TimeoutSeconds))
 	model.Port = types.Int32Value(int32(application.Port))
@@ -130,23 +137,26 @@ func (model *apprunSharedBaseModel) updateState(application *v1.Application, pf 
 	model.Components = flattenApprunApplicationComponents(model, application, true)
 	model.PacketFilter = flattenApprunPacketFilter(pf)
 	model.Status = types.StringValue(string(application.Status))
-	model.PublicURL = types.StringValue(application.PublicUrl)
+	model.PublicURL = types.StringValue(application.PublicURL)
 }
 
-func flattenApprunApplicationComponents(model *apprunSharedBaseModel, application *v1.Application, includePassword bool) []*apprunSharedComponentModel {
+func flattenApprunApplicationComponents(model *apprunSharedBaseModel, application *v1.HandlerGetApplication, includePassword bool) []*apprunSharedComponentModel {
 	var results []*apprunSharedComponentModel
 
 	for _, c := range application.Components {
+		containerRegistry := &apprunSharedComponentContainerRegistryModel{}
+		if cr, ok := c.DeploySource.ContainerRegistry.Get(); ok {
+			containerRegistry.Image = types.StringValue(cr.Image)
+			containerRegistry.Server = stringValueFromOptString(cr.Server)
+			containerRegistry.Username = stringValueFromOptString(cr.Username)
+		}
+
 		result := &apprunSharedComponentModel{
 			Name:      types.StringValue(c.Name),
-			MaxCpu:    types.StringValue(c.MaxCpu),
+			MaxCpu:    types.StringValue(c.MaxCPU),
 			MaxMemory: types.StringValue(c.MaxMemory),
 			DeploySource: &apprunSharedComponentDeploySourceModel{
-				ContainerRegistry: &apprunSharedComponentContainerRegistryModel{
-					Image:    types.StringValue(c.DeploySource.ContainerRegistry.Image),
-					Server:   types.StringValue(*c.DeploySource.ContainerRegistry.Server),
-					Username: types.StringValue(*c.DeploySource.ContainerRegistry.Username),
-				},
+				ContainerRegistry: containerRegistry,
 			},
 			Env:   flattenApprunApplicationEnvs(&c),
 			Probe: flattenApprunApplicationProbe(&c),
@@ -176,16 +186,16 @@ func flattenApprunApplicationComponents(model *apprunSharedBaseModel, applicatio
 	return results
 }
 
-func flattenApprunApplicationEnvs(component *v1.HandlerApplicationComponent) types.Set {
-	if component.Env == nil || len(*component.Env) == 0 {
+func flattenApprunApplicationEnvs(component *v1.HandlerGetApplicationComponentsItem) types.Set {
+	if len(component.Env) == 0 {
 		return types.SetNull(types.ObjectType{AttrTypes: apprunSharedComponentEnvModel{}.AttributeTypes()})
 	}
 
 	var results []apprunSharedComponentEnvModel
-	for _, e := range *component.Env {
+	for _, e := range component.Env {
 		results = append(results, apprunSharedComponentEnvModel{
-			Key:   types.StringValue(*e.Key),
-			Value: types.StringValue(*e.Value),
+			Key:   stringValueFromOptString(e.Key),
+			Value: stringValueFromOptString(e.Value),
 		})
 	}
 
@@ -197,14 +207,19 @@ func toTSet(elemType map[string]attr.Type, elem any) types.Set {
 	return r
 }
 
-func flattenApprunApplicationProbe(component *v1.HandlerApplicationComponent) types.Object {
+func flattenApprunApplicationProbe(component *v1.HandlerGetApplicationComponentsItem) types.Object {
 	v := types.ObjectNull(apprunSharedProbeModel{}.AttributeTypes())
-	if component.Probe != nil && component.Probe.HttpGet != nil {
+	probe, ok := component.Probe.Get()
+	if ok {
+		httpGet, ok := probe.HTTPGet.Get()
+		if !ok {
+			return v
+		}
 		m := apprunSharedProbeModel{
 			HttpGet: &apprunSharedProbeHttpGetModel{
-				Path:    types.StringValue(component.Probe.HttpGet.Path),
-				Port:    types.Int32Value(int32(component.Probe.HttpGet.Port)),
-				Headers: flattenApprunApplicationProbeHttpGetHeaders(component),
+				Path:    types.StringValue(httpGet.Path),
+				Port:    types.Int32Value(int32(httpGet.Port)),
+				Headers: flattenApprunApplicationProbeHttpGetHeaders(&httpGet),
 			},
 		}
 		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
@@ -216,16 +231,16 @@ func flattenApprunApplicationProbe(component *v1.HandlerApplicationComponent) ty
 	return v
 }
 
-func flattenApprunApplicationProbeHttpGetHeaders(component *v1.HandlerApplicationComponent) types.Set {
-	if component.Probe.HttpGet.Headers == nil || len(*component.Probe.HttpGet.Headers) == 0 {
+func flattenApprunApplicationProbeHttpGetHeaders(httpGet *v1.HandlerGetApplicationComponentsItemProbeHTTPGet) types.Set {
+	if len(httpGet.Headers) == 0 {
 		return types.SetNull(types.ObjectType{AttrTypes: apprunSharedProbeHttpGetHeaderModel{}.AttributeTypes()})
 	}
 
 	var results []apprunSharedProbeHttpGetHeaderModel
-	for _, h := range *component.Probe.HttpGet.Headers {
+	for _, h := range httpGet.Headers {
 		results = append(results, apprunSharedProbeHttpGetHeaderModel{
-			Name:  types.StringValue(*h.Name),
-			Value: types.StringValue(*h.Value),
+			Name:  stringValueFromOptString(h.Name),
+			Value: stringValueFromOptString(h.Value),
 		})
 	}
 
@@ -243,12 +258,12 @@ func flattenApprunPacketFilter(packetFilter *v1.HandlerGetPacketFilter) *apprunS
 	}
 }
 
-func flattenApprunPacketFilterSettings(settings []v1.PacketFilterSetting) []*apprunSharedPacketFilterSettingsModel {
+func flattenApprunPacketFilterSettings(settings []v1.HandlerGetPacketFilterSettingsItem) []*apprunSharedPacketFilterSettingsModel {
 	var results []*apprunSharedPacketFilterSettingsModel
 	for _, s := range settings {
 		results = append(results, &apprunSharedPacketFilterSettingsModel{
-			FromIP:             types.StringValue(s.FromIp),
-			FromIPPrefixLength: types.Int32Value(int32(s.FromIpPrefixLength)),
+			FromIP:             types.StringValue(s.FromIP),
+			FromIPPrefixLength: types.Int32Value(int32(s.FromIPPrefixLength)),
 		})
 	}
 	return results

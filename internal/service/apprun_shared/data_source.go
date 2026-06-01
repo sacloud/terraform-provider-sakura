@@ -16,7 +16,7 @@ import (
 )
 
 type apprunSharedDataSource struct {
-	client *apprun.Client
+	client *v1.Client
 }
 
 var (
@@ -241,10 +241,10 @@ func (d *apprunSharedDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	name := data.Name.ValueString()
-	var app *v1.Application
+	var app *v1.HandlerGetApplication
 	for _, d := range apps.Data {
 		if d.Name == name {
-			a, err := appOp.Read(ctx, d.Id)
+			a, err := appOp.Read(ctx, d.ID)
 			if err != nil {
 				resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Shared resource: %s", err))
 				return
@@ -259,7 +259,7 @@ func (d *apprunSharedDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	pfOp := apprun.NewPacketFilterOp(d.client)
-	pf, err := pfOp.Read(ctx, app.Id)
+	pf, err := pfOp.Read(ctx, app.ID)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Shared's PacketFilter resource: %s", err))
 		return
