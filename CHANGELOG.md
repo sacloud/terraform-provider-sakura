@@ -1,5 +1,17 @@
 # Changelog
 
+## [v3.12.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.11.0...v3.12.0) - 2026-06-01
+- Support Service Principal Key KID by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/235
+- docs: fix subcategories for AppRun dedicated LB resources by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/237
+- fix: mark object_storage_permission access_key and secret_key as Sensitive by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/238
+- object_storage: Fix access_key/secret_key handling of Permission and add test by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/239
+- Sensitiveフィールドの扱いを改善 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/234
+- fix: correct subscription destroy check in workflows tests by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/240
+- object_storage: Automatic account creation when account not exist by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/241
+- apprun-api-go v0.8.0 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/242
+- go: bump github.com/sacloud/simple-notification-api-go from 0.3.0 to 0.3.1 in the sacloud group across 1 directory by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/244
+- ci: bump goreleaser/goreleaser-action from 7.2.1 to 7.2.2 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/233
+
 ## [v3.11.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.10.0...v3.11.0) - 2026-05-25
 - feat: add origin_guard and strict_rule to sakura_enhanced_lb by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/216
 - ci: bump Songmu/tagpr from 1.18.2 to 1.19.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/228
