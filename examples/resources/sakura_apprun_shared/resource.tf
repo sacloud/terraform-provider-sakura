@@ -10,11 +10,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "256Mi"
     deploy_source = {
       container_registry = {
-        image    = "foobar.sakuracr.jp/my-app:latest"
-        //server   = "foobar.sakuracr.jp"
-        //username = "username"
-        //password_wo = "userpassword"
-        //password_wo_version = 1
+        image    = "foobar.sakuracr.jp/my-app:latest" // or duckerhub / ghcr.io
+        server   = "foobar.sakuracr.jp"
+        username = "username"
+        password_wo = "userpassword"
+        password_wo_version = 1
         // for backward compatibility
         //password = "userpassword"
       }

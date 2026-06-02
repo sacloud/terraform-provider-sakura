@@ -633,6 +633,7 @@ resource "sakura_apprun_shared" "foobar" {
 }
 `
 
+//nolint:gosec
 const testAccSakuraApprunShared_withOldPassword = `
 resource "sakura_apprun_shared" "foobar" {
   name            = "{{ .arg0 }}"
