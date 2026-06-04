@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"regexp"
 	"testing"
 
@@ -18,8 +19,11 @@ import (
 )
 
 func TestAccSakuraApprunShared_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
 	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
@@ -28,7 +32,7 @@ func TestAccSakuraApprunShared_basic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_basic, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -41,13 +45,16 @@ func TestAccSakuraApprunShared_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_cpu", "0.5"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_memory", "1Gi"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "sakura-oss-dev.sakuracr.jp/test:latest"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.server", "sakura-oss-dev.sakuracr.jp"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.username", "test-user"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo_version", "1"),
 					resource.TestMatchResourceAttr(resourceName, "status", regexp.MustCompile(".+")),
 					resource.TestMatchResourceAttr(resourceName, "public_url", regexp.MustCompile(".+")),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_update, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_update, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -60,6 +67,9 @@ func TestAccSakuraApprunShared_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_cpu", "1"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_memory", "2Gi"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "sakura-oss-dev.sakuracr.jp/test:tag1"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.server", "sakura-oss-dev.sakuracr.jp"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.username", "test-user"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo_version", "1"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 				),
 			},
@@ -67,7 +77,7 @@ func TestAccSakuraApprunShared_basic(t *testing.T) {
 	})
 }
 
-func TestAccSakuraApprunShared_withCRUser(t *testing.T) {
+func TestAccSakuraApprunShared_externalRegistry(t *testing.T) {
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
 
@@ -78,7 +88,40 @@ func TestAccSakuraApprunShared_withCRUser(t *testing.T) {
 		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withCRUser, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_externalRegistry, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraApprunSharedExists(resourceName, &application),
+					testCheckSakuraApprunSharedAttributes(&application),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "timeout_seconds", "90"),
+					resource.TestCheckResourceAttr(resourceName, "port", "80"),
+					resource.TestCheckResourceAttr(resourceName, "min_scale", "0"),
+					resource.TestCheckResourceAttr(resourceName, "max_scale", "1"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.name", "compo1"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.max_cpu", "0.5"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.max_memory", "1Gi"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "ghcr.io/nginx/nginx-gateway-fabric/nginx:2.6.2"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraApprunShared_withOldPassword(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
+	resourceName := "sakura_apprun_shared.foobar"
+	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
+	var application v1.HandlerGetApplication
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withOldPassword, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -92,8 +135,8 @@ func TestAccSakuraApprunShared_withCRUser(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_memory", "1Gi"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "sakura-oss-dev.sakuracr.jp/test:latest"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.server", "sakura-oss-dev.sakuracr.jp"),
-					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.username", "user"),
-					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.password", "password"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.username", "test-user"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.password", pass),
 					resource.TestCheckNoResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo"),
 					resource.TestCheckNoResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo_version"),
 				),
@@ -102,44 +145,12 @@ func TestAccSakuraApprunShared_withCRUser(t *testing.T) {
 	})
 }
 
-func TestAccSakuraApprunShared_withCRUserWithWO(t *testing.T) {
-	resourceName := "sakura_apprun_shared.foobar"
-	rand := test.RandomName()
-
-	var application v1.HandlerGetApplication
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { test.AccPreCheck(t) },
-		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withCRUserWithWO, rand),
-				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraApprunSharedExists(resourceName, &application),
-					testCheckSakuraApprunSharedAttributes(&application),
-					resource.TestCheckResourceAttr(resourceName, "name", rand),
-					resource.TestCheckResourceAttr(resourceName, "timeout_seconds", "90"),
-					resource.TestCheckResourceAttr(resourceName, "port", "80"),
-					resource.TestCheckResourceAttr(resourceName, "min_scale", "0"),
-					resource.TestCheckResourceAttr(resourceName, "max_scale", "1"),
-					resource.TestCheckResourceAttr(resourceName, "components.0.name", "compo1"),
-					resource.TestCheckResourceAttr(resourceName, "components.0.max_cpu", "0.5"),
-					resource.TestCheckResourceAttr(resourceName, "components.0.max_memory", "1Gi"),
-					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "sakura-oss-dev.sakuracr.jp/test:latest"),
-					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.server", "sakura-oss-dev.sakuracr.jp"),
-					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.username", "user"),
-					resource.TestCheckNoResourceAttr(resourceName, "components.0.deploy_source.container_registry.password"),
-					resource.TestCheckNoResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo"),
-					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.password_wo_version", "1"),
-				),
-			},
-		},
-	})
-}
-
 func TestAccSakuraApprunShared_withEnv(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
 	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
@@ -148,7 +159,7 @@ func TestAccSakuraApprunShared_withEnv(t *testing.T) {
 		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withEnv, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withEnv, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -173,8 +184,11 @@ func TestAccSakuraApprunShared_withEnv(t *testing.T) {
 }
 
 func TestAccSakuraApprunShared_withEnvUpdate(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
 	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
@@ -183,7 +197,7 @@ func TestAccSakuraApprunShared_withEnvUpdate(t *testing.T) {
 		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withEnv, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withEnv, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -196,7 +210,7 @@ func TestAccSakuraApprunShared_withEnvUpdate(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withEnvUpdate, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withEnvUpdate, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -215,8 +229,11 @@ func TestAccSakuraApprunShared_withEnvUpdate(t *testing.T) {
 }
 
 func TestAccSakuraApprunShared_withProbe(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
 	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
@@ -225,7 +242,7 @@ func TestAccSakuraApprunShared_withProbe(t *testing.T) {
 		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withProbe, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withProbe, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -243,7 +260,7 @@ func TestAccSakuraApprunShared_withProbe(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withProbeUpdate, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withProbeUpdate, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -269,8 +286,11 @@ func TestAccSakuraApprunShared_withProbe(t *testing.T) {
 }
 
 func TestAccSakuraApprunShared_withTraffic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
 	var application v1.HandlerGetApplication
 	resource.Test(t, resource.TestCase{
@@ -279,7 +299,7 @@ func TestAccSakuraApprunShared_withTraffic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withTraffic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withTraffic, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -297,7 +317,7 @@ func TestAccSakuraApprunShared_withTraffic(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withTrafficUpdate, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withTrafficUpdate, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraApprunSharedExists(resourceName, &application),
 					testCheckSakuraApprunSharedAttributes(&application),
@@ -321,15 +341,18 @@ func TestAccSakuraApprunShared_withTraffic(t *testing.T) {
 }
 
 func TestAccSakuraApprunShared_withPacketFilter(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withPacketFilter, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withPacketFilter, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -340,7 +363,7 @@ func TestAccSakuraApprunShared_withPacketFilter(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withPacketFilterUpdate, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withPacketFilterUpdate, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -353,7 +376,7 @@ func TestAccSakuraApprunShared_withPacketFilter(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withPacketFilterDisabled, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withPacketFilterDisabled, rand, pass),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -370,53 +393,9 @@ func TestAccSakuraApprunShared_withPacketFilter(t *testing.T) {
 }
 
 func TestAccImportSakuraApprunShared_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 	rand := test.RandomName()
-	checkFn := func(s []*terraform.InstanceState) error {
-		if len(s) != 1 {
-			return fmt.Errorf("expected 1 state: %#v", s)
-		}
-		expects := map[string]string{
-			"name":                    rand,
-			"timeout_seconds":         "90",
-			"port":                    "80",
-			"min_scale":               "0",
-			"max_scale":               "1",
-			"components.0.name":       "compo1",
-			"components.0.max_cpu":    "0.5",
-			"components.0.max_memory": "1Gi",
-			"components.0.deploy_source.container_registry.image": "sakura-oss-dev.sakuracr.jp/test:latest",
-		}
-
-		return test.CompareStateMulti(s[0], expects)
-	}
-
-	resourceName := "sakura_apprun_shared.foobar"
-
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { test.AccPreCheck(t) },
-		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_basic, rand),
-			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateCheck:  checkFn,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"status",
-					"resource_id",
-					"public_url",
-				},
-			},
-		},
-	})
-}
-
-func TestAccImportSakuraApprunShared_withCRUser(t *testing.T) {
-	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 	checkFn := func(s []*terraform.InstanceState) error {
 		if len(s) != 1 {
 			return fmt.Errorf("expected 1 state: %#v", s)
@@ -431,7 +410,8 @@ func TestAccImportSakuraApprunShared_withCRUser(t *testing.T) {
 			"components.0.max_cpu":    "0.5",
 			"components.0.max_memory": "1Gi",
 			"components.0.deploy_source.container_registry.image":    "sakura-oss-dev.sakuracr.jp/test:latest",
-			"components.0.deploy_source.container_registry.username": "user",
+			"components.0.deploy_source.container_registry.server":   "sakura-oss-dev.sakuracr.jp",
+			"components.0.deploy_source.container_registry.username": "test-user",
 			"components.0.deploy_source.container_registry.password": "",
 		}
 
@@ -446,7 +426,7 @@ func TestAccImportSakuraApprunShared_withCRUser(t *testing.T) {
 		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withCRUser, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_basic, rand, pass),
 			},
 			{
 				ResourceName:      resourceName,
@@ -454,10 +434,10 @@ func TestAccImportSakuraApprunShared_withCRUser(t *testing.T) {
 				ImportStateCheck:  checkFn,
 				ImportStateVerify: true,
 				ImportStateVerifyIgnore: []string{
-					"components.0.deploy_source.container_registry.password",
 					"status",
 					"resource_id",
 					"public_url",
+					"components.0.deploy_source.container_registry.password_wo_version",
 				},
 			},
 		},
@@ -465,7 +445,9 @@ func TestAccImportSakuraApprunShared_withCRUser(t *testing.T) {
 }
 
 func TestAccImportSakuraApprunShared_withEnv(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 	checkFn := func(s []*terraform.InstanceState) error {
 		if len(s) != 1 {
 			return fmt.Errorf("expected 1 state: %#v", s)
@@ -479,7 +461,9 @@ func TestAccImportSakuraApprunShared_withEnv(t *testing.T) {
 			"components.0.name":       "compo1",
 			"components.0.max_cpu":    "0.5",
 			"components.0.max_memory": "1Gi",
-			"components.0.deploy_source.container_registry.image": "sakura-oss-dev.sakuracr.jp/test:latest",
+			"components.0.deploy_source.container_registry.image":    "sakura-oss-dev.sakuracr.jp/test:latest",
+			"components.0.deploy_source.container_registry.username": "test-user",
+			"components.0.deploy_source.container_registry.password": "",
 			"components.0.env.#":       "2",
 			"components.0.env.0.key":   "key",
 			"components.0.env.0.value": "value",
@@ -498,7 +482,7 @@ func TestAccImportSakuraApprunShared_withEnv(t *testing.T) {
 		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withEnv, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withEnv, rand, pass),
 			},
 			{
 				ResourceName:      resourceName,
@@ -509,6 +493,7 @@ func TestAccImportSakuraApprunShared_withEnv(t *testing.T) {
 					"status",
 					"resource_id",
 					"public_url",
+					"components.0.deploy_source.container_registry.password_wo_version",
 				},
 			},
 		},
@@ -593,7 +578,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
   }]
@@ -613,14 +602,39 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "2Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:tag1"
+        image    = "sakura-oss-dev.sakuracr.jp/test:tag1"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
+      }
+    }
+  }]
+}`
+
+// docker hubはrate limitが厳しいため、外部レジストリのテストにはghcr.ioを利用する
+const testAccSakuraApprunShared_externalRegistry = `
+resource "sakura_apprun_shared" "foobar" {
+  name            = "{{ .arg0 }}"
+  timeout_seconds = 90
+  port            = 80
+  min_scale       = 0
+  max_scale       = 1
+  components = [{
+    name       = "compo1"
+    max_cpu    = "0.5"
+    max_memory = "1Gi"
+    deploy_source = {
+      container_registry = {
+        image = "ghcr.io/nginx/nginx-gateway-fabric/nginx:2.6.2"
       }
     }
   }]
 }
 `
 
-const testAccSakuraApprunShared_withCRUser = `
+//nolint:gosec
+const testAccSakuraApprunShared_withOldPassword = `
 resource "sakura_apprun_shared" "foobar" {
   name            = "{{ .arg0 }}"
   timeout_seconds = 90
@@ -635,32 +649,8 @@ resource "sakura_apprun_shared" "foobar" {
       container_registry = {
         image    = "sakura-oss-dev.sakuracr.jp/test:latest"
         server   = "sakura-oss-dev.sakuracr.jp"
-        username = "user"
-        password = "password"
-      }
-    }
-  }]
-}
-`
-
-const testAccSakuraApprunShared_withCRUserWithWO = `
-resource "sakura_apprun_shared" "foobar" {
-  name            = "{{ .arg0 }}"
-  timeout_seconds = 90
-  port            = 80
-  min_scale       = 0
-  max_scale       = 1
-  components = [{
-    name       = "compo1"
-    max_cpu    = "0.5"
-    max_memory = "1Gi"
-    deploy_source = {
-      container_registry = {
-        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
-        server   = "sakura-oss-dev.sakuracr.jp"
-        username = "user"
-        password_wo = "password"
-		password_wo_version = 1
+        username = "test-user"
+        password = "{{ .arg1 }}"
       }
     }
   }]
@@ -680,7 +670,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
     env = [{
@@ -712,7 +706,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
 	// Updated
@@ -747,7 +745,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
     probe = {
@@ -773,7 +775,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image   = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
     probe = {
@@ -807,7 +813,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
   }]
@@ -831,7 +841,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
   }]
@@ -859,7 +873,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
   }]
@@ -886,7 +904,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
   }]
@@ -917,7 +939,11 @@ resource "sakura_apprun_shared" "foobar" {
     max_memory = "1Gi"
     deploy_source = {
       container_registry = {
-        image = "sakura-oss-dev.sakuracr.jp/test:latest"
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
       }
     }
   }]
