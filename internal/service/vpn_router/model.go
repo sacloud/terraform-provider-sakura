@@ -239,6 +239,7 @@ func (model *vpnRouterBaseModel) updateState(ctx context.Context, client *common
 	model.UpdateBaseState(vpnRouter.ID.String(), vpnRouter.Name, vpnRouter.Description, vpnRouter.Tags)
 	model.Zone = types.StringValue(zone)
 	model.Plan = types.StringValue(flattenVPNRouterPlan(vpnRouter))
+	model.Version = types.Int32Value(int32(vpnRouter.Version))
 	model.PublicIP = types.StringValue(flattenVPNRouterGlobalAddress(vpnRouter))
 	model.PublicNetmask = types.Int64Value(int64(flattenVPNRouterGlobalNetworkMaskLen(vpnRouter)))
 	model.PublicNetworkInterface = flattenVPNRouterPublicNetworkInterface(vpnRouter)
