@@ -1,5 +1,10 @@
 # Changelog
 
+## [v3.12.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.0...v3.12.1) - 2026-06-08
+- Update apprun_shared test by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/245
+- Fix KMS resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/249
+- go: bump github.com/minio/minio-go/v7 from 7.1.0 to 7.2.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/247
+
 ## [v3.12.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.11.0...v3.12.0) - 2026-06-01
 - Support Service Principal Key KID by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/235
 - docs: fix subcategories for AppRun dedicated LB resources by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/237
