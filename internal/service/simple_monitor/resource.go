@@ -553,15 +553,17 @@ func flattenSimpleMonitorHealthCheckResource(model *simpleMonitorResourceModel, 
 	res.updateState(sm)
 
 	hcModel := model.HealthCheck
-	switch sm.HealthCheck.Protocol {
-	case iaastypes.SimpleMonitorProtocols.HTTP, iaastypes.SimpleMonitorProtocols.HTTPS:
-		if hcModel.Password.ValueString() != "" {
-			res.Password = types.StringValue(hcModel.Password.ValueString())
-		} else {
-			res.Password = types.StringNull()
-		}
-		if hcModel.PasswordWOVersion.ValueInt32() > 0 {
-			res.PasswordWOVersion = hcModel.PasswordWOVersion
+	if hcModel != nil {
+		switch sm.HealthCheck.Protocol {
+		case iaastypes.SimpleMonitorProtocols.HTTP, iaastypes.SimpleMonitorProtocols.HTTPS:
+			if hcModel.Password.ValueString() != "" {
+				res.Password = types.StringValue(hcModel.Password.ValueString())
+			} else {
+				res.Password = types.StringNull()
+			}
+			if hcModel.PasswordWOVersion.ValueInt32() > 0 {
+				res.PasswordWOVersion = hcModel.PasswordWOVersion
+			}
 		}
 	}
 
