@@ -126,6 +126,82 @@ func TestAccSakuraResourceKMS_importedWithWO(t *testing.T) {
 	})
 }
 
+// OpenAPI定義の更新によってUpdate時のtagsが必須になったことに対するテスト
+func TestAccSakuraResourceKMS_tagsIssue(t *testing.T) {
+	resourceName := "sakura_kms.foobar"
+	rand := test.RandomName()
+	var key v1.Key
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraKMSDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraKMS_tagsIssue, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraKMSExists(resourceName, &key),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "0"),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraKMS_tagsIssueUpdate, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraKMSExists(resourceName, &key),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "0"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccImportSakuraResourceKMS_basic(t *testing.T) {
+	rand := test.RandomName()
+
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"name":           rand,
+			"description":    "description",
+			"tags.#":         "2",
+			"tags.0":         "tag1",
+			"tags.1":         "tag2",
+			"latest_version": "0",
+			"rotate_version": "0",
+			"key_origin":     "generated",
+			"status":         "active",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0], "created_at", "modified_at")
+	}
+
+	resourceName := "sakura_kms.foobar"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraKMSDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraKMS_basic, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateCheck:  checkFn,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraKMSDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	keyOp := kms.NewKeyOp(client.KmsClient)
@@ -215,4 +291,16 @@ resource "sakura_kms" "foobar" {
   tags         = ["tag1", "tag2"]
   key_origin   = "imported"
   plain_key_wo = "AfL5zzjD4RgeFQm3vvAADwPNrurNUc616877wsa8v4w="
+}`
+
+var testAccSakuraKMS_tagsIssue = `
+resource "sakura_kms" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+}`
+
+var testAccSakuraKMS_tagsIssueUpdate = `
+resource "sakura_kms" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description-updated"
 }`
