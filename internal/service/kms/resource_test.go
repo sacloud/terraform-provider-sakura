@@ -158,6 +158,50 @@ func TestAccSakuraResourceKMS_tagsIssue(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraResourceKMS_basic(t *testing.T) {
+	rand := test.RandomName()
+
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"name":           rand,
+			"description":    "description",
+			"tags.#":         "2",
+			"tags.0":         "tag1",
+			"tags.1":         "tag2",
+			"latest_version": "0",
+			"rotate_version": "0",
+			"key_origin":     "generated",
+			"status":         "active",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0], "created_at", "modified_at")
+	}
+
+	resourceName := "sakura_kms.foobar"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraKMSDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraKMS_basic, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateCheck:  checkFn,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraKMSDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	keyOp := kms.NewKeyOp(client.KmsClient)

@@ -116,7 +116,7 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Computed:    true,
 				Default:     int64default.StaticInt64(0),
-				Description: "The rotateion version. This number is incremented when you want rotate KMS key.",
+				Description: "The rotation version. This number is incremented when you want rotate KMS key.",
 			},
 			"latest_version": schema.Int64Attribute{
 				Computed:    true,
@@ -194,6 +194,10 @@ func (r *kmsResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	data.updateState(key)
+	// set default value to avoid unknown value in plan after import
+	if !utils.IsKnown(data.RotateVersion) {
+		data.RotateVersion = types.Int64Value(0)
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
