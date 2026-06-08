@@ -53,6 +53,33 @@ func TestAccSakuraScript_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraScript_basic(t *testing.T) {
+	resourceName := "sakura_script.foobar"
+	rand := test.RandomName()
+
+	var note iaas.Note
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraCloudNoteDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraScript_import, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraScriptExists(resourceName, &note),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "content", "content"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccSakuraScript_withYAML(t *testing.T) {
 	resourceName := "sakura_script.foobar"
 	name := test.RandomName()
@@ -151,3 +178,10 @@ resource "sakura_script" "foobar" {
   content = "#cloud_init"
   class   = "yaml_cloud_config"
 }`
+
+const testAccSakuraScript_import = `
+resource "sakura_script" "foobar" {
+  name    = "{{ .arg0 }}"
+  content = "content"
+}
+`
