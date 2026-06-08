@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	app "github.com/sacloud/apprun-dedicated-api-go/apis/application"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
+	app "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/application"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 )
 
 type appDataSource struct{ dataSourceClient }

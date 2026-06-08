@@ -10,7 +10,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
+	"github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/cluster"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

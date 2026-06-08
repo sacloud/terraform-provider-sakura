@@ -10,8 +10,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
-	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
+	monitoringsuite "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite"
+	monitoringsuiteapi "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

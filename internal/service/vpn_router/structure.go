@@ -10,11 +10,11 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/defaults"
-	iaastypes "github.com/sacloud/iaas-api-go/types"
-	"github.com/sacloud/iaas-service-go/setup"
-	"github.com/sacloud/iaas-service-go/vpcrouter/builder"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/defaults"
+	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
+	"github.com/sacloud/sacloud-sdk-go/service/iaas/setup"
+	"github.com/sacloud/sacloud-sdk-go/service/iaas/vpcrouter/builder"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

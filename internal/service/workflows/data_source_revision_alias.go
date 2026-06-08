@@ -16,8 +16,8 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
-	"github.com/sacloud/workflows-api-go"
-	v1 "github.com/sacloud/workflows-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/workflows"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
 )
 
 type workflowRevisionAliasDataSource struct {

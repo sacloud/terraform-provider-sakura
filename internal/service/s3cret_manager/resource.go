@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/sacloud/saclient-go"
-	sm "github.com/sacloud/secretmanager-api-go"
-	v1 "github.com/sacloud/secretmanager-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
+	sm "github.com/sacloud/sacloud-sdk-go/api/secretmanager"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/secretmanager/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

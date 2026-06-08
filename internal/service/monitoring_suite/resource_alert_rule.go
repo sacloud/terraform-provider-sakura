@@ -16,9 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
-	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	monitoringsuite "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite"
+	monitoringsuiteapi "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )

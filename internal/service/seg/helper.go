@@ -12,10 +12,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/saclient-go"
-	seg "github.com/sacloud/service-endpoint-gateway-api-go"
-	v1 "github.com/sacloud/service-endpoint-gateway-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
+	seg "github.com/sacloud/sacloud-sdk-go/api/service-endpoint-gateway"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/service-endpoint-gateway/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v1 "github.com/sacloud/workflows-api-go/apis/v1"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
 )
 
 type workflowRevisionAliasBaseModel struct {
