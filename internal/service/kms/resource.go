@@ -25,6 +25,7 @@ import (
 	v1 "github.com/sacloud/kms-api-go/apis/v1"
 	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type kmsResource struct {
@@ -318,9 +319,10 @@ func expandKMSUpdateKey(model *kmsResourceModel, before *v1.Key) v1.Key {
 		Description: model.Description.ValueString(),
 		KeyOrigin:   before.KeyOrigin,
 	}
-
-	if !model.Tags.IsNull() {
+	if utils.IsKnown(model.Tags) {
 		req.Tags = common.TsetToStrings(model.Tags)
+	} else {
+		req.Tags = []string{}
 	}
 
 	return req

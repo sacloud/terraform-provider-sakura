@@ -126,6 +126,38 @@ func TestAccSakuraResourceKMS_importedWithWO(t *testing.T) {
 	})
 }
 
+// OpenAPI定義の更新によってUpdate時のtagsが必須になったことに対するテスト
+func TestAccSakuraResourceKMS_tagsIssue(t *testing.T) {
+	resourceName := "sakura_kms.foobar"
+	rand := test.RandomName()
+	var key v1.Key
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraKMSDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraKMS_tagsIssue, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraKMSExists(resourceName, &key),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "description", "description"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "0"),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraKMS_tagsIssueUpdate, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraKMSExists(resourceName, &key),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
+					resource.TestCheckResourceAttr(resourceName, "tags.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraKMSDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	keyOp := kms.NewKeyOp(client.KmsClient)
@@ -215,4 +247,16 @@ resource "sakura_kms" "foobar" {
   tags         = ["tag1", "tag2"]
   key_origin   = "imported"
   plain_key_wo = "AfL5zzjD4RgeFQm3vvAADwPNrurNUc616877wsa8v4w="
+}`
+
+var testAccSakuraKMS_tagsIssue = `
+resource "sakura_kms" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+}`
+
+var testAccSakuraKMS_tagsIssueUpdate = `
+resource "sakura_kms" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description-updated"
 }`
