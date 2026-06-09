@@ -83,6 +83,36 @@ func TestAccResourceSakuraWebAccelActivation_Update(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraWebAccelActivation_basic(t *testing.T) {
+	envKeys := []string{
+		envWebAccelSiteName,
+	}
+	for _, k := range envKeys {
+		if os.Getenv(k) == "" {
+			t.Skipf("ENV %q is required. skip", k)
+			return
+		}
+	}
+
+	siteName := os.Getenv(envWebAccelSiteName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraWebAccelActivationDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckSakuraWebAccelActivationConfig(siteName, true),
+			},
+			{
+				ResourceName:      "sakura_webaccel_activation.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraWebAccelActivationDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	op := webaccel.NewOp(client.WebaccelClient)
