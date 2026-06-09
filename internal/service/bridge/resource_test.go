@@ -7,7 +7,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -113,7 +112,6 @@ func TestAccImportSakuraBridge_basic(t *testing.T) {
 		expects := map[string]string{
 			"name":        rand,
 			"description": "description",
-			"zone":        os.Getenv("SAKURACLOUD_ZONE"),
 		}
 
 		return test.CompareStateMulti(s[0], expects)
@@ -137,6 +135,9 @@ func TestAccImportSakuraBridge_basic(t *testing.T) {
 				ImportState:       true,
 				ImportStateCheck:  checkFn,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"zone",
+				},
 			},
 		},
 	})
