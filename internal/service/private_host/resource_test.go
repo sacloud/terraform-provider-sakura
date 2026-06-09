@@ -160,6 +160,42 @@ func TestAccSakuraPrivateHost_withDedicatedStorage(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraPrivateHost_basic(t *testing.T) {
+	test.SkipIfZoneIsDummy(t)
+
+	rand := test.RandomName()
+	var privateHost iaas.PrivateHost
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraPrivateHostDestroy,
+			test.CheckSakuraIconDestroy,
+			test.CheckSakuraServerDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraPrivateHost_basic, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraPrivateHostExists("sakura_private_host.foobar", &privateHost),
+				),
+			},
+			{
+				ResourceName:      "sakura_private_host.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"zone",
+					"icon_id",
+					"assigned_core",
+					"assigned_memory",
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraPrivateHostExists(n string, privateHost *iaas.PrivateHost) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
