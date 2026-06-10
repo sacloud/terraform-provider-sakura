@@ -391,6 +391,13 @@ func (r *webAccelResource) Create(ctx context.Context, req resource.CreateReques
 
 	if hasLoggingConfig {
 		logReq := expandLoggingParameters(&plan, &config)
+		if logReq == nil {
+			resp.Diagnostics.AddError(
+				"Create: Invalid logging configuration",
+				"logging block is present but access_key_wo and secret_access_key_wo are required to configure logging",
+			)
+			return
+		}
 		if _, err := op.ApplyLogUploadConfig(ctx, created.ID, logReq); err != nil {
 			resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to apply logging config for WebAccel site: %s", err))
 			return
@@ -568,9 +575,9 @@ func (m *webAccelResourceModel) updateModel(site *webaccel.Site, logUploadConfig
 	m.OriginParameters = originParams
 
 	if logUploadConfig != nil {
-		var ver types.Int32
-		if m.Logging != nil {
-			ver = m.Logging.CredentialsWOVersion // preserve the version in state when log upload config exists
+		ver := types.Int32Null()
+		if m.Logging != nil && utils.IsKnown(m.Logging.CredentialsWOVersion) {
+			ver = m.Logging.CredentialsWOVersion
 		}
 		m.Logging = flattenWebAccelLogUploadConfig(logUploadConfig)
 		m.Logging.CredentialsWOVersion = ver

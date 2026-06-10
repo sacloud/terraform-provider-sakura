@@ -863,3 +863,56 @@ func TestAccImportSakuraWebAccel_bucketOrigin(t *testing.T) {
 		},
 	})
 }
+
+func TestAccImportSakuraWebAccel_withLogging(t *testing.T) {
+	test.SkipIfFakeModeEnabled(t)
+
+	envKeys := []string{
+		envWebAccelOrigin,
+		envObjectStorageEndpoint,
+		envObjectStorageRegion,
+		envObjectStorageBucketName,
+		envObjectStorageAccessKeyId,
+		envObjectStorageSecretAccessKey,
+	}
+	for _, k := range envKeys {
+		if os.Getenv(k) == "" {
+			t.Skipf("ENV %q is required. skip", k)
+			return
+		}
+	}
+
+	siteName := "your-site-name"
+	origin := os.Getenv(envWebAccelOrigin)
+	endpoint, _ := strings.CutPrefix(os.Getenv(envObjectStorageEndpoint), "https://")
+	region := os.Getenv(envObjectStorageRegion)
+	bucketName := os.Getenv(envObjectStorageBucketName)
+	accessKey := os.Getenv(envObjectStorageAccessKeyId)
+	secretKey := os.Getenv(envObjectStorageSecretAccessKey)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckSakuraWebAccelWebOriginLoggingConfig(siteName, origin, endpoint, region, bucketName, accessKey, secretKey),
+			},
+			{
+				ResourceName:      "sakura_webaccel.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"onetime_url_secrets_wo",
+					"onetime_url_secrets_wo_version",
+					"origin_parameters.access_key_wo",
+					"origin_parameters.secret_access_key_wo",
+					"origin_parameters.credentials_wo_version",
+					"logging.access_key_wo",
+					"logging.secret_access_key_wo",
+					"logging.credentials_wo_version",
+				},
+			},
+		},
+	})
+}
