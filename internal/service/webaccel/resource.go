@@ -238,7 +238,7 @@ func (r *webAccelResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 						Description: "Object Storage's bucket name",
 					},
 					"access_key_wo": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						WriteOnly:   true,
 						Description: "Object Storage's access key",
 						Validators: []validator.String{
@@ -246,7 +246,7 @@ func (r *webAccelResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 						},
 					},
 					"secret_access_key_wo": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						WriteOnly:   true,
 						Description: "Object Storage's secret access key",
 						Validators: []validator.String{
@@ -512,9 +512,11 @@ func (r *webAccelResource) Update(ctx context.Context, req resource.UpdateReques
 			}
 		} else {
 			logReq := expandLoggingParameters(&plan, &config)
-			if _, err := op.ApplyLogUploadConfig(ctx, state.ID.ValueString(), logReq); err != nil {
-				resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to apply logging config for WebAccel site[%s]: %s", state.ID.ValueString(), err))
-				return
+			if logReq != nil {
+				if _, err := op.ApplyLogUploadConfig(ctx, state.ID.ValueString(), logReq); err != nil {
+					resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to apply logging config for WebAccel site[%s]: %s", state.ID.ValueString(), err))
+					return
+				}
 			}
 		}
 	}
@@ -566,7 +568,10 @@ func (m *webAccelResourceModel) updateModel(site *webaccel.Site, logUploadConfig
 	m.OriginParameters = originParams
 
 	if logUploadConfig != nil {
-		ver := m.Logging.CredentialsWOVersion // preserve the version in state when log upload config exists
+		var ver types.Int32
+		if m.Logging != nil {
+			ver = m.Logging.CredentialsWOVersion // preserve the version in state when log upload config exists
+		}
 		m.Logging = flattenWebAccelLogUploadConfig(logUploadConfig)
 		m.Logging.CredentialsWOVersion = ver
 	} else {
@@ -719,6 +724,11 @@ func expandLoggingParameters(plan, config *webAccelResourceModel) *webaccel.LogU
 		logCfgKeys = config.Logging
 	}
 
+	// Skip if credentials are not set (e.g. after import)
+	if !utils.IsKnown(logCfgKeys.AccessKeyWO) || !utils.IsKnown(logCfgKeys.SecretAccessKeyWO) {
+		return nil
+	}
+
 	req := new(webaccel.LogUploadConfig)
 	if logCfg.Enabled.ValueBool() {
 		req.Status = "enabled"
@@ -791,15 +801,17 @@ func flattenWebAccelOriginParameters(config *webAccelResourceModel, site *webacc
 		originParam.Region = types.StringValue(site.S3Region)
 		originParam.BucketName = types.StringValue(site.BucketName)
 
-		if config == nil || config.OriginParameters == nil {
-			return nil, fmt.Errorf("origin_parameters must be provided to keep bucket credentials")
-		}
-		confParam := config.OriginParameters
-		if utils.IsKnown(confParam.UseDocumentIndex) {
-			originParam.UseDocumentIndex = types.BoolValue(confParam.UseDocumentIndex.ValueBool())
-		}
-		if utils.IsKnown(confParam.CredentialsWOVersion) {
-			originParam.CredentialsWOVersion = types.Int32Value(confParam.CredentialsWOVersion.ValueInt32())
+		if config != nil && config.OriginParameters != nil {
+			confParam := config.OriginParameters
+			if utils.IsKnown(confParam.UseDocumentIndex) {
+				originParam.UseDocumentIndex = types.BoolValue(confParam.UseDocumentIndex.ValueBool())
+			}
+			if utils.IsKnown(confParam.CredentialsWOVersion) {
+				originParam.CredentialsWOVersion = types.Int32Value(confParam.CredentialsWOVersion.ValueInt32())
+			}
+		} else {
+			// Import state: populate UseDocumentIndex from API response
+			originParam.UseDocumentIndex = types.BoolValue(site.DocIndex == webaccel.DocIndexEnabled)
 		}
 	default:
 		return nil, fmt.Errorf("unknown origin type: %s", site.OriginType)
