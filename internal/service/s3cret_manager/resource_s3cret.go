@@ -62,7 +62,13 @@ type secretManagerSecretResourceModel struct {
 func (r *secretManagerSecretResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"name": common.SchemaResourceName("Secret Manager's secret"),
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the Secret Manager's secret.",
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 255),
+				},
+			},
 			"vault_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The Secret Manager's vault id.",
