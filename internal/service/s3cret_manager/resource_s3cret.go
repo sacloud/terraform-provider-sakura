@@ -115,8 +115,24 @@ func (r *secretManagerSecretResource) ImportState(ctx context.Context, req resou
 		return
 	}
 
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("vault_id"), parts[0])...)
-	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), parts[1])...)
+	vaultID := parts[0]
+	name := parts[1]
+
+	if vaultID == "" {
+		resp.Diagnostics.AddError("ImportState Error", "vault_id must not be empty")
+		return
+	}
+	if name == "" {
+		resp.Diagnostics.AddError("ImportState Error", "name must not be empty")
+		return
+	}
+	if len(name) > 255 {
+		resp.Diagnostics.AddError("ImportState Error", "name must be 255 characters or less")
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("vault_id"), vaultID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), name)...)
 }
 
 func (r *secretManagerSecretResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
