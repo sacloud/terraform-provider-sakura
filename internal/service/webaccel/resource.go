@@ -519,11 +519,17 @@ func (r *webAccelResource) Update(ctx context.Context, req resource.UpdateReques
 			}
 		} else {
 			logReq := expandLoggingParameters(&plan, &config)
-			if logReq != nil {
-				if _, err := op.ApplyLogUploadConfig(ctx, state.ID.ValueString(), logReq); err != nil {
-					resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to apply logging config for WebAccel site[%s]: %s", state.ID.ValueString(), err))
-					return
-				}
+			if logReq == nil {
+				resp.Diagnostics.AddError(
+					"Update: Missing logging credentials",
+					"logging block requires access_key_wo and secret_access_key_wo to apply changes. "+
+						"These values cannot be retrieved from API after import. Please set them manually.",
+				)
+				return
+			}
+			if _, err := op.ApplyLogUploadConfig(ctx, state.ID.ValueString(), logReq); err != nil {
+				resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to apply logging config for WebAccel site[%s]: %s", state.ID.ValueString(), err))
+				return
 			}
 		}
 	}
