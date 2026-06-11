@@ -822,6 +822,9 @@ func flattenWebAccelOriginParameters(config *webAccelResourceModel, site *webacc
 			if utils.IsKnown(confParam.CredentialsWOVersion) {
 				originParam.CredentialsWOVersion = types.Int32Value(confParam.CredentialsWOVersion.ValueInt32())
 			}
+		} else {
+			// Import state: keep UseDocumentIndex unset to avoid forcing diffs when users omit this optional field after import
+			originParam.UseDocumentIndex = types.BoolNull()
 		}
 	default:
 		return nil, fmt.Errorf("unknown origin type: %s", site.OriginType)
