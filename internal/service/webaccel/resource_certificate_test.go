@@ -24,19 +24,7 @@ const (
 )
 
 func TestAccResourceSakuraWebAccelCertificate_basic(t *testing.T) {
-	envKeys := []string{
-		envWebAccelSiteName,
-		envWebAccelCertificateCrt,
-		envWebAccelCertificateKey,
-		envWebAccelCertificateCrtUpd,
-		envWebAccelCertificateKeyUpd,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelSiteName, envWebAccelCertificateCrt, envWebAccelCertificateKey, envWebAccelCertificateCrtUpd, envWebAccelCertificateKeyUpd)
 
 	siteName := os.Getenv(envWebAccelSiteName)
 	crt := os.Getenv(envWebAccelCertificateCrt)

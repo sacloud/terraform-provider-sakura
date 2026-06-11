@@ -26,14 +26,10 @@ var (
 
 func TestAccSakuraIPv4Ptr_basic(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
+	test.SkipIfEnvIsNotSet(t, envTestDomain)
 
 	var ip iaas.IPAddress
-	if domain, ok := os.LookupEnv(envTestDomain); ok {
-		testDomain = domain
-	} else {
-		t.Skipf("ENV %q is required. skip", envTestDomain)
-		return
-	}
+	testDomain = os.Getenv(envTestDomain)
 	rand := test.RandomName()
 
 	resource.Test(t, resource.TestCase{
@@ -63,14 +59,10 @@ func TestAccSakuraIPv4Ptr_basic(t *testing.T) {
 
 func TestAccImportSakuraIPv4Ptr_basic(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
+	test.SkipIfEnvIsNotSet(t, envTestDomain)
 
 	var ip iaas.IPAddress
-	if domain, ok := os.LookupEnv(envTestDomain); ok {
-		testDomain = domain
-	} else {
-		t.Skipf("ENV %q is required. skip", envTestDomain)
-		return
-	}
+	testDomain = os.Getenv(envTestDomain)
 	rand := test.RandomName()
 
 	resource.Test(t, resource.TestCase{

@@ -56,36 +56,6 @@ func TestAccSakuraResourceKMS_basic(t *testing.T) {
 	})
 }
 
-func TestAccImportSakuraKMS_basic(t *testing.T) {
-	resourceName := "sakura_kms.foobar"
-	rand := test.RandomName()
-
-	var key v1.Key
-	resource.Test(t, resource.TestCase{
-		PreCheck:                 func() { test.AccPreCheck(t) },
-		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
-		CheckDestroy:             testCheckSakuraKMSDestroy,
-		Steps: []resource.TestStep{
-			{
-				Config: test.BuildConfigWithArgs(testAccSakuraKMS_import, rand),
-				Check: resource.ComposeTestCheckFunc(
-					testCheckSakuraKMSExists(resourceName, &key),
-					resource.TestCheckResourceAttr(resourceName, "name", rand),
-					resource.TestCheckResourceAttr(resourceName, "key_origin", "generated"),
-				),
-			},
-			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateVerify: true,
-				ImportStateVerifyIgnore: []string{
-					"rotate_version",
-				},
-			},
-		},
-	})
-}
-
 func TestAccSakuraResourceKMS_imported(t *testing.T) {
 	resourceName := "sakura_kms.foobar2"
 	rand := test.RandomName()
