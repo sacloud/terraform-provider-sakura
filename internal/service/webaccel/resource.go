@@ -240,7 +240,7 @@ func (r *webAccelResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 					"access_key_wo": schema.StringAttribute{
 						Optional:    true,
 						WriteOnly:   true,
-						Description: "Object Storage's access key",
+						Description: "Object Storage's access key. Required when configuring logging.",
 						Validators: []validator.String{
 							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_wo_version")),
 						},
@@ -248,7 +248,7 @@ func (r *webAccelResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 					"secret_access_key_wo": schema.StringAttribute{
 						Optional:    true,
 						WriteOnly:   true,
-						Description: "Object Storage's secret access key",
+						Description: "Object Storage's secret access key. Required when configuring logging.",
 						Validators: []validator.String{
 							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("credentials_wo_version")),
 						},
@@ -822,9 +822,6 @@ func flattenWebAccelOriginParameters(config *webAccelResourceModel, site *webacc
 			if utils.IsKnown(confParam.CredentialsWOVersion) {
 				originParam.CredentialsWOVersion = types.Int32Value(confParam.CredentialsWOVersion.ValueInt32())
 			}
-		} else {
-			// Import state: populate UseDocumentIndex from API response
-			originParam.UseDocumentIndex = types.BoolValue(site.DocIndex == webaccel.DocIndexEnabled)
 		}
 	default:
 		return nil, fmt.Errorf("unknown origin type: %s", site.OriginType)
