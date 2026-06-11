@@ -337,6 +337,8 @@ func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 
 	envKeys := []string{
 		envWebAccelOrigin,
+		envObjectStorageEndpoint,
+		envObjectStorageRegion,
 		envObjectStorageBucketName,
 		envObjectStorageAccessKeyId,
 		envObjectStorageSecretAccessKey,
@@ -350,6 +352,8 @@ func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 
 	siteName := "your-site-name"
 	origin := os.Getenv(envWebAccelOrigin)
+	endpoint, _ := strings.CutPrefix(os.Getenv(envObjectStorageEndpoint), "https://")
+	region := os.Getenv(envObjectStorageRegion)
 	bucketName := os.Getenv(envObjectStorageBucketName)
 	accessKey := os.Getenv(envObjectStorageAccessKeyId)
 	secretKey := os.Getenv(envObjectStorageSecretAccessKey)
@@ -360,7 +364,7 @@ func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 		CheckDestroy:             testCheckSakuraWebAccelDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckSakuraWebAccelWebOriginLoggingConfig(siteName, origin, "s3.isk01.sakurastorage.jp", "jp-north-1", bucketName, accessKey, secretKey),
+				Config: testAccCheckSakuraWebAccelWebOriginLoggingConfig(siteName, origin, endpoint, region, bucketName, accessKey, secretKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "name", siteName),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.type", "web"),
