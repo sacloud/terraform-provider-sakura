@@ -8,6 +8,7 @@ import (
 	"errors"
 	"fmt"
 	"slices"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -61,7 +62,13 @@ type secretManagerSecretResourceModel struct {
 func (r *secretManagerSecretResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
-			"name": common.SchemaResourceName("Secret Manager's secret"),
+			"name": schema.StringAttribute{
+				Required:    true,
+				Description: "The name of the Secret Manager's secret.",
+				Validators: []validator.String{
+					stringvalidator.LengthBetween(1, 255),
+				},
+			},
 			"vault_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The Secret Manager's vault id.",
@@ -105,7 +112,33 @@ func (r *secretManagerSecretResource) Schema(ctx context.Context, req resource.S
 }
 
 func (r *secretManagerSecretResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughWithIdentity(ctx, path.Root("name"), path.Root("name"), req, resp)
+	parts := strings.SplitN(req.ID, "/", 2)
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError(
+			"ImportState Error",
+			fmt.Sprintf("Invalid import ID format: %s. Expected format: vault_id/name", req.ID),
+		)
+		return
+	}
+
+	vaultID := parts[0]
+	name := parts[1]
+
+	if vaultID == "" {
+		resp.Diagnostics.AddError("ImportState Error", "vault_id must not be empty")
+		return
+	}
+	if name == "" {
+		resp.Diagnostics.AddError("ImportState Error", "name must not be empty")
+		return
+	}
+	if len(name) > 255 {
+		resp.Diagnostics.AddError("ImportState Error", "name must be 255 characters or less")
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("vault_id"), vaultID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("name"), name)...)
 }
 
 func (r *secretManagerSecretResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
