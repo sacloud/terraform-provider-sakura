@@ -53,6 +53,26 @@ func TestAccSakuraSecretManager_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraSecretManager_basic(t *testing.T) {
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraSecretManagerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManager_basic, rand),
+			},
+			{
+				ResourceName:      "sakura_secret_manager.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraSecretManagerDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	vaultOp := sm.NewVaultOp(client.SecretManagerClient)
