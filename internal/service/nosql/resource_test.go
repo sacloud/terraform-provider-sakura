@@ -143,7 +143,7 @@ func TestAccImportSakuraNosql_basic(t *testing.T) {
 	password := os.Getenv(envNosqlPassword)
 
 	resource.Test(t, resource.TestCase{
-		PreCheck: func() { test.AccPreCheck(t) },
+		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		CheckDestroy: resource.ComposeTestCheckFunc(
 			testCheckSakuraNosqlDestroy,

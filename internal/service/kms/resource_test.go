@@ -304,11 +304,3 @@ resource "sakura_kms" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description-updated"
 }`
-
-const testAccSakuraKMS_import = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description for import test"
-  tags        = ["tag1", "tag2"]
-}
-`
