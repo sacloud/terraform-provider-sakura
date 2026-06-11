@@ -31,15 +31,7 @@ const (
 func TestAccSakuraResourceWebAccel_WebOrigin(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin)
 
 	siteName := "your-site-name"
 	// domainName := os.Getenv(envWebAccelDomainName)
@@ -90,16 +82,7 @@ func testCheckSakuraWebAccelDestroy(s *terraform.State) error {
 func TestAccSakuraResourceWebAccel_OwnDomain(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-		envWebAccelDomainName,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin, envWebAccelDomainName)
 
 	siteName := "your-site-name"
 	origin := os.Getenv(envWebAccelOrigin)
@@ -130,15 +113,7 @@ func TestAccSakuraResourceWebAccel_OwnDomain(t *testing.T) {
 func TestAccSakuraResourceWebAccel_WebOriginWithOneTimeUrlSecrets(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin)
 
 	siteName := "your-site-name"
 	origin := os.Getenv(envWebAccelOrigin)
@@ -165,15 +140,7 @@ func TestAccSakuraResourceWebAccel_WebOriginWithOneTimeUrlSecrets(t *testing.T) 
 func TestAccSakuraResourceWebAccel_WebOriginWithCORS(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin)
 
 	siteName := "your-site-name"
 	// domainName := os.Getenv(envWebAccelDomainName)
@@ -204,20 +171,9 @@ func TestAccSakuraResourceWebAccel_WebOriginWithCORS(t *testing.T) {
 func TestAccSakuraResourceWebAccel_Update(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-		envObjectStorageEndpoint,
-		envObjectStorageRegion,
-		envObjectStorageBucketName,
-		envObjectStorageAccessKeyId,
-		envObjectStorageSecretAccessKey,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin, envObjectStorageEndpoint,
+		envObjectStorageRegion, envObjectStorageBucketName,
+		envObjectStorageAccessKeyId, envObjectStorageSecretAccessKey)
 
 	siteName := "your-site-name"
 	// domainName := os.Getenv(envWebAccelDomainName)
@@ -286,20 +242,9 @@ func TestAccSakuraResourceWebAccel_Update(t *testing.T) {
 func TestAccSakuraResourceWebAccel_BucketOrigin(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-		envObjectStorageEndpoint,
-		envObjectStorageRegion,
-		envObjectStorageBucketName,
-		envObjectStorageAccessKeyId,
-		envObjectStorageSecretAccessKey,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin, envObjectStorageEndpoint,
+		envObjectStorageRegion, envObjectStorageBucketName,
+		envObjectStorageAccessKeyId, envObjectStorageSecretAccessKey)
 
 	siteName := "your-site-name"
 	// domainName := os.Getenv(envWebAccelDomainName)
@@ -335,20 +280,9 @@ func TestAccSakuraResourceWebAccel_BucketOrigin(t *testing.T) {
 func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-		envObjectStorageEndpoint,
-		envObjectStorageRegion,
-		envObjectStorageBucketName,
-		envObjectStorageAccessKeyId,
-		envObjectStorageSecretAccessKey,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin, envObjectStorageEndpoint,
+		envObjectStorageRegion, envObjectStorageBucketName,
+		envObjectStorageAccessKeyId, envObjectStorageSecretAccessKey)
 
 	siteName := "your-site-name"
 	origin := os.Getenv(envWebAccelOrigin)
@@ -378,10 +312,7 @@ func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 }
 
 func TestAccSakuraResourceWebAccel_InvalidConfigurations(t *testing.T) {
-	if os.Getenv(envWebAccelOrigin) == "" {
-		t.Skipf("ENV %q is required. skip", envWebAccelOrigin)
-		return
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin)
 	origin := os.Getenv(envWebAccelOrigin)
 	for name, tc := range testAccCheckSakuraWebAccelInvalidConfigs(origin) {
 		t.Logf("test for invalid configuration: %s", name)
@@ -776,15 +707,7 @@ resource sakura_webaccel "foobar" {
 func TestAccImportSakuraWebAccel_basic(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin)
 
 	siteName := "your-site-name"
 	origin := os.Getenv(envWebAccelOrigin)
@@ -819,20 +742,9 @@ func TestAccImportSakuraWebAccel_basic(t *testing.T) {
 func TestAccImportSakuraWebAccel_bucketOrigin(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-		envObjectStorageEndpoint,
-		envObjectStorageRegion,
-		envObjectStorageBucketName,
-		envObjectStorageAccessKeyId,
-		envObjectStorageSecretAccessKey,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin, envObjectStorageEndpoint,
+		envObjectStorageRegion, envObjectStorageBucketName,
+		envObjectStorageAccessKeyId, envObjectStorageSecretAccessKey)
 
 	siteName := "your-site-name"
 	endpoint, _ := strings.CutPrefix(os.Getenv(envObjectStorageEndpoint), "https://")
@@ -871,20 +783,9 @@ func TestAccImportSakuraWebAccel_bucketOrigin(t *testing.T) {
 func TestAccImportSakuraWebAccel_withLogging(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
-		envWebAccelOrigin,
-		envObjectStorageEndpoint,
-		envObjectStorageRegion,
-		envObjectStorageBucketName,
-		envObjectStorageAccessKeyId,
-		envObjectStorageSecretAccessKey,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelOrigin, envObjectStorageEndpoint,
+		envObjectStorageRegion, envObjectStorageBucketName,
+		envObjectStorageAccessKeyId, envObjectStorageSecretAccessKey)
 
 	siteName := "your-site-name"
 	origin := os.Getenv(envWebAccelOrigin)

@@ -16,15 +16,7 @@ import (
 )
 
 func TestAccResourceSakuraWebAccelActivation_Basic(t *testing.T) {
-	envKeys := []string{
-		envWebAccelSiteName,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelSiteName)
 
 	siteName := os.Getenv(envWebAccelSiteName)
 
@@ -44,15 +36,7 @@ func TestAccResourceSakuraWebAccelActivation_Basic(t *testing.T) {
 }
 
 func TestAccResourceSakuraWebAccelActivation_Update(t *testing.T) {
-	envKeys := []string{
-		envWebAccelSiteName,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelSiteName)
 
 	siteName := os.Getenv(envWebAccelSiteName)
 
