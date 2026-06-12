@@ -37,7 +37,7 @@ resource "sakura_kms" "foobar" {
 - `key_origin` (String) Key origin of the KMS key. 'generated' or 'imported'. Default is 'generated'.
 - `plain_key` (String, Sensitive) Plain key for imported KMS key. Required when `key_origin` is 'imported'.
 - `plain_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Plain key for imported KMS key. Required when `key_origin` is 'imported'.
-- `rotate_version` (Number) The rotateion version. This number is incremented when you want rotate KMS key.
+- `rotate_version` (Number) The rotation version. This number is incremented when you want rotate KMS key.
 - `schedule_destruction_days` (Number) The number of days to schedule the destruction of the KMS key. If set, the KMS key will be scheduled for destruction after the specified number of days instead of immediate destruction in 'terraform destroy'.
 - `status` (String) The status of the KMS key.
 - `tags` (Set of String) The tags of the KMS key.

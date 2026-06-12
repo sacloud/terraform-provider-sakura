@@ -15,11 +15,12 @@ description: |-
 terraform {
   required_providers {
     sakura = {
+      # terraform-provider-sakura supports Terraform 1.11 and later
       source = "sacloud/sakura"
 
       # We recommend pinning to the specific version of the Sakura Provider you're using
       # since new versions are released frequently
-      version = "3.0.0"
+      version = "3.12.1"
       #version = "~> 3"
     }
   }
