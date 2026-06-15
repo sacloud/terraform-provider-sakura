@@ -74,6 +74,35 @@ func TestAccSakuraVPNRouter_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraVPNRouter_basic(t *testing.T) {
+	resourceName := "sakura_vpn_router.foobar"
+	rand := test.RandomName()
+
+	var vpcRouter iaas.VPCRouter
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			test.CheckSakuraIconDestroy,
+			testCheckSakuraVPNRouterDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraVPNRouter_import, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraVPNRouterExists(resourceName, &vpcRouter),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func TestAccSakuraVPNRouter_Full(t *testing.T) {
 	resourceName := "sakura_vpn_router.foobar"
 	rand := test.RandomName()
@@ -616,5 +645,11 @@ resource "sakura_vpn_router" "foobar" {
 	password_wo         = "password"
 	password_wo_version = 1
   }]
+}
+`
+
+var testAccSakuraVPNRouter_import = `
+resource "sakura_vpn_router" "foobar" {
+  name = "{{ .arg0 }}"
 }
 `
