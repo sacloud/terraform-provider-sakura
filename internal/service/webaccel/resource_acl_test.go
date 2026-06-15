@@ -16,15 +16,7 @@ import (
 )
 
 func TestAccResourceSakuraWebAccelACL_basic(t *testing.T) {
-	envKeys := []string{
-		envWebAccelSiteName,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelSiteName)
 
 	siteName := os.Getenv(envWebAccelSiteName)
 
@@ -38,6 +30,28 @@ func TestAccResourceSakuraWebAccelACL_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("sakura_webaccel_acl.foobar", "acl", "deny 192.0.2.5/25\ndeny 198.51.100.0\nallow all"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccImportSakuraWebAccelACL_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, envWebAccelSiteName)
+
+	siteName := os.Getenv(envWebAccelSiteName)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraWebAccelACLDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckSakuraWebAccelACLConfig(siteName),
+			},
+			{
+				ResourceName:      "sakura_webaccel_acl.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
 			},
 		},
 	})

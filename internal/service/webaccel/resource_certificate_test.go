@@ -24,19 +24,7 @@ const (
 )
 
 func TestAccResourceSakuraWebAccelCertificate_basic(t *testing.T) {
-	envKeys := []string{
-		envWebAccelSiteName,
-		envWebAccelCertificateCrt,
-		envWebAccelCertificateKey,
-		envWebAccelCertificateCrtUpd,
-		envWebAccelCertificateKeyUpd,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	test.SkipIfEnvIsNotSet(t, envWebAccelSiteName, envWebAccelCertificateCrt, envWebAccelCertificateKey, envWebAccelCertificateCrtUpd, envWebAccelCertificateKeyUpd)
 
 	siteName := os.Getenv(envWebAccelSiteName)
 	crt := os.Getenv(envWebAccelCertificateCrt)
@@ -80,6 +68,45 @@ func TestAccResourceSakuraWebAccelCertificate_basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sakura_webaccel_certificate.foobar", "certificate_chain_wo"),
 					resource.TestCheckNoResourceAttr("sakura_webaccel_certificate.foobar", "private_key_wo"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccImportSakuraWebAccelCertificate_basic(t *testing.T) {
+	envKeys := []string{
+		envWebAccelSiteName,
+		envWebAccelCertificateCrt,
+		envWebAccelCertificateKey,
+	}
+	for _, k := range envKeys {
+		if os.Getenv(k) == "" {
+			t.Skipf("ENV %q is required. skip", k)
+			return
+		}
+	}
+
+	siteName := os.Getenv(envWebAccelSiteName)
+	crt := os.Getenv(envWebAccelCertificateCrt)
+	key := os.Getenv(envWebAccelCertificateKey)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraWebAccelCertificateDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckSakuraWebAccelCertificateConfig(siteName, crt, key, "1"),
+			},
+			{
+				ResourceName:      "sakura_webaccel_certificate.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"certificate_chain_wo",
+					"private_key_wo",
+					"certificate_wo_version",
+				},
 			},
 		},
 	})

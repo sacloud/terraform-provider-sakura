@@ -60,6 +60,31 @@ func TestAccSakuraSimpleMQ_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraSimpleMQ_basic(t *testing.T) {
+	resourceName := "sakura_simple_mq.foobar"
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraSimpleMQDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSimpleMQ_import, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"icon_id",
+					"expire_seconds",
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraSimpleMQDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	queueOp := simplemq.NewQueueOp(client.SimpleMqClient)
@@ -108,6 +133,14 @@ func testCheckSakuraSimpleMQExists(n string, queue *queue.CommonServiceItem) res
 		return nil
 	}
 }
+
+var testAccSakuraSimpleMQ_import = `
+resource "sakura_simple_mq" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+  tags        = ["tag1", "tag2"]
+}
+`
 
 var testAccSakuraSimpleMQ_basic = `
 resource "sakura_simple_mq" "foobar" {
