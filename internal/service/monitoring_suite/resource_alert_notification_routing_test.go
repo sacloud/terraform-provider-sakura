@@ -61,6 +61,38 @@ func TestAccSakuraMonitoringSuiteAlertNotificationRouting_basic(t *testing.T) {
 	})
 }
 
+func TestAccSakuraMonitoringSuiteAlertNotificationRouting_emptyMatchLabels(t *testing.T) {
+	resourceName := "sakura_monitoring_suite_alert_notification_routing.foobar"
+	rand := test.RandomName()
+
+	var routing monitoringsuiteapi.NotificationRouting
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraMonitoringSuiteAlertNotificationRoutingDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertNotificationRouting_basicEmptyMatchLabels, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraMonitoringSuiteAlertNotificationRoutingExists(resourceName, &routing),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "resend_interval_minutes", "10"),
+					resource.TestCheckResourceAttr(resourceName, "match_labels.#", "0"),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertNotificationRouting_updateEmptyMatchLabels, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraMonitoringSuiteAlertNotificationRoutingExists(resourceName, &routing),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttr(resourceName, "resend_interval_minutes", "20"),
+					resource.TestCheckResourceAttr(resourceName, "match_labels.#", "0"),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraMonitoringSuiteAlertNotificationRoutingDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	op := monitoringsuite.NewNotificationRoutingOp(client.MonitoringSuiteClient)
@@ -164,3 +196,43 @@ resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
   ]
 }
 `
+
+var testAccSakuraMonitoringSuiteAlertNotificationRouting_basicEmptyMatchLabels = `
+resource "sakura_monitoring_suite_alert_project" "foobar" {
+  name = "{{ .arg0 }}"
+  description = "description"
+}
+
+resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
+  service_type = "simple_notification"
+  url = "https://example.com/notify"
+  description = "notification-target"
+}
+
+resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
+  notification_target_id = sakura_monitoring_suite_alert_notification_target.foobar.id
+  resend_interval_minutes = 10
+  match_labels = []
+}`
+
+var testAccSakuraMonitoringSuiteAlertNotificationRouting_updateEmptyMatchLabels = `
+resource "sakura_monitoring_suite_alert_project" "foobar" {
+  name = "{{ .arg0 }}"
+  description = "description"
+}
+
+resource "sakura_monitoring_suite_alert_notification_target" "foobar" {
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
+  service_type = "simple_notification"
+  url = "https://example.com/notify"
+  description = "notification-target"
+}
+
+resource "sakura_monitoring_suite_alert_notification_routing" "foobar" {
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
+  notification_target_id = sakura_monitoring_suite_alert_notification_target.foobar.id
+  resend_interval_minutes = 20
+  match_labels = []
+}`

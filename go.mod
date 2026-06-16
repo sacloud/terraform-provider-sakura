@@ -30,7 +30,7 @@ require (
 	github.com/sacloud/iaas-service-go v1.25.0
 	github.com/sacloud/iam-api-go v0.3.0
 	github.com/sacloud/kms-api-go v0.4.0
-	github.com/sacloud/monitoring-suite-api-go v0.2.0
+	github.com/sacloud/monitoring-suite-api-go v0.2.1
 	github.com/sacloud/nosql-api-go v0.3.0
 	github.com/sacloud/object-storage-api-go v0.2.0
 	github.com/sacloud/packages-go v0.1.0
