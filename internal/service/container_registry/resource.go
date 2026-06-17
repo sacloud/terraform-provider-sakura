@@ -75,7 +75,11 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 			"tags":        common.SchemaResourceTags("Container Registry"),
 			"icon_id":     common.SchemaResourceIconID("Container Registry"),
 			"access_level": schema.StringAttribute{
-				Required: true,
+				Optional:    true,
+				Computed:    true,
+				DeprecationMessage: "The \"access_level\" attribute is deprecated and will be removed in a future version. " +
+					"Container Registry no longer supports public access settings. " +
+					"See: https://cloud.sakura.ad.jp/news/2026/05/27/container-registry-public-access-setting-discontinued/",
 				Description: desc.Sprintf(
 					"The level of access that allow to users. This must be one of [%s]",
 					iaastypes.ContainerRegistryAccessLevelStrings,
@@ -274,12 +278,17 @@ func (r *containerRegistryResource) Delete(ctx context.Context, req resource.Del
 }
 
 func expandContainerRegistryBuilder(d, config *containerRegistryResourceModel, c *common.APIClient, settingsHash string) *registryBuilder.Builder {
+	accessLevel := iaastypes.ContainerRegistryAccessLevels.None
+	if !d.AccessLevel.IsNull() && !d.AccessLevel.IsUnknown() {
+		accessLevel = iaastypes.EContainerRegistryAccessLevel(d.AccessLevel.ValueString())
+	}
+
 	return &registryBuilder.Builder{
 		Name:           d.Name.ValueString(),
 		Description:    d.Description.ValueString(),
 		Tags:           common.TsetToStrings(d.Tags),
 		IconID:         common.SakuraCloudID(d.IconID.ValueString()),
-		AccessLevel:    iaastypes.EContainerRegistryAccessLevel(d.AccessLevel.ValueString()),
+		AccessLevel:    accessLevel,
 		VirtualDomain:  d.VirtualDomain.ValueString(),
 		SubDomainLabel: d.SubDomainLabel.ValueString(),
 		Users:          expandContainerRegistryUsers(d.User, config.User),
