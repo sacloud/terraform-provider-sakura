@@ -221,7 +221,10 @@ func (c *Config) FillWithDefault() {
 }
 
 func (c *Config) LoadFromProfile() (*Config, error) {
-	profileOp := saclient.NewProfileOp(os.Environ())
+	profileOp, err := saclient.NewProfileOp(os.Environ())
+	if err != nil {
+		return nil, fmt.Errorf("failed to initialize profile operator: %s", err)
+	}
 	var attrs map[string]any
 	if c.Profile == "" {
 		if name, err := profileOp.GetCurrentName(); err != nil {

@@ -337,7 +337,10 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 	for _, tt := range cases {
 		t.Run(tt.scenario, func(t *testing.T) {
 			initTestProfileDir()
-			profileOp := saclient.NewProfileOp(os.Environ())
+			profileOp, err := saclient.NewProfileOp(os.Environ())
+			if err != nil {
+				t.Fatal(err)
+			}
 
 			for _, profileValue := range tt.profiles {
 				if err := profileOp.Create(profileValue); err != nil {
