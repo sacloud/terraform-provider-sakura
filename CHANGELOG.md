@@ -1,5 +1,19 @@
 # Changelog
 
+## [v3.12.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.1...v3.12.2) - 2026-06-17
+
+- fix(secret_manager): support composite ID for import and add tests by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/253
+- fix(simple_monitor): fix nil panic on import and add import test verification by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/255
+- Add terraform version notice and regenerate docs by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/260
+- fix(webaccel): support import for webaccel bucket origin by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/262
+- fix(vpn_router): set Version in updateState during Read/Import by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/257
+- test: add import verification tests for v2-compatible resources by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/251
+- update monitoring-suite-api-go to fix #261 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/263
+- deprecate: mark container_registry access_level as deprecated by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/264
+- ci: bump actions/checkout from 6.0.2 to 6.0.3 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/252
+- ci: bump Songmu/tagpr from 1.19.0 to 1.20.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/250
+- go: Bump the sacloud group across 1 directory with 5 updates by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/246
+
 ## [v3.12.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.0...v3.12.1) - 2026-06-08
 - Update apprun_shared test by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/245
 - Fix KMS resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/249
