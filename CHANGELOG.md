@@ -1,5 +1,10 @@
 # Changelog
 
+## [v3.12.3](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.2...v3.12.3) - 2026-06-22
+
+- Use OndemandDB hostname from state in plan by @x-color in https://github.com/sacloud/terraform-provider-sakura/pull/267
+- go: Bump github.com/sacloud/apprun-api-go from 0.8.1 to 0.8.2 in the sacloud group by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/268
+
 ## [v3.12.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.1...v3.12.2) - 2026-06-17
 
 - fix(secret_manager): support composite ID for import and add tests by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/253
