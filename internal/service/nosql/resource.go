@@ -34,6 +34,7 @@ import (
 	v1 "github.com/sacloud/nosql-api-go/apis/v1"
 	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -564,6 +565,35 @@ func (r *nosqlResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	state.updateState(data)
+	// for import
+	if !utils.IsKnown(state.VSwitchID) {
+		for _, iface := range data.Interfaces {
+			if v, ok := iface.Get(); ok {
+				state.VSwitchID = types.StringValue(v.Switch.Value.ID.Value)
+				break
+			}
+		}
+	}
+	if !utils.IsKnown(state.Parameters) {
+		params := make(map[string]string)
+		iOp := nosql.NewInstanceOp(r.client, sid, state.Zone.ValueString())
+		nosqlParameters, err := iOp.GetParameters(ctx)
+		if err != nil {
+			resp.Diagnostics.AddWarning("Read: API Error", fmt.Sprintf("failed to get parameters for NoSQL[%s]. Set null to parameters attribute: %s", sid, err))
+			state.Parameters = types.MapNull(types.StringType)
+		} else {
+			for _, v := range nosqlParameters {
+				if v.SettingValue.Value != "" {
+					params[v.SettingItem] = v.SettingValue.Value
+				}
+			}
+			if len(params) == 0 {
+				state.Parameters = types.MapNull(types.StringType)
+			} else {
+				state.Parameters = common.StrMapToTmap(params)
+			}
+		}
+	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
