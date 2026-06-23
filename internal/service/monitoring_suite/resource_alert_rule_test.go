@@ -71,6 +71,62 @@ func TestAccSakuraMonitoringSuiteAlertRule_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraMonitoringSuiteAlertRule_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
+	resourceName := "sakura_monitoring_suite_alert_rule.foobar"
+	rand := test.RandomName()
+	sId := os.Getenv("SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"name":                        rand,
+			"metric_storage_id":           sId,
+			"query":                       "count_values",
+			"enabled_warning":             "true",
+			"enabled_critical":            "true",
+			"threshold_warning":           ">=10",
+			"threshold_critical":          ">=20",
+			"threshold_duration_warning":  "600",
+			"threshold_duration_critical": "600",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0], "open")
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraMonitoringSuiteAlertRuleDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertRule_basic, rand, sId),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateCheck:  checkFn,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s_%s", rs.Primary.Attributes["alert_project_id"], rs.Primary.Attributes["id"]), nil
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraMonitoringSuiteAlertRuleDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	op := monitoringsuite.NewAlertRuleOp(client.MonitoringSuiteClient)

@@ -55,6 +55,53 @@ func TestAccSakuraMonitoringSuiteAlertNotificationTarget_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraMonitoringSuiteAlertNotificationTarget_basic(t *testing.T) {
+	resourceName := "sakura_monitoring_suite_alert_notification_target.foobar"
+	rand := test.RandomName()
+
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"service_type": "simple_notification",
+			"url":          "https://example.com/notify",
+			"description":  "notification-target",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0], "config")
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraMonitoringSuiteAlertNotificationTargetDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertNotificationTarget_basic, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateCheck:  checkFn,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s_%s", rs.Primary.Attributes["alert_project_id"], rs.Primary.Attributes["id"]), nil
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraMonitoringSuiteAlertNotificationTargetDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	op := monitoringsuite.NewNotificationTargetOp(client.MonitoringSuiteClient)
