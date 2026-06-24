@@ -14,9 +14,11 @@ Terraform 自体については [Terraform の公式ドキュメント](https://
 
 ## v2 からのマイグレーション
 
-[Terraform Provider for さくらのクラウド v2](https://github.com/sacloud/terraform-provider-sakuracloud) と *Terraform Provider for さくらのクラウド v3* には
-互換性がありません。
+> [!IMPORTANT]
+> [Terraform Provider for さくらのクラウド v2](https://github.com/sacloud/terraform-provider-sakuracloud) は **2026年12月末をもってメンテナンスを終了**します。
+> 詳細は [Terraform Provider v2 メンテナンス終了のお知らせ](https://cloud.sakura.ad.jp/news/2026/06/23/terraform-provider-v2-end-of-maintenance/) をご覧ください。
 
+v2 と *Terraform Provider for さくらのクラウド v3* には互換性がありません。  
 v3 における変更点は [CHANGES.md](./CHANGES.md) をご覧ください。
 
 ## v3 のリソース対応状況
@@ -27,7 +29,9 @@ v3 における変更点は [CHANGES.md](./CHANGES.md) をご覧ください。
 
 ### v2からの移植
 
-以下のリソースは未移植です。必要な場合はv2との併用を検討してください。
+> [!IMPORTANT]
+> 以下のリソースは v3 では未移植です。これらを利用している場合は、v3 への移行にあたってそれらのリソースをどう扱うかを検討してください。  
+> 例えば、コントロールパネルや API など別の方法で管理する、またはリスクを踏まえたうえで v2 を一時的に利用し続けるなどを検討してください。
 
 - archive_share
 - certificate_authority
