@@ -203,7 +203,7 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 							PlanModifiers:       []planmodifier.Set{setplanmodifier.RequiresReplace()},
 						},
 						"health_check": schema.SingleNestedAttribute{
-							Required:    true,
+							Optional:    true,
 							Description: "Health check configuration",
 							Attributes: map[string]schema.Attribute{
 								"path": schema.StringAttribute{

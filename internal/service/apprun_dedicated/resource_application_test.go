@@ -142,13 +142,8 @@ resource "sakura_apprun_dedicated_version" "main" {
 
   exposed_ports = [
     {
-      target_port        = 80
-	  lb_port            = null
-      health_check       = {
-        path             = "/"
-        interval_seconds = 10
-        timeout_seconds  = 5
-      }
+      target_port = 80
+      lb_port     = null
     }
   ]
 }
@@ -171,13 +166,8 @@ resource "sakura_apprun_dedicated_version" "main" {
 
   exposed_ports = [
     {
-      target_port        = 80
-	  lb_port            = null
-      health_check       = {
-        path             = "/"
-        interval_seconds = 10
-        timeout_seconds  = 5
-      }
+      target_port = 80
+      lb_port     = null
     }
   ]
 }
@@ -200,13 +190,8 @@ resource "sakura_apprun_dedicated_version" "main" {
 
   exposed_ports = [
     {
-      target_port        = 80
-	  lb_port            = null
-      health_check       = {
-        path             = "/"
-        interval_seconds = 10
-        timeout_seconds  = 5
-      }
+      target_port = 80
+      lb_port     = null
     }
   ]
 }

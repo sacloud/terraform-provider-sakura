@@ -49,11 +49,7 @@ func TestAccSakuraResourceApprunDedicatedVersion(t *testing.T) {
 								"lb_port":          knownvalue.Null(),
 								"use_lets_encrypt": knownvalue.Bool(false),
 								"host":             knownvalue.Null(),
-								"health_check": knownvalue.ObjectExact(map[string]knownvalue.Check{
-									"path":             knownvalue.StringExact("/"),
-									"interval_seconds": knownvalue.Int32Exact(10),
-									"timeout_seconds":  knownvalue.Int32Exact(5),
-								}),
+								"health_check":     knownvalue.Null(),
 							}),
 						})),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("env_vars"), knownvalue.ListExact([]knownvalue.Check{
@@ -146,13 +142,9 @@ resource "sakura_apprun_dedicated_version" "main" {
 
   exposed_ports = [
     {
-      target_port  = 80
-      lb_port      = null
-      health_check = {
-        path             = "/"
-        interval_seconds = 10
-        timeout_seconds  = 5
-      }
+      target_port = 80
+      lb_port     = null
+      # health_check is optional and omitted here.
     }
   ]
 
