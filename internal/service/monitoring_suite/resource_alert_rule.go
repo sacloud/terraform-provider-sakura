@@ -134,7 +134,7 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 func (r *alertRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	parts := strings.SplitN(req.ID, "_", 2)
 	if len(parts) != 2 {
-		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: <alert_project_id>_<uid>")
+		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: {alert_project_id}_{id}")
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("alert_project_id"), parts[0])...)
@@ -166,7 +166,7 @@ func (r *alertRuleResource) Create(ctx context.Context, req resource.CreateReque
 		ThresholdDurationCritical: expandOptionalInt64(plan.ThresholdDurationCritical),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Alert Project: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Alert Rule: %s", err))
 		return
 	}
 

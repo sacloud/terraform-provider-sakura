@@ -1,0 +1,2 @@
+# Specify the ID in the format of {alert_project_id}_{id}: e.g. "112345678901_123e4567-e89b-12d3-a456-426614174000"
+terraform import sakura_monitoring_suite_alert_notification_routing.foo '{alert_project_id}_{id}'

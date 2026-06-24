@@ -110,7 +110,7 @@ func (r *alertNotificationRoutingResource) Schema(ctx context.Context, _ resourc
 func (r *alertNotificationRoutingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	parts := strings.SplitN(req.ID, "_", 2)
 	if len(parts) != 2 {
-		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: <alert_project_id>_<uid>")
+		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: {alert_project_id}_{id}")
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("alert_project_id"), parts[0])...)
