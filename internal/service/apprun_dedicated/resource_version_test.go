@@ -91,8 +91,6 @@ func TestAccSakuraResourceApprunDedicatedVersion(t *testing.T) {
 		})
 	})
 
-	// Regression for the nil pointer panic: a port whose health_check is omitted is
-	// read back with HealthCheck=nil and must not crash the provider.
 	t.Run("without_health_check", func(t *testing.T) {
 		resourceName := "sakura_apprun_dedicated_version.main"
 		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
@@ -175,8 +173,8 @@ resource "sakura_apprun_dedicated_version" "main" {
 
   exposed_ports = [
     {
-      target_port = 80
-      lb_port     = null
+      target_port  = 80
+      lb_port      = null
       health_check = {
         path             = "/"
         interval_seconds = 10
