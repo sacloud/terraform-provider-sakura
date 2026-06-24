@@ -23,6 +23,33 @@ func TestExposedPortModelUpdateStateNilHealthCheck(t *testing.T) {
 	}
 }
 
+// A configured health_check is mapped into every field on read.
+func TestExposedPortModelUpdateStateWithHealthCheck(t *testing.T) {
+	var p exposedPortModel
+
+	p.updateState(version.ExposedPort{
+		TargetPort: v1.Port(80),
+		HealthCheck: &v1.HealthCheck{
+			Path:            "/healthz",
+			IntervalSeconds: 10,
+			TimeoutSeconds:  5,
+		},
+	})
+
+	if p.HealthCheck == nil {
+		t.Fatal("HealthCheck should be populated when the API returns it")
+	}
+	if got := p.HealthCheck.Path.ValueString(); got != "/healthz" {
+		t.Fatalf("Path = %q, want %q", got, "/healthz")
+	}
+	if got := p.HealthCheck.IntervalSeconds.ValueInt32(); got != 10 {
+		t.Fatalf("IntervalSeconds = %d, want 10", got)
+	}
+	if got := p.HealthCheck.TimeoutSeconds.ValueInt32(); got != 5 {
+		t.Fatalf("TimeoutSeconds = %d, want 5", got)
+	}
+}
+
 // health_check is optional, so an omitted block must not panic on create.
 func TestExposedPortModelIntoCreateNilHealthCheck(t *testing.T) {
 	p := exposedPortModel{TargetPort: types.Int32Value(80)}

@@ -144,6 +144,11 @@ resource "sakura_apprun_dedicated_version" "main" {
     {
       target_port = 80
       lb_port     = null
+      health_check = {
+        path             = "/"
+        interval_seconds = 10
+        timeout_seconds  = 5
+      }
     }
   ]
 }
@@ -168,6 +173,11 @@ resource "sakura_apprun_dedicated_version" "main" {
     {
       target_port = 80
       lb_port     = null
+      health_check = {
+        path             = "/"
+        interval_seconds = 10
+        timeout_seconds  = 5
+      }
     }
   ]
 }
@@ -192,6 +202,11 @@ resource "sakura_apprun_dedicated_version" "main" {
     {
       target_port = 80
       lb_port     = null
+      health_check = {
+        path             = "/"
+        interval_seconds = 10
+        timeout_seconds  = 5
+      }
     }
   ]
 }
