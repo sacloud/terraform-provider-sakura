@@ -2,7 +2,7 @@
 
 ## terraform-plugin-frameworkによる書き換え
 
-現在リリースされているv2はSDK v2を利用していますが、v3はFrameworkを利用しています。
+v2はSDK v2を利用していましたが、v3はFrameworkを利用しています。
 muxなどの互換レイヤーも使っておらず、完全移行となります。
 
 ## 命名の変更
