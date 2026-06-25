@@ -1,5 +1,13 @@
 # Changelog
 
+## [v3.12.4](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.3...v3.12.4) - 2026-06-25
+
+- nosql: fix Read method for import by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/270
+- docs: announce v2 end-of-maintenance and update migration notes by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/274
+- monitoring_suite: fix import of alert resources by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/272
+- apprun_dedicated: fix nil pointer panic by @DCS-koyano in https://github.com/sacloud/terraform-provider-sakura/pull/275
+- go: Bump github.com/sacloud/iaas-api-go from 1.29.1 to 1.29.2 in the sacloud group by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/277
+
 ## [v3.12.3](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.2...v3.12.3) - 2026-06-22
 
 - Use OndemandDB hostname from state in plan by @x-color in https://github.com/sacloud/terraform-provider-sakura/pull/267
