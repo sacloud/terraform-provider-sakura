@@ -99,6 +99,61 @@ func TestAccSakuraMonitoringSuiteAlertLogMeasureRule_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraMonitoringSuiteAlertLogMeasureRule_basic(t *testing.T) {
+
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID", "SAKURA_MONITORING_SUITE_LOG_STORAGE_ID")
+
+	resourceName := "sakura_monitoring_suite_alert_log_measure_rule.foobar"
+	name := strings.ToLower(test.RandomName())
+	lsId := os.Getenv("SAKURA_MONITORING_SUITE_LOG_STORAGE_ID")
+	msId := os.Getenv("SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"name":              name,
+			"description":       "description",
+			"log_storage_id":    lsId,
+			"metric_storage_id": msId,
+			"rule.version":      "v1",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0], "alert_project_id", "created_at", "updated_at", "id")
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraMonitoringSuiteAlertLogMeasureRuleDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertLogMeasureRule_basic, name, lsId, msId),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateCheck:        checkFn,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"rule.query.matchers"}, // matchersはjsonの比較でdiffが出る可能性があるため、import時の検証から除外する
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s_%s", rs.Primary.Attributes["alert_project_id"], rs.Primary.Attributes["id"]), nil
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraMonitoringSuiteAlertLogMeasureRuleDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	op := monitoringsuite.NewLogMeasureRuleOp(client.MonitoringSuiteClient)

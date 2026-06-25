@@ -93,6 +93,54 @@ func TestAccSakuraMonitoringSuiteAlertNotificationRouting_emptyMatchLabels(t *te
 	})
 }
 
+func TestAccImportSakuraMonitoringSuiteAlertNotificationRouting_basic(t *testing.T) {
+	resourceName := "sakura_monitoring_suite_alert_notification_routing.foobar"
+	rand := test.RandomName()
+
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"resend_interval_minutes": "10",
+			"match_labels.#":          "1",
+			"match_labels.0.name":     "name1",
+			"match_labels.0.value":    "value1",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0], "alert_project_id", "notification_target_id", "order")
+	}
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraMonitoringSuiteAlertNotificationRoutingDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertNotificationRouting_basic, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateCheck:  checkFn,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s_%s", rs.Primary.Attributes["alert_project_id"], rs.Primary.Attributes["id"]), nil
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraMonitoringSuiteAlertNotificationRoutingDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	op := monitoringsuite.NewNotificationRoutingOp(client.MonitoringSuiteClient)
