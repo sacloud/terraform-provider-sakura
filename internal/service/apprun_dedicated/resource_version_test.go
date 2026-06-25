@@ -114,6 +114,21 @@ func TestAccSakuraResourceApprunDedicatedVersion(t *testing.T) {
 						})),
 					},
 				},
+				{
+					ResourceName:            resourceName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"timeouts", "registry_password"},
+					ImportStateIdFunc: func(s *terraform.State) (string, error) {
+						rs, ok := s.RootModule().Resources[resourceName]
+						if !ok {
+							return "", fmt.Errorf("not found: %s", resourceName)
+						}
+						appID := rs.Primary.Attributes["application_id"]
+						version := rs.Primary.Attributes["version"]
+						return fmt.Sprintf("%s/%s", appID, version), nil
+					},
+				},
 			},
 		})
 	})
