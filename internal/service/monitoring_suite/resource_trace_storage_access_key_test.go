@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -18,8 +19,10 @@ import (
 )
 
 func TestAccSakuraMonitoringSuiteTraceStorageAccessKey_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_TRACE_STORAGE_ID")
+
 	resourceName := "sakura_monitoring_suite_trace_storage_access_key.foobar"
-	rand := test.RandomName()
+	id := os.Getenv("SAKURA_MONITORING_SUITE_TRACE_STORAGE_ID")
 
 	var key monitoringsuiteapi.TraceStorageAccessKey
 	resource.Test(t, resource.TestCase{
@@ -28,23 +31,23 @@ func TestAccSakuraMonitoringSuiteTraceStorageAccessKey_basic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraMonitoringSuiteTraceStorageAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteTraceStorageAccessKey_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteTraceStorageAccessKey_basic, id),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraMonitoringSuiteTraceStorageAccessKeyExists(resourceName, &key),
 					resource.TestCheckResourceAttr(resourceName, "description", "access-key"),
 					resource.TestCheckResourceAttrSet(resourceName, "token"),
 					resource.TestCheckResourceAttrSet(resourceName, "secret"),
-					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "sakura_monitoring_suite_trace_storage.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "data.sakura_monitoring_suite_trace_storage.foobar", "id"),
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteTraceStorageAccessKey_update, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteTraceStorageAccessKey_update, id),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraMonitoringSuiteTraceStorageAccessKeyExists(resourceName, &key),
 					resource.TestCheckResourceAttr(resourceName, "description", "access-key-updated"),
 					resource.TestCheckResourceAttrSet(resourceName, "token"),
 					resource.TestCheckResourceAttrSet(resourceName, "secret"),
-					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "sakura_monitoring_suite_trace_storage.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "data.sakura_monitoring_suite_trace_storage.foobar", "id"),
 				),
 			},
 		},
@@ -119,25 +122,23 @@ func testCheckSakuraMonitoringSuiteTraceStorageAccessKeyExists(n string, key *mo
 }
 
 var testAccSakuraMonitoringSuiteTraceStorageAccessKey_basic = `
-resource "sakura_monitoring_suite_trace_storage" "foobar" {
-  name = "{{ .arg0 }}"
-  description = "description"
+data "sakura_monitoring_suite_trace_storage" "foobar" {
+  id = "{{ .arg0 }}"
 }
 
 resource "sakura_monitoring_suite_trace_storage_access_key" "foobar" {
-  storage_id = sakura_monitoring_suite_trace_storage.foobar.id
+  storage_id = data.sakura_monitoring_suite_trace_storage.foobar.id
   description = "access-key"
 }
 `
 
 var testAccSakuraMonitoringSuiteTraceStorageAccessKey_update = `
-resource "sakura_monitoring_suite_trace_storage" "foobar" {
-  name = "{{ .arg0 }}"
-  description = "description"
+data "sakura_monitoring_suite_trace_storage" "foobar" {
+  id = "{{ .arg0 }}"
 }
 
 resource "sakura_monitoring_suite_trace_storage_access_key" "foobar" {
-  storage_id = sakura_monitoring_suite_trace_storage.foobar.id
+  storage_id = data.sakura_monitoring_suite_trace_storage.foobar.id
   description = "access-key-updated"
 }
 `
