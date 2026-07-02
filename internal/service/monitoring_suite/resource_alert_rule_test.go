@@ -71,6 +71,76 @@ func TestAccSakuraMonitoringSuiteAlertRule_basic(t *testing.T) {
 	})
 }
 
+func TestAccSakuraMonitoringSuiteAlertRule_onlyWarning(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
+	resourceName := "sakura_monitoring_suite_alert_rule.foobar"
+	rand := test.RandomName()
+	sId := os.Getenv("SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
+	var alertRule monitoringsuiteapi.AlertRule
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraMonitoringSuiteAlertRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertRule_onlyWarning, rand, sId),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraMonitoringSuiteAlertRuleExists(resourceName, &alertRule),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttrSet(resourceName, "open"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
+					resource.TestCheckResourceAttr(resourceName, "metric_storage_id", sId),
+					resource.TestCheckResourceAttr(resourceName, "query", "count_values"),
+					resource.TestCheckResourceAttr(resourceName, "enabled_warning", "true"),
+					resource.TestCheckResourceAttr(resourceName, "enabled_critical", "false"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_warning", ">=10"),
+					resource.TestCheckNoResourceAttr(resourceName, "threshold_critical"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_duration_warning", "600"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_duration_critical", "120"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraMonitoringSuiteAlertRule_onlyCritical(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
+	resourceName := "sakura_monitoring_suite_alert_rule.foobar"
+	rand := test.RandomName()
+	sId := os.Getenv("SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
+	var alertRule monitoringsuiteapi.AlertRule
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraMonitoringSuiteAlertRuleDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteAlertRule_onlyCritical, rand, sId),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraMonitoringSuiteAlertRuleExists(resourceName, &alertRule),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttrSet(resourceName, "id"),
+					resource.TestCheckResourceAttrSet(resourceName, "open"),
+					resource.TestCheckResourceAttrPair(resourceName, "alert_project_id", "sakura_monitoring_suite_alert_project.foobar", "id"),
+					resource.TestCheckResourceAttr(resourceName, "metric_storage_id", sId),
+					resource.TestCheckResourceAttr(resourceName, "query", "count_values"),
+					resource.TestCheckResourceAttr(resourceName, "enabled_warning", "false"),
+					resource.TestCheckResourceAttr(resourceName, "enabled_critical", "true"),
+					resource.TestCheckNoResourceAttr(resourceName, "threshold_warning"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_critical", ">=20"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_duration_warning", "120"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_duration_critical", "600"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccImportSakuraMonitoringSuiteAlertRule_basic(t *testing.T) {
 	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
 
@@ -212,5 +282,39 @@ resource "sakura_monitoring_suite_alert_rule" "foobar" {
   threshold_critical = ">=40"
   threshold_duration_warning = 600
   threshold_duration_critical = 1200
+}
+`
+
+var testAccSakuraMonitoringSuiteAlertRule_onlyWarning = `
+resource "sakura_monitoring_suite_alert_project" "foobar" {
+  name = "{{ .arg0 }}"
+  description = "description"
+}
+
+resource "sakura_monitoring_suite_alert_rule" "foobar" {
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
+  metric_storage_id = {{ .arg1 }}
+  name = "{{ .arg0 }}"
+  query = "count_values"
+  enabled_warning = true
+  threshold_warning = ">=10"
+  threshold_duration_warning = 600
+}
+`
+
+var testAccSakuraMonitoringSuiteAlertRule_onlyCritical = `
+resource "sakura_monitoring_suite_alert_project" "foobar" {
+  name = "{{ .arg0 }}"
+  description = "description"
+}
+
+resource "sakura_monitoring_suite_alert_rule" "foobar" {
+  alert_project_id = sakura_monitoring_suite_alert_project.foobar.id
+  metric_storage_id = {{ .arg1 }}
+  name = "{{ .arg0 }}"
+  query = "count_values"
+  enabled_critical = true
+  threshold_critical = ">=20"
+  threshold_duration_critical = 600
 }
 `

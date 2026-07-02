@@ -91,14 +91,17 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"enabled_warning": schema.BoolAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Whether to enable warning level of the Alert Rule.",
 			},
 			"enabled_critical": schema.BoolAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "Whether to enable critical level of the Alert Rule.",
 			},
 			"threshold_warning": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The threshold of warning level of the Alert Rule.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(256),
@@ -106,6 +109,7 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"threshold_critical": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The threshold of critical level of the Alert Rule.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtMost(256),
@@ -113,10 +117,12 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"threshold_duration_warning": schema.Int64Attribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The threshold duration (in seconds) of warning level of the Alert Rule.",
 			},
 			"threshold_duration_critical": schema.Int64Attribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The threshold duration (in seconds) of critical level of the Alert Rule.",
 			},
 			"open": schema.BoolAttribute{
