@@ -104,7 +104,7 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 				Computed:    true,
 				Description: "The threshold of warning level of the Alert Rule.",
 				Validators: []validator.String{
-					stringvalidator.LengthAtMost(256),
+					stringvalidator.LengthBetween(1, 256),
 				},
 			},
 			"threshold_critical": schema.StringAttribute{
@@ -112,7 +112,7 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 				Computed:    true,
 				Description: "The threshold of critical level of the Alert Rule.",
 				Validators: []validator.String{
-					stringvalidator.LengthAtMost(256),
+					stringvalidator.LengthBetween(1, 256),
 				},
 			},
 			"threshold_duration_warning": schema.Int64Attribute{

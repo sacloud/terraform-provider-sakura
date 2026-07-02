@@ -43,8 +43,8 @@ func TestAccSakuraMonitoringSuiteAlertRule_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "query", "count_values"),
 					resource.TestCheckResourceAttr(resourceName, "enabled_warning", "true"),
 					resource.TestCheckResourceAttr(resourceName, "enabled_critical", "true"),
-					resource.TestCheckResourceAttr(resourceName, "threshold_warning", ">=10"),
-					resource.TestCheckResourceAttr(resourceName, "threshold_critical", ">=20"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_warning", ">= 10"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_critical", ">= 20"),
 					resource.TestCheckResourceAttr(resourceName, "threshold_duration_warning", "600"),
 					resource.TestCheckResourceAttr(resourceName, "threshold_duration_critical", "600"),
 				),
@@ -61,8 +61,8 @@ func TestAccSakuraMonitoringSuiteAlertRule_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "query", "group"),
 					resource.TestCheckResourceAttr(resourceName, "enabled_warning", "true"),
 					resource.TestCheckResourceAttr(resourceName, "enabled_critical", "false"),
-					resource.TestCheckResourceAttr(resourceName, "threshold_warning", ">=10"),
-					resource.TestCheckResourceAttr(resourceName, "threshold_critical", ">=40"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_warning", ">= 10"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_critical", ">= 40"),
 					resource.TestCheckResourceAttr(resourceName, "threshold_duration_warning", "600"),
 					resource.TestCheckResourceAttr(resourceName, "threshold_duration_critical", "1200"),
 				),
@@ -96,7 +96,7 @@ func TestAccSakuraMonitoringSuiteAlertRule_onlyWarning(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "query", "count_values"),
 					resource.TestCheckResourceAttr(resourceName, "enabled_warning", "true"),
 					resource.TestCheckResourceAttr(resourceName, "enabled_critical", "false"),
-					resource.TestCheckResourceAttr(resourceName, "threshold_warning", ">=10"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_warning", ">= 10"),
 					resource.TestCheckNoResourceAttr(resourceName, "threshold_critical"),
 					resource.TestCheckResourceAttr(resourceName, "threshold_duration_warning", "600"),
 					resource.TestCheckResourceAttr(resourceName, "threshold_duration_critical", "120"),
@@ -132,7 +132,7 @@ func TestAccSakuraMonitoringSuiteAlertRule_onlyCritical(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "enabled_warning", "false"),
 					resource.TestCheckResourceAttr(resourceName, "enabled_critical", "true"),
 					resource.TestCheckNoResourceAttr(resourceName, "threshold_warning"),
-					resource.TestCheckResourceAttr(resourceName, "threshold_critical", ">=20"),
+					resource.TestCheckResourceAttr(resourceName, "threshold_critical", ">= 20"),
 					resource.TestCheckResourceAttr(resourceName, "threshold_duration_warning", "120"),
 					resource.TestCheckResourceAttr(resourceName, "threshold_duration_critical", "600"),
 				),
@@ -158,8 +158,8 @@ func TestAccImportSakuraMonitoringSuiteAlertRule_basic(t *testing.T) {
 			"query":                       "count_values",
 			"enabled_warning":             "true",
 			"enabled_critical":            "true",
-			"threshold_warning":           ">=10",
-			"threshold_critical":          ">=20",
+			"threshold_warning":           ">= 10",
+			"threshold_critical":          ">= 20",
 			"threshold_duration_warning":  "600",
 			"threshold_duration_critical": "600",
 		}
@@ -258,8 +258,8 @@ resource "sakura_monitoring_suite_alert_rule" "foobar" {
   query = "count_values"
   enabled_warning = true
   enabled_critical = true
-  threshold_warning = ">=10"
-  threshold_critical = ">=20"
+  threshold_warning = ">= 10"
+  threshold_critical = ">= 20"
   threshold_duration_warning = 600
   threshold_duration_critical = 600
 }
@@ -278,8 +278,8 @@ resource "sakura_monitoring_suite_alert_rule" "foobar" {
   query = "group"
   enabled_warning = true
   enabled_critical = false
-  threshold_warning = ">=10"
-  threshold_critical = ">=40"
+  threshold_warning = ">= 10"
+  threshold_critical = ">= 40"
   threshold_duration_warning = 600
   threshold_duration_critical = 1200
 }
@@ -297,7 +297,7 @@ resource "sakura_monitoring_suite_alert_rule" "foobar" {
   name = "{{ .arg0 }}"
   query = "count_values"
   enabled_warning = true
-  threshold_warning = ">=10"
+  threshold_warning = ">= 10"
   threshold_duration_warning = 600
 }
 `
@@ -314,7 +314,7 @@ resource "sakura_monitoring_suite_alert_rule" "foobar" {
   name = "{{ .arg0 }}"
   query = "count_values"
   enabled_critical = true
-  threshold_critical = ">=20"
+  threshold_critical = ">= 20"
   threshold_duration_critical = 600
 }
 `
