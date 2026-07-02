@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	monitoringsuite "github.com/sacloud/monitoring-suite-api-go"
@@ -92,11 +93,13 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			"enabled_warning": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "Whether to enable warning level of the Alert Rule.",
 			},
 			"enabled_critical": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "Whether to enable critical level of the Alert Rule.",
 			},
 			"threshold_warning": schema.StringAttribute{
