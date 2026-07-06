@@ -1,5 +1,14 @@
 # Changelog
 
+## [v3.12.5](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.4...v3.12.5) - 2026-07-06
+
+- test: remove access_level from container_registry tests by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/278
+- monitoring_suite: use pre-created storage to reduce resource consumption in test by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/280
+- monitoring_suite: Fix alert_rule resource and examples by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/282
+- ci: Bump actions/setup-go from 6.4.0 to 6.5.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/281
+- ci: Bump goreleaser/goreleaser-action from 7.2.2 to 7.2.3 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/283
+- go: Bump github.com/minio/minio-go/v7 from 7.2.0 to 7.2.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/284
+
 ## [v3.12.4](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.3...v3.12.4) - 2026-06-25
 
 - nosql: fix Read method for import by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/270
