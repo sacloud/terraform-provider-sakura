@@ -1,6 +1,6 @@
 module github.com/sacloud/terraform-provider-sakura
 
-go 1.25.8
+go 1.26
 
 require (
 	github.com/goccy/go-yaml v1.19.2
@@ -14,7 +14,7 @@ require (
 	github.com/hashicorp/terraform-plugin-go v0.31.0
 	github.com/hashicorp/terraform-plugin-log v0.10.0
 	github.com/hashicorp/terraform-plugin-testing v1.16.0
-	github.com/jlaffaye/ftp v0.2.0
+	github.com/jlaffaye/ftp v0.2.1
 	github.com/minio/minio-go/v7 v7.2.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sacloud/addon-api-go v0.1.0
