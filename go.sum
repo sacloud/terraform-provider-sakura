@@ -274,8 +274,8 @@ github.com/sacloud/secretmanager-api-go v0.4.1 h1:uvQExqhbsdRmp5oTk9BNg9Vu2rzM2O
 github.com/sacloud/secretmanager-api-go v0.4.1/go.mod h1:9ONYBiZmRoG42N6ka6iwy5zRtjwHbH4bl9P6zL4Ei5A=
 github.com/sacloud/security-control-api-go v0.3.0 h1:JsLVgT8EsU5sOiqPmk7v0VvxzXKZo8V1UbJDMrQql7w=
 github.com/sacloud/security-control-api-go v0.3.0/go.mod h1:SB9gu4NcDqY5FGjtAlh4T8iynkbnWGF2es2UUW0X6gc=
-github.com/sacloud/service-endpoint-gateway-api-go v0.1.2 h1:bgfAat3nvM411r5ws2Ui2lIoraDqypY6t0WAuqx52DY=
-github.com/sacloud/service-endpoint-gateway-api-go v0.1.2/go.mod h1:A2z0RO3RHLb681imeTwoWt67RQRac3YHEclbEMybvAI=
+github.com/sacloud/service-endpoint-gateway-api-go v0.2.0 h1:ZEm+OBql0USW+km8/lTHnq22CP4MVRPAttvazO8xb2M=
+github.com/sacloud/service-endpoint-gateway-api-go v0.2.0/go.mod h1:4HwGU604+xF0TNIrvs4GZuHsCH3LhhToOfsgpksc5aE=
 github.com/sacloud/simple-notification-api-go v0.3.1 h1:m44N9/qkh19WPcCVS0HMX40rOcpcLqt9fQlXeUKVi/8=
 github.com/sacloud/simple-notification-api-go v0.3.1/go.mod h1:PPrg9hFZn3Fv802Q8ki8k+nYjqPNPr5jaCx5swGhK9c=
 github.com/sacloud/simplemq-api-go v0.5.1 h1:yi/Eok5mElsBE/Iaq3p176/5/Na8ryEwJXXtWSZXT5Y=
