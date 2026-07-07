@@ -139,11 +139,11 @@ func (r *segResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 						Description: "The flag to enable DNS forwarding on the Service Endpoint Gateway",
 					},
 					"private_hosted_zone": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						Description: "The private hosted zone name for DNS forwarding",
 					},
 					"dns_servers": schema.ListAttribute{
-						Required:    true,
+						Optional:    true,
 						ElementType: types.StringType,
 						Description: "The name of upstream DNS servers for DNS forwarding",
 						Validators: []validator.List{
