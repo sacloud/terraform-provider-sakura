@@ -118,6 +118,14 @@ func flattenDNSForwarding(setting v1.NilModelsSettingsApplianceSettings) types.O
 		Enabled:           types.BoolValue(dnsForwarding.Enabled == v1.ModelsSettingsDNSForwardingSettingsEnabledTrue),
 		PrivateHostedZone: intoStringType(dnsForwarding.PrivateHostedZone),
 		DNSServers: func(a ...v1.OptString) types.List {
+			for _, v := range a {
+				if v.IsSet() {
+					goto legit
+				}
+			}
+			return types.ListNull(types.StringType)
+
+		legit:
 			b := common.MapTo(a, intoStringType)
 			c, d := types.ListValueFrom(context.Background(), types.StringType, b)
 
