@@ -78,15 +78,7 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[resourceName]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", resourceName)
-					}
-					zone := rs.Primary.Attributes["zone"]
-					id := rs.Primary.Attributes["id"]
-					return fmt.Sprintf("%s/%s", zone, id), nil
-				},
+				ImportStateIdFunc: testGetImportSpecificationFromState(t, resourceName),
 			},
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraSEGUpdate, rand, objectStorageEndpoint1),
@@ -131,6 +123,7 @@ func TestAccSakuraSEG_NoDNS(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
+				ImportStateIdFunc: testGetImportSpecificationFromState(t, resourceName),
 			},
 		},
 	})
@@ -206,6 +199,20 @@ func testGetClientFromState(s *terraform.State) (*v1.Client, error) {
 		return service_endpoint_gateway.NewClient(clientAPI)
 	}
 	return nil, errors.New("Service Endpoint Gateway resource not found in state")
+}
+
+func testGetImportSpecificationFromState(t *testing.T, resourceName string) resource.ImportStateIdFunc {
+	t.Helper()
+
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("not found: %s", resourceName)
+		}
+		zone := rs.Primary.Attributes["zone"]
+		id := rs.Primary.Attributes["id"]
+		return fmt.Sprintf("%s/%s", zone, id), nil
+	}
 }
 
 const testAccSakuraSEGBasic = `
