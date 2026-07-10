@@ -90,6 +90,38 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 	})
 }
 
+func TestAccSakuraSEG_NoDNS(t *testing.T) {
+	resourceName := "sakura_seg.foobar"
+
+	test.SkipIfEnvIsNotSet(t, envSEGObjectStorageEndpoint1, envSEGObjectStorageEndpoint2)
+	rand := test.RandomName()
+	objectStorageEndpoint1 := os.Getenv(envSEGObjectStorageEndpoint1)
+	objectStorageEndpoint2 := os.Getenv(envSEGObjectStorageEndpoint2)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             resource.ComposeTestCheckFunc(testCheckSakuraSEGDestroy),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSEGWithoutDNS, rand, objectStorageEndpoint1, objectStorageEndpoint2),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraSEGExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceName, "dns_forwarding.private_hosted_zone"),
+					resource.TestCheckNoResourceAttr(resourceName, "dns_forwarding.dns_servers.0"),
+					resource.TestCheckNoResourceAttr(resourceName, "dns_forwarding.dns_servers.1"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraSEGExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -204,5 +236,27 @@ resource "sakura_seg" "foobar" {
 		object_storage_endpoints = ["{{ .arg1 }}"]
 	}
 	monitoring_suite_enabled = false
+}
+`
+
+const testAccSakuraSEGWithoutDNS = `
+resource "sakura_vswitch" "foobar" {
+	name = "{{ .arg0 }}"
+	zone = "tk1b"
+}
+
+resource "sakura_seg" "foobar" {
+	zone        = "tk1b"
+	vswitch_id  = sakura_vswitch.foobar.id
+	server_ip_addresses = ["192.168.128.31"]
+	netmask     = 28
+	endpoint_setting = {
+		object_storage_endpoints = ["{{ .arg1 }}", "{{ .arg2 }}"]
+		apprun_dedicated_control_enabled = false
+	}
+	monitoring_suite_enabled = true
+	dns_forwarding = {
+		enabled = false
+	}
 }
 `
