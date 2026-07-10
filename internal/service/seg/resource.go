@@ -145,7 +145,7 @@ func (r *segResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 					"dns_servers": schema.ListAttribute{
 						Optional:    true,
 						ElementType: types.StringType,
-						Description: "The name of upstream DNS servers for DNS forwarding",
+						Description: "The name of upstream DNS servers for DNS forwarding (must contain exactly 2 servers)",
 						Validators: []validator.List{
 							listvalidator.SizeBetween(2, 2), // must be 2 servers.
 						},
