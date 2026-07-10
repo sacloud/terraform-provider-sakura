@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
@@ -192,8 +193,9 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 						"use_lets_encrypt": schema.BoolAttribute{
 							Optional:            true,
 							Computed:            true,
+							Default:             booldefault.StaticBool(false),
 							MarkdownDescription: "Whether the load balancer uses Let's Encrypt (applicable only when `https`)",
-							PlanModifiers:       []planmodifier.Bool{boolplanmodifier.RequiresReplace()},
+							PlanModifiers:       []planmodifier.Bool{boolplanmodifier.RequiresReplaceIfConfigured()},
 						},
 						"host": schema.SetAttribute{
 							Optional:            true,
