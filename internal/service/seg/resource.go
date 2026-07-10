@@ -6,6 +6,7 @@ package seg
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -162,7 +163,19 @@ func (r *segResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 }
 
 func (r *segResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// Import format: zone/resource_id
+	parts := strings.Split(req.ID, "/")
+
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError(
+			"Import: Invalid ID",
+			fmt.Sprintf("Expected format: zone/resource_id, got: %s", req.ID),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("zone"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
 func (r *segResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
