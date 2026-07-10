@@ -75,6 +75,20 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 				),
 			},
 			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("not found: %s", resourceName)
+					}
+					zone := rs.Primary.Attributes["zone"]
+					id := rs.Primary.Attributes["id"]
+					return fmt.Sprintf("%s/%s", zone, id), nil
+				},
+			},
+			{
 				Config: test.BuildConfigWithArgs(testAccSakuraSEGUpdate, rand, objectStorageEndpoint1),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSEGExists(resourceName),
