@@ -62,6 +62,55 @@ func TestAccSakuraObjectStoragePermission_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraObjectStoragePermission_basic(t *testing.T) {
+	rand := test.RandomName()
+
+	checkFn := func(s []*terraform.InstanceState) error {
+		if len(s) != 1 {
+			return fmt.Errorf("expected 1 state: %#v", s)
+		}
+		expects := map[string]string{
+			"name":                        "tf-permission-test-" + rand,
+			"site_id":                     "tky01",
+			"bucket_controls.#":           "1",
+			"bucket_controls.0.bucket":    "tf-permission-test-tky1-" + rand,
+			"bucket_controls.0.can_read":  "true",
+			"bucket_controls.0.can_write": "true",
+		}
+
+		if err := test.CompareStateMulti(s[0], expects); err != nil {
+			return err
+		}
+		return test.StateNotEmptyMulti(s[0])
+	}
+
+	resourceName := "sakura_object_storage_permission.foobar"
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraObjectStoragePermissionDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraObjectStoragePermission_import, rand),
+			},
+			{
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateCheck:        checkFn,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"access_key", "secret_key"},
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s/%s", rs.Primary.Attributes["site_id"], rs.Primary.Attributes["id"]), nil
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraObjectStoragePermissionExists(n string) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -171,5 +220,25 @@ resource "sakura_object_storage_permission" "foobar" {
     bucket = sakura_object_storage_bucket.foobar2.name
     can_read = true
     can_write = false
+  }]
+}`
+
+const testAccSakuraObjectStoragePermission_import = `
+data "sakura_object_storage_site" "foobar" {
+  id = "tky01"
+}
+
+resource "sakura_object_storage_bucket" "foobar1" {
+  name    = "tf-permission-test-tky1-{{ .arg0 }}"
+  site_id = data.sakura_object_storage_site.foobar.id
+}
+
+resource "sakura_object_storage_permission" "foobar" {
+  name = "tf-permission-test-{{ .arg0 }}"
+  site_id = data.sakura_object_storage_site.foobar.id
+  bucket_controls = [{
+    bucket = sakura_object_storage_bucket.foobar1.name
+    can_read = true
+    can_write = true
   }]
 }`
