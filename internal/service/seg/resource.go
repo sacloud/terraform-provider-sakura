@@ -166,6 +166,11 @@ func (r *segResource) ImportState(ctx context.Context, req resource.ImportStateR
 	// Import format: zone/resource_id
 	parts := strings.Split(req.ID, "/")
 
+	if len(parts) == 1 {
+		zone := common.GetZone(types.StringUnknown(), r.client, &resp.Diagnostics)
+		parts = []string{zone, parts[0]}
+	}
+
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Import: Invalid ID",
