@@ -200,7 +200,7 @@ func (d *vpnRouterDataSource) Schema(_ context.Context, _ datasource.SchemaReque
 					},
 				},
 			},
-			"firewall": schema.ListNestedAttribute{
+			"firewall": schema.SetNestedAttribute{
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{

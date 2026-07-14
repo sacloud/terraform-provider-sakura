@@ -189,7 +189,7 @@ resource "sakura_vswitch" "foobar" {
 - `dhcp_server` (Attributes List) (see [below for nested schema](#nestedatt--dhcp_server))
 - `dhcp_static_mapping` (Attributes List) (see [below for nested schema](#nestedatt--dhcp_static_mapping))
 - `dns_forwarding` (Attributes) (see [below for nested schema](#nestedatt--dns_forwarding))
-- `firewall` (Attributes List) (see [below for nested schema](#nestedatt--firewall))
+- `firewall` (Attributes Set) (see [below for nested schema](#nestedatt--firewall))
 - `icon_id` (String) The icon id to attach to the VPN Router
 - `internet_connection` (Boolean) The flag to enable connecting to the Internet from the VPN Router
 - `l2tp` (Attributes) (see [below for nested schema](#nestedatt--l2tp))

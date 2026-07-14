@@ -296,7 +296,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					},
 				},
 			},
-			"firewall": schema.ListNestedAttribute{
+			"firewall": schema.SetNestedAttribute{
 				Optional: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{

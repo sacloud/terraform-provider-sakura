@@ -44,11 +44,50 @@ func TestAccSakuraVPNRouter_basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr(resourceName, "public_network_interface.#"),
 					resource.TestCheckResourceAttrSet(resourceName, "public_ip"),
 					resource.TestCheckResourceAttrSet(resourceName, "public_netmask"),
-					resource.TestCheckResourceAttrPair(
-						resourceName, "icon_id",
-						"sakura_icon.foobar", "id",
-					),
+					resource.TestCheckResourceAttrPair(resourceName, "icon_id", "sakura_icon.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "firewall.#", "3"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceName, "firewall.*", map[string]string{
+						"interface_index":               "0",
+						"direction":                     "send",
+						"expression.#":                  "3",
+						"expression.0.protocol":         "tcp",
+						"expression.0.destination_port": "30000-40000",
+						"expression.0.allow":            "true",
+						"expression.0.logging":          "false",
+						"expression.1.protocol":         "udp",
+						"expression.1.destination_port": "30000-40000",
+						"expression.1.allow":            "true",
+						"expression.1.logging":          "false",
+						"expression.2.protocol":         "tcp",
+						"expression.2.destination_port": "80,443,4317",
+						"expression.2.description":      "HTTP,HTTPS",
+						"expression.2.allow":            "true",
+						"expression.2.logging":          "false",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceName, "firewall.*", map[string]string{
+						"interface_index":               "0",
+						"direction":                     "receive",
+						"expression.#":                  "2",
+						"expression.0.protocol":         "tcp",
+						"expression.0.destination_port": "30000-40000",
+						"expression.0.allow":            "true",
+						"expression.0.logging":          "false",
+						"expression.1.protocol":         "udp",
+						"expression.1.destination_port": "30000-40000",
+						"expression.1.allow":            "true",
+						"expression.1.logging":          "false",
+					}),
+
+					resource.TestCheckTypeSetElemNestedAttrs(resourceName, "firewall.*", map[string]string{
+						"interface_index":               "1",
+						"direction":                     "receive",
+						"expression.#":                  "1",
+						"expression.0.protocol":         "tcp",
+						"expression.0.destination_port": "30000-40000",
+						"expression.0.allow":            "true",
+						"expression.0.logging":          "false",
+					}),
 				),
 			},
 			{
@@ -68,6 +107,33 @@ func TestAccSakuraVPNRouter_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "public_ip"),
 					resource.TestCheckResourceAttrSet(resourceName, "public_netmask"),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "false"),
+					resource.TestCheckResourceAttr(resourceName, "firewall.#", "2"),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceName, "firewall.*", map[string]string{
+						"interface_index":               "0",
+						"direction":                     "send",
+						"expression.#":                  "2",
+						"expression.0.protocol":         "tcp",
+						"expression.0.destination_port": "30000-40000",
+						"expression.0.allow":            "true",
+						"expression.0.logging":          "false",
+						"expression.1.protocol":         "udp",
+						"expression.1.destination_port": "30000-40000",
+						"expression.1.allow":            "true",
+						"expression.1.logging":          "false",
+					}),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceName, "firewall.*", map[string]string{
+						"interface_index":               "0",
+						"direction":                     "receive",
+						"expression.#":                  "2",
+						"expression.0.protocol":         "tcp",
+						"expression.0.destination_port": "30000-40000",
+						"expression.0.allow":            "true",
+						"expression.0.logging":          "false",
+						"expression.1.protocol":         "udp",
+						"expression.1.destination_port": "30000-40000",
+						"expression.1.allow":            "true",
+						"expression.1.logging":          "false",
+					}),
 				),
 			},
 		},
@@ -146,21 +212,23 @@ func TestAccSakuraVPNRouter_Full(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.dns_servers.0", "133.242.0.3"),
 					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.dns_servers.1", "133.242.0.4"),
 					resource.TestCheckResourceAttr(resourceName, "firewall.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.interface_index", "1"),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.direction", "send"),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.#", "2"),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.0.protocol", "tcp"),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.0.allow", "true"),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.0.source_network", ""),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.0.source_port", "80"),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.0.destination_network", ""),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.0.destination_port", ""),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.1.protocol", "ip"),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.1.allow", "false"),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.1.source_network", ""),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.1.source_port", ""),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.1.destination_network", ""),
-					resource.TestCheckResourceAttr(resourceName, "firewall.0.expression.1.destination_port", ""),
+					resource.TestCheckTypeSetElemNestedAttrs(resourceName, "firewall.*", map[string]string{
+						"interface_index":                  "1",
+						"direction":                        "send",
+						"expression.#":                     "2",
+						"expression.0.protocol":            "tcp",
+						"expression.0.allow":               "true",
+						"expression.0.source_network":      "",
+						"expression.0.source_port":         "80",
+						"expression.0.destination_network": "",
+						"expression.0.destination_port":    "",
+						"expression.1.protocol":            "ip",
+						"expression.1.allow":               "false",
+						"expression.1.source_network":      "",
+						"expression.1.source_port":         "",
+						"expression.1.destination_network": "",
+						"expression.1.destination_port":    "",
+					}),
 					resource.TestCheckResourceAttr(resourceName, "l2tp.pre_shared_secret", "example"),
 					resource.TestCheckResourceAttr(resourceName, "l2tp.range_start", "192.168.11.21"),
 					resource.TestCheckResourceAttr(resourceName, "l2tp.range_stop", "192.168.11.30"),
@@ -358,6 +426,80 @@ resource "sakura_vpn_router" "foobar" {
   icon_id             = sakura_icon.foobar.id
   internet_connection = true
 
+  firewall = [{
+    interface_index = 1
+    direction       = "receive"
+    expression = [
+      {
+        protocol            = "tcp"
+        destination_port    = "30000-40000"
+        allow               = true
+        logging             = false
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      }
+    ]
+  },
+  {
+    interface_index = 0
+    direction       = "receive"
+    expression = [
+      {
+        protocol            = "tcp"
+        destination_port    = "30000-40000"
+        allow               = true
+        logging             = false
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      },
+      {
+        protocol            = "udp"
+        destination_port    = "30000-40000"
+        allow               = true
+        logging             = false
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      }
+    ]
+  },
+  {
+    interface_index = 0
+    direction = "send"
+    expression = [
+      {
+        protocol            = "tcp"
+        destination_port    = "30000-40000"
+        allow               = true
+        logging             = false
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      },
+      {
+        protocol            = "udp"
+        destination_port    = "30000-40000"
+        allow               = true
+        logging             = false
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      },
+      {
+        protocol            = "tcp"
+        destination_port    = "80,443,4317"
+        allow               = true
+        logging             = false
+        description         = "HTTP,HTTPS"
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      },
+    ]
+  }]
+
   monitoring_suite = {
     enabled = true
   }
@@ -376,6 +518,55 @@ resource "sakura_vpn_router" "foobar" {
   tags                = ["tag1-upd", "tag2-upd"]
   syslog_host         = "192.168.0.2"
   internet_connection = false
+
+  firewall = [{
+    interface_index = 0
+    direction = "send"
+    expression = [
+      {
+        protocol            = "tcp"
+        destination_port    = "30000-40000"
+        allow               = true
+        logging             = false
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      },
+      {
+        protocol            = "udp"
+        destination_port    = "30000-40000"
+        allow               = true
+        logging             = false
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      },
+    ]
+  },
+  {
+    interface_index = 0
+    direction       = "receive"
+    expression = [
+      {
+        protocol            = "tcp"
+        destination_port    = "30000-40000"
+        allow               = true
+        logging             = false
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      },
+      {
+        protocol            = "udp"
+        destination_port    = "30000-40000"
+        allow               = true
+        logging             = false
+        destination_network = ""
+        source_network      = ""
+        source_port         = ""
+      }
+    ]
+  }]
 
   monitoring_suite = {
     enabled = false
