@@ -174,7 +174,7 @@ func (r *segResource) ImportState(ctx context.Context, req resource.ImportStateR
 	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
 		resp.Diagnostics.AddError(
 			"Import: Invalid ID",
-			fmt.Sprintf("Expected format: zone/resource_id, got: %q", req.ID),
+			fmt.Sprintf("Expected format: zone/id, got: %q", req.ID),
 		)
 		return
 	}
