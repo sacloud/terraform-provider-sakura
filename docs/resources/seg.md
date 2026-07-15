@@ -65,8 +65,11 @@ resource "sakura_seg" "foobar" {
 
 Required:
 
-- `dns_servers` (List of String) The name of upstream DNS servers for DNS forwarding
 - `enabled` (Boolean) The flag to enable DNS forwarding on the Service Endpoint Gateway
+
+Optional:
+
+- `dns_servers` (List of String) The name of upstream DNS servers for DNS forwarding
 - `private_hosted_zone` (String) The private hosted zone name for DNS forwarding
 
 

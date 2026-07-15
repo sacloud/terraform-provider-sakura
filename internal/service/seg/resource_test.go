@@ -78,15 +78,7 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 				ResourceName:      resourceName,
 				ImportState:       true,
 				ImportStateVerify: true,
-				ImportStateIdFunc: func(s *terraform.State) (string, error) {
-					rs, ok := s.RootModule().Resources[resourceName]
-					if !ok {
-						return "", fmt.Errorf("not found: %s", resourceName)
-					}
-					zone := rs.Primary.Attributes["zone"]
-					id := rs.Primary.Attributes["id"]
-					return fmt.Sprintf("%s/%s", zone, id), nil
-				},
+				ImportStateIdFunc: testGetImportSpecificationFromState(t, resourceName),
 			},
 			{
 				Config: test.BuildConfigWithArgs(testAccSakuraSEGUpdate, rand, objectStorageEndpoint1),
@@ -99,6 +91,39 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.object_storage_endpoints.0", objectStorageEndpoint1),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite_enabled", "false"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraSEG_NoDNS(t *testing.T) {
+	resourceName := "sakura_seg.foobar"
+
+	test.SkipIfEnvIsNotSet(t, envSEGObjectStorageEndpoint1, envSEGObjectStorageEndpoint2)
+	rand := test.RandomName()
+	objectStorageEndpoint1 := os.Getenv(envSEGObjectStorageEndpoint1)
+	objectStorageEndpoint2 := os.Getenv(envSEGObjectStorageEndpoint2)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             resource.ComposeTestCheckFunc(testCheckSakuraSEGDestroy),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSEGWithoutDNS, rand, objectStorageEndpoint1, objectStorageEndpoint2),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraSEGExists(resourceName),
+					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.enabled", "false"),
+					resource.TestCheckNoResourceAttr(resourceName, "dns_forwarding.private_hosted_zone"),
+					resource.TestCheckNoResourceAttr(resourceName, "dns_forwarding.dns_servers.0"),
+					resource.TestCheckNoResourceAttr(resourceName, "dns_forwarding.dns_servers.1"),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateIdFunc: testGetImportSpecificationFromState(t, resourceName),
 			},
 		},
 	})
@@ -176,6 +201,20 @@ func testGetClientFromState(s *terraform.State) (*v1.Client, error) {
 	return nil, errors.New("Service Endpoint Gateway resource not found in state")
 }
 
+func testGetImportSpecificationFromState(t *testing.T, resourceName string) resource.ImportStateIdFunc {
+	t.Helper()
+
+	return func(s *terraform.State) (string, error) {
+		rs, ok := s.RootModule().Resources[resourceName]
+		if !ok {
+			return "", fmt.Errorf("not found: %s", resourceName)
+		}
+		zone := rs.Primary.Attributes["zone"]
+		id := rs.Primary.Attributes["id"]
+		return fmt.Sprintf("%s/%s", zone, id), nil
+	}
+}
+
 const testAccSakuraSEGBasic = `
 resource "sakura_vswitch" "foobar" {
 	name = "{{ .arg0 }}"
@@ -218,5 +257,27 @@ resource "sakura_seg" "foobar" {
 		object_storage_endpoints = ["{{ .arg1 }}"]
 	}
 	monitoring_suite_enabled = false
+}
+`
+
+const testAccSakuraSEGWithoutDNS = `
+resource "sakura_vswitch" "foobar" {
+	name = "{{ .arg0 }}"
+	zone = "tk1b"
+}
+
+resource "sakura_seg" "foobar" {
+	zone        = "tk1b"
+	vswitch_id  = sakura_vswitch.foobar.id
+	server_ip_addresses = ["192.168.128.31"]
+	netmask     = 28
+	endpoint_setting = {
+		object_storage_endpoints = ["{{ .arg1 }}", "{{ .arg2 }}"]
+		apprun_dedicated_control_enabled = false
+	}
+	monitoring_suite_enabled = true
+	dns_forwarding = {
+		enabled = false
+	}
 }
 `

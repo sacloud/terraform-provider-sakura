@@ -37,7 +37,7 @@ require (
 	github.com/sacloud/saclient-go v0.4.0
 	github.com/sacloud/secretmanager-api-go v0.4.1
 	github.com/sacloud/security-control-api-go v0.3.0
-	github.com/sacloud/service-endpoint-gateway-api-go v0.1.2
+	github.com/sacloud/service-endpoint-gateway-api-go v0.2.0
 	github.com/sacloud/simple-notification-api-go v0.3.1
 	github.com/sacloud/simplemq-api-go v0.5.1
 	github.com/sacloud/webaccel-api-go v1.5.0
