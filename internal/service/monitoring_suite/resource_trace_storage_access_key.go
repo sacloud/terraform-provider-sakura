@@ -87,9 +87,14 @@ func (r *traceStorageAccessKeyResource) Schema(ctx context.Context, _ resource.S
 }
 
 func (r *traceStorageAccessKeyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "_", 2)
+	var parts []string
+	if strings.Contains(req.ID, "/") {
+		parts = strings.SplitN(req.ID, "/", 2)
+	} else if strings.Contains(req.ID, "_") {
+		parts = strings.SplitN(req.ID, "_", 2)
+	}
 	if len(parts) != 2 {
-		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: <storage_id>_<uid>")
+		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: {storage_id}/{uid}({storage_id}_{uid} for backward compatibility)")
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("storage_id"), parts[0])...)

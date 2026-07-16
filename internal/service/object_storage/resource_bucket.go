@@ -84,11 +84,16 @@ func (r *objectStorageBucketResource) Schema(ctx context.Context, _ resource.Sch
 }
 
 func (r *objectStorageBucketResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "_", 2)
+	var parts []string
+	if strings.Contains(req.ID, "/") {
+		parts = strings.SplitN(req.ID, "/", 2)
+	} else if strings.Contains(req.ID, "_") {
+		parts = strings.SplitN(req.ID, "_", 2)
+	}
 
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError("Import Error",
-			fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {site_id}_{name}: %s", req.ID))
+			fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {site_id}/{name} ({site_id}_{name} for backward compatibility): %s", req.ID))
 		return
 	}
 

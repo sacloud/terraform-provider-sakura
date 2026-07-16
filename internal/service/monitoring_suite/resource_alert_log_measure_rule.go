@@ -109,9 +109,14 @@ func (r *alertLogMeasureRuleResource) Schema(ctx context.Context, _ resource.Sch
 }
 
 func (r *alertLogMeasureRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	parts := strings.SplitN(req.ID, "_", 2)
+	var parts []string
+	if strings.Contains(req.ID, "/") {
+		parts = strings.SplitN(req.ID, "/", 2)
+	} else if strings.Contains(req.ID, "_") {
+		parts = strings.SplitN(req.ID, "_", 2)
+	}
 	if len(parts) != 2 {
-		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: {alert_project_id}_{id}")
+		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: {alert_project_id}/{id}({alert_project_id}_{id} for backward compatibility)")
 		return
 	}
 	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("alert_project_id"), parts[0])...)
