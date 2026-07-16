@@ -1,5 +1,14 @@
 # Changelog
 
+## [v3.12.6](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.5...v3.12.6) - 2026-07-15
+
+- Add default to optional/computed bool attribute by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/286
+- iam: fix wrong description for sakura_iam_user.password_wo by @tokuhirom in https://github.com/sacloud/terraform-provider-sakura/pull/292
+- object_storage: fix permission's import by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/290
+- SEG: zone needed for import by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/289
+- service_endpoint_gateway_api_go v0.2.0 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/285
+- vpn_router: Use Set for firewall to fix unordered problem by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/293
+
 ## [v3.12.5](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.4...v3.12.5) - 2026-07-06
 
 - test: remove access_level from container_registry tests by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/278
