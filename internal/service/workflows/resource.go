@@ -271,10 +271,10 @@ func getWorkflowRevisions(ctx context.Context, client *v1.Client, workflowID str
 	revisionOp := workflows.NewRevisionOp(client)
 	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflowID})
 	if err != nil {
-		return nil, fmt.Errorf("failed to list created Workflow[%s] revisions: %w", workflowID, err)
+		return nil, fmt.Errorf("failed to list Workflow[%s] revisions: %w", workflowID, err)
 	}
 	if len(revisions.Revisions) == 0 {
-		return nil, fmt.Errorf("failed to list created Workflow[%s] revisions: no error but revisions are empty. Workflows API something went wrong", workflowID)
+		return nil, fmt.Errorf("failed to list Workflow[%s] revisions: no error but revisions are empty. Workflows API something went wrong", workflowID)
 	}
 	return revisions.Revisions, nil
 }
