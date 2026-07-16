@@ -161,19 +161,14 @@ func (r *workflowResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	// NOTE: createWorkflowで作ったrevisionのIDはレスポンスに無いため、リビジョンの一覧取得にて確認しステートに保存
-	revisionOp := workflows.NewRevisionOp(r.client)
-	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflow.ID})
+	revisions, err := getWorkflowRevisions(ctx, r.client, workflow.ID)
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to list created Workflow[%s] revisions: %s", workflow.ID, err))
-		return
-	}
-	if len(revisions.Revisions) == 0 {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to list created Workflow[%s] revisions: no error but revisions are empty. Workflows API something went wrong", workflow.ID))
+		resp.Diagnostics.AddError("Create: API Error", err.Error())
 		return
 	}
 
 	plan.updateStateFromCreated(workflow)
-	plan.updateRevisionsState(revisions.Revisions)
+	plan.updateRevisionsState(revisions)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -193,19 +188,14 @@ func (r *workflowResource) Read(ctx context.Context, req resource.ReadRequest, r
 	}
 
 	// NOTE: revisionのIDはRead workflowのレスポンスに無いため、まとめて一覧取得しステートに保存
-	revisionOp := workflows.NewRevisionOp(r.client)
-	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflow.ID})
+	revisions, err := getWorkflowRevisions(ctx, r.client, workflow.ID)
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Workflow[%s] revisions: %s", workflow.ID, err))
-		return
-	}
-	if len(revisions.Revisions) == 0 {
-		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Workflow[%s] revisions: no error but revisions are empty. Workflows API something went wrong", workflow.ID))
+		resp.Diagnostics.AddError("Read: API Error", err.Error())
 		return
 	}
 
 	state.updateState(workflow)
-	state.updateRevisionsState(revisions.Revisions)
+	state.updateRevisionsState(revisions)
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
@@ -248,6 +238,13 @@ func (r *workflowResource) Update(ctx context.Context, req resource.UpdateReques
 		plan.LatestRevision.Runbook = types.StringValue(latestRevision.Runbook)
 		plan.LatestRevision.CreatedAt = types.StringValue(latestRevision.CreatedAt.String())
 		plan.LatestRevision.UpdatedAt = types.StringValue(latestRevision.UpdatedAt.String())
+	} else {
+		revisions, err := getWorkflowRevisions(ctx, r.client, workflow.ID)
+		if err != nil {
+			resp.Diagnostics.AddError("Update: API Error", err.Error())
+			return
+		}
+		plan.updateRevisionsState(revisions)
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -268,4 +265,16 @@ func (r *workflowResource) Delete(ctx context.Context, req resource.DeleteReques
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Workflow: %s", err))
 		return
 	}
+}
+
+func getWorkflowRevisions(ctx context.Context, client *v1.Client, workflowID string) ([]v1.ListWorkflowRevisionsOKRevisionsItem, error) {
+	revisionOp := workflows.NewRevisionOp(client)
+	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflowID})
+	if err != nil {
+		return nil, fmt.Errorf("failed to list created Workflow[%s] revisions: %w", workflowID, err)
+	}
+	if len(revisions.Revisions) == 0 {
+		return nil, fmt.Errorf("failed to list created Workflow[%s] revisions: no error but revisions are empty. Workflows API something went wrong", workflowID)
+	}
+	return revisions.Revisions, nil
 }

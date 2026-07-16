@@ -67,6 +67,49 @@ func TestAccSakuraResourceWorkflows_basic(t *testing.T) {
 	})
 }
 
+// Test for https://github.com/sacloud/terraform-provider-sakura/issues/291
+func TestAccSakuraResourceWorkflows_sameLatestRevision(t *testing.T) {
+	resourceName := "sakura_workflows.foobar"
+	rand := test.RandomName()
+
+	var workflow v1.GetWorkflowOKWorkflow
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraWorkflowsDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraWorkflows_sameLatestRevision, rand, sampleRunbookV1Escaped),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraWorkflowsExists(resourceName, &workflow),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "publish", "false"),
+					resource.TestCheckResourceAttr(resourceName, "logging", "false"),
+					resource.TestCheckResourceAttrPair(resourceName, "subscription_id", "sakura_workflows_subscription.foobar", "id"),
+					resource.TestCheckResourceAttr(resourceName, "latest_revision.runbook", sampleRunbookV1),
+					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.id"),
+					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.updated_at"),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraWorkflows_updateSameLatestRevision, rand, sampleRunbookV1Escaped),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraWorkflowsExists(resourceName, &workflow),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "publish", "true"),
+					resource.TestCheckResourceAttr(resourceName, "logging", "false"),
+					resource.TestCheckResourceAttrPair(resourceName, "subscription_id", "sakura_workflows_subscription.foobar", "id"),
+					resource.TestCheckResourceAttr(resourceName, "latest_revision.runbook", sampleRunbookV1),
+					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.id"),
+					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.created_at"),
+					resource.TestCheckResourceAttrSet(resourceName, "latest_revision.updated_at"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSakuraResourceWorkflows_invalidName(t *testing.T) {
 	randInvalid := test.RandomName() + "./+invalid"
 
@@ -214,5 +257,45 @@ resource "sakura_workflows" "foobar" {
 
   latest_revision = {
     runbook = yamlencode({{ .arg1 }})
+  }
+}`
+
+var testAccSakuraWorkflows_sameLatestRevision = `
+data "sakura_workflows_plan" "foobar" {
+  name = "200K"
+}
+
+resource "sakura_workflows_subscription" "foobar" {
+  plan_id = data.sakura_workflows_plan.foobar.id
+}
+
+resource "sakura_workflows" "foobar" {
+  subscription_id = sakura_workflows_subscription.foobar.id
+  name            = "{{ .arg0 }}"
+  publish         = false
+  logging         = false
+  latest_revision = {
+    runbook = <<-EOF
+{{ .arg1 }}EOF
+  }
+}`
+
+var testAccSakuraWorkflows_updateSameLatestRevision = `
+data "sakura_workflows_plan" "foobar" {
+  name = "200K"
+}
+
+resource "sakura_workflows_subscription" "foobar" {
+  plan_id = data.sakura_workflows_plan.foobar.id
+}
+
+resource "sakura_workflows" "foobar" {
+  subscription_id = sakura_workflows_subscription.foobar.id
+  name            = "{{ .arg0 }}"
+  publish         = true
+  logging         = false
+  latest_revision = {
+    runbook = <<-EOF
+{{ .arg1 }}EOF
   }
 }`

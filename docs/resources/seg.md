@@ -69,7 +69,7 @@ Required:
 
 Optional:
 
-- `dns_servers` (List of String) The name of upstream DNS servers for DNS forwarding
+- `dns_servers` (List of String) The name of upstream DNS servers for DNS forwarding (must contain exactly 2 servers)
 - `private_hosted_zone` (String) The private hosted zone name for DNS forwarding
 
 
