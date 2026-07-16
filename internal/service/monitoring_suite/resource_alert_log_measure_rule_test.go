@@ -100,7 +100,6 @@ func TestAccSakuraMonitoringSuiteAlertLogMeasureRule_basic(t *testing.T) {
 }
 
 func TestAccImportSakuraMonitoringSuiteAlertLogMeasureRule_basic(t *testing.T) {
-
 	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID", "SAKURA_MONITORING_SUITE_LOG_STORAGE_ID")
 
 	resourceName := "sakura_monitoring_suite_alert_log_measure_rule.foobar"

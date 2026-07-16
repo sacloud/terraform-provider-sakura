@@ -51,6 +51,6 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# Specify the ID in the format of {site_id}_{name}: e.g. "isk01_my-bucket"
-terraform import sakura_object_storage_bucket.foo '"{site_id}"_"{name}"'
+# Specify the ID in the format of {site_id}/{name}({site_id}_{name} for backward compatibility): e.g. "isk01/my-bucket"
+terraform import sakura_object_storage_bucket.foo '{site_id}/{name}'
 ```

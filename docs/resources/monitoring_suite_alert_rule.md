@@ -70,6 +70,6 @@ Import is supported using the following syntax:
 The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
 
 ```shell
-# Specify the ID in the format of {alert_project_id}_{id}: e.g. "112345678901_123e4567-e89b-12d3-a456-426614174000"
-terraform import sakura_monitoring_suite_alert_rule.foo '{alert_project_id}_{id}'
+# Specify the ID in the format of {alert_project_id}/{id}({alert_project_id}_{id} for backward compatibility): e.g. "112345678901/123e4567-e89b-12d3-a456-426614174000"
+terraform import sakura_monitoring_suite_alert_rule.foo '{alert_project_id}/{id}'
 ```

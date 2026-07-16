@@ -121,7 +121,7 @@ func (r *policyResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 
 func (r *policyResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	var parts []string
-	if strings.Contains(req.ID, "/") {
+	if strings.Contains(req.ID, "/") { //nolint
 		parts = strings.SplitN(req.ID, "/", 2)
 	} else if strings.Contains(req.ID, "_") {
 		parts = strings.SplitN(req.ID, "_", 2)
