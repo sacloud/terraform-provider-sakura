@@ -1,5 +1,10 @@
 # Changelog
 
+## [v3.12.7](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.6...v3.12.7) - 2026-07-17
+
+- workflows: fix workflows's update action. fix #291 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/295
+- Use slash for import by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/297
+
 ## [v3.12.6](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.5...v3.12.6) - 2026-07-15
 
 - Add default to optional/computed bool attribute by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/286
