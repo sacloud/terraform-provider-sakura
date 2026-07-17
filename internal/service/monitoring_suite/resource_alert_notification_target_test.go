@@ -95,7 +95,7 @@ func TestAccImportSakuraMonitoringSuiteAlertNotificationTarget_basic(t *testing.
 					if !ok {
 						return "", fmt.Errorf("resource not found: %s", resourceName)
 					}
-					return fmt.Sprintf("%s_%s", rs.Primary.Attributes["alert_project_id"], rs.Primary.Attributes["id"]), nil
+					return fmt.Sprintf("%s/%s", rs.Primary.Attributes["alert_project_id"], rs.Primary.Attributes["id"]), nil
 				},
 			},
 		},

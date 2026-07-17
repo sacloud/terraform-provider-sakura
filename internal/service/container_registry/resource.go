@@ -75,8 +75,8 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 			"tags":        common.SchemaResourceTags("Container Registry"),
 			"icon_id":     common.SchemaResourceIconID("Container Registry"),
 			"access_level": schema.StringAttribute{
-				Optional:    true,
-				Computed:    true,
+				Optional: true,
+				Computed: true,
 				DeprecationMessage: "The \"access_level\" attribute is deprecated and will be removed in a future version. " +
 					"Container Registry no longer supports public access settings. " +
 					"See: https://cloud.sakura.ad.jp/news/2026/05/27/container-registry-public-access-setting-discontinued/",
