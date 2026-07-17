@@ -102,7 +102,7 @@ func (r *objectStorageBucketReplicationConfigResource) ImportState(ctx context.C
 
 	if len(parts) != 2 {
 		resp.Diagnostics.AddError("Import Error",
-			fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {site_id}/{bucket} ({site_id}_{bucket} for backward compatibility): %s", req.ID))
+			fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {site_id}/{bucket}({site_id}_{bucket} for backward compatibility): %s", req.ID))
 		return
 	}
 

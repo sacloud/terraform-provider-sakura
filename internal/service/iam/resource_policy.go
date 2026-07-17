@@ -129,16 +129,15 @@ func (r *policyResource) ImportState(ctx context.Context, req resource.ImportSta
 		parts = []string{req.ID}
 	}
 
-	if len(parts) > 2 {
-		resp.Diagnostics.AddError("Import Error",
-			fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {target}/{target_id}({target}_{target_id} for backward compatibility) or {target}: %s", req.ID))
-		return
-	}
-
 	switch parts[0] {
 	case targetOrg:
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("target"), parts[0])...)
 	case targetFolder, targetProject:
+		if len(parts) != 2 {
+			resp.Diagnostics.AddError("Import Error",
+				fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {target}/{target_id}({target}_{target_id} for backward compatibility): %s", req.ID))
+			return
+		}
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("target"), parts[0])...)
 		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("target_id"), parts[1])...)
 	default:
