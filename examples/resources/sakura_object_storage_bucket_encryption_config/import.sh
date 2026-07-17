@@ -1,0 +1,2 @@
+# Specify the ID in the format of {site_id}/{bucket}({site_id}_{bucket} for backward compatibility): e.g. "isk01/my-bucket"
+terraform import sakura_object_storage_bucket_encryption_config.foo '{site_id}/{bucket}'
