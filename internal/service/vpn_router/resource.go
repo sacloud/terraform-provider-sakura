@@ -353,7 +353,6 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 									"logging": schema.BoolAttribute{
 										Optional:    true,
 										Computed:    true,
-										Default:     booldefault.StaticBool(false),
 										Description: "The flag to enable packet logging when matching the expression",
 									},
 									"description": common.SchemaResourceDescription("firewall expression"),
