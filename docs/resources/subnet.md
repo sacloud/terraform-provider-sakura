@@ -28,7 +28,7 @@ resource "sakura_subnet" "foobar" {
 
 ### Required
 
-- `internet_id` (String) The id of the Internet(switch+router) resource that the Subnet belongs
+- `internet_id` (String) The id of the Internet(router+switch) resource that the Subnet belongs
 - `next_hop` (String) The ip address of the next-hop at the Subnet
 
 ### Optional

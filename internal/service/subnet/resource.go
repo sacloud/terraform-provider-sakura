@@ -61,7 +61,7 @@ func (r *subnetResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"zone": common.SchemaResourceZone("Subnet"),
 			"internet_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The id of the Internet(switch+router) resource that the Subnet belongs",
+				Description: "The id of the Internet(router+switch) resource that the Subnet belongs",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
@@ -140,7 +140,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	internetOp := iaas.NewInternetOp(r.client)
 	internet, err := internetOp.Read(ctx, zone, internetID)
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to read Internet(switch+router)[%s] for Subnet: %s", internetID, err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to read Internet(router+switch)[%s] for Subnet: %s", internetID, err))
 		return
 	}
 

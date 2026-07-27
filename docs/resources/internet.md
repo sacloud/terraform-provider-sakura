@@ -3,12 +3,12 @@
 page_title: "sakura_internet Resource - sakura"
 subcategory: "Networking"
 description: |-
-  Manages an Internet(Switch + Router).
+  Manages an Internet(router+switch).
 ---
 
 # sakura_internet (Resource)
 
-Manages an Internet(Switch + Router).
+Manages an Internet(router+switch).
 
 ## Example Usage
 
@@ -30,31 +30,31 @@ resource "sakura_internet" "foobar" {
 
 ### Required
 
-- `name` (String) The name of the Internet(switch+router).
+- `name` (String) The name of the Internet(router+switch).
 
 ### Optional
 
 - `band_width` (Number) The bandwidth of the network connected to the Internet in Mbps. `100`/`250`/`500`/`1000`/`1500`/`2000`/`2500`/`3000`/`3500`/`4000`/`4500`/`5000`/`5500`/`6000`/`6500`/`7000`/`7500`/`8000`/`8500`/`9000`/`9500`/`10000`
-- `description` (String) The description of the Internet(switch+router). The length of this value must be in the range [`1`-`512`]
+- `description` (String) The description of the Internet(router+switch). The length of this value must be in the range [`1`-`512`]
 - `enable_ipv6` (Boolean) The flag to enable IPv6
-- `icon_id` (String) The icon id to attach to the Internet(switch+router)
-- `netmask` (Number) The bit length of the subnet assigned to the Internet(switch+router). `26`/`27`/`28`
-- `tags` (Set of String) The tags of the Internet(switch+router).
+- `icon_id` (String) The icon id to attach to the Internet(router+switch)
+- `netmask` (Number) The bit length of the subnet assigned to the Internet(router+switch). `26`/`27`/`28`
+- `tags` (Set of String) The tags of the Internet(router+switch).
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `zone` (String) The name of zone that the Internet(switch+router) will be created (e.g. `is1a`, `tk1a`)
+- `zone` (String) The name of zone that the Internet(router+switch) will be created (e.g. `is1a`, `tk1a`)
 
 ### Read-Only
 
-- `gateway` (String) The IP address of the gateway used by the Internet(switch+router)
-- `id` (String) The ID of the Internet(switch+router).
-- `ip_addresses` (List of String) A set of assigned global address to the Internet(switch+router)
-- `ipv6_network_address` (String) The IPv6 network address assigned to the Internet(switch+router)
-- `ipv6_prefix` (String) The network prefix of assigned IPv6 addresses to the Internet(switch+router)
+- `gateway` (String) The IP address of the gateway used by the Internet(router+switch)
+- `id` (String) The ID of the Internet(router+switch).
+- `ip_addresses` (List of String) A set of assigned global address to the Internet(router+switch)
+- `ipv6_network_address` (String) The IPv6 network address assigned to the Internet(router+switch)
+- `ipv6_prefix` (String) The network prefix of assigned IPv6 addresses to the Internet(router+switch)
 - `ipv6_prefix_len` (Number) The bit length of IPv6 network prefix
-- `max_ip_address` (String) Maximum IP address in assigned global addresses to the Internet(switch+router)
-- `min_ip_address` (String) Minimum IP address in assigned global addresses to the Internet(switch+router)
-- `network_address` (String) The IPv4 network address assigned to the Internet(switch+router)
-- `server_ids` (List of String) A set of the ID of Servers connected to the Internet(switch+router)
+- `max_ip_address` (String) Maximum IP address in assigned global addresses to the Internet(router+switch)
+- `min_ip_address` (String) Minimum IP address in assigned global addresses to the Internet(router+switch)
+- `network_address` (String) The IPv4 network address assigned to the Internet(router+switch)
+- `server_ids` (List of String) A set of the ID of Servers connected to the Internet(router+switch)
 - `vswitch_id` (String) The id of the vSwitch
 
 <a id="nestedatt--timeouts"></a>
