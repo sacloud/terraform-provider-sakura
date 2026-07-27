@@ -3,12 +3,12 @@
 page_title: "sakura_internet Data Source - sakura"
 subcategory: "Networking"
 description: |-
-  Get information about an existing Internet(Switch + Router).
+  Get information about an existing Internet(router+switch).
 ---
 
 # sakura_internet (Data Source)
 
-Get information about an existing Internet(Switch + Router).
+Get information about an existing Internet(router+switch).
 
 ## Example Usage
 

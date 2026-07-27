@@ -3,12 +3,12 @@
 page_title: "sakura_internet Resource - sakura"
 subcategory: "Networking"
 description: |-
-  Manages an Internet(Switch + Router).
+  Manages an Internet(router+switch).
 ---
 
 # sakura_internet (Resource)
 
-Manages an Internet(Switch + Router).
+Manages an Internet(router+switch).
 
 ## Example Usage
 
