@@ -1,5 +1,13 @@
 # Changelog
 
+## [v3.12.7](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.6...v3.12.7) - 2026-07-27
+
+- workflows: fix workflows's update action. fix #291 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/295
+- Use slash for import by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/297
+- vpn_router: Remove default from firewall.logging attribute to avoid unexpected plan change by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/300
+- Use router+switch instead of switch+router by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/302
+- ci: bump Songmu/tagpr from 1.20.0 to 1.20.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/298
+
 ## [v3.12.6](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.5...v3.12.6) - 2026-07-15
 
 - Add default to optional/computed bool attribute by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/286
