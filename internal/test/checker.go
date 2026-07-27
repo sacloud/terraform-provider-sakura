@@ -116,7 +116,7 @@ func CheckSakuraInternetDestroy(s *terraform.State) error {
 		zone := rs.Primary.Attributes["zone"]
 		_, err := internetOp.Read(context.Background(), zone, common.SakuraCloudID(rs.Primary.ID))
 		if err == nil {
-			return fmt.Errorf("resource Internet(switch+router)[%s] still exists:", rs.Primary.ID)
+			return fmt.Errorf("resource Internet(router+switch)[%s] still exists:", rs.Primary.ID)
 		}
 	}
 

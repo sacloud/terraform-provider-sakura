@@ -45,7 +45,7 @@ type internetDataSourceModel struct {
 }
 
 func (d *internetDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resourceName := "Internet(switch+router)"
+	resourceName := "Internet(router+switch)"
 
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
