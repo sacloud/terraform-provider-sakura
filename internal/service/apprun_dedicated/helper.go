@@ -80,7 +80,7 @@ func intoInt16[T ~int | ~int32 | ~int16 | ~uint16 | ~int64](t *T) (ret *int16, d
 	ret = &val
 
 	if rev != *t {
-		diag.AddError("integer overflow", fmt.Sprintf("conversion of %q into int16 cannot be excersised; it doesn't fit into.", *t))
+		diag.AddError("integer overflow", fmt.Sprintf("conversion of %d into int16 cannot be excersised; it doesn't fit into.", *t))
 	}
 
 	return
@@ -96,7 +96,7 @@ func intoUInt16[T ~int | ~int32 | ~int16 | ~int64](t *T) (ret *uint16, diag diag
 	ret = &val
 
 	if rev != *t {
-		diag.AddError("integer overflow", fmt.Sprintf("conversion of %q into int16 cannot be excersised; it doesn't fit into.", *t))
+		diag.AddError("integer overflow", fmt.Sprintf("conversion of %d into uint16 cannot be excersised; it doesn't fit into.", *t))
 	}
 
 	return

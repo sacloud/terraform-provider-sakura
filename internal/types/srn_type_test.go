@@ -39,7 +39,6 @@ func TestSRNTypeValueFromTerraform(t *testing.T) {
 		},
 	}
 	for name, testCase := range testCases {
-
 		t.Run(name, func(t *testing.T) {
 			t.Parallel()
 			ctx := context.Background()
