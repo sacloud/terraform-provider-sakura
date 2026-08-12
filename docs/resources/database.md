@@ -152,6 +152,10 @@ Required:
 - `days_of_week` (Set of String) A list of days of week to backed up. The values in the list must be in [`sun`/`mon`/`tue`/`wed`/`thu`/`fri`/`sat`]
 - `time` (String) The time to take backup. This must be formatted with `HH:mm`
 
+Optional:
+
+- `connect` (String) NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`). This is only available for PostgreSQL 15 or later.
+
 
 <a id="nestedatt--continuous_backup"></a>
 ### Nested Schema for `continuous_backup`

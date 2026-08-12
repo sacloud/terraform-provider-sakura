@@ -47,12 +47,14 @@ type databaseNetworkInterfaceModel struct {
 type databaseBackupModel struct {
 	DaysOfWeek types.Set    `tfsdk:"days_of_week"`
 	Time       types.String `tfsdk:"time"`
+	Connect    types.String `tfsdk:"connect"`
 }
 
 func (m databaseBackupModel) AttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"days_of_week": types.SetType{ElemType: types.StringType},
 		"time":         types.StringType,
+		"connect":      types.StringType,
 	}
 }
 
@@ -128,6 +130,9 @@ func flattenDatabaseBackupSetting(db *iaas.Database) types.Object {
 		m := databaseBackupModel{
 			Time:       types.StringValue(db.BackupSetting.Time),
 			DaysOfWeek: common.FlattenBackupDaysOfWeek(db.BackupSetting.DayOfWeek),
+		}
+		if db.BackupSetting.Connect != "" {
+			m.Connect = types.StringValue(db.BackupSetting.Connect)
 		}
 		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
 		if diags.HasError() {

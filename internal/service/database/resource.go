@@ -162,7 +162,7 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"network_interface": schema.SingleNestedAttribute{
 				Required: true,
 				Attributes: map[string]schema.Attribute{
-					"vswitch_id": common.SchemaResourceSwitchID("Database"),
+					"vswitch_id": common.SchemaResourceVSwitchID("Database"),
 					"ip_address": schema.StringAttribute{
 						Required:    true,
 						Description: "The IP address to assign to the Database",
@@ -221,6 +221,10 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 						Validators: []validator.String{
 							sacloudvalidator.BackupTimeValidator(),
 						},
+					},
+					"connect": schema.StringAttribute{
+						Optional:    true,
+						Description: "NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`). This is only available for PostgreSQL 15 or later.",
 					},
 				},
 			},
@@ -499,9 +503,11 @@ func expandDatabaseBackupSetting(model *databaseResourceModel) *iaas.DatabaseSet
 
 	backupTime := backup.Time.ValueString()
 	backupDaysOfWeek := common.ExpandBackupDaysOfWeek(backup.DaysOfWeek)
+	backupConnect := backup.Connect.ValueString()
 	return &iaas.DatabaseSettingBackup{
 		Time:      backupTime,
 		DayOfWeek: backupDaysOfWeek,
+		Connect:   backupConnect,
 		Rotate:    8,
 	}
 }
