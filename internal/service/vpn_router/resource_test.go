@@ -366,6 +366,38 @@ func TestAccSakuraVPNRouter_WOFull(t *testing.T) {
 	})
 }
 
+// test for https://github.com/sacloud/terraform-provider-sakura/issues/306
+func TestAccSakuraVPNRouter_Issue306(t *testing.T) {
+	resourceName := "sakura_vpn_router.foobar"
+	rand := test.RandomName()
+
+	var vpcRouter iaas.VPCRouter
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			test.CheckSakuraInternetDestroy,
+			test.CheckSakuravSwitchDestroy,
+			testCheckSakuraVPNRouterDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraVPNRouter_issue306, rand),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraVPNRouterExists(resourceName, &vpcRouter),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "plan", "premium"),
+					resource.TestCheckResourceAttrSet(resourceName, "public_ip"),
+					resource.TestCheckResourceAttrSet(resourceName, "public_netmask"),
+					resource.TestCheckResourceAttr(resourceName, "private_network_interface.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "public_network_interface.vrid", "1"),
+					resource.TestCheckNoResourceAttr(resourceName, "public_network_interface.aliases"),
+				),
+			},
+		},
+	})
+}
+
 func testCheckSakuraVPNRouterExists(n string, vpcRouter *iaas.VPCRouter) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -842,5 +874,36 @@ resource "sakura_vpn_router" "foobar" {
 var testAccSakuraVPNRouter_import = `
 resource "sakura_vpn_router" "foobar" {
   name = "{{ .arg0 }}"
+}
+`
+
+var testAccSakuraVPNRouter_issue306 = `
+resource "sakura_internet" "foobar" {
+  name = "{{ .arg0 }}"
+}
+resource "sakura_vswitch" "foobar" {
+  name = "{{ .arg0 }}"
+}
+
+resource "sakura_vpn_router" "foobar" {
+  name = "{{ .arg0 }}"
+  plan = "premium"
+  internet_connection = true
+
+  public_network_interface = {
+    vswitch_id   = sakura_internet.foobar.vswitch_id
+    vip          = sakura_internet.foobar.ip_addresses[0]
+    ip_addresses = [sakura_internet.foobar.ip_addresses[1], sakura_internet.foobar.ip_addresses[2]]
+    vrid         = 1
+    # No aliases
+  }
+
+  private_network_interface = [{
+    index        = 1
+    vswitch_id   = sakura_vswitch.foobar.id
+    vip          = "192.168.11.1"
+    ip_addresses = ["192.168.11.2", "192.168.11.3"]
+    netmask      = 24
+  }]
 }
 `

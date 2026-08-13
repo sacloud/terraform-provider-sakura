@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/defaults"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
@@ -51,6 +52,10 @@ func expandVPNRouterNICSetting(model *vpnRouterResourceModel) builder.NICSetting
 		return &builder.StandardNICSetting{}
 	default:
 		nic := expandVPNRouterPublicNetworkInterface(model)
+		if nic == nil {
+			tflog.Warn(context.Background(), fmt.Sprintf("Can't expand VPN Router public_network_interface. This is something wrong with the configuration or broken state"))
+			return &builder.PremiumNICSetting{}
+		}
 		return &builder.PremiumNICSetting{
 			SwitchID:         nic.switchID,
 			IPAddresses:      nic.ipAddresses,
