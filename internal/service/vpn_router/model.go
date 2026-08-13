@@ -300,6 +300,8 @@ func flattenVPNRouterPublicNetworkInterface(vpcRouter *iaas.VPCRouter) types.Obj
 	aliases := flattenVPNRouterIPAliases(vpcRouter)
 	if len(aliases) > 0 {
 		m.Aliases = common.StringsToTlist(aliases)
+	} else {
+		m.Aliases = types.ListNull(types.StringType)
 	}
 	value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
 	if diags.HasError() {
