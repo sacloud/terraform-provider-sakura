@@ -224,7 +224,7 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 					},
 					"connect": schema.StringAttribute{
 						Optional:    true,
-						Description: "NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`). This is only available for PostgreSQL 15 or later.",
+						Description: "The NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`)",
 					},
 				},
 			},

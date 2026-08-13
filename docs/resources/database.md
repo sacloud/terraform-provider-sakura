@@ -154,7 +154,7 @@ Required:
 
 Optional:
 
-- `connect` (String) NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`). This is only available for PostgreSQL 15 or later.
+- `connect` (String) The NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`)
 
 
 <a id="nestedatt--continuous_backup"></a>
