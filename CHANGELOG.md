@@ -1,5 +1,12 @@
 # Changelog
 
+## [v3.12.8](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.7...v3.12.8) - 2026-08-13
+
+- remove: user count limit (max 100) on sakura_vpn_router by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/311
+- Set null to public_network_interface.aliases to avoid conversion error. fix #306 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/310
+- go: bump github.com/jlaffaye/ftp from 0.2.0 to 0.2.2 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/304
+- go: bump github.com/hashicorp/terraform-plugin-log from 0.10.0 to 0.11.0 in the terraform group by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/307
+
 ## [v3.12.7](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.6...v3.12.7) - 2026-07-27
 
 - workflows: fix workflows's update action. fix #291 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/295
