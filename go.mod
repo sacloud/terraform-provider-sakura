@@ -17,31 +17,31 @@ require (
 	github.com/jlaffaye/ftp v0.2.2
 	github.com/minio/minio-go/v7 v7.2.1
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/sacloud/addon-api-go v0.1.0
-	github.com/sacloud/api-client-go v0.3.5
-	github.com/sacloud/apigw-api-go v0.3.0
-	github.com/sacloud/apprun-api-go v0.8.2
-	github.com/sacloud/apprun-dedicated-api-go v0.2.1
+	github.com/sacloud/addon-api-go v0.1.1
+	github.com/sacloud/api-client-go v0.3.6
+	github.com/sacloud/apigw-api-go v0.3.1
+	github.com/sacloud/apprun-api-go v0.8.3
+	github.com/sacloud/apprun-dedicated-api-go v0.2.2
 	github.com/sacloud/autoscaler v0.19.5
-	github.com/sacloud/cloudhsm-api-go v0.4.0
-	github.com/sacloud/dedicated-storage-api-go v0.2.0
-	github.com/sacloud/eventbus-api-go v0.6.1
-	github.com/sacloud/iaas-api-go v1.29.2
-	github.com/sacloud/iaas-service-go v1.25.1
-	github.com/sacloud/iam-api-go v0.3.0
-	github.com/sacloud/kms-api-go v0.4.0
-	github.com/sacloud/monitoring-suite-api-go v0.2.1
-	github.com/sacloud/nosql-api-go v0.3.0
-	github.com/sacloud/object-storage-api-go v0.2.0
-	github.com/sacloud/packages-go v0.1.0
-	github.com/sacloud/saclient-go v0.4.0
-	github.com/sacloud/secretmanager-api-go v0.4.1
-	github.com/sacloud/security-control-api-go v0.3.0
-	github.com/sacloud/service-endpoint-gateway-api-go v0.2.0
-	github.com/sacloud/simple-notification-api-go v0.3.1
-	github.com/sacloud/simplemq-api-go v0.5.1
-	github.com/sacloud/webaccel-api-go v1.5.0
-	github.com/sacloud/workflows-api-go v0.4.0
+	github.com/sacloud/cloudhsm-api-go v0.4.1
+	github.com/sacloud/dedicated-storage-api-go v0.2.1
+	github.com/sacloud/eventbus-api-go v0.6.2
+	github.com/sacloud/iaas-api-go v1.29.3
+	github.com/sacloud/iaas-service-go v1.25.2
+	github.com/sacloud/iam-api-go v0.3.1
+	github.com/sacloud/kms-api-go v0.4.1
+	github.com/sacloud/monitoring-suite-api-go v0.2.3
+	github.com/sacloud/nosql-api-go v0.3.1
+	github.com/sacloud/object-storage-api-go v0.2.1
+	github.com/sacloud/packages-go v0.1.1
+	github.com/sacloud/saclient-go v0.4.1
+	github.com/sacloud/secretmanager-api-go v0.4.2
+	github.com/sacloud/security-control-api-go v0.3.1
+	github.com/sacloud/service-endpoint-gateway-api-go v0.2.1
+	github.com/sacloud/simple-notification-api-go v0.3.2
+	github.com/sacloud/simplemq-api-go v0.5.2
+	github.com/sacloud/webaccel-api-go v1.5.1
+	github.com/sacloud/workflows-api-go v0.4.1
 	github.com/stretchr/testify v1.11.1
 )
 
