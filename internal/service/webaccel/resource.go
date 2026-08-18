@@ -23,7 +23,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
-	"github.com/sacloud/webaccel-api-go"
+	"github.com/sacloud/sacloud-sdk-go/api/webaccel"
 )
 
 type webAccelResource struct {

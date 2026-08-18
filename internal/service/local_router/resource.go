@@ -20,8 +20,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/iaas-api-go"
-	localrouter "github.com/sacloud/iaas-service-go/localrouter/builder"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	localrouter "github.com/sacloud/sacloud-sdk-go/service/iaas/localrouter/builder"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )

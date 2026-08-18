@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	lb "github.com/sacloud/apprun-dedicated-api-go/apis/loadbalancer"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
+	lb "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/loadbalancer"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 )
 
 type loadBalancersDataSource struct{ dataSourceClient }

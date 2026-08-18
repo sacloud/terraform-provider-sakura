@@ -16,9 +16,9 @@ import (
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/helper/cleanup"
-	iaastypes "github.com/sacloud/iaas-api-go/types"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/cleanup"
+	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )

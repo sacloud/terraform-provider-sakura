@@ -16,8 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/cloudhsm-api-go"
-	v1 "github.com/sacloud/cloudhsm-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/cloudhsm"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/cloudhsm/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )

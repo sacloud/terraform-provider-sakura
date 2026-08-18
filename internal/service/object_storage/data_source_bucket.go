@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	objectstorage "github.com/sacloud/object-storage-api-go"
+	objectstorage "github.com/sacloud/sacloud-sdk-go/api/object-storage"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

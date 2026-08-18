@@ -6,8 +6,8 @@ package apprun_dedicated
 import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/cluster"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

@@ -5,7 +5,7 @@ package iam
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v1 "github.com/sacloud/iam-api-go/apis/v1"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/iam/apis/v1"
 )
 
 type userProvisioningBaseModel struct {

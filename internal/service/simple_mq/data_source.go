@@ -10,8 +10,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/simplemq-api-go"
-	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
+	"github.com/sacloud/sacloud-sdk-go/api/simplemq"
+	"github.com/sacloud/sacloud-sdk-go/api/simplemq/apis/v1/queue"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )

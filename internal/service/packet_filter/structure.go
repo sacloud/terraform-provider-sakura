@@ -4,8 +4,8 @@
 package packet_filter
 
 import (
-	"github.com/sacloud/iaas-api-go"
-	iaastypes "github.com/sacloud/iaas-api-go/types"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
 )
 
 func expandPacketFilterExpressions(exprs []packetFilterExpressionModel) []*iaas.PacketFilterExpression {

@@ -18,8 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/nosql-api-go"
-	v1 "github.com/sacloud/nosql-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/nosql"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/nosql/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )

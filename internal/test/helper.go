@@ -12,7 +12,7 @@ import (
 	"text/template"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	envvar "github.com/sacloud/packages-go/envvar"
+	envvar "github.com/sacloud/sacloud-sdk-go/common/packages/envvar"
 )
 
 func SkipIfFakeModeEnabled(t *testing.T) {

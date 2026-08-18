@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	v1 "github.com/sacloud/nosql-api-go/apis/v1"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/nosql/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 

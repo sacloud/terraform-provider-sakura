@@ -19,10 +19,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
-	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
-	"github.com/sacloud/apprun-dedicated-api-go/apis/cluster"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	apprun_dedicated "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated"
+	"github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/cluster"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 

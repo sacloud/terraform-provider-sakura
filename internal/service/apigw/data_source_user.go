@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/apigw-api-go"
-	v1 "github.com/sacloud/apigw-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/apigw"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apigw/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )

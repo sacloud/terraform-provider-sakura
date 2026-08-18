@@ -8,7 +8,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v1 "github.com/sacloud/apprun-api-go/apis/v1"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun/apis/v1"
 )
 
 type apprunSharedBaseModel struct {

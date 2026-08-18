@@ -5,7 +5,7 @@ package bridge
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/iaas-api-go"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
 )
 
 type bridgeBaseModel struct {

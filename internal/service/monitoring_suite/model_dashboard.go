@@ -7,7 +7,7 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
+	monitoringsuiteapi "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite/apis/v1"
 )
 
 // ダッシュボードは他のモニタリングスイートのリソースと違いIDがUUIDではなくリソースIDだが、他と統一するためにresource_idフィールドも用意。

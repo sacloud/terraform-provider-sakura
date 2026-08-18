@@ -14,8 +14,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	simplenotification "github.com/sacloud/simple-notification-api-go"
-	v1 "github.com/sacloud/simple-notification-api-go/apis/v1"
+	simplenotification "github.com/sacloud/sacloud-sdk-go/api/simple-notification"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/simple-notification/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )

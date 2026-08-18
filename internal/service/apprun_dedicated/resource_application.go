@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	app "github.com/sacloud/apprun-dedicated-api-go/apis/application"
-	"github.com/sacloud/saclient-go"
+	app "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/application"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

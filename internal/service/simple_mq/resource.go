@@ -17,9 +17,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	validator "github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/sacloud/saclient-go"
-	"github.com/sacloud/simplemq-api-go"
-	"github.com/sacloud/simplemq-api-go/apis/v1/queue"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
+	"github.com/sacloud/sacloud-sdk-go/api/simplemq"
+	"github.com/sacloud/sacloud-sdk-go/api/simplemq/apis/v1/queue"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )

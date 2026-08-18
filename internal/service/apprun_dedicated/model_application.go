@@ -5,8 +5,8 @@ package apprun_dedicated
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	app "github.com/sacloud/apprun-dedicated-api-go/apis/application"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
+	app "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/application"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 )
 
 type appID = v1.ApplicationID
