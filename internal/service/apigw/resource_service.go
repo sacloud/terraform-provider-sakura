@@ -219,11 +219,13 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 					"preflight_continue": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 						Description: "Whether to pass preflight result to next handler",
 					},
 					"private_network": schema.BoolAttribute{
 						Optional:    true,
 						Computed:    true,
+						Default:     booldefault.StaticBool(false),
 						Description: "Whether to restrict CORS to private network",
 					},
 				},
@@ -460,12 +462,9 @@ func expandCorsConfig(model *apigwServiceCORSModel) v1.OptCorsConfig {
 	if utils.IsKnown(model.AccessControlExposedHeaders) {
 		conf.AccessControlExposedHeaders = v1.NewOptString(model.AccessControlExposedHeaders.ValueString())
 	}
-	if utils.IsKnown(model.PreflightContinue) {
-		conf.PreflightContinue = v1.NewOptBool(model.PreflightContinue.ValueBool())
-	}
-	if utils.IsKnown(model.PrivateNetwork) {
-		conf.PrivateNetwork = v1.NewOptBool(model.PrivateNetwork.ValueBool())
-	}
+	conf.PreflightContinue = v1.NewOptBool(model.PreflightContinue.ValueBool())
+	conf.PrivateNetwork = v1.NewOptBool(model.PrivateNetwork.ValueBool())
+
 	res.SetTo(conf)
 	return res
 }

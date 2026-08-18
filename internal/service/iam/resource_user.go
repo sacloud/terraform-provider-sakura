@@ -73,7 +73,7 @@ func (r *userResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 			"password_wo": schema.StringAttribute{
 				Required:    true,
 				WriteOnly:   true,
-				Description: "Password for NoSQL appliance",
+				Description: "Password for IAM User",
 				Validators: []validator.String{
 					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
 				},

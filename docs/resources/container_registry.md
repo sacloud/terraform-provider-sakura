@@ -36,7 +36,6 @@ variable users {
 resource "sakura_container_registry" "foobar" {
   name            = "foobar"
   subdomain_label = "your-subdomain-label"
-  access_level    = "none" # this must be one of ["none"/"readonly"]
 
   description = "description"
   tags        = ["tag1", "tag2"]
@@ -57,12 +56,12 @@ resource "sakura_container_registry" "foobar" {
 
 ### Required
 
-- `access_level` (String) The level of access that allow to users. This must be one of [`readonly`/`none`]
 - `name` (String) The name of the Container Registry.
 - `subdomain_label` (String) The label at the lowest of the FQDN used when be accessed from users. The length of this value must be in the range [`1`-`64`]
 
 ### Optional
 
+- `access_level` (String, Deprecated) The level of access that allow to users. This must be one of [`readonly`/`none`]
 - `description` (String) The description of the Container Registry. The length of this value must be in the range [`1`-`512`]
 - `icon_id` (String) The icon id to attach to the Container Registry
 - `tags` (Set of String) The tags of the Container Registry.

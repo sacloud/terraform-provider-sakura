@@ -61,7 +61,7 @@ type internetResourceModel struct {
 }
 
 func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
-	resourceName := "Internet(switch+router)"
+	resourceName := "Internet(router+switch)"
 
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -144,7 +144,7 @@ func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages an Internet(Switch + Router).",
+		MarkdownDescription: "Manages an Internet(router+switch).",
 	}
 }
 

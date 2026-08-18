@@ -40,7 +40,6 @@ func TestAccSakuraContainerRegistry_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "subdomain_label", subDomainLabel),
 					resource.TestCheckResourceAttr(resourceName, "virtual_domain", subDomainLabel+".usacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "fqdn", subDomainLabel+".sakuracr.jp"),
-					resource.TestCheckResourceAttr(resourceName, "access_level", "readonly"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
@@ -66,7 +65,6 @@ func TestAccSakuraContainerRegistry_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "subdomain_label", subDomainLabel),
 					resource.TestCheckResourceAttr(resourceName, "virtual_domain", subDomainLabel+"-upd.usacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "fqdn", subDomainLabel+".sakuracr.jp"),
-					resource.TestCheckResourceAttr(resourceName, "access_level", "none"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-upd"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1-upd"),
@@ -105,7 +103,6 @@ func TestAccSakuraContainerRegistry_WObasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "subdomain_label", subDomainLabel),
 					resource.TestCheckResourceAttr(resourceName, "virtual_domain", subDomainLabel+".usacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "fqdn", subDomainLabel+".sakuracr.jp"),
-					resource.TestCheckResourceAttr(resourceName, "access_level", "none"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
@@ -131,7 +128,6 @@ func TestAccSakuraContainerRegistry_WObasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "subdomain_label", subDomainLabel),
 					resource.TestCheckResourceAttr(resourceName, "virtual_domain", subDomainLabel+"-upd.usacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "fqdn", subDomainLabel+".sakuracr.jp"),
-					resource.TestCheckResourceAttr(resourceName, "access_level", "none"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-upd"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1-upd"),
@@ -143,6 +139,36 @@ func TestAccSakuraContainerRegistry_WObasic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "user.0.permission", "readonly"),
 					resource.TestCheckResourceAttr(resourceName, "user.0.password_wo_version", "2"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccImportSakuraContainerRegistry_basic(t *testing.T) {
+	resourceName := "sakura_container_registry.foobar"
+	rand := test.RandomName()
+	subDomainLabel := acctest.RandStringFromCharSet(60, acctest.CharSetAlpha)
+	password := test.RandomPassword()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraContainerRegistryDestroy,
+			test.CheckSakuraIconDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraContainerRegistry_import, rand, subDomainLabel, password),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"user.0.password",
+					"user.1.password",
+				},
 			},
 		},
 	})
@@ -203,7 +229,6 @@ resource "sakura_container_registry" "foobar" {
   name            = "{{ .arg0 }}"
   virtual_domain  = "{{ .arg1 }}.usacloud.jp"
   subdomain_label = "{{ .arg1 }}"
-  access_level    = "readonly"
 
   description = "description"
   tags        = ["tag1", "tag2"]
@@ -232,7 +257,6 @@ resource "sakura_container_registry" "foobar" {
   name            = "{{ .arg0 }}-upd"
   virtual_domain  = "{{ .arg1 }}-upd.usacloud.jp"
   subdomain_label = "{{ .arg1 }}"
-  access_level    = "none"
 
   description = "description-upd"
   tags        = ["tag1-upd", "tag2-upd"]
@@ -250,7 +274,6 @@ resource "sakura_container_registry" "foobar" {
   name            = "{{ .arg0 }}"
   virtual_domain  = "{{ .arg1 }}.usacloud.jp"
   subdomain_label = "{{ .arg1 }}"
-  access_level    = "none"
 
   description = "description"
   tags        = ["tag1", "tag2"]
@@ -275,7 +298,6 @@ resource "sakura_container_registry" "foobar" {
   name            = "{{ .arg0 }}-upd"
   virtual_domain  = "{{ .arg1 }}-upd.usacloud.jp"
   subdomain_label = "{{ .arg1 }}"
-  access_level    = "none"
 
   description = "description-upd"
   tags        = ["tag1-upd", "tag2-upd"]
@@ -286,5 +308,33 @@ resource "sakura_container_registry" "foobar" {
     password_wo = "{{ .arg2 }}abc"
     password_wo_version = 2
   }]
+}
+`
+
+var testAccSakuraContainerRegistry_import = `
+resource "sakura_container_registry" "foobar" {
+  name            = "{{ .arg0 }}"
+  virtual_domain  = "{{ .arg1 }}.usacloud.jp"
+  subdomain_label = "{{ .arg1 }}"
+
+  description = "description"
+  tags        = ["tag1", "tag2"]
+  icon_id     = sakura_icon.foobar.id
+
+  user = [{
+    name       = "user1"
+    password   = "{{ .arg2 }}"
+    permission = "readwrite"
+  },
+  {
+    name       = "user2"
+    password   = "{{ .arg2 }}"
+    permission = "readonly"
+  }]
+}
+
+resource "sakura_icon" "foobar" {
+  name          = "{{ .arg0 }}"
+  base64content = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 }
 `

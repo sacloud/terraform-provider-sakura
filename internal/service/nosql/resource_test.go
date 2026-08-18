@@ -135,6 +135,38 @@ func testCheckSakuraNosqlExists(n string, instance *v1.GetNosqlAppliance) resour
 	}
 }
 
+func TestAccImportSakuraNosql_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, envNosqlPassword)
+
+	resourceName := "sakura_nosql.foobar"
+	rand := test.RandomName()
+	password := os.Getenv(envNosqlPassword)
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			testCheckSakuraNosqlDestroy,
+			test.CheckSakuravSwitchDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraNosql_import, rand, password),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"password_wo",
+					"password_wo_version",
+					"zone",
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraNosqlDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 
@@ -155,6 +187,56 @@ func testCheckSakuraNosqlDestroy(s *terraform.State) error {
 
 	return nil
 }
+
+const testAccSakuraNosql_import = `
+resource "sakura_vswitch" "foobar" {
+  name = "{{ .arg0 }}"
+}
+
+resource "sakura_nosql" "foobar" {
+  name = "{{ .arg0 }}"
+  tags = ["tag1", "tag2"]
+  zone = "tk1b"
+  plan = "100GB"
+  description = "description"
+  password_wo = "{{ .arg1 }}"
+  password_wo_version = 1
+  vswitch_id  = sakura_vswitch.foobar.id
+  settings = {
+    reserve_ip_address = "192.168.0.10"
+    repair = {
+      full = {
+        interval = 14
+        day_of_week = "fri"
+        time = "00:15"
+      }
+      incremental = {
+        days_of_week = ["mon"]
+        time = "00:15"
+      }
+    }
+  }
+  remark = {
+    nosql = {
+      default_user = "tftest"
+      port = 9042
+    }
+    servers = [
+      "192.168.0.7",
+      "192.168.0.8",
+      "192.168.0.9",
+    ]
+    network = {
+      gateway = "192.168.0.1"
+      netmask = 24
+    }
+  }
+  parameters = {
+    concurrent_writes = "16"
+    cas_contention_timeout = "1000ms"
+  }
+}
+`
 
 const testAccSakuraNosql_basic = `
 resource "sakura_vswitch" "foobar" {

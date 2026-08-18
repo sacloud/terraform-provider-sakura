@@ -6,6 +6,7 @@ package monitoring_suite
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -14,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	monitoringsuite "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite"
@@ -90,32 +92,40 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"enabled_warning": schema.BoolAttribute{
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "Whether to enable warning level of the Alert Rule.",
 			},
 			"enabled_critical": schema.BoolAttribute{
 				Optional:    true,
+				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "Whether to enable critical level of the Alert Rule.",
 			},
 			"threshold_warning": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The threshold of warning level of the Alert Rule.",
 				Validators: []validator.String{
-					stringvalidator.LengthAtMost(256),
+					stringvalidator.LengthBetween(1, 256),
 				},
 			},
 			"threshold_critical": schema.StringAttribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The threshold of critical level of the Alert Rule.",
 				Validators: []validator.String{
-					stringvalidator.LengthAtMost(256),
+					stringvalidator.LengthBetween(1, 256),
 				},
 			},
 			"threshold_duration_warning": schema.Int64Attribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The threshold duration (in seconds) of warning level of the Alert Rule.",
 			},
 			"threshold_duration_critical": schema.Int64Attribute{
 				Optional:    true,
+				Computed:    true,
 				Description: "The threshold duration (in seconds) of critical level of the Alert Rule.",
 			},
 			"open": schema.BoolAttribute{
@@ -131,7 +141,18 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 }
 
 func (r *alertRuleResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	var parts []string
+	if strings.Contains(req.ID, "/") {
+		parts = strings.SplitN(req.ID, "/", 2)
+	} else if strings.Contains(req.ID, "_") {
+		parts = strings.SplitN(req.ID, "_", 2)
+	}
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: {alert_project_id}/{id}({alert_project_id}_{id} for backward compatibility)")
+		return
+	}
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("alert_project_id"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
 func (r *alertRuleResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -159,7 +180,7 @@ func (r *alertRuleResource) Create(ctx context.Context, req resource.CreateReque
 		ThresholdDurationCritical: expandOptionalInt64(plan.ThresholdDurationCritical),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Alert Project: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Alert Rule: %s", err))
 		return
 	}
 

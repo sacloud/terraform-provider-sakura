@@ -1,5 +1,70 @@
 # Changelog
 
+## [v3.12.8](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.7...v3.12.8) - 2026-08-13
+
+- remove: user count limit (max 100) on sakura_vpn_router by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/311
+- Set null to public_network_interface.aliases to avoid conversion error. fix #306 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/310
+- go: bump github.com/jlaffaye/ftp from 0.2.0 to 0.2.2 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/304
+- go: bump github.com/hashicorp/terraform-plugin-log from 0.10.0 to 0.11.0 in the terraform group by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/307
+
+## [v3.12.7](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.6...v3.12.7) - 2026-07-27
+
+- workflows: fix workflows's update action. fix #291 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/295
+- Use slash for import by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/297
+- vpn_router: Remove default from firewall.logging attribute to avoid unexpected plan change by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/300
+- Use router+switch instead of switch+router by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/302
+- ci: bump Songmu/tagpr from 1.20.0 to 1.20.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/298
+
+## [v3.12.6](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.5...v3.12.6) - 2026-07-15
+
+- Add default to optional/computed bool attribute by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/286
+- iam: fix wrong description for sakura_iam_user.password_wo by @tokuhirom in https://github.com/sacloud/terraform-provider-sakura/pull/292
+- object_storage: fix permission's import by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/290
+- SEG: zone needed for import by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/289
+- service_endpoint_gateway_api_go v0.2.0 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/285
+- vpn_router: Use Set for firewall to fix unordered problem by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/293
+
+## [v3.12.5](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.4...v3.12.5) - 2026-07-06
+
+- test: remove access_level from container_registry tests by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/278
+- monitoring_suite: use pre-created storage to reduce resource consumption in test by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/280
+- monitoring_suite: Fix alert_rule resource and examples by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/282
+- ci: Bump actions/setup-go from 6.4.0 to 6.5.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/281
+- ci: Bump goreleaser/goreleaser-action from 7.2.2 to 7.2.3 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/283
+- go: Bump github.com/minio/minio-go/v7 from 7.2.0 to 7.2.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/284
+
+## [v3.12.4](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.3...v3.12.4) - 2026-06-25
+
+- nosql: fix Read method for import by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/270
+- docs: announce v2 end-of-maintenance and update migration notes by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/274
+- monitoring_suite: fix import of alert resources by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/272
+- apprun_dedicated: fix nil pointer panic by @DCS-koyano in https://github.com/sacloud/terraform-provider-sakura/pull/275
+- go: Bump github.com/sacloud/iaas-api-go from 1.29.1 to 1.29.2 in the sacloud group by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/277
+
+## [v3.12.3](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.2...v3.12.3) - 2026-06-22
+
+- Use OndemandDB hostname from state in plan by @x-color in https://github.com/sacloud/terraform-provider-sakura/pull/267
+- go: Bump github.com/sacloud/apprun-api-go from 0.8.1 to 0.8.2 in the sacloud group by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/268
+
+## [v3.12.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.1...v3.12.2) - 2026-06-17
+
+- fix(secret_manager): support composite ID for import and add tests by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/253
+- fix(simple_monitor): fix nil panic on import and add import test verification by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/255
+- Add terraform version notice and regenerate docs by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/260
+- fix(webaccel): support import for webaccel bucket origin by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/262
+- fix(vpn_router): set Version in updateState during Read/Import by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/257
+- test: add import verification tests for v2-compatible resources by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/251
+- update monitoring-suite-api-go to fix #261 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/263
+- deprecate: mark container_registry access_level as deprecated by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/264
+- ci: bump actions/checkout from 6.0.2 to 6.0.3 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/252
+- ci: bump Songmu/tagpr from 1.19.0 to 1.20.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/250
+- go: Bump the sacloud group across 1 directory with 5 updates by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/246
+
+## [v3.12.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.0...v3.12.1) - 2026-06-08
+- Update apprun_shared test by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/245
+- Fix KMS resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/249
+- go: bump github.com/minio/minio-go/v7 from 7.1.0 to 7.2.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/247
+
 ## [v3.12.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.11.0...v3.12.0) - 2026-06-01
 - Support Service Principal Key KID by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/235
 - docs: fix subcategories for AppRun dedicated LB resources by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/237

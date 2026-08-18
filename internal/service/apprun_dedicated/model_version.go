@@ -129,7 +129,10 @@ func (p exposedPortModel) intoCreate() (ret version.ExposedPort, diag diag.Diagn
 	ret.TargetPort = v1.Port(p.TargetPort.ValueInt32())
 	ret.UseLetsEncrypt = p.UseLetsEncrypt.ValueBool()
 	ret.Host = common.TsetToStrings(p.Host)
-	ret.HealthCheck = saclient.Ptr(p.HealthCheck.intoCreate())
+
+	if p.HealthCheck != nil {
+		ret.HealthCheck = saclient.Ptr(p.HealthCheck.intoCreate())
+	}
 
 	var port *uint16
 	switch {
@@ -179,6 +182,12 @@ func (p *exposedPortModel) updateState(d version.ExposedPort) {
 	p.LoadBalancerPort = p.int32(d.LoadBalancerPort)
 	p.UseLetsEncrypt = types.BoolValue(d.UseLetsEncrypt)
 	p.Host = common.StringsToTset(d.Host)
+
+	if d.HealthCheck == nil {
+		p.HealthCheck = nil
+		return
+	}
+
 	p.HealthCheck = new(healthCheckModel)
 	p.HealthCheck.updateState(d.HealthCheck)
 }

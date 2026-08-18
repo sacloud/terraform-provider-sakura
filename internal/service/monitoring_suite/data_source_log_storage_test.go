@@ -4,6 +4,7 @@
 package monitoring_suite_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -11,18 +12,20 @@ import (
 )
 
 func TestAccSakuraMonitoringSuiteLogStorageDataSource_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_LOG_STORAGE_ID")
+
 	resourceName := "data.sakura_monitoring_suite_log_storage.foobar"
-	rand := test.RandomName()
+	id := os.Getenv("SAKURA_MONITORING_SUITE_LOG_STORAGE_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteLogStorageDataSource_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteLogStorageDataSource_basic, id),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
-					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "name", "tf-test"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "classification", "shared"),
 					resource.TestCheckResourceAttr(resourceName, "is_system", "false"),
@@ -39,14 +42,7 @@ func TestAccSakuraMonitoringSuiteLogStorageDataSource_basic(t *testing.T) {
 }
 
 var testAccSakuraMonitoringSuiteLogStorageDataSource_basic = `
-resource "sakura_monitoring_suite_log_storage" "foobar" {
-  name = "{{ .arg0 }}"
-  description = "description"
-  classification = "shared"
-  is_system = false
-}
-
 data "sakura_monitoring_suite_log_storage" "foobar" {
-  id = sakura_monitoring_suite_log_storage.foobar.id
+  id = "{{ .arg0 }}"
 }
 `

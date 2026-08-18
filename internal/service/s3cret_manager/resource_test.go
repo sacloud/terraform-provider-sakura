@@ -53,6 +53,27 @@ func TestAccSakuraSecretManager_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraSecretManager_basic(t *testing.T) {
+	resourceName := "sakura_secret_manager.foobar"
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraSecretManagerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManager_import, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraSecretManagerDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	vaultOp := sm.NewVaultOp(client.SecretManagerClient)
@@ -101,6 +122,23 @@ func testCheckSakuraSecretManagerExists(n string, vault *v1.Vault) resource.Test
 		return nil
 	}
 }
+
+//nolint:gosec
+var testAccSakuraSecretManager_import = `
+resource "sakura_kms" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+  tags        = ["tag1", "tag2"]
+}
+
+resource "sakura_secret_manager" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+  tags        = ["tag1", "tag2"]
+  kms_key_id  = sakura_kms.foobar.id
+
+  depends_on = [sakura_kms.foobar]
+}`
 
 //nolint:gosec
 var testAccSakuraSecretManager_basic = `

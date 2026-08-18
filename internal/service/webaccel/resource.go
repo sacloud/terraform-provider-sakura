@@ -791,15 +791,15 @@ func flattenWebAccelOriginParameters(config *webAccelResourceModel, site *webacc
 		originParam.Region = types.StringValue(site.S3Region)
 		originParam.BucketName = types.StringValue(site.BucketName)
 
-		if config == nil || config.OriginParameters == nil {
-			return nil, fmt.Errorf("origin_parameters must be provided to keep bucket credentials")
-		}
-		confParam := config.OriginParameters
-		if utils.IsKnown(confParam.UseDocumentIndex) {
-			originParam.UseDocumentIndex = types.BoolValue(confParam.UseDocumentIndex.ValueBool())
-		}
-		if utils.IsKnown(confParam.CredentialsWOVersion) {
-			originParam.CredentialsWOVersion = types.Int32Value(confParam.CredentialsWOVersion.ValueInt32())
+		// Restore values from config if available (importable attributes).
+		// Note: write-only credentials (access_key_wo, secret_access_key_wo) cannot be restored.
+		if config != nil && config.OriginParameters != nil {
+			if utils.IsKnown(config.OriginParameters.UseDocumentIndex) {
+				originParam.UseDocumentIndex = types.BoolValue(config.OriginParameters.UseDocumentIndex.ValueBool())
+			}
+			if utils.IsKnown(config.OriginParameters.CredentialsWOVersion) {
+				originParam.CredentialsWOVersion = types.Int32Value(config.OriginParameters.CredentialsWOVersion.ValueInt32())
+			}
 		}
 	default:
 		return nil, fmt.Errorf("unknown origin type: %s", site.OriginType)

@@ -19,6 +19,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -151,6 +152,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"confidential_vm": schema.BoolAttribute{
 				Optional:    true,
 				Computed:    true,
+				Default:     booldefault.StaticBool(false),
 				Description: "A flag indicating whether to use a confidential VM",
 				PlanModifiers: []planmodifier.Bool{
 					boolplanmodifier.RequiresReplaceIfConfigured(),

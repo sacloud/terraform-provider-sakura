@@ -3,12 +3,12 @@
 page_title: "sakura_internet Data Source - sakura"
 subcategory: "Networking"
 description: |-
-  Get information about an existing Internet(Switch + Router).
+  Get information about an existing Internet(router+switch).
 ---
 
 # sakura_internet (Data Source)
 
-Get information about an existing Internet(Switch + Router).
+Get information about an existing Internet(router+switch).
 
 ## Example Usage
 
@@ -23,25 +23,25 @@ data "sakura_internet" "foobar" {
 
 ### Optional
 
-- `id` (String) The ID of the Internet(switch+router).
-- `name` (String) The name of the Internet(switch+router).
-- `tags` (Set of String) The tags of the Internet(switch+router).
-- `zone` (String) The name of zone that the Internet(switch+router) is in (e.g. `is1a`, `tk1a`)
+- `id` (String) The ID of the Internet(router+switch).
+- `name` (String) The name of the Internet(router+switch).
+- `tags` (Set of String) The tags of the Internet(router+switch).
+- `zone` (String) The name of zone that the Internet(router+switch) is in (e.g. `is1a`, `tk1a`)
 
 ### Read-Only
 
 - `band_width` (Number) The bandwidth of the network connected to the Internet in Mbps
-- `description` (String) The description of the Internet(switch+router).
+- `description` (String) The description of the Internet(router+switch).
 - `enable_ipv6` (Boolean) The flag to enable IPv6
-- `gateway` (String) The IP address of the gateway used by Internet(switch+router)
-- `icon_id` (String) The icon id attached to the Internet(switch+router)
-- `ip_addresses` (List of String) A set of assigned global address to the Internet(switch+router)
-- `ipv6_network_address` (String) The IPv6 network address assigned to the Internet(switch+router)
-- `ipv6_prefix` (String) The network prefix of assigned IPv6 addresses to the Internet(switch+router)
-- `ipv6_prefix_len` (Number) The bit length of IPv6 network prefix for Internet(switch+router)
-- `max_ip_address` (String) Maximum IP address in assigned global addresses to the Internet(switch+router)
-- `min_ip_address` (String) Minimum IP address in assigned global addresses to the Internet(switch+router)
-- `netmask` (Number) The bit length of the subnet assigned to the Internet(switch+router)
+- `gateway` (String) The IP address of the gateway used by Internet(router+switch)
+- `icon_id` (String) The icon id attached to the Internet(router+switch)
+- `ip_addresses` (List of String) A set of assigned global address to the Internet(router+switch)
+- `ipv6_network_address` (String) The IPv6 network address assigned to the Internet(router+switch)
+- `ipv6_prefix` (String) The network prefix of assigned IPv6 addresses to the Internet(router+switch)
+- `ipv6_prefix_len` (Number) The bit length of IPv6 network prefix for Internet(router+switch)
+- `max_ip_address` (String) Maximum IP address in assigned global addresses to the Internet(router+switch)
+- `min_ip_address` (String) Minimum IP address in assigned global addresses to the Internet(router+switch)
+- `netmask` (Number) The bit length of the subnet assigned to the Internet(router+switch)
 - `network_address` (String) The network address assigned to the Switch+Router
-- `server_ids` (List of String) A list of the ID of Servers connected to the Internet(switch+router)
-- `vswitch_id` (String) The id of the vSwitch connected from the Internet(switch+router)
+- `server_ids` (List of String) A list of the ID of Servers connected to the Internet(router+switch)
+- `vswitch_id` (String) The id of the vSwitch connected from the Internet(router+switch)

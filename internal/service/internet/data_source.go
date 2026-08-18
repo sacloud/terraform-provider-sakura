@@ -45,7 +45,7 @@ type internetDataSourceModel struct {
 }
 
 func (d *internetDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
-	resourceName := "Internet(switch+router)"
+	resourceName := "Internet(router+switch)"
 
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
@@ -101,7 +101,7 @@ func (d *internetDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 				Description: desc.Sprintf("The IPv6 network address assigned to the %s", resourceName),
 			},
 		},
-		MarkdownDescription: "Get information about an existing Internet(Switch + Router).",
+		MarkdownDescription: "Get information about an existing Internet(router+switch).",
 	}
 }
 

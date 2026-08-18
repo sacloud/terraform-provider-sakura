@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/google/uuid"
@@ -18,8 +19,10 @@ import (
 )
 
 func TestAccSakuraMonitoringSuiteMetricStorageAccessKey_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
+
 	resourceName := "sakura_monitoring_suite_metric_storage_access_key.foobar"
-	rand := test.RandomName()
+	id := os.Getenv("SAKURA_MONITORING_SUITE_METRIC_STORAGE_ID")
 
 	var key monitoringsuiteapi.MetricsStorageAccessKey
 	resource.Test(t, resource.TestCase{
@@ -28,23 +31,23 @@ func TestAccSakuraMonitoringSuiteMetricStorageAccessKey_basic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraMonitoringSuiteMetricStorageAccessKeyDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricStorageAccessKey_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricStorageAccessKey_basic, id),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraMonitoringSuiteMetricStorageAccessKeyExists(resourceName, &key),
 					resource.TestCheckResourceAttr(resourceName, "description", "access-key"),
 					resource.TestCheckResourceAttrSet(resourceName, "token"),
 					resource.TestCheckResourceAttrSet(resourceName, "secret"),
-					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "sakura_monitoring_suite_metric_storage.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "data.sakura_monitoring_suite_metric_storage.foobar", "id"),
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricStorageAccessKey_update, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteMetricStorageAccessKey_update, id),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraMonitoringSuiteMetricStorageAccessKeyExists(resourceName, &key),
 					resource.TestCheckResourceAttr(resourceName, "description", "access-key-updated"),
 					resource.TestCheckResourceAttrSet(resourceName, "token"),
 					resource.TestCheckResourceAttrSet(resourceName, "secret"),
-					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "sakura_monitoring_suite_metric_storage.foobar", "id"),
+					resource.TestCheckResourceAttrPair(resourceName, "storage_id", "data.sakura_monitoring_suite_metric_storage.foobar", "id"),
 				),
 			},
 		},
@@ -119,27 +122,23 @@ func testCheckSakuraMonitoringSuiteMetricStorageAccessKeyExists(n string, key *m
 }
 
 var testAccSakuraMonitoringSuiteMetricStorageAccessKey_basic = `
-resource "sakura_monitoring_suite_metric_storage" "foobar" {
-  name = "{{ .arg0 }}"
-  description = "description"
-  is_system = false
+data "sakura_monitoring_suite_metric_storage" "foobar" {
+  id = "{{ .arg0 }}"
 }
 
 resource "sakura_monitoring_suite_metric_storage_access_key" "foobar" {
-  storage_id = sakura_monitoring_suite_metric_storage.foobar.id
+  storage_id = data.sakura_monitoring_suite_metric_storage.foobar.id
   description = "access-key"
 }
 `
 
 var testAccSakuraMonitoringSuiteMetricStorageAccessKey_update = `
-resource "sakura_monitoring_suite_metric_storage" "foobar" {
-  name = "{{ .arg0 }}"
-  description = "description"
-  is_system = false
+data "sakura_monitoring_suite_metric_storage" "foobar" {
+  id = "{{ .arg0 }}"
 }
 
 resource "sakura_monitoring_suite_metric_storage_access_key" "foobar" {
-  storage_id = sakura_monitoring_suite_metric_storage.foobar.id
+  storage_id = data.sakura_monitoring_suite_metric_storage.foobar.id
   description = "access-key-updated"
 }
 `

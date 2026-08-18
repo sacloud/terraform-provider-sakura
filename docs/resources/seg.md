@@ -65,8 +65,11 @@ resource "sakura_seg" "foobar" {
 
 Required:
 
-- `dns_servers` (List of String) The name of upstream DNS servers for DNS forwarding
 - `enabled` (Boolean) The flag to enable DNS forwarding on the Service Endpoint Gateway
+
+Optional:
+
+- `dns_servers` (List of String) The name of upstream DNS servers for DNS forwarding (must contain exactly 2 servers)
 - `private_hosted_zone` (String) The private hosted zone name for DNS forwarding
 
 
@@ -90,3 +93,18 @@ Optional:
 - `create` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
 - `delete` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours). Setting a timeout for a Delete operation is only applicable if changes are saved into state before the destroy operation occurs.
 - `update` (String) A string that can be [parsed as a duration](https://pkg.go.dev/time#ParseDuration) consisting of numbers and unit suffixes, such as "30s" or "2h45m". Valid time units are "s" (seconds), "m" (minutes), "h" (hours).
+
+## Import
+
+Import is supported using the following syntax:
+
+The [`terraform import` command](https://developer.hashicorp.com/terraform/cli/commands/import) can be used, for example:
+
+```shell
+# Specify the ID in the format of {zone}/{id}: e.g. "tk1b/113801540562"
+terraform import sakura_seg.foo '{zone}/{id}'
+
+# You can also omit the zone
+# Doing so implies the default zone specified in the provider configuration.
+terraform import sakura_seg.foo '{id}'
+```

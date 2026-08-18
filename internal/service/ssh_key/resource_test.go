@@ -48,6 +48,27 @@ func TestAccSakuraSSHKey_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraSSHKey_basic(t *testing.T) {
+	resourceName := "sakura_ssh_key.foobar"
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraSSHKeyDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSSHKey_import, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraSSHKeyExists(n string, ssh_key *iaas.SSHKey) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -99,6 +120,13 @@ func testCheckSakuraSSHKeyDestroy(s *terraform.State) error {
 }
 
 var testAccSakuraSSHKey_basic = fmt.Sprintf(`
+resource "sakura_ssh_key" "foobar" {
+  name        = "{{ .arg0 }}"
+  public_key  = "%s"
+  description = "description"
+}`, testAccPublicKey)
+
+var testAccSakuraSSHKey_import = fmt.Sprintf(`
 resource "sakura_ssh_key" "foobar" {
   name        = "{{ .arg0 }}"
   public_key  = "%s"

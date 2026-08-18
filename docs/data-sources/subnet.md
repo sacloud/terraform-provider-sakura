@@ -25,8 +25,8 @@ data sakura_subnet "foobar" {
 
 ### Required
 
-- `index` (Number) The index of the subnet in assigned to the Internet(switch+router)
-- `internet_id` (String) The id of the Internet(switch+router) resource that the Subnet belongs
+- `index` (Number) The index of the subnet in assigned to the Internet(router+switch)
+- `internet_id` (String) The id of the Internet(router+switch) resource that the Subnet belongs
 
 ### Optional
 

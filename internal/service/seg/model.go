@@ -116,8 +116,25 @@ func flattenDNSForwarding(setting v1.NilModelsSettingsApplianceSettings) types.O
 	dnsForwarding := setting.Value.ServiceEndpointGateway.DNSForwarding.Value
 	model := segDNSForwardingModel{
 		Enabled:           types.BoolValue(dnsForwarding.Enabled == v1.ModelsSettingsDNSForwardingSettingsEnabledTrue),
-		PrivateHostedZone: types.StringValue(dnsForwarding.PrivateHostedZone),
-		DNSServers:        common.StringsToTlist([]string{dnsForwarding.UpstreamDNS1, dnsForwarding.UpstreamDNS2}),
+		PrivateHostedZone: intoStringType(dnsForwarding.PrivateHostedZone),
+		DNSServers: func(a ...v1.OptString) types.List {
+			for _, v := range a {
+				if v.IsSet() {
+					goto legit
+				}
+			}
+			return types.ListNull(types.StringType)
+
+		legit:
+			b := common.MapTo(a, intoStringType)
+			c, d := types.ListValueFrom(context.Background(), types.StringType, b)
+
+			if d.HasError() {
+				return types.ListUnknown(types.StringType) // or ...?
+			}
+
+			return c
+		}(dnsForwarding.UpstreamDNS1, dnsForwarding.UpstreamDNS2),
 	}
 
 	value, diags := types.ObjectValueFrom(context.Background(), model.AttributeTypes(), model)

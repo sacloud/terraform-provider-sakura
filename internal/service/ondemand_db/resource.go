@@ -119,6 +119,9 @@ func (r *onDemandDBResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"hostname": schema.StringAttribute{
 				Computed:    true,
 				Description: "The name of database host. This will be built from `database_name` + `tidb-is1.db.sakurausercontent.com`",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"max_connections": schema.Int64Attribute{
 				Computed:    true,

@@ -21,7 +21,6 @@ variable users {
 resource "sakura_container_registry" "foobar" {
   name            = "foobar"
   subdomain_label = "your-subdomain-label"
-  access_level    = "none" # this must be one of ["none"/"readonly"]
 
   description = "description"
   tags        = ["tag1", "tag2"]

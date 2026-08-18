@@ -26,14 +26,10 @@ var (
 
 func TestAccSakuraIPv4Ptr_basic(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
+	test.SkipIfEnvIsNotSet(t, envTestDomain)
 
 	var ip iaas.IPAddress
-	if domain, ok := os.LookupEnv(envTestDomain); ok {
-		testDomain = domain
-	} else {
-		t.Skipf("ENV %q is required. skip", envTestDomain)
-		return
-	}
+	testDomain = os.Getenv(envTestDomain)
 	rand := test.RandomName()
 
 	resource.Test(t, resource.TestCase{
@@ -56,6 +52,38 @@ func TestAccSakuraIPv4Ptr_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(
 						"sakura_ipv4_ptr.foobar", "hostname", fmt.Sprintf("terraform-test-domain04.%s", testDomain)),
 				),
+			},
+		},
+	})
+}
+
+func TestAccImportSakuraIPv4Ptr_basic(t *testing.T) {
+	test.SkipIfFakeModeEnabled(t)
+	test.SkipIfEnvIsNotSet(t, envTestDomain)
+
+	var ip iaas.IPAddress
+	testDomain = os.Getenv(envTestDomain)
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraIPv4PtrDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccCheckSakuraIPv4PtrConfig_basic, rand, testDomain),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraIPv4PtrExists("sakura_ipv4_ptr.foobar", &ip),
+				),
+			},
+			{
+				ResourceName:      "sakura_ipv4_ptr.foobar",
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"retry_interval",
+					"retry_max",
+				},
 			},
 		},
 	})

@@ -5,8 +5,8 @@ resource "sakura_monitoring_suite_alert_rule" "foobar" {
   query = "count_values"
   enabled_warning = true
   enabled_critical = true
-  threshold_warning = ">=10"
-  threshold_critical = ">=20"
+  threshold_warning = ">= 10"
+  threshold_critical = ">= 20"
   threshold_duration_warning = 600
   threshold_duration_critical = 600
 }

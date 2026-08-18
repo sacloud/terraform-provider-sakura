@@ -53,14 +53,14 @@ func (d *subnetDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			"zone": common.SchemaDataSourceZone("Subnet"),
 			"internet_id": schema.StringAttribute{
 				Required:    true,
-				Description: "The id of the Internet(switch+router) resource that the Subnet belongs",
+				Description: "The id of the Internet(router+switch) resource that the Subnet belongs",
 				Validators: []validator.String{
 					sacloudvalidator.SakuraIDValidator(),
 				},
 			},
 			"index": schema.Int64Attribute{
 				Required:    true,
-				Description: "The index of the subnet in assigned to the Internet(switch+router)",
+				Description: "The index of the subnet in assigned to the Internet(router+switch)",
 			},
 			"vswitch_id": common.SchemaDataSourceVSwitchID("Subnet"),
 			"netmask":    common.SchemaDataSourceNetMask("Subnet"),
@@ -109,7 +109,7 @@ func (d *subnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	res, err := internetOp.Read(ctx, zone, internetID)
 	if err != nil {
-		resp.Diagnostics.AddError("Read: API Error", "failed to find Internet(switch+router) for Subnet: "+err.Error())
+		resp.Diagnostics.AddError("Read: API Error", "failed to find Internet(router+switch) for Subnet: "+err.Error())
 		return
 	}
 	if subnetIndex >= len(res.Switch.Subnets) {

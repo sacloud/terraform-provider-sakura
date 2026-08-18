@@ -32,7 +32,7 @@ resource "sakura_iam_user" "foobar" {
 
 - `code` (String) The code of the IAM User
 - `name` (String) The name of the IAM User.
-- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password for NoSQL appliance
+- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password for IAM User
 
 ### Optional
 

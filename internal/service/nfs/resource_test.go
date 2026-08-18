@@ -93,6 +93,31 @@ func TestAccSakuraNFS_invalidPlan(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraNFS_basic(t *testing.T) {
+	resourceName := "sakura_nfs.foobar"
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			test.CheckSakuraIconDestroy,
+			testCheckSakuraNFSDestroy,
+			test.CheckSakuravSwitchDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraNFS_import, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraNFSExists(n string, nfs *iaas.NFS) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -208,5 +233,32 @@ resource "sakura_nfs" "foobar" {
     netmask    = 24
     gateway    = "192.168.11.1"
   }
+}
+`
+
+const testAccSakuraNFS_import = `
+resource "sakura_vswitch" "foobar" {
+  name = "{{ .arg0 }}"
+}
+resource "sakura_nfs" "foobar" {
+  name = "{{ .arg0 }}"
+  plan = "ssd"
+  size = "500"
+
+  network_interface = {
+    vswitch_id = sakura_vswitch.foobar.id
+    ip_address = "192.168.11.101"
+    netmask    = 24
+    gateway    = "192.168.11.1"
+  }
+
+  description = "description"
+  tags        = ["tag1" , "tag2"]
+  icon_id     = sakura_icon.foobar.id
+}
+
+resource "sakura_icon" "foobar" {
+  name          = "{{ .arg0 }}"
+  base64content = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 }
 `

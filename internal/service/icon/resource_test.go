@@ -85,6 +85,30 @@ func TestAccSakuraIcon_withSwitch(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraIcon_basic(t *testing.T) {
+	resourceName := "sakura_icon.foobar"
+	name := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             test.CheckSakuraIconDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraIcon_import, name),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"base64content",
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraIconExists(n string, icon *iaas.Icon) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -146,5 +170,13 @@ resource "sakura_icon" "foobar" {
 
 resource "sakura_vswitch" "foobar" {
   name = "{{ .arg0 }}"
+}
+`
+
+const testAccSakuraIcon_import = `
+resource "sakura_icon" "foobar" {
+  name          = "{{ .arg0 }}"
+  tags          = ["tag1", "tag2"]
+  base64content = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 }
 `

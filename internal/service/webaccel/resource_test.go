@@ -30,16 +30,9 @@ const (
 
 func TestAccSakuraResourceWebAccel_WebOrigin(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
-
-	envKeys := []string{
+	test.SkipIfEnvIsNotSet(t,
 		envWebAccelOrigin,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	)
 
 	siteName := "your-site-name"
 	// domainName := os.Getenv(envWebAccelDomainName)
@@ -90,16 +83,10 @@ func testCheckSakuraWebAccelDestroy(s *terraform.State) error {
 func TestAccSakuraResourceWebAccel_OwnDomain(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
 
-	envKeys := []string{
+	test.SkipIfEnvIsNotSet(t,
 		envWebAccelOrigin,
 		envWebAccelDomainName,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	)
 
 	siteName := "your-site-name"
 	origin := os.Getenv(envWebAccelOrigin)
@@ -129,16 +116,9 @@ func TestAccSakuraResourceWebAccel_OwnDomain(t *testing.T) {
 
 func TestAccSakuraResourceWebAccel_WebOriginWithOneTimeUrlSecrets(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
-
-	envKeys := []string{
+	test.SkipIfEnvIsNotSet(t,
 		envWebAccelOrigin,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	)
 
 	siteName := "your-site-name"
 	origin := os.Getenv(envWebAccelOrigin)
@@ -164,16 +144,9 @@ func TestAccSakuraResourceWebAccel_WebOriginWithOneTimeUrlSecrets(t *testing.T) 
 
 func TestAccSakuraResourceWebAccel_WebOriginWithCORS(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
-
-	envKeys := []string{
+	test.SkipIfEnvIsNotSet(t,
 		envWebAccelOrigin,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	)
 
 	siteName := "your-site-name"
 	// domainName := os.Getenv(envWebAccelDomainName)
@@ -203,21 +176,14 @@ func TestAccSakuraResourceWebAccel_WebOriginWithCORS(t *testing.T) {
 
 func TestAccSakuraResourceWebAccel_Update(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
-
-	envKeys := []string{
+	test.SkipIfEnvIsNotSet(t,
 		envWebAccelOrigin,
 		envObjectStorageEndpoint,
 		envObjectStorageRegion,
 		envObjectStorageBucketName,
 		envObjectStorageAccessKeyId,
 		envObjectStorageSecretAccessKey,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	)
 
 	siteName := "your-site-name"
 	// domainName := os.Getenv(envWebAccelDomainName)
@@ -285,21 +251,14 @@ func TestAccSakuraResourceWebAccel_Update(t *testing.T) {
 
 func TestAccSakuraResourceWebAccel_BucketOrigin(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
-
-	envKeys := []string{
+	test.SkipIfEnvIsNotSet(t,
 		envWebAccelOrigin,
 		envObjectStorageEndpoint,
 		envObjectStorageRegion,
 		envObjectStorageBucketName,
 		envObjectStorageAccessKeyId,
 		envObjectStorageSecretAccessKey,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	)
 
 	siteName := "your-site-name"
 	// domainName := os.Getenv(envWebAccelDomainName)
@@ -334,22 +293,19 @@ func TestAccSakuraResourceWebAccel_BucketOrigin(t *testing.T) {
 
 func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t)
-
-	envKeys := []string{
+	test.SkipIfEnvIsNotSet(t,
 		envWebAccelOrigin,
+		envObjectStorageEndpoint,
+		envObjectStorageRegion,
 		envObjectStorageBucketName,
 		envObjectStorageAccessKeyId,
 		envObjectStorageSecretAccessKey,
-	}
-	for _, k := range envKeys {
-		if os.Getenv(k) == "" {
-			t.Skipf("ENV %q is required. skip", k)
-			return
-		}
-	}
+	)
 
 	siteName := "your-site-name"
 	origin := os.Getenv(envWebAccelOrigin)
+	endpoint, _ := strings.CutPrefix(os.Getenv(envObjectStorageEndpoint), "https://")
+	region := os.Getenv(envObjectStorageRegion)
 	bucketName := os.Getenv(envObjectStorageBucketName)
 	accessKey := os.Getenv(envObjectStorageAccessKeyId)
 	secretKey := os.Getenv(envObjectStorageSecretAccessKey)
@@ -360,7 +316,7 @@ func TestAccSakuraResourceWebAccel_Logging(t *testing.T) {
 		CheckDestroy:             testCheckSakuraWebAccelDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: testAccCheckSakuraWebAccelWebOriginLoggingConfig(siteName, origin, "s3.isk01.sakurastorage.jp", "jp-north-1", bucketName, accessKey, secretKey),
+				Config: testAccCheckSakuraWebAccelWebOriginLoggingConfig(siteName, origin, endpoint, region, bucketName, accessKey, secretKey),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "name", siteName),
 					resource.TestCheckResourceAttr("sakura_webaccel.foobar", "origin_parameters.type", "web"),
@@ -396,6 +352,101 @@ func TestAccSakuraResourceWebAccel_InvalidConfigurations(t *testing.T) {
 			},
 		})
 	}
+}
+
+func TestAccImportSakuraWebAccel_WebOrigin(t *testing.T) {
+	test.SkipIfFakeModeEnabled(t)
+	test.SkipIfEnvIsNotSet(t,
+		envWebAccelOrigin,
+	)
+
+	siteName := "your-site-name"
+	origin := os.Getenv(envWebAccelOrigin)
+	resourceName := "sakura_webaccel.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckSakuraWebAccelWebOriginConfigBasic(siteName, origin),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", siteName),
+					resource.TestCheckResourceAttr(resourceName, "origin_parameters.type", "web"),
+					resource.TestCheckResourceAttr(resourceName, "origin_parameters.origin", origin),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"onetime_url_secrets_wo",
+					"origin_parameters.access_key_wo",
+					"origin_parameters.secret_access_key_wo",
+					"origin_parameters.credentials_wo_version",
+					"origin_parameters.use_document_index",
+					"logging.access_key_wo",
+					"logging.secret_access_key_wo",
+					"logging.credentials_wo_version",
+				},
+			},
+		},
+	})
+}
+
+func TestAccImportSakuraWebAccel_BucketOrigin(t *testing.T) {
+	test.SkipIfFakeModeEnabled(t)
+	test.SkipIfEnvIsNotSet(t,
+		envWebAccelOrigin,
+		envObjectStorageEndpoint,
+		envObjectStorageRegion,
+		envObjectStorageBucketName,
+		envObjectStorageAccessKeyId,
+		envObjectStorageSecretAccessKey,
+	)
+
+	siteName := "your-site-name"
+	endpoint, _ := strings.CutPrefix(os.Getenv(envObjectStorageEndpoint), "https://")
+	region := os.Getenv(envObjectStorageRegion)
+	bucketName := os.Getenv(envObjectStorageBucketName)
+	accessKey := os.Getenv(envObjectStorageAccessKeyId)
+	secretKey := os.Getenv(envObjectStorageSecretAccessKey)
+	resourceName := "sakura_webaccel.foobar"
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraWebAccelDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: testAccCheckSakuraWebAccelBucketOriginConfig(siteName, endpoint, region, bucketName, accessKey, secretKey),
+				Check: resource.ComposeTestCheckFunc(
+					resource.TestCheckResourceAttr(resourceName, "name", siteName),
+					resource.TestCheckResourceAttr(resourceName, "origin_parameters.type", "bucket"),
+					resource.TestCheckResourceAttr(resourceName, "origin_parameters.endpoint", endpoint),
+					resource.TestCheckResourceAttr(resourceName, "origin_parameters.region", region),
+					resource.TestCheckResourceAttr(resourceName, "origin_parameters.bucket_name", bucketName),
+				),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"onetime_url_secrets_wo",
+					"origin_parameters.access_key_wo",
+					"origin_parameters.secret_access_key_wo",
+					"origin_parameters.credentials_wo_version",
+					"origin_parameters.use_document_index",
+					"logging.access_key_wo",
+					"logging.secret_access_key_wo",
+					"logging.credentials_wo_version",
+				},
+			},
+		},
+	})
 }
 
 func testAccCheckSakuraWebAccelWebOriginConfigBasic(siteName string, origin string) string {

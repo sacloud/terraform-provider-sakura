@@ -6,6 +6,7 @@ package monitoring_suite
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -107,7 +108,18 @@ func (r *alertNotificationRoutingResource) Schema(ctx context.Context, _ resourc
 }
 
 func (r *alertNotificationRoutingResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	var parts []string
+	if strings.Contains(req.ID, "/") {
+		parts = strings.SplitN(req.ID, "/", 2)
+	} else if strings.Contains(req.ID, "_") {
+		parts = strings.SplitN(req.ID, "_", 2)
+	}
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: {alert_project_id}/{id}({alert_project_id}_{id} for backward compatibility)")
+		return
+	}
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("alert_project_id"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
 func (r *alertNotificationRoutingResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

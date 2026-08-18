@@ -6,6 +6,7 @@ package seg
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -139,13 +140,13 @@ func (r *segResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 						Description: "The flag to enable DNS forwarding on the Service Endpoint Gateway",
 					},
 					"private_hosted_zone": schema.StringAttribute{
-						Required:    true,
+						Optional:    true,
 						Description: "The private hosted zone name for DNS forwarding",
 					},
 					"dns_servers": schema.ListAttribute{
-						Required:    true,
+						Optional:    true,
 						ElementType: types.StringType,
-						Description: "The name of upstream DNS servers for DNS forwarding",
+						Description: "The name of upstream DNS servers for DNS forwarding (must contain exactly 2 servers)",
 						Validators: []validator.List{
 							listvalidator.SizeBetween(2, 2), // must be 2 servers.
 						},
@@ -162,7 +163,24 @@ func (r *segResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 }
 
 func (r *segResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	// Import format: zone/resource_id
+	parts := strings.Split(req.ID, "/")
+
+	if len(parts) == 1 {
+		zone := common.GetZone(types.StringUnknown(), r.client, &resp.Diagnostics)
+		parts = []string{zone, parts[0]}
+	}
+
+	if len(parts) != 2 || parts[0] == "" || parts[1] == "" {
+		resp.Diagnostics.AddError(
+			"Import: Invalid ID",
+			fmt.Sprintf("Expected format: zone/id, got: %q", req.ID),
+		)
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("zone"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
 func (r *segResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {

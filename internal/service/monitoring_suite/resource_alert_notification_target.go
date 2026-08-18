@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strings"
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -90,7 +91,18 @@ func (r *alertNotificationTargetResource) Schema(ctx context.Context, _ resource
 }
 
 func (r *alertNotificationTargetResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	var parts []string
+	if strings.Contains(req.ID, "/") {
+		parts = strings.SplitN(req.ID, "/", 2)
+	} else if strings.Contains(req.ID, "_") {
+		parts = strings.SplitN(req.ID, "_", 2)
+	}
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError("Import: ID Format Error", "expected import ID format: {alert_project_id}/{id}({alert_project_id}_{id} for backward compatibility)")
+		return
+	}
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("alert_project_id"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
 func (r *alertNotificationTargetResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -110,7 +122,7 @@ func (r *alertNotificationTargetResource) Create(ctx context.Context, req resour
 		URL:         expandNotificationTargetURL(plan.URL.ValueString()),
 	})
 	if err != nil {
-		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Alert Project: %s", err))
+		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Alert Notification Target: %s", err))
 		return
 	}
 

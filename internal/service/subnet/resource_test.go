@@ -47,6 +47,30 @@ func TestAccSakuraSubnet_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraSubnet_basic(t *testing.T) {
+	resourceName := "sakura_subnet.foobar"
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy: resource.ComposeTestCheckFunc(
+			test.CheckSakuraInternetDestroy,
+			testCheckSakuraSubnetDestroy,
+		),
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSubnet_import, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+			},
+		},
+	})
+}
+
 func testCheckSakuraSubnetExists(n string, subnet *iaas.Subnet) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -105,6 +129,16 @@ resource "sakura_subnet" "foobar" {
   internet_id = sakura_internet.foobar.id
   next_hop    = sakura_internet.foobar.min_ip_address
 }`
+
+var testAccSakuraSubnet_import = `
+resource sakura_internet "foobar" {
+  name = "{{ .arg0 }}"
+}
+resource "sakura_subnet" "foobar" {
+  internet_id = sakura_internet.foobar.id
+  next_hop    = sakura_internet.foobar.min_ip_address
+}
+`
 
 var testAccSakuraSubnet_update = `
 resource sakura_internet "foobar" {

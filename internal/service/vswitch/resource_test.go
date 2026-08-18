@@ -68,6 +68,30 @@ func TestAccSakuravSwitch_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuravSwitch_basic(t *testing.T) {
+	resourceName := "sakura_vswitch.foobar"
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             test.CheckSakuravSwitchDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuravSwitch_import, rand),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"zone",
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraSwitchExists(n string, sw *iaas.Switch) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
@@ -96,6 +120,14 @@ func testCheckSakuraSwitchExists(n string, sw *iaas.Switch) resource.TestCheckFu
 		return nil
 	}
 }
+
+var testAccSakuravSwitch_import = `
+resource "sakura_vswitch" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+  tags        = ["tag1", "tag2"]
+}
+`
 
 var testAccSakuraSwitch_basic = `
 resource "sakura_vswitch" "foobar" {

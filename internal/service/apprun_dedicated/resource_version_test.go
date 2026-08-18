@@ -90,6 +90,48 @@ func TestAccSakuraResourceApprunDedicatedVersion(t *testing.T) {
 			},
 		})
 	})
+
+	t.Run("without_health_check", func(t *testing.T) {
+		resourceName := "sakura_apprun_dedicated_version.main"
+		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
+
+		resource.ParallelTest(t, resource.TestCase{
+			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
+			CheckDestroy:             testCheckSakuraApprunDedicatedVersionDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedVersion_noHealthCheck, name, globalClusterID),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("exposed_ports"), knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"target_port":      knownvalue.Int32Exact(80),
+								"lb_port":          knownvalue.Null(),
+								"use_lets_encrypt": knownvalue.Bool(false),
+								"host":             knownvalue.Null(),
+								"health_check":     knownvalue.Null(),
+							}),
+						})),
+					},
+				},
+				{
+					ResourceName:            resourceName,
+					ImportState:             true,
+					ImportStateVerify:       true,
+					ImportStateVerifyIgnore: []string{"timeouts", "registry_password"},
+					ImportStateIdFunc: func(s *terraform.State) (string, error) {
+						rs, ok := s.RootModule().Resources[resourceName]
+						if !ok {
+							return "", fmt.Errorf("not found: %s", resourceName)
+						}
+						appID := rs.Primary.Attributes["application_id"]
+						version := rs.Primary.Attributes["version"]
+						return fmt.Sprintf("%s/%s", appID, version), nil
+					},
+				},
+			},
+		})
+	})
 }
 
 func testCheckSakuraApprunDedicatedVersionDestroy(s *terraform.State) error {
@@ -166,6 +208,30 @@ resource "sakura_apprun_dedicated_version" "main" {
       key    = "ENV_VAR2"
       value  = "value2"
       secret = true
+    }
+  ]
+}
+`
+
+var testAccSakuraResourceApprunDedicatedVersion_noHealthCheck = `
+resource "sakura_apprun_dedicated_application" "main" {
+  cluster_id     = "{{ .arg1 }}"
+  name           = "tfacc-{{ .arg0 }}"
+  active_version = null
+}
+
+resource "sakura_apprun_dedicated_version" "main" {
+  application_id = sakura_apprun_dedicated_application.main.id
+  cpu            = 100
+  memory         = 256
+  scaling_mode   = "manual"
+  fixed_scale    = 1
+  image          = "nginx:latest"
+
+  exposed_ports = [
+    {
+      target_port = 80
+      lb_port     = null
     }
   ]
 }

@@ -88,6 +88,31 @@ func TestAccSakuraServer_basic(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraServer_basic(t *testing.T) {
+	resourceName := "sakura_server.foobar"
+	rand := test.RandomName()
+	password := test.RandomPassword()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             test.CheckSakuraServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraServer_import, rand, password),
+			},
+			{
+				ResourceName:      resourceName,
+				ImportState:       true,
+				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"disk_edit_parameter",
+				},
+			},
+		},
+	})
+}
+
 func TestAccSakuraServer_basicWithWO(t *testing.T) {
 	resourceName := "sakura_server.foobar"
 	rand := test.RandomName()
@@ -1260,5 +1285,46 @@ resource "sakura_server" "foobar" {
   force_shutdown = true
 
   zone = "tk1b"
+}
+`
+
+const testAccSakuraServer_import = `
+data "sakura_archive" "ubuntu" {
+  os_type = "ubuntu"
+}
+resource "sakura_disk" "foobar" {
+  name              = "{{ .arg0 }}"
+  source_archive_id = data.sakura_archive.ubuntu.id
+}
+
+resource "sakura_server" "foobar" {
+  name        = "{{ .arg0 }}"
+  disks       = [sakura_disk.foobar.id]
+  description = "description"
+  tags        = ["tag1", "tag2"]
+  icon_id     = sakura_icon.foobar.id
+  network_interface = [{
+    upstream = "shared"
+  }]
+  disk_edit_parameter = {
+    hostname        = "{{ .arg0 }}"
+    password        = "{{ .arg1 }}"
+    ssh_keys        = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPEAo5G7cwRp423KOrtCewX5nXFkboGxZ3hfvECNGg56 e2e-test-only@example"]
+    ssh_key_ids     = ["100000000000", "200000000000"]
+    disable_pw_auth = true
+    script = [{
+      id         = "100000000000"
+      api_key_id = "100000000001"
+      variables  = {
+        foo1 = "bar1"
+        foo2 = "bar2"
+      }
+    }]
+  }
+}
+
+resource "sakura_icon" "foobar" {
+  name          = "{{ .arg0 }}"
+  base64content = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg=="
 }
 `

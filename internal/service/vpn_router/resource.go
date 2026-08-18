@@ -296,7 +296,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					},
 				},
 			},
-			"firewall": schema.ListNestedAttribute{
+			"firewall": schema.SetNestedAttribute{
 				Optional: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
@@ -683,9 +683,6 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"user": schema.ListNestedAttribute{
 				Optional: true,
-				Validators: []validator.List{
-					listvalidator.SizeAtMost(100),
-				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{

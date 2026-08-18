@@ -189,7 +189,6 @@ func expandDNSForwardingSettings(d types.Object) v1.OptModelsSettingsDNSForwardi
 			Set: false,
 		}
 	}
-	dnsServerList := common.TlistToStrings(model.DNSServers)
 	return v1.NewOptModelsSettingsDNSForwardingSettings(
 		v1.ModelsSettingsDNSForwardingSettings{
 			Enabled: func(enable types.Bool) v1.ModelsSettingsDNSForwardingSettingsEnabled {
@@ -198,9 +197,9 @@ func expandDNSForwardingSettings(d types.Object) v1.OptModelsSettingsDNSForwardi
 				}
 				return v1.ModelsSettingsDNSForwardingSettingsEnabledFalse
 			}(model.Enabled),
-			PrivateHostedZone: model.PrivateHostedZone.ValueString(),
-			UpstreamDNS1:      dnsServerList[0],
-			UpstreamDNS2:      dnsServerList[1],
+			PrivateHostedZone: fromStringType(model.PrivateHostedZone),
+			UpstreamDNS1:      fromStringList(model.DNSServers, 0),
+			UpstreamDNS2:      fromStringList(model.DNSServers, 1),
 		},
 	)
 }
@@ -243,4 +242,39 @@ func checkInstanceStatus(ctx context.Context, api seg.ServiceEndpointGatewayAPI,
 		return false, nil
 	}
 	return currentStatus == requestStatus, nil
+}
+
+var zeroString v1.OptString
+
+func fromStringType(s types.String) v1.OptString {
+	if s.IsNull() || s.IsUnknown() {
+		return zeroString
+	}
+
+	return v1.NewOptString(s.ValueString())
+}
+
+func fromStringList(l types.List, i int) v1.OptString {
+	if l.IsNull() || l.IsUnknown() {
+		return zeroString
+	}
+
+	a := l.Elements()
+	if len(a) <= i {
+		return zeroString
+	}
+
+	if v, ok := a[i].(types.String); ok {
+		return fromStringType(v)
+	}
+
+	return zeroString
+}
+
+func intoStringType(o v1.OptString) types.String {
+	if s, ok := o.Get(); ok {
+		return types.StringValue(s)
+	}
+
+	return types.StringNull()
 }

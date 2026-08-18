@@ -85,6 +85,38 @@ func TestAccSakuraSecretManagerSecret_basicWithWO(t *testing.T) {
 	})
 }
 
+func TestAccImportSakuraSecretManagerSecret_basic(t *testing.T) {
+	resourceName := "sakura_secret_manager_secret.foobar"
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraSecretManagerSecretDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_import, rand),
+			},
+			{
+				ResourceName:                         resourceName,
+				ImportState:                          true,
+				ImportStateVerify:                    true,
+				ImportStateVerifyIdentifierAttribute: "name",
+				ImportStateVerifyIgnore: []string{
+					"value",
+				},
+				ImportStateIdFunc: func(s *terraform.State) (string, error) {
+					rs, ok := s.RootModule().Resources[resourceName]
+					if !ok {
+						return "", fmt.Errorf("resource not found: %s", resourceName)
+					}
+					return fmt.Sprintf("%s/%s", rs.Primary.Attributes["vault_id"], rs.Primary.Attributes["name"]), nil
+				},
+			},
+		},
+	})
+}
+
 func testCheckSakuraSecretManagerSecretDestroy(s *terraform.State) error {
 	client := test.AccClientGetter()
 	ctx := context.Background()
@@ -132,6 +164,29 @@ func testCheckSakuraSecretManagerSecretExists(n string, secret *v1.Secret) resou
 		return nil
 	}
 }
+
+//nolint:gosec
+var testAccSakuraSecretManagerSecret_import = `
+resource "sakura_kms" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+}
+
+resource "sakura_secret_manager" "foobar" {
+  name        = "{{ .arg0 }}"
+  description = "description"
+  kms_key_id  = sakura_kms.foobar.id
+
+  depends_on = [sakura_kms.foobar]
+}
+
+resource "sakura_secret_manager_secret" "foobar" {
+  name     = "{{ .arg0 }}"
+  value    = "value1"
+  vault_id = sakura_secret_manager.foobar.id
+
+  depends_on = [sakura_secret_manager.foobar]
+}`
 
 //nolint:gosec
 var testAccSakuraSecretManagerSecret_basic = `

@@ -67,8 +67,17 @@ func (model *alertRuleBaseModel) updateState(alertRule *v1.AlertRule) {
 	model.Open = types.BoolValue(alertRule.Open)
 	model.EnabledWarning = types.BoolValue(alertRule.EnabledWarning.Value)
 	model.EnabledCritical = types.BoolValue(alertRule.EnabledCritical.Value)
-	model.ThresholdWarning = types.StringValue(alertRule.ThresholdWarning.Value)
-	model.ThresholdCritical = types.StringValue(alertRule.ThresholdCritical.Value)
+	if alertRule.ThresholdWarning.Value != "" {
+		model.ThresholdWarning = types.StringValue(alertRule.ThresholdWarning.Value)
+	} else {
+		model.ThresholdWarning = types.StringNull()
+	}
+	if alertRule.ThresholdCritical.Value != "" {
+		model.ThresholdCritical = types.StringValue(alertRule.ThresholdCritical.Value)
+	} else {
+		model.ThresholdCritical = types.StringNull()
+	}
+	// 設定されていないDurationはAPIのレスポンスでは120が返ってくるためそのまま値として扱う。
 	model.ThresholdDurationWarning = types.Int64Value(alertRule.ThresholdDurationWarning.Value)
 	model.ThresholdDurationCritical = types.Int64Value(alertRule.ThresholdDurationCritical.Value)
 }

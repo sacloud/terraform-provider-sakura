@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
@@ -119,7 +120,17 @@ func (r *objectStoragePermissionResource) Schema(ctx context.Context, _ resource
 }
 
 func (r *objectStoragePermissionResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	parts := strings.SplitN(req.ID, "/", 2)
+
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError("Import Error",
+			fmt.Sprintf("invalid import ID format. Please specify the import ID in the format of {site_id}/{id}: %s", req.ID))
+		return
+	}
+
+	resp.Diagnostics.AddWarning("Import Warning", "the access_key and secret_key for object storage permission will not be imported. You will need to create a new access_key and secret_key or use the existing ones from the state.")
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("site_id"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), parts[1])...)
 }
 
 func (r *objectStoragePermissionResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
