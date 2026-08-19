@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
+	"github.com/hashicorp/terraform-plugin-framework/resource/identityschema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
@@ -22,6 +23,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -171,8 +173,44 @@ func (r *enhancedLBACMEResource) Schema(ctx context.Context, _ resource.SchemaRe
 	}
 }
 
+type elbACMEResourceIdentityModel struct {
+	EnhancedLBID              types.String `tfsdk:"enhanced_lb_id"`
+	UpdateDelaySec            types.Int32  `tfsdk:"update_delay_sec"`
+	GetCertificatesTimeoutSec types.Int32  `tfsdk:"get_certificates_timeout_sec"`
+}
+
+func (r enhancedLBACMEResource) IdentitySchema(_ context.Context, _ resource.IdentitySchemaRequest, resp *resource.IdentitySchemaResponse) {
+	resp.IdentitySchema = identityschema.Schema{
+		Attributes: map[string]identityschema.Attribute{
+			"enhanced_lb_id": identityschema.StringAttribute{
+				RequiredForImport: true,
+			},
+			"update_delay_sec": identityschema.Int32Attribute{
+				OptionalForImport: true,
+			},
+			"get_certificates_timeout_sec": identityschema.Int32Attribute{
+				OptionalForImport: true,
+			},
+		},
+	}
+}
+
 func (r *enhancedLBACMEResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
+	var identityData elbACMEResourceIdentityModel
+	resp.Diagnostics.Append(req.Identity.Get(ctx, &identityData)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// To avoide timeouts related error, set each attribute directly. Don't use 'resp.State.Set'.
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("enhanced_lb_id"), identityData.EnhancedLBID)...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("update_delay_sec"), identityData.UpdateDelaySec)...)
+	if utils.IsKnown(identityData.GetCertificatesTimeoutSec) {
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("get_certificates_timeout_sec"), identityData.GetCertificatesTimeoutSec)...)
+	} else {
+		// optional/computed属性なので、import時に値が指定されなかった場合はデフォルト値を設定する
+		resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("get_certificates_timeout_sec"), types.Int32Value(int32(120)))...)
+	}
 }
 
 func (r *enhancedLBACMEResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
@@ -248,6 +286,13 @@ func (r *enhancedLBACMEResource) Create(ctx context.Context, req resource.Create
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+
+	identity := elbACMEResourceIdentityModel{
+		EnhancedLBID:              plan.EnhancedLBID,
+		UpdateDelaySec:            plan.UpdateDelaySec,
+		GetCertificatesTimeoutSec: plan.GetCertificatesTimeoutSec,
+	}
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identity)...)
 }
 
 func (r *enhancedLBACMEResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -267,6 +312,13 @@ func (r *enhancedLBACMEResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+
+	identity := elbACMEResourceIdentityModel{
+		EnhancedLBID:              state.EnhancedLBID,
+		UpdateDelaySec:            state.UpdateDelaySec,
+		GetCertificatesTimeoutSec: state.GetCertificatesTimeoutSec,
+	}
+	resp.Diagnostics.Append(resp.Identity.Set(ctx, identity)...)
 }
 
 func (r *enhancedLBACMEResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
@@ -326,7 +378,13 @@ func (model *enhancedLBACMEResourceModel) updateState(ctx context.Context, clien
 	}
 
 	model.ID = types.StringValue(data.ID.String())
+	model.EnhancedLBID = types.StringValue(data.ID.String())
 	model.Certificate = flattenEnhancedLBCerts(certs, model.Certificate)
+	model.CommonName = types.StringValue(data.LetsEncrypt.CommonName)
+	model.SubjectAltNames = common.StringsToTset(data.LetsEncrypt.SubjectAltNames)
+	if !utils.IsKnown(model.AcceptTOS) { // for Import
+		model.AcceptTOS = types.BoolValue(data.LetsEncrypt.Enabled)
+	}
 
 	return nil
 }
