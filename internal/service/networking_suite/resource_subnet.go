@@ -82,10 +82,11 @@ func (r *subnetResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Description: "Enable flooding for the subnet",
 			},
 			"zone": schema.StringAttribute{
-				Required:    true,
-				Description: "The name of zone that the subnet will be created (e.g. `is1a`, `tk1a`)",
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of zone that the subnet will be created (e.g. `is1c`, `tk1a`)",
 				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
+					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
@@ -110,7 +111,13 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	//client, err := networkingsuite.NewClient(r.client.SaClient2)
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return
@@ -122,7 +129,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 		Description:          plan.Description.ValueString(),
 		IPv4AddressRangeCIDR: plan.IPv4AddressRangeCIDR.ValueString(),
 		EnableFlooding:       plan.EnableFlooding.ValueBool(),
-		Zone:                 v1.CreateZone{Code: plan.Zone.ValueString()},
+		Zone:                 v1.CreateZone{Code: zone},
 		SubnetGroup:          v1.CreateResourceRefSRN{SRN: plan.SubnetGroupSRN.ValueString()},
 	})
 	if err != nil {
@@ -141,7 +148,12 @@ func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return
@@ -172,7 +184,12 @@ func (r *subnetResource) Update(ctx context.Context, req resource.UpdateRequest,
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return
@@ -202,7 +219,12 @@ func (r *subnetResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Delete: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return

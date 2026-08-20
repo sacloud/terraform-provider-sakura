@@ -50,6 +50,7 @@ type subnetGroupDataSourceModel struct {
 	Description          types.String         `tfsdk:"description"`
 	IPv4AddressRangeCIDR cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range_cidr"`
 	Region               types.String         `tfsdk:"region"`
+	Zone                 types.String         `tfsdk:"zone"`
 }
 
 func (r *subnetGroupDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -67,6 +68,11 @@ func (r *subnetGroupDataSource) Schema(ctx context.Context, _ datasource.SchemaR
 				Computed:    true,
 				Description: "The target region code of the subnet group",
 			},
+			"zone": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The target zone code of the subnet group",
+			},
 		},
 		MarkdownDescription: "Get information of a Networking Suite Subnet Group.",
 	}
@@ -79,7 +85,12 @@ func (r *subnetGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(data.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return
@@ -106,16 +117,17 @@ func (r *subnetGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 		}
 	}
 
-	data.updateState(found)
+	data.updateState(found, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func (m *subnetGroupDataSourceModel) updateState(group *v1.ReadSubnetGroup) {
+func (m *subnetGroupDataSourceModel) updateState(group *v1.ReadSubnetGroup, zone string) {
 	m.SRN = sctypes.SRNValue(group.SRN)
 	m.Name = types.StringValue(group.Name)
 	m.Description = types.StringValue(group.Description)
 	m.IPv4AddressRangeCIDR = cidrtypes.NewIPv4PrefixValue(group.IPv4AddressRangeCIDR)
 	m.Region = types.StringValue(group.Region.Code)
+	m.Zone = types.StringValue(zone)
 }
 
 func filterSubnetGroupByName(groups []v1.ReadSubnetGroup, name string) (*v1.ReadSubnetGroup, error) {

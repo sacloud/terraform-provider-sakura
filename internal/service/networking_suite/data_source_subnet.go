@@ -71,6 +71,7 @@ func (r *subnetDataSource) Schema(ctx context.Context, _ datasource.SchemaReques
 				Description: "Enable flooding for the subnet",
 			},
 			"zone": schema.StringAttribute{
+				Optional:    true,
 				Computed:    true,
 				Description: "The name of zone that the subnet will be created (e.g. `is1a`, `tk1a`)",
 			},
@@ -86,7 +87,12 @@ func (r *subnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 		return
 	}
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(data.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return

@@ -40,6 +40,7 @@ func TestAccSakuraNetworkingSuiteSubnetGroup_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "ipv4_address_range_cidr", "10.0.0.0/20"),
 					resource.TestCheckResourceAttr(resourceName, "region", region),
+					resource.TestCheckResourceAttrSet(resourceName, "zone"),
 				),
 			},
 			{
@@ -51,6 +52,7 @@ func TestAccSakuraNetworkingSuiteSubnetGroup_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
 					resource.TestCheckResourceAttr(resourceName, "ipv4_address_range_cidr", "10.0.0.0/20"),
 					resource.TestCheckResourceAttr(resourceName, "region", region),
+					resource.TestCheckResourceAttrSet(resourceName, "zone"),
 				),
 			},
 		},
@@ -77,7 +79,7 @@ func TestAccImportSakuraNetworkingSuiteSubnetGroup_basic(t *testing.T) {
 		if err := test.CompareStateMulti(s[0], expects); err != nil {
 			return err
 		}
-		return test.StateNotEmptyMulti(s[0], "srn")
+		return test.StateNotEmptyMulti(s[0], "srn", "zone")
 	}
 
 	resourceName := "sakura_networking_suite_subnet_group.foobar"

@@ -34,6 +34,7 @@ func TestAccSakuraDataSourceNetworkingSuiteSubnetGroup_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
 					resource.TestCheckResourceAttr(resourceName, "ipv4_address_range_cidr", "10.0.0.0/20"),
 					resource.TestCheckResourceAttr(resourceName, "region", region),
+					resource.TestCheckResourceAttrSet(resourceName, "zone"),
 				),
 			},
 		},

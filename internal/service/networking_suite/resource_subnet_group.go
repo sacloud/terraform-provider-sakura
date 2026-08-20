@@ -56,6 +56,7 @@ type subnetGroupResourceModel struct {
 	Description          types.String         `tfsdk:"description"`
 	IPv4AddressRangeCIDR cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range_cidr"`
 	Region               types.String         `tfsdk:"region"`
+	Zone                 types.String         `tfsdk:"zone"`
 	Timeouts             timeouts.Value       `tfsdk:"timeouts"`
 }
 
@@ -83,6 +84,14 @@ func (r *subnetGroupResource) Schema(ctx context.Context, _ resource.SchemaReque
 					stringplanmodifier.RequiresReplace(),
 				},
 			},
+			"zone": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Description: "The name of zone that the subnet will be created (e.g. `is1c`, `tk1a`)",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),
@@ -105,7 +114,12 @@ func (r *subnetGroupResource) Create(ctx context.Context, req resource.CreateReq
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return
@@ -123,7 +137,7 @@ func (r *subnetGroupResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	plan.updateState(created)
+	plan.updateState(created, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -134,7 +148,12 @@ func (r *subnetGroupResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return
@@ -151,7 +170,7 @@ func (r *subnetGroupResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	state.updateState(found)
+	state.updateState(found, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -165,18 +184,16 @@ func (r *subnetGroupResource) Update(ctx context.Context, req resource.UpdateReq
 	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(plan.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return
 	}
-	/*
-		parsed, err := parseSRN(plan.SRN.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError("Update: Attribute Error", fmt.Sprintf("failed to parse SRN[%s]: %s", plan.SRN.ValueString(), err))
-			return
-		}
-	*/
 
 	op := networkingsuite.NewSubnetGroupsOp(client)
 	updated, err := op.Update(ctx, plan.SRN.ValueSRN(), &v1.UpdateSubnetGroup{
@@ -188,7 +205,7 @@ func (r *subnetGroupResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	plan.updateState(updated)
+	plan.updateState(updated, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -202,20 +219,18 @@ func (r *subnetGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	client, err := createClient(zone, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError("Delete: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return
 	}
 
 	op := networkingsuite.NewSubnetGroupsOp(client)
-	/*
-		parsed, err := parseSRN(state.SRN.ValueString())
-		if err != nil {
-			resp.Diagnostics.AddError("Delete: Attribute Error", fmt.Sprintf("failed to parse SRN[%s]: %s", state.SRN.ValueString(), err))
-			return
-		}
-	*/
 	if err := op.Delete(ctx, state.SRN.ValueSRN()); err != nil {
 		if saclient.IsNotFoundError(err) {
 			return
@@ -224,10 +239,11 @@ func (r *subnetGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 }
 
-func (m *subnetGroupResourceModel) updateState(group *v1.ReadSubnetGroup) {
+func (m *subnetGroupResourceModel) updateState(group *v1.ReadSubnetGroup, zone string) {
 	m.SRN = sctypes.SRNValue(group.SRN)
 	m.Name = types.StringValue(group.Name)
 	m.Description = types.StringValue(group.Description)
 	m.IPv4AddressRangeCIDR = cidrtypes.NewIPv4PrefixValue(group.IPv4AddressRangeCIDR)
 	m.Region = types.StringValue(group.Region.Code)
+	m.Zone = types.StringValue(zone)
 }
