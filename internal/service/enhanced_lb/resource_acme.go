@@ -12,16 +12,14 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -80,40 +78,25 @@ func (r *enhancedLBACMEResource) Schema(ctx context.Context, _ resource.SchemaRe
 			"accept_tos": schema.BoolAttribute{
 				Required:    true,
 				Description: "The flag to accept the current Let's Encrypt terms of service(see: https://letsencrypt.org/repository/). This must be set `true` explicitly",
-				PlanModifiers: []planmodifier.Bool{
-					boolplanmodifier.RequiresReplace(),
-				},
 			},
 			"common_name": schema.StringAttribute{
 				Required:    true,
 				Description: "The FQDN used by ACME. This must set resolvable value",
-				PlanModifiers: []planmodifier.String{
-					stringplanmodifier.RequiresReplace(),
-				},
 			},
 			"subject_alt_names": schema.SetAttribute{
 				Optional:    true,
 				ElementType: types.StringType,
 				Description: "The Subject alternative names used by ACME",
-				PlanModifiers: []planmodifier.Set{
-					setplanmodifier.RequiresReplaceIfConfigured(),
-				},
 			},
 			"update_delay_sec": schema.Int32Attribute{
 				Optional:    true,
 				Description: "The wait time in seconds. This typically used for waiting for a DNS propagation",
-				PlanModifiers: []planmodifier.Int32{
-					int32planmodifier.RequiresReplaceIfConfigured(),
-				},
 			},
 			"get_certificates_timeout_sec": schema.Int32Attribute{
 				Optional:    true,
 				Computed:    true,
 				Description: "The timeout in seconds for the certificate acquisition to complete",
 				Default:     int32default.StaticInt32(120),
-				PlanModifiers: []planmodifier.Int32{
-					int32planmodifier.RequiresReplaceIfConfigured(),
-				},
 			},
 			"certificate": schema.SingleNestedAttribute{
 				Computed:    true,
@@ -257,7 +240,7 @@ func (r *enhancedLBACMEResource) Read(ctx context.Context, req resource.ReadRequ
 		return
 	}
 
-	elb := getELB(ctx, r.client, state.EnhancedLBID.ValueString(), &resp.State, &resp.Diagnostics)
+	elb := getELB(ctx, r.client, state.ID.ValueString(), &resp.State, &resp.Diagnostics)
 	if elb == nil {
 		return
 	}
@@ -270,7 +253,84 @@ func (r *enhancedLBACMEResource) Read(ctx context.Context, req resource.ReadRequ
 }
 
 func (r *enhancedLBACMEResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	resp.Diagnostics.AddError("Update Error", "updating Enhanced LB ACME is not supported. To change the attributes, please delete and recreate the resource.")
+	var plan, state enhancedLBACMEResourceModel
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	if plan.AcceptTOS.Equal(state.AcceptTOS) &&
+		plan.CommonName.Equal(state.CommonName) &&
+		plan.SubjectAltNames.Equal(state.SubjectAltNames) {
+		plan.ID = state.ID
+		plan.Certificate = state.Certificate
+		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+		return
+	}
+
+	ctx, cancel := common.SetupTimeoutUpdate(ctx, plan.Timeouts, common.Timeout20min)
+	defer cancel()
+
+	elbID := state.EnhancedLBID.ValueString()
+	common.SakuraMutexKV.Lock(elbID)
+	defer common.SakuraMutexKV.Unlock(elbID)
+
+	elb := getELB(ctx, r.client, elbID, &resp.State, &resp.Diagnostics)
+	if elb == nil {
+		return
+	}
+
+	le := &iaas.ProxyLBACMESetting{Enabled: false}
+	if plan.AcceptTOS.ValueBool() {
+		le = &iaas.ProxyLBACMESetting{
+			Enabled:         true,
+			CommonName:      plan.CommonName.ValueString(),
+			SubjectAltNames: common.TsetToStrings(plan.SubjectAltNames),
+		}
+	}
+
+	if plan.UpdateDelaySec.ValueInt32() > 0 {
+		time.Sleep(time.Duration(plan.UpdateDelaySec.ValueInt32()) * time.Second)
+	}
+
+	elbOp := iaas.NewProxyLBOp(r.client)
+	elb, err := elbOp.UpdateSettings(ctx, elb.ID, &iaas.ProxyLBUpdateSettingsRequest{
+		HealthCheck:          elb.HealthCheck,
+		SorryServer:          elb.SorryServer,
+		BindPorts:            elb.BindPorts,
+		Servers:              elb.Servers,
+		Rules:                elb.Rules,
+		LetsEncrypt:          le,
+		StickySession:        elb.StickySession,
+		Timeout:              elb.Timeout,
+		Gzip:                 elb.Gzip,
+		BackendHttpKeepAlive: elb.BackendHttpKeepAlive,
+		ProxyProtocol:        elb.ProxyProtocol,
+		Syslog:               elb.Syslog,
+		OriginGuard:          elb.OriginGuard,
+		StrictRule:           elb.StrictRule,
+		SettingsHash:         elb.SettingsHash,
+	})
+	if err != nil {
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update setting Enhanced LB[%s] ACME: %s", elbID, err))
+		return
+	}
+	if err := elbOp.RenewLetsEncryptCert(ctx, elb.ID); err != nil {
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to renew ACME Certificates at Enhanced LB[%s]: %s", elb.ID, err))
+		return
+	}
+
+	if err := waitForProxyLBCertAcquisitionFW(ctx, r.client, elb.ID.String(), plan.GetCertificatesTimeoutSec.ValueInt32()); err != nil {
+		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to wait for ACME certificate acquisition of Enhanced LB[%s]: %s", elb.ID, err))
+		return
+	}
+
+	if err := plan.updateState(ctx, r.client, elb); err != nil {
+		resp.Diagnostics.AddError("Update: Terraform Error", fmt.Sprintf("failed to update state for Enhanced LB[%s] ACME: %s", elb.ID, err))
+		return
+	}
+	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
 func (r *enhancedLBACMEResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -326,7 +386,17 @@ func (model *enhancedLBACMEResourceModel) updateState(ctx context.Context, clien
 	}
 
 	model.ID = types.StringValue(data.ID.String())
+	model.EnhancedLBID = types.StringValue(data.ID.String())
 	model.Certificate = flattenEnhancedLBCerts(certs, model.Certificate)
+	model.CommonName = types.StringValue(data.LetsEncrypt.CommonName)
+	if len(data.LetsEncrypt.SubjectAltNames) == 0 {
+		model.SubjectAltNames = types.SetNull(types.StringType)
+	} else {
+		model.SubjectAltNames = common.StringsToTset(data.LetsEncrypt.SubjectAltNames)
+	}
+	if !utils.IsKnown(model.AcceptTOS) { // for Import
+		model.AcceptTOS = types.BoolValue(data.LetsEncrypt.Enabled)
+	}
 
 	return nil
 }
