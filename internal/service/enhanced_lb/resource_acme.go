@@ -147,7 +147,7 @@ func (r *enhancedLBACMEResource) Schema(ctx context.Context, _ resource.SchemaRe
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
-				Create: true, Delete: true,
+				Create: true, Update: true, Delete: true,
 			}),
 		},
 		MarkdownDescription: "Manages an Enhanced Load Balancer's ACME",
@@ -316,6 +316,15 @@ func (r *enhancedLBACMEResource) Update(ctx context.Context, req resource.Update
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update setting Enhanced LB[%s] ACME: %s", elbID, err))
 		return
 	}
+
+	if !plan.AcceptTOS.ValueBool() {
+		// ACMEを無効化した場合は、証明書を再発行する必要がないので、ここで終了する
+		plan.ID = state.ID
+		plan.Certificate = types.ObjectNull(enhancedLBCertificateModel{}.AttributeTypes())
+		resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+		return
+	}
+
 	if err := elbOp.RenewLetsEncryptCert(ctx, elb.ID); err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to renew ACME Certificates at Enhanced LB[%s]: %s", elb.ID, err))
 		return
