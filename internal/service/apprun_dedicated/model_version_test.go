@@ -62,3 +62,42 @@ func TestExposedPortModelIntoCreateNilHealthCheck(t *testing.T) {
 		t.Fatalf("HealthCheck should be nil when omitted, got %+v", got.HealthCheck)
 	}
 }
+
+func TestVerModelUpdateStatePreservesSecretByKey(t *testing.T) {
+	model := verModel{
+		EnvVars: []envVarModel{
+			{Key: types.StringValue("ENV_VAR2"), Value: types.StringValue("value2"), Secret: types.BoolValue(true)},
+			{Key: types.StringValue("ENV_VAR1"), Value: types.StringValue("value1"), Secret: types.BoolValue(false)},
+		},
+	}
+
+	detail := version.VersionDetail{
+		EnvVars: []version.EnvironmentVariable{
+			{Key: "ENV_VAR1", Value: types.StringValue("value1").ValueStringPointer(), Secret: false},
+			{Key: "ENV_VAR2", Value: nil, Secret: true},
+		},
+	}
+
+	var aid v1.ApplicationID
+
+	diagnostics := model.updateState(t.Context(), &detail, aid)
+
+	if diagnostics.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diagnostics)
+	}
+	if len(model.EnvVars) != 2 {
+		t.Fatalf("EnvVars length = %d, want 2", len(model.EnvVars))
+	}
+	if got := model.EnvVars[0].Key.ValueString(); got != "ENV_VAR2" {
+		t.Fatalf("EnvVars[0].Key = %q, want %q", got, "ENV_VAR2")
+	}
+	if got := model.EnvVars[0].Value.ValueString(); got != "value2" {
+		t.Fatalf("EnvVars[0].Value = %q, want %q", got, "value2")
+	}
+	if got := model.EnvVars[1].Key.ValueString(); got != "ENV_VAR1" {
+		t.Fatalf("EnvVars[1].Key = %q, want %q", got, "ENV_VAR1")
+	}
+	if got := model.EnvVars[1].Value.ValueString(); got != "value1" {
+		t.Fatalf("EnvVars[1].Value = %q, want %q", got, "value1")
+	}
+}

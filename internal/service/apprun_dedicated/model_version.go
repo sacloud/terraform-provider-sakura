@@ -6,6 +6,7 @@ package apprun_dedicated
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -215,9 +216,29 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 	buf := make([]envVarModel, len(d.EnvVars))
 	copy(buf, v.EnvVars)
 
-	for i, j := range d.EnvVars {
-		k := &buf[i]
-		k.updateState(j)
+	for i := range slices.Values(d.EnvVars) {
+		// find matching variable by key and update its value
+		var updated bool
+		for j := range slices.Values(buf) {
+			switch {
+			case j.Key.IsUnknown():
+				continue
+			case j.Key.IsNull():
+				continue
+			case j.Key.ValueString() == i.Key:
+				j.updateState(i)
+				updated = true
+				break
+			}
+		}
+
+		if !updated {
+			// in case of terraform import previous state is empty.
+			// need to fill it
+			var e envVarModel
+			e.updateState(i)
+			buf = append(buf, e)
+		}
 	}
 
 	if v.EnvVars == nil && len(d.EnvVars) == 0 {
