@@ -213,20 +213,20 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 	v.ExposedPorts = common.MapTo(d.ExposedPorts, stateUpdater[version.ExposedPort, exposedPortModel])
 	v.Cmd, ret = types.ListValueFrom(ctx, types.StringType, common.MapTo(d.Cmd, types.StringValue))
 
-	buf := make([]envVarModel, len(d.EnvVars))
-	copy(buf, v.EnvVars)
+	buf := slices.Clone(v.EnvVars)
 
 	for i := range slices.Values(d.EnvVars) {
 		// find matching variable by key and update its value
 		var updated bool
-		for j := range slices.Values(buf) {
+		for j := range buf {
+			k := &buf[j]
 			switch {
-			case j.Key.IsUnknown():
+			case k.Key.IsUnknown():
 				continue
-			case j.Key.IsNull():
+			case k.Key.IsNull():
 				continue
-			case j.Key.ValueString() == i.Key:
-				j.updateState(i)
+			case k.Key.ValueString() == i.Key:
+				k.updateState(i)
 				updated = true
 				break
 			}
