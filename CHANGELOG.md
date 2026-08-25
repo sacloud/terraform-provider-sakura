@@ -1,5 +1,13 @@
 # Changelog
 
+## [v3.12.9](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.8...v3.12.9) - 2026-08-25
+
+### Other Changes
+- vpn_router: Remove planmodifier from updatable attributes and ... by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/319
+- github: update release note categories by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/321
+### 📦 Dependency Updates
+- go: bump github.com/minio/minio-go/v7 from 7.2.1 to 7.3.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/316
+
 ## [v3.12.8](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.7...v3.12.8) - 2026-08-13
 
 - remove: user count limit (max 100) on sakura_vpn_router by @yamamoto-febc in https://github.com/sacloud/terraform-provider-sakura/pull/311
