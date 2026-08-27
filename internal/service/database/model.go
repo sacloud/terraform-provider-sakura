@@ -130,9 +130,7 @@ func flattenDatabaseBackupSetting(db *iaas.Database) types.Object {
 		m := databaseBackupModel{
 			Time:       types.StringValue(db.BackupSetting.Time),
 			DaysOfWeek: common.FlattenBackupDaysOfWeek(db.BackupSetting.DayOfWeek),
-		}
-		if db.BackupSetting.Connect != "" {
-			m.Connect = types.StringValue(db.BackupSetting.Connect)
+			Connect:    types.StringValue(db.BackupSetting.Connect),
 		}
 		value, diags := types.ObjectValueFrom(context.Background(), m.AttributeTypes(), m)
 		if diags.HasError() {
