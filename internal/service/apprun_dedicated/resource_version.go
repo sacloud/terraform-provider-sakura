@@ -34,6 +34,7 @@ import (
 	ver "github.com/sacloud/apprun-dedicated-api-go/apis/version"
 	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -136,7 +137,7 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 			},
 			"image": schema.StringAttribute{
 				Required:      true,
-				Description:   "The container image",
+				Description:   "The container image, e.g. `nginx:latest`",
 				Validators:    []validator.String{stringvalidator.LengthAtMost(512)},
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},
@@ -155,7 +156,7 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 			},
 			"registry_password_action": schema.StringAttribute{
 				Optional:      true,
-				Description:   "Password configuration method",
+				Description:   desc.Sprintf("Password configuration method. This must be one of [%s]", actions),
 				Validators:    []validator.String{stringvalidator.OneOf(actions...)},
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

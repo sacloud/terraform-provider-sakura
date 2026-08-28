@@ -243,7 +243,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"private_host_name": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The id of the PrivateHost which the Server is assigned",
+				Description: "The name of the PrivateHost which the Server is assigned",
 			},
 			"user_data": schema.StringAttribute{
 				Optional:    true,

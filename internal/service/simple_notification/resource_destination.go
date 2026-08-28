@@ -62,7 +62,7 @@ func (r *destinationResource) Schema(ctx context.Context, _ resource.SchemaReque
 
 			"type": schema.StringAttribute{
 				Required:    true,
-				Description: desc.Sprintf("The ProcessConfiguration ID of the %s.", resourceName),
+				Description: desc.Sprintf("The type of the %s.", resourceName),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
 						if err := v1.DestinationSettingsType(v).Validate(); err != nil {

@@ -40,7 +40,7 @@ resource "sakura_apprun_dedicated_version" "main" {
 
 - `application_id` (String) The ID of the application.
 - `cpu` (Number) The CPU limit in millicores (e.g., 1000 = 1 CPU)
-- `image` (String) The container image
+- `image` (String) The container image, e.g. `nginx:latest`
 - `memory` (Number) The memory limit in megabytes
 - `scaling_mode` (String) The scaling mode (manual, autoscale)
 
@@ -55,7 +55,7 @@ resource "sakura_apprun_dedicated_version" "main" {
 - `max_scale` (Number) Maximum number of nodes when scaling mode is `autoscale`
 - `min_scale` (Number) Minimum number of nodes when scaling mode is `autoscale`
 - `registry_password` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Login password for the container registry
-- `registry_password_action` (String) Password configuration method
+- `registry_password_action` (String) Password configuration method. This must be one of [`keep`/`remove`/`new`]
 - `registry_username` (String) Login user name for the container registry
 - `scale_in_threshold` (Number) When to scale in when scaling mode is `autoscale`
 - `scale_out_threshold` (Number) When to scale out when scaling mode is `autoscale`

@@ -28,7 +28,7 @@ resource "sakura_simple_notification_destination" "foobar" {
 ### Required
 
 - `name` (String) The name of the SimpleNotification Destination.
-- `type` (String) The ProcessConfiguration ID of the SimpleNotification Destination.
+- `type` (String) The type of the SimpleNotification Destination.
 - `value` (String) The source of the SimpleNotification Destination.
 
 ### Optional

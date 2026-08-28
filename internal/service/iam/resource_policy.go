@@ -88,7 +88,7 @@ func (r *policyResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 								},
 								"id": schema.StringAttribute{
 									Required:    true,
-									Description: "The ID of the IAM Policy",
+									Description: "The ID of the IAM Policy role",
 								},
 							},
 						},

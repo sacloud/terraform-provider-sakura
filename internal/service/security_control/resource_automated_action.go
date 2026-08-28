@@ -122,7 +122,7 @@ func (r *automatedActionResource) Schema(ctx context.Context, _ resource.SchemaR
 			},
 			"execution_condition": schema.StringAttribute{
 				Required:    true,
-				Description: "The CEL expression that defines the condition for Automated Action trigger",
+				Description: "The CEL expression that defines the condition for Automated Action trigger. See the manual: https://manual.sakura.ad.jp/cloud/controlpanel/eventlog/security-control.html#id28",
 			},
 			"created_at": schema.StringAttribute{
 				Computed:    true,

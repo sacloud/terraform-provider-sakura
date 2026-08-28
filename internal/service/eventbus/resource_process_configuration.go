@@ -116,7 +116,7 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 
 			"destination": schema.StringAttribute{
 				Required:    true,
-				Description: desc.Sprintf("The destination of the %s.", resourceName),
+				Description: desc.Sprintf("The destination of the %s. This must be one of [%s]", resourceName, common.MapTo(v1.ProcessConfigurationSettingsDestinationSimplemq.AllValues(), common.ToString)),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
 						return v1.ProcessConfigurationSettingsDestination(v).Validate()
@@ -125,7 +125,7 @@ func (r *processConfigurationResource) Schema(ctx context.Context, _ resource.Sc
 			},
 			"parameters": schema.StringAttribute{
 				Required:    true,
-				Description: desc.Sprintf("The parameter of the %s.", resourceName),
+				Description: desc.Sprintf("The parameter of the %s. `{\"group_id\":\"simple-notification-group-id\", \"message\":\"message\"}` for simplenotification and `{\"queue_name\":\"simplemq-queue-name\", \"content\":\"Content\"}` for simplemq", resourceName),
 			},
 
 			"simplemq_api_key_wo": schema.StringAttribute{
