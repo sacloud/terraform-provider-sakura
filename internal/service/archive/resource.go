@@ -131,7 +131,7 @@ func (r *archiveResource) Schema(ctx context.Context, req resource.SchemaRequest
 			},
 			"source_archive_zone": schema.StringAttribute{
 				Optional:    true,
-				Description: "The share key of source shared archive",
+				Description: "The zone of source shared archive",
 				Validators: []validator.String{
 					stringvalidator.ConflictsWith(sizePath, sourceDiskIdPath, sourceSharedKeyPath),
 				},

@@ -81,7 +81,7 @@ func (r *asgResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 			},
 			"worker_service_class_path": schema.StringAttribute{
 				Required:      true,
-				Description:   "The worker service class path",
+				Description:   "The worker service class path, e.g. `cloud/apprun/dedicated/worker/2vcpu_2gb`. Get from sakura_apprun_dedicated_worker_service_classes data source",
 				Validators:    []validator.String{stringvalidator.LengthBetween(1, 255)},
 				PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
 			},

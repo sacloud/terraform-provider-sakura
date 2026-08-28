@@ -70,7 +70,7 @@ Required:
 
 Required:
 
-- `id` (String) The ID of the IAM Organization ID Policy
+- `id` (String) The ID of the IAM Organization ID Policy role
 - `type` (String) The type of the role
 
 

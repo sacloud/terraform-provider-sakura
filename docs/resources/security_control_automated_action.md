@@ -44,7 +44,7 @@ resource "sakura_security_control_automated_action" "foobar" {
 ### Required
 
 - `action` (Attributes) The settings for Automated Action (see [below for nested schema](#nestedatt--action))
-- `execution_condition` (String) The CEL expression that defines the condition for Automated Action trigger
+- `execution_condition` (String) The CEL expression that defines the condition for Automated Action trigger. See the manual: https://manual.sakura.ad.jp/cloud/controlpanel/eventlog/security-control.html#id28
 - `name` (String) The name of the Automated Action.
 
 ### Optional

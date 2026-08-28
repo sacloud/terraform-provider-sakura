@@ -138,8 +138,8 @@ Read-Only:
 Required:
 
 - `ips` (Set of String) The IPv4 addresses to be restricted
-- `protocols` (String) The protocols to restrict
-- `restricted_by` (String) The category to restrict by
+- `protocols` (String) The protocols to restrict. This must be one of [`http,https`/`http`/`https`]
+- `restricted_by` (String) The category to restrict by. This must be one of [`allowIps`/`denyIps`]
 
 
 <a id="nestedatt--request_transformation"></a>

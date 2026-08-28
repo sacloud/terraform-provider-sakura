@@ -29,6 +29,7 @@ import (
 	"github.com/sacloud/saclient-go"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -165,11 +166,11 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 				Attributes: map[string]schema.Attribute{
 					"protocols": schema.StringAttribute{
 						Required:    true,
-						Description: "The protocols to restrict",
+						Description: desc.Sprintf("The protocols to restrict. This must be one of [%s]", common.MapTo(v1.IpRestrictionConfigProtocolsHTTP.AllValues(), common.ToString)),
 					},
 					"restricted_by": schema.StringAttribute{
 						Required:    true,
-						Description: "The category to restrict by",
+						Description: desc.Sprintf("The category to restrict by. This must be one of [%s]", common.MapTo(v1.IpRestrictionConfigRestrictedByDenyIps.AllValues(), common.ToString)),
 					},
 					"ips": schema.SetAttribute{
 						ElementType: types.StringType,
