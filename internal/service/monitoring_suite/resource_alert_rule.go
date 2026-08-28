@@ -71,7 +71,7 @@ func (r *alertRuleResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			},
 			"query": schema.StringAttribute{
 				Required:    true,
-				Description: "The query of the Alert Rule.",
+				Description: "The query of the Alert Rule. Don't include a newline at the end. If your query includes a newline at the end, e.g. use here document or file, call chomp function to remove a newline.",
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(1, 4096),
 				},
