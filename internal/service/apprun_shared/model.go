@@ -257,7 +257,7 @@ func flattenApprunApplicationSecrets(model *apprunSharedBaseModel, componentName
 					continue
 				}
 				for _, exSecretModel := range exSecretModels {
-					//if exSecretModel.Key.ValueString() == secret.Key && exSecretModel.ValueWOVersion.ValueInt32() > 0 {
+					// if exSecretModel.Key.ValueString() == secret.Key && exSecretModel.ValueWOVersion.ValueInt32() > 0 {
 					if exSecretModel.Key.ValueString() == secret.Key {
 						result.ValueWOVersion = exSecretModel.ValueWOVersion
 						break

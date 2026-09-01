@@ -736,6 +736,7 @@ resource "sakura_apprun_shared" "foobar" {
 }
 `
 
+//nolint:gosec
 const testAccSakuraApprunShared_withSecret = `
 resource "sakura_apprun_shared" "foobar" {
 	name            = "{{ .arg0 }}"
@@ -770,6 +771,7 @@ resource "sakura_apprun_shared" "foobar" {
 }
 `
 
+//nolint:gosec
 const testAccSakuraApprunShared_withSecretUpdate = `
 resource "sakura_apprun_shared" "foobar" {
 	name            = "{{ .arg0 }}"
