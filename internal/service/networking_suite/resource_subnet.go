@@ -64,7 +64,7 @@ func (r *subnetResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"srn":              common.SchemaResourceSRN("Networking Suite Subnet"),
 			"name":             common.SchemaResourceName("Networking Suite Subnet"),
 			"description":      common.SchemaResourceDescription("Networking Suite Subnet"),
-			"subnet_group_srn": common.SchemaResourceSRNAttr("The Networking Suite Subnet Group's SRN associated with the Networking Suite Subnet"),
+			"subnet_group_srn": common.SchemaResourceSRNAttr("The Networking Suite Subnet Group's SRN associated with the Networking Suite Subnet", true),
 			"ipv4_address_range_cidr": schema.StringAttribute{
 				CustomType:  cidrtypes.IPv4PrefixType{},
 				Required:    true,

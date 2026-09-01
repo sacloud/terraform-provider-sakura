@@ -87,7 +87,7 @@ func (r *subnetGroupResource) Schema(ctx context.Context, _ resource.SchemaReque
 			"zone": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The name of zone that the subnet will be created (e.g. `is1c`, `tk1a`)",
+				Description: "The name of zone that the subnet group will be created (e.g. `is1c`, `tk1a`)",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},

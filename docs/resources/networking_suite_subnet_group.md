@@ -34,7 +34,7 @@ resource "sakura_networking_suite_subnet_group" "foobar" {
 
 - `description` (String) The description of the Networking Suite Subnet Group. The length of this value must be in the range [`1`-`512`]
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
-- `zone` (String) The name of zone that the subnet will be created (e.g. `is1c`, `tk1a`)
+- `zone` (String) The name of zone that the subnet group will be created (e.g. `is1c`, `tk1a`)
 
 ### Read-Only
 

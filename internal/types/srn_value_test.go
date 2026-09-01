@@ -184,7 +184,7 @@ func TestSRNValueSRN(t *testing.T) {
 
 			v := testCase.srnValue.ValueSRN()
 			if v != testCase.expectedSRN {
-				t.Errorf("Unexpected difference in SRN, got: %s, expected: %s", v, testCase.expectedSRN)
+				t.Errorf("Unexpected difference in SRN, got: %v, expected: %v", v, testCase.expectedSRN)
 			}
 
 			// SRNValue.ValueSRN() does not return diagnostics, so we skip such check

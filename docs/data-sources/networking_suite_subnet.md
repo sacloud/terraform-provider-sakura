@@ -29,7 +29,7 @@ data "sakura_networking_suite_subnet" "foobar" {
 - `name` (String) The name of the Networking Suite Subnet.
 - `srn` (String) The SRN of the Networking Suite Subnet.
 - `subnet_group_srn` (String) The SRN of the Networking Suite Subnet Group associated with the Networking Suite Subnet.
-- `zone` (String) The name of zone that the subnet will be created (e.g. `is1a`, `tk1a`)
+- `zone` (String) The name of zone that the subnet is in (e.g. `is1a`, `tk1a`)
 
 ### Read-Only
 

@@ -43,18 +43,21 @@ func SchemaResourceSRN(name string) schema.Attribute {
 	}
 }
 
-func SchemaResourceSRNAttr(description string) schema.Attribute {
-	return schema.StringAttribute{
+func SchemaResourceSRNAttr(description string, replace bool) schema.Attribute {
+	a := schema.StringAttribute{
 		CustomType:  sctypes.SRNType,
 		Required:    true,
 		Description: description,
 		Validators: []validator.String{
 			sacloudvalidator.SRNValidator(),
 		},
-		PlanModifiers: []planmodifier.String{
-			stringplanmodifier.RequiresReplace(),
-		},
 	}
+	if replace {
+		a.PlanModifiers = []planmodifier.String{
+			stringplanmodifier.RequiresReplace(),
+		}
+	}
+	return a
 }
 
 func SchemaResourceName(name string) schema.Attribute {

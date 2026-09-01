@@ -58,8 +58,8 @@ func (r *interfaceConnectionResource) Schema(ctx context.Context, _ resource.Sch
 	resp.Schema = schema.Schema{
 		Attributes: map[string]schema.Attribute{
 			"srn":           common.SchemaResourceSRN("Networking Suite Interface Connection"),
-			"subnet_srn":    common.SchemaResourceSRNAttr("The SRN of the target Subnet."),
-			"interface_srn": common.SchemaResourceSRNAttr("The interface SRN to connect."),
+			"subnet_srn":    common.SchemaResourceSRNAttr("The SRN of the target Subnet.", true),
+			"interface_srn": common.SchemaResourceSRNAttr("The interface SRN to connect.", true),
 			"ephemeral_ipv4_address": schema.StringAttribute{
 				CustomType:  iptypes.IPv4AddressType{},
 				Optional:    true,
@@ -99,9 +99,8 @@ func (r *interfaceConnectionResource) Create(ctx context.Context, req resource.C
 
 	op := networkingsuite.NewInterfaceConnectionOp(client)
 	var ipAddress *string
-	if utils.IsKnown(plan.EphemeralIPv4Address) && plan.EphemeralIPv4Address.ValueString() != "" {
-		v := plan.EphemeralIPv4Address.ValueString()
-		ipAddress = &v
+	if utils.IsKnown(plan.EphemeralIPv4Address) {
+		ipAddress = plan.EphemeralIPv4Address.ValueStringPointer()
 	}
 
 	created, err := op.Create(ctx, networkingsuite.CreateInterfaceConnectionParams{

@@ -68,7 +68,7 @@ func (r *subnetDataSource) Schema(ctx context.Context, _ datasource.SchemaReques
 			"zone": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The name of zone that the subnet will be created (e.g. `is1a`, `tk1a`)",
+				Description: "The name of zone that the subnet is in (e.g. `is1a`, `tk1a`)",
 			},
 		},
 		MarkdownDescription: "Get information of a Networking Suite Subnet.",
@@ -101,7 +101,7 @@ func (r *subnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read subnet[%s]: %s", data.SRN.ValueString(), err))
 			return
 		}
-	} else {
+	} else if utils.IsKnown(data.Name) {
 		if !utils.IsKnown(data.SubnetGroupSRN) {
 			resp.Diagnostics.AddError("Read: Attribute Error", "subnet_group_srn is required when name based search")
 			return
@@ -116,6 +116,9 @@ func (r *subnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			resp.Diagnostics.AddError("Read: Search Error", err.Error())
 			return
 		}
+	} else {
+		resp.Diagnostics.AddError("Read: Attribute Error", "either 'srn' or 'name' must be specified")
+		return
 	}
 
 	data.updateState(found)
