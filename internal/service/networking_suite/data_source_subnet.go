@@ -95,13 +95,14 @@ func (r *subnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 
 	op := networkingsuite.NewSubnetsOp(client)
 	var found *v1.ReadSubnet
-	if utils.IsKnown(data.SRN) {
+	switch {
+	case utils.IsKnown(data.SRN):
 		found, err = op.Read(ctx, data.SRN.ValueSRN())
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to read subnet[%s]: %s", data.SRN.ValueString(), err))
 			return
 		}
-	} else if utils.IsKnown(data.Name) {
+	case utils.IsKnown(data.Name):
 		if !utils.IsKnown(data.SubnetGroupSRN) {
 			resp.Diagnostics.AddError("Read: Attribute Error", "subnet_group_srn is required when name based search")
 			return
@@ -116,7 +117,7 @@ func (r *subnetDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 			resp.Diagnostics.AddError("Read: Search Error", err.Error())
 			return
 		}
-	} else {
+	default:
 		resp.Diagnostics.AddError("Read: Attribute Error", "either 'srn' or 'name' must be specified")
 		return
 	}
