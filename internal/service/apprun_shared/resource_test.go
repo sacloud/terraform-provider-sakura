@@ -13,8 +13,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/sacloud/apprun-api-go"
-	v1 "github.com/sacloud/apprun-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/apprun"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
@@ -25,7 +25,7 @@ func TestAccSakuraApprunShared_basic(t *testing.T) {
 	rand := test.RandomName()
 	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
-	var application v1.HandlerGetApplication
+	var application v1.HandlerReadApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -81,7 +81,7 @@ func TestAccSakuraApprunShared_externalRegistry(t *testing.T) {
 	resourceName := "sakura_apprun_shared.foobar"
 	rand := test.RandomName()
 
-	var application v1.HandlerGetApplication
+	var application v1.HandlerReadApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -114,7 +114,7 @@ func TestAccSakuraApprunShared_withOldPassword(t *testing.T) {
 	rand := test.RandomName()
 	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
-	var application v1.HandlerGetApplication
+	var application v1.HandlerReadApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -152,7 +152,7 @@ func TestAccSakuraApprunShared_withEnv(t *testing.T) {
 	rand := test.RandomName()
 	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
-	var application v1.HandlerGetApplication
+	var application v1.HandlerReadApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -190,7 +190,7 @@ func TestAccSakuraApprunShared_withEnvUpdate(t *testing.T) {
 	rand := test.RandomName()
 	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
-	var application v1.HandlerGetApplication
+	var application v1.HandlerReadApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -228,6 +228,49 @@ func TestAccSakuraApprunShared_withEnvUpdate(t *testing.T) {
 	})
 }
 
+func TestAccSakuraApprunShared_withSecret(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
+	resourceName := "sakura_apprun_shared.foobar"
+	rand := test.RandomName()
+	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
+
+	var application v1.HandlerReadApplication
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraApprunSharedDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withSecret, rand, pass),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraApprunSharedExists(resourceName, &application),
+					testCheckSakuraApprunSharedAttributes(&application),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.#", "2"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.0.key", "key"),
+					resource.TestCheckNoResourceAttr(resourceName, "components.0.secret.0.value_wo"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.0.value_wo_version", "1"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.1.key", "key2"),
+					resource.TestCheckNoResourceAttr(resourceName, "components.0.secret.1.value_wo"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.1.value_wo_version", "1"),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withSecretUpdate, rand, pass),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraApprunSharedExists(resourceName, &application),
+					testCheckSakuraApprunSharedAttributes(&application),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.0.key", "key"),
+					resource.TestCheckNoResourceAttr(resourceName, "components.0.secret.0.value_wo"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.0.value_wo_version", "2"),
+					resource.TestCheckNoResourceAttr(resourceName, "components.0.secret.1"),
+				),
+			},
+		},
+	})
+}
+
 func TestAccSakuraApprunShared_withProbe(t *testing.T) {
 	test.SkipIfEnvIsNotSet(t, "SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
@@ -235,7 +278,7 @@ func TestAccSakuraApprunShared_withProbe(t *testing.T) {
 	rand := test.RandomName()
 	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
-	var application v1.HandlerGetApplication
+	var application v1.HandlerReadApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -292,7 +335,7 @@ func TestAccSakuraApprunShared_withTraffic(t *testing.T) {
 	rand := test.RandomName()
 	pass := os.Getenv("SAKURA_CONTAINER_REGISTRY_USER_PASSWORD")
 
-	var application v1.HandlerGetApplication
+	var application v1.HandlerReadApplication
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -500,7 +543,7 @@ func TestAccImportSakuraApprunShared_withEnv(t *testing.T) {
 	})
 }
 
-func testCheckSakuraApprunSharedExists(n string, application *v1.HandlerGetApplication) resource.TestCheckFunc {
+func testCheckSakuraApprunSharedExists(n string, application *v1.HandlerReadApplication) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
@@ -529,7 +572,7 @@ func testCheckSakuraApprunSharedExists(n string, application *v1.HandlerGetAppli
 	}
 }
 
-func testCheckSakuraApprunSharedAttributes(application *v1.HandlerGetApplication) resource.TestCheckFunc {
+func testCheckSakuraApprunSharedAttributes(application *v1.HandlerReadApplication) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		if len(application.Components) == 0 {
 			return errors.New("unexpected application components: components is nil")
@@ -690,6 +733,69 @@ resource "sakura_apprun_shared" "foobar" {
       value = "value2"
     }]
   }]
+}
+`
+
+const testAccSakuraApprunShared_withSecret = `
+resource "sakura_apprun_shared" "foobar" {
+	name            = "{{ .arg0 }}"
+	timeout_seconds = 90
+	port            = 80
+	min_scale       = 0
+	max_scale       = 1
+	components = [{
+		name       = "compo1"
+		max_cpu    = "0.5"
+		max_memory = "1Gi"
+		deploy_source = {
+			container_registry = {
+				image               = "sakura-oss-dev.sakuracr.jp/test:latest"
+				server              = "sakura-oss-dev.sakuracr.jp"
+				username            = "test-user"
+				password_wo         = "{{ .arg1 }}"
+				password_wo_version = 1
+			}
+		}
+		secret = [{
+			key              = "key"
+			value_wo         = "value"
+			value_wo_version = 1
+		},
+		{
+			key              = "key2"
+			value_wo         = "value2"
+			value_wo_version = 1
+		}]
+	}]
+}
+`
+
+const testAccSakuraApprunShared_withSecretUpdate = `
+resource "sakura_apprun_shared" "foobar" {
+	name            = "{{ .arg0 }}"
+	timeout_seconds = 90
+	port            = 80
+	min_scale       = 0
+	max_scale       = 1
+	components = [{
+		name       = "compo1"
+		max_cpu    = "0.5"
+		max_memory = "1Gi"
+		deploy_source = {
+			container_registry = {
+				image               = "sakura-oss-dev.sakuracr.jp/test:latest"
+				server              = "sakura-oss-dev.sakuracr.jp"
+				username            = "test-user"
+				password_wo         = "{{ .arg1 }}"
+				password_wo_version = 1
+			}
+		}
+		secret = [{
+			key              = "key"
+			value_wo         = "value-updated"
+			value_wo_version = 2
+		}]
+	}]
 }
 `
 

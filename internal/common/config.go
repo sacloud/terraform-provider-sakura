@@ -17,8 +17,6 @@ import (
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/apigw-api-go"
 	apigwapi "github.com/sacloud/apigw-api-go/apis/v1"
-	"github.com/sacloud/apprun-api-go"
-	apprunapi "github.com/sacloud/apprun-api-go/apis/v1"
 	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
 	apprundedicatedapi "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	dedicatedstorage "github.com/sacloud/dedicated-storage-api-go"
@@ -38,6 +36,9 @@ import (
 	nosqlapi "github.com/sacloud/nosql-api-go/apis/v1"
 	objectstorage "github.com/sacloud/object-storage-api-go"
 	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/apprun"
+	apprunapi "github.com/sacloud/sacloud-sdk-go/api/apprun/apis/v1"
+	saclientsdk "github.com/sacloud/sacloud-sdk-go/common/saclient"
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
 	seccon "github.com/sacloud/security-control-api-go"
@@ -112,6 +113,7 @@ type APIClient struct {
 	vpcRouterWaitAfterCreateDuration time.Duration
 	CallerOptions                    *client.Options
 	SaClient                         *saclient.Client
+	SaClient2                        *saclientsdk.Client
 	AppRunClient                     *apprunapi.Client
 	AppRunDedicatedClient            *apprundedicatedapi.Client
 	KmsClient                        *kmsapi.Client
@@ -395,6 +397,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err := theClient.SetEnviron(c.createSaclientEnvConfig()); err != nil {
 		return nil, fmt.Errorf("failed to create Sakura client via Envvars: %s", err.Error())
 	}
+	theClient2 := &saclientsdk.Client{}
+	if err := theClient2.SetEnviron(c.createSaclientEnvConfig()); err != nil {
+		return nil, fmt.Errorf("failed to create Sakura client 2 via Envvars: %s", err.Error())
+	}
 
 	zones := c.Zones
 	if len(zones) == 0 {
@@ -405,7 +411,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	apprunClient, err := apprun.NewClient(theClient)
+	apprunClient, err := apprun.NewClient(theClient2)
 	if err != nil {
 		return nil, err
 	}
@@ -476,6 +482,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		vpcRouterWaitAfterCreateDuration: vpcRouterWaitAfterCreateDuration,
 		CallerOptions:                    callerOptions,
 		SaClient:                         theClient,
+		SaClient2:                        theClient2,
 		KmsClient:                        kmsClient,
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,

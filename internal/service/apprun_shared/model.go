@@ -8,7 +8,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v1 "github.com/sacloud/apprun-api-go/apis/v1"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun/apis/v1"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 type apprunSharedBaseModel struct {
@@ -31,6 +32,7 @@ type apprunSharedComponentModel struct {
 	MaxMemory    types.String                            `tfsdk:"max_memory"`
 	DeploySource *apprunSharedComponentDeploySourceModel `tfsdk:"deploy_source"`
 	Env          types.Set                               `tfsdk:"env"`
+	Secret       types.List                              `tfsdk:"secret"`
 	Probe        types.Object                            `tfsdk:"probe"`
 }
 
@@ -56,6 +58,30 @@ func (m apprunSharedComponentEnvModel) AttributeTypes() map[string]attr.Type {
 	return map[string]attr.Type{
 		"key":   types.StringType,
 		"value": types.StringType,
+	}
+}
+
+type apprunSharedComponentSecretModel struct {
+	Key            types.String `tfsdk:"key"`
+	ValueWO        types.String `tfsdk:"value_wo"`
+	ValueWOVersion types.Int32  `tfsdk:"value_wo_version"`
+}
+
+func (m apprunSharedComponentSecretModel) AttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"key":              types.StringType,
+		"value_wo":         types.StringType,
+		"value_wo_version": types.Int32Type,
+	}
+}
+
+type apprunSharedComponentSecretKeyModel struct {
+	Key types.String `tfsdk:"key"`
+}
+
+func (m apprunSharedComponentSecretKeyModel) AttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"key": types.StringType,
 	}
 }
 
@@ -126,7 +152,7 @@ func stringValueFromOptString(value v1.OptString) types.String {
 	return types.StringNull()
 }
 
-func (model *apprunSharedBaseModel) updateState(application *v1.HandlerGetApplication, pf *v1.HandlerGetPacketFilter) {
+func (model *apprunSharedBaseModel) updateState(application *v1.HandlerReadApplication, pf *v1.HandlerReadPacketFilter, dataSource bool) {
 	model.ID = types.StringValue(application.ID)
 	model.ResourceID = types.StringValue(application.ResourceID)
 	model.Name = types.StringValue(application.Name)
@@ -134,13 +160,13 @@ func (model *apprunSharedBaseModel) updateState(application *v1.HandlerGetApplic
 	model.Port = types.Int32Value(int32(application.Port))
 	model.MinScale = types.Int32Value(int32(application.MinScale))
 	model.MaxScale = types.Int32Value(int32(application.MaxScale))
-	model.Components = flattenApprunApplicationComponents(model, application, true)
+	model.Components = flattenApprunApplicationComponents(model, application, true, dataSource)
 	model.PacketFilter = flattenApprunPacketFilter(pf)
 	model.Status = types.StringValue(string(application.Status))
 	model.PublicURL = types.StringValue(application.PublicURL)
 }
 
-func flattenApprunApplicationComponents(model *apprunSharedBaseModel, application *v1.HandlerGetApplication, includePassword bool) []*apprunSharedComponentModel {
+func flattenApprunApplicationComponents(model *apprunSharedBaseModel, application *v1.HandlerReadApplication, includePassword, dataSource bool) []*apprunSharedComponentModel {
 	var results []*apprunSharedComponentModel
 
 	for _, c := range application.Components {
@@ -158,8 +184,9 @@ func flattenApprunApplicationComponents(model *apprunSharedBaseModel, applicatio
 			DeploySource: &apprunSharedComponentDeploySourceModel{
 				ContainerRegistry: containerRegistry,
 			},
-			Env:   flattenApprunApplicationEnvs(&c),
-			Probe: flattenApprunApplicationProbe(&c),
+			Env:    flattenApprunApplicationEnvs(&c),
+			Secret: flattenApprunApplicationSecrets(model, c.Name, &c, dataSource),
+			Probe:  flattenApprunApplicationProbe(&c),
 		}
 
 		if includePassword {
@@ -186,7 +213,7 @@ func flattenApprunApplicationComponents(model *apprunSharedBaseModel, applicatio
 	return results
 }
 
-func flattenApprunApplicationEnvs(component *v1.HandlerGetApplicationComponentsItem) types.Set {
+func flattenApprunApplicationEnvs(component *v1.HandlerReadApplicationComponentsItem) types.Set {
 	if len(component.Env) == 0 {
 		return types.SetNull(types.ObjectType{AttrTypes: apprunSharedComponentEnvModel{}.AttributeTypes()})
 	}
@@ -194,12 +221,53 @@ func flattenApprunApplicationEnvs(component *v1.HandlerGetApplicationComponentsI
 	var results []apprunSharedComponentEnvModel
 	for _, e := range component.Env {
 		results = append(results, apprunSharedComponentEnvModel{
-			Key:   stringValueFromOptString(e.Key),
-			Value: stringValueFromOptString(e.Value),
+			Key:   types.StringValue(e.Key),
+			Value: types.StringValue(e.Value),
 		})
 	}
 
 	return toTSet(apprunSharedComponentEnvModel{}.AttributeTypes(), results)
+}
+
+func flattenApprunApplicationSecrets(model *apprunSharedBaseModel, componentName string, component *v1.HandlerReadApplicationComponentsItem, dataSource bool) types.List {
+	if len(component.Secret) == 0 {
+		if dataSource {
+			return types.ListNull(types.ObjectType{AttrTypes: apprunSharedComponentSecretKeyModel{}.AttributeTypes()})
+		} else {
+			return types.ListNull(types.ObjectType{AttrTypes: apprunSharedComponentSecretModel{}.AttributeTypes()})
+		}
+	}
+
+	if dataSource {
+		results := make([]apprunSharedComponentSecretKeyModel, 0, len(component.Secret))
+		for _, secret := range component.Secret {
+			results = append(results, apprunSharedComponentSecretKeyModel{Key: types.StringValue(secret.Key)})
+		}
+		return toTList(apprunSharedComponentSecretKeyModel{}.AttributeTypes(), results)
+	} else {
+		results := make([]apprunSharedComponentSecretModel, 0, len(component.Secret))
+		for _, secret := range component.Secret {
+			result := apprunSharedComponentSecretModel{Key: types.StringValue(secret.Key), ValueWO: types.StringNull()}
+			for _, exComponent := range model.Components {
+				if exComponent.Name.ValueString() != componentName || !utils.IsKnown(exComponent.Secret) {
+					continue
+				}
+				var exSecretModels []apprunSharedComponentSecretModel
+				if exComponent.Secret.ElementsAs(context.Background(), &exSecretModels, false).HasError() {
+					continue
+				}
+				for _, exSecretModel := range exSecretModels {
+					//if exSecretModel.Key.ValueString() == secret.Key && exSecretModel.ValueWOVersion.ValueInt32() > 0 {
+					if exSecretModel.Key.ValueString() == secret.Key {
+						result.ValueWOVersion = exSecretModel.ValueWOVersion
+						break
+					}
+				}
+			}
+			results = append(results, result)
+		}
+		return toTList(apprunSharedComponentSecretModel{}.AttributeTypes(), results)
+	}
 }
 
 func toTSet(elemType map[string]attr.Type, elem any) types.Set {
@@ -207,7 +275,12 @@ func toTSet(elemType map[string]attr.Type, elem any) types.Set {
 	return r
 }
 
-func flattenApprunApplicationProbe(component *v1.HandlerGetApplicationComponentsItem) types.Object {
+func toTList(elemType map[string]attr.Type, elem any) types.List {
+	r, _ := types.ListValueFrom(context.Background(), types.ObjectType{AttrTypes: elemType}, elem)
+	return r
+}
+
+func flattenApprunApplicationProbe(component *v1.HandlerReadApplicationComponentsItem) types.Object {
 	v := types.ObjectNull(apprunSharedProbeModel{}.AttributeTypes())
 	probe, ok := component.Probe.Get()
 	if ok {
@@ -231,7 +304,7 @@ func flattenApprunApplicationProbe(component *v1.HandlerGetApplicationComponents
 	return v
 }
 
-func flattenApprunApplicationProbeHttpGetHeaders(httpGet *v1.HandlerGetApplicationComponentsItemProbeHTTPGet) types.Set {
+func flattenApprunApplicationProbeHttpGetHeaders(httpGet *v1.HandlerReadApplicationComponentsItemProbeHTTPGet) types.Set {
 	if len(httpGet.Headers) == 0 {
 		return types.SetNull(types.ObjectType{AttrTypes: apprunSharedProbeHttpGetHeaderModel{}.AttributeTypes()})
 	}
@@ -247,7 +320,7 @@ func flattenApprunApplicationProbeHttpGetHeaders(httpGet *v1.HandlerGetApplicati
 	return toTSet(apprunSharedProbeHttpGetHeaderModel{}.AttributeTypes(), results)
 }
 
-func flattenApprunPacketFilter(packetFilter *v1.HandlerGetPacketFilter) *apprunSharedPacketFilterModel {
+func flattenApprunPacketFilter(packetFilter *v1.HandlerReadPacketFilter) *apprunSharedPacketFilterModel {
 	if packetFilter == nil || (!packetFilter.IsEnabled && len(packetFilter.Settings) == 0) {
 		return nil
 	}
@@ -258,7 +331,7 @@ func flattenApprunPacketFilter(packetFilter *v1.HandlerGetPacketFilter) *apprunS
 	}
 }
 
-func flattenApprunPacketFilterSettings(settings []v1.HandlerGetPacketFilterSettingsItem) []*apprunSharedPacketFilterSettingsModel {
+func flattenApprunPacketFilterSettings(settings []v1.HandlerReadPacketFilterSettingsItem) []*apprunSharedPacketFilterSettingsModel {
 	var results []*apprunSharedPacketFilterSettingsModel
 	for _, s := range settings {
 		results = append(results, &apprunSharedPacketFilterSettingsModel{

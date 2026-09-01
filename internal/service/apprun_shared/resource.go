@@ -20,10 +20,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
-	"github.com/sacloud/apprun-api-go"
-	v1 "github.com/sacloud/apprun-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/apprun"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
@@ -32,9 +33,10 @@ type apprunSharedResource struct {
 }
 
 var (
-	_ resource.Resource                = &apprunSharedResource{}
-	_ resource.ResourceWithConfigure   = &apprunSharedResource{}
-	_ resource.ResourceWithImportState = &apprunSharedResource{}
+	_ resource.Resource                   = &apprunSharedResource{}
+	_ resource.ResourceWithConfigure      = &apprunSharedResource{}
+	_ resource.ResourceWithImportState    = &apprunSharedResource{}
+	_ resource.ResourceWithValidateConfig = &apprunSharedResource{}
 )
 
 func NewApprunSharedResource() resource.Resource {
@@ -200,6 +202,34 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 								},
 							},
 						},
+						"secret": schema.ListNestedAttribute{
+							Optional:    true,
+							Description: "The secrets passed to components",
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"key": schema.StringAttribute{
+										Required:    true,
+										Description: "The secret name",
+									},
+									"value_wo": schema.StringAttribute{
+										Required:    true,
+										WriteOnly:   true,
+										Description: "The secret value",
+										Validators: []validator.String{
+											stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("value_wo_version")),
+										},
+									},
+									"value_wo_version": schema.Int32Attribute{
+										Optional:    true,
+										Description: "The version of the secret value. Increment this when changing value.",
+										Validators: []validator.Int32{
+											int32validator.AtLeast(1),
+											int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("value_wo")),
+										},
+									},
+								},
+							},
+						},
 						"probe": schema.SingleNestedAttribute{
 							Optional:    true,
 							Description: "The component probe settings",
@@ -299,6 +329,45 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 	}
 }
 
+func (r *apprunSharedResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config apprunSharedResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	for cIndex, component := range config.Components {
+		if !utils.IsKnown(component.Env) || !utils.IsKnown(component.Secret) {
+			continue
+		}
+
+		var envs []apprunSharedComponentEnvModel
+		resp.Diagnostics.Append(component.Env.ElementsAs(ctx, &envs, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		keys := make(map[string]struct{}, len(envs))
+		for _, env := range envs {
+			keys[env.Key.ValueString()] = struct{}{}
+		}
+
+		var secrets []apprunSharedComponentSecretModel
+		resp.Diagnostics.Append(component.Secret.ElementsAs(ctx, &secrets, false)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+		for i, secret := range secrets {
+			if _, ok := keys[secret.Key.ValueString()]; ok {
+				resp.Diagnostics.AddAttributeError(
+					path.Root("components").AtListIndex(cIndex).AtName("secret").AtListIndex(i).AtName("key"),
+					"Duplicate env and secret key",
+					fmt.Sprintf("The key %q is configured in both env and secret. The key must be unique across env and secret.", secret.Key.ValueString()),
+				)
+			}
+		}
+	}
+}
+
 func (r *apprunSharedResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -317,7 +386,7 @@ func (r *apprunSharedResource) Create(ctx context.Context, req resource.CreateRe
 	}
 
 	appOp := apprun.NewApplicationOp(r.client)
-	params := v1.PostApplicationBody{
+	params := v1.CreateApplicationBody{
 		Name:           plan.Name.ValueString(),
 		TimeoutSeconds: int(plan.TimeoutSeconds.ValueInt32()),
 		Port:           int(plan.Port.ValueInt32()),
@@ -540,7 +609,7 @@ func updateModel(ctx context.Context, model *apprunSharedResourceModel, client *
 		return false, fmt.Errorf("failed to read AppRun Shared's packet filter: %s", err)
 	}
 
-	model.updateState(application, pf)
+	model.updateState(application, pf, false)
 	model.Traffics = flattenApprunApplicationTraffics(traffics.Data, versions)
 	return false, nil
 }
@@ -568,20 +637,15 @@ func expandApprunApplicationComponentsForUpdate(model, config *apprunSharedResou
 
 		envModel := make([]apprunSharedComponentEnvModel, 0, len(component.Env.Elements()))
 		_ = component.Env.ElementsAs(context.Background(), &envModel, false)
-		var env []v1.PatchApplicationBodyComponentsItemEnvItem
-		for _, e := range envModel {
-			key := e.Key.ValueString()
-			value := e.Value.ValueString()
-
-			env = append(env,
-				v1.PatchApplicationBodyComponentsItemEnvItem{
-					Key:   v1.NewOptString(key),
-					Value: v1.NewOptString(value),
-				})
-		}
-
-		if env == nil {
-			env = make([]v1.PatchApplicationBodyComponentsItemEnvItem, 0)
+		envParam := v1.OptNilRequestEnv{}
+		if len(envModel) > 0 {
+			env := make(v1.RequestEnv, 0)
+			for _, e := range envModel {
+				key := e.Key.ValueString()
+				value := e.Value.ValueString()
+				env = append(env, v1.RequestEnvItem{Key: key, Value: value})
+			}
+			envParam = v1.NewOptNilRequestEnv(env)
 		}
 
 		probe := v1.OptNilPatchApplicationBodyComponentsItemProbe{}
@@ -600,13 +664,11 @@ func expandApprunApplicationComponentsForUpdate(model, config *apprunSharedResou
 				for _, h := range headersModel {
 					name := h.Name.ValueString()
 					value := h.Value.ValueString()
-					headers = append(headers,
-						v1.PatchApplicationBodyComponentsItemProbeHTTPGetHeadersItem{
-							Name:  v1.NewOptString(name),
-							Value: v1.NewOptString(value),
-						})
+					headers = append(headers, v1.PatchApplicationBodyComponentsItemProbeHTTPGetHeadersItem{
+						Name:  v1.NewOptString(name),
+						Value: v1.NewOptString(value),
+					})
 				}
-
 				httpGet.Headers = headers
 			}
 
@@ -622,19 +684,20 @@ func expandApprunApplicationComponentsForUpdate(model, config *apprunSharedResou
 			DeploySource: v1.PatchApplicationBodyComponentsItemDeploySource{
 				ContainerRegistry: v1.NewOptPatchApplicationBodyComponentsItemDeploySourceContainerRegistry(containerRegistry),
 			},
-			Env:   v1.NewOptNilPatchApplicationBodyComponentsItemEnvItemArray(env),
-			Probe: probe,
+			Env:    envParam,
+			Secret: expandApprunApplicationComponentSecretsForUpdate(component.Secret, config.Components[i].Secret),
+			Probe:  probe,
 		})
 	}
 
 	return components
 }
 
-func expandApprunApplicationComponents(model, config *apprunSharedResourceModel) []v1.PostApplicationBodyComponentsItem {
-	var components []v1.PostApplicationBodyComponentsItem
+func expandApprunApplicationComponents(model, config *apprunSharedResourceModel) []v1.CreateApplicationBodyComponentsItem {
+	var components []v1.CreateApplicationBodyComponentsItem
 	for i, component := range model.Components {
 		cr := component.DeploySource.ContainerRegistry
-		containerRegistry := v1.PostApplicationBodyComponentsItemDeploySourceContainerRegistry{
+		containerRegistry := v1.CreateApplicationBodyComponentsItemDeploySourceContainerRegistry{
 			Image: cr.Image.ValueString(),
 		}
 		if !cr.Server.IsNull() && !cr.Server.IsUnknown() {
@@ -653,27 +716,22 @@ func expandApprunApplicationComponents(model, config *apprunSharedResourceModel)
 
 		envModel := make([]apprunSharedComponentEnvModel, 0, len(component.Env.Elements()))
 		_ = component.Env.ElementsAs(context.Background(), &envModel, false)
-		var env []v1.PostApplicationBodyComponentsItemEnvItem
-		for _, e := range envModel {
-			key := e.Key.ValueString()
-			value := e.Value.ValueString()
-
-			env = append(env,
-				v1.PostApplicationBodyComponentsItemEnvItem{
-					Key:   v1.NewOptString(key),
-					Value: v1.NewOptString(value),
-				})
+		envParam := v1.OptNilRequestEnv{}
+		if len(envModel) > 0 {
+			env := make(v1.RequestEnv, 0)
+			for _, e := range envModel {
+				key := e.Key.ValueString()
+				value := e.Value.ValueString()
+				env = append(env, v1.RequestEnvItem{Key: key, Value: value})
+			}
+			envParam = v1.NewOptNilRequestEnv(env)
 		}
 
-		if env == nil {
-			env = make([]v1.PostApplicationBodyComponentsItemEnvItem, 0)
-		}
-
-		probe := v1.OptNilPostApplicationBodyComponentsItemProbe{}
+		probe := v1.OptNilCreateApplicationBodyComponentsItemProbe{}
 		if !component.Probe.IsNull() && !component.Probe.IsUnknown() {
 			var d apprunSharedProbeModel
 			_ = component.Probe.As(context.Background(), &d, basetypes.ObjectAsOptions{})
-			httpGet := v1.PostApplicationBodyComponentsItemProbeHTTPGet{
+			httpGet := v1.CreateApplicationBodyComponentsItemProbeHTTPGet{
 				Path: d.HttpGet.Path.ValueString(),
 				Port: int(d.HttpGet.Port.ValueInt32()),
 			}
@@ -681,43 +739,83 @@ func expandApprunApplicationComponents(model, config *apprunSharedResourceModel)
 			if !d.HttpGet.Headers.IsNull() && !d.HttpGet.Headers.IsUnknown() {
 				headersModel := make([]apprunSharedProbeHttpGetHeaderModel, 0, len(d.HttpGet.Headers.Elements()))
 				_ = d.HttpGet.Headers.ElementsAs(context.Background(), &headersModel, false)
-				var headers []v1.PostApplicationBodyComponentsItemProbeHTTPGetHeadersItem
+				var headers []v1.CreateApplicationBodyComponentsItemProbeHTTPGetHeadersItem
 				for _, h := range headersModel {
 					name := h.Name.ValueString()
 					value := h.Value.ValueString()
-					headers = append(headers,
-						v1.PostApplicationBodyComponentsItemProbeHTTPGetHeadersItem{
-							Name:  v1.NewOptString(name),
-							Value: v1.NewOptString(value),
-						})
+					headers = append(headers, v1.CreateApplicationBodyComponentsItemProbeHTTPGetHeadersItem{
+						Name:  v1.NewOptString(name),
+						Value: v1.NewOptString(value),
+					})
 				}
 				httpGet.Headers = headers
 			}
 
-			probe = v1.NewOptNilPostApplicationBodyComponentsItemProbe(v1.PostApplicationBodyComponentsItemProbe{
-				HTTPGet: v1.NewOptNilPostApplicationBodyComponentsItemProbeHTTPGet(httpGet),
+			probe = v1.NewOptNilCreateApplicationBodyComponentsItemProbe(v1.CreateApplicationBodyComponentsItemProbe{
+				HTTPGet: v1.NewOptNilCreateApplicationBodyComponentsItemProbeHTTPGet(httpGet),
 			})
 		}
 
-		components = append(components, v1.PostApplicationBodyComponentsItem{
+		components = append(components, v1.CreateApplicationBodyComponentsItem{
 			Name:      component.Name.ValueString(),
-			MaxCPU:    v1.PostApplicationBodyComponentsItemMaxCPU(component.MaxCpu.ValueString()),
-			MaxMemory: v1.PostApplicationBodyComponentsItemMaxMemory(component.MaxMemory.ValueString()),
-			DeploySource: v1.PostApplicationBodyComponentsItemDeploySource{
-				ContainerRegistry: v1.NewOptPostApplicationBodyComponentsItemDeploySourceContainerRegistry(containerRegistry),
+			MaxCPU:    v1.CreateApplicationBodyComponentsItemMaxCPU(component.MaxCpu.ValueString()),
+			MaxMemory: v1.CreateApplicationBodyComponentsItemMaxMemory(component.MaxMemory.ValueString()),
+			DeploySource: v1.CreateApplicationBodyComponentsItemDeploySource{
+				ContainerRegistry: v1.NewOptCreateApplicationBodyComponentsItemDeploySourceContainerRegistry(containerRegistry),
 			},
-			Env:   v1.NewOptNilPostApplicationBodyComponentsItemEnvItemArray(env),
-			Probe: probe,
+			Env:    envParam,
+			Secret: expandApprunApplicationComponentSecrets(component.Secret, config.Components[i].Secret),
+			Probe:  probe,
 		})
 	}
 
 	return components
 }
 
-func expandApprunApplicationTraffics(model *apprunSharedResourceModel, versions []v1.HandlerListVersionsDataItem) (*v1.PutTrafficsBody, error) {
+func expandApprunApplicationComponentSecretsForUpdate(secret, config types.List) v1.OptNilPatchApplicationBodyComponentsItemSecretItemArray {
+	if secret.IsNull() || secret.IsUnknown() {
+		return v1.OptNilPatchApplicationBodyComponentsItemSecretItemArray{}
+	}
+
+	var secretModel []apprunSharedComponentSecretModel
+	_ = secret.ElementsAs(context.Background(), &secretModel, false)
+	var configSecretModel []apprunSharedComponentSecretModel
+	_ = config.ElementsAs(context.Background(), &configSecretModel, false)
+	secrets := make([]v1.PatchApplicationBodyComponentsItemSecretItem, 0, len(secretModel))
+	for index, item := range secretModel {
+		secrets = append(secrets, v1.PatchApplicationBodyComponentsItemSecretItem{
+			Key:   item.Key.ValueString(),
+			Value: v1.NewOptString(configSecretModel[index].ValueWO.ValueString()),
+		})
+	}
+
+	return v1.NewOptNilPatchApplicationBodyComponentsItemSecretItemArray(secrets)
+}
+
+func expandApprunApplicationComponentSecrets(secret, config types.List) v1.OptNilCreateApplicationBodyComponentsItemSecretItemArray {
+	if secret.IsNull() || secret.IsUnknown() {
+		return v1.OptNilCreateApplicationBodyComponentsItemSecretItemArray{}
+	}
+
+	var secretModel []apprunSharedComponentSecretModel
+	_ = secret.ElementsAs(context.Background(), &secretModel, false)
+	var configSecretModel []apprunSharedComponentSecretModel
+	_ = config.ElementsAs(context.Background(), &configSecretModel, false)
+	secrets := make([]v1.CreateApplicationBodyComponentsItemSecretItem, 0, len(secretModel))
+	for index, item := range secretModel {
+		secrets = append(secrets, v1.CreateApplicationBodyComponentsItemSecretItem{
+			Key:   item.Key.ValueString(),
+			Value: configSecretModel[index].ValueWO.ValueString(),
+		})
+	}
+
+	return v1.NewOptNilCreateApplicationBodyComponentsItemSecretItemArray(secrets)
+}
+
+func expandApprunApplicationTraffics(model *apprunSharedResourceModel, versions []v1.HandlerListVersionsDataItem) (*v1.UpdateTrafficBody, error) {
 	if len(model.Traffics) == 0 {
-		body := v1.PutTrafficsBody{
-			v1.NewPutTrafficsBodyItem0PutTrafficsBodyItem(v1.PutTrafficsBodyItem0{
+		body := v1.UpdateTrafficBody{
+			v1.NewUpdateTrafficBodyItem0UpdateTrafficBodyItem(v1.UpdateTrafficBodyItem0{
 				IsLatestVersion: true,
 				Percent:         100,
 			}),
@@ -725,7 +823,7 @@ func expandApprunApplicationTraffics(model *apprunSharedResourceModel, versions 
 		return &body, nil
 	}
 
-	var traffics v1.PutTrafficsBody
+	var traffics v1.UpdateTrafficBody
 	for _, traffic := range model.Traffics {
 		percent := int(traffic.Percent.ValueInt32())
 		versionIndex := int(traffic.VersionIndex.ValueInt64())
@@ -734,7 +832,7 @@ func expandApprunApplicationTraffics(model *apprunSharedResourceModel, versions 
 		}
 
 		version := versions[versionIndex]
-		traffics = append(traffics, v1.NewPutTrafficsBodyItem1PutTrafficsBodyItem(v1.PutTrafficsBodyItem1{
+		traffics = append(traffics, v1.NewUpdateTrafficBodyItem1UpdateTrafficBodyItem(v1.UpdateTrafficBodyItem1{
 			Percent:     percent,
 			VersionName: version.Name,
 		}))
@@ -743,15 +841,15 @@ func expandApprunApplicationTraffics(model *apprunSharedResourceModel, versions 
 	return &traffics, nil
 }
 
-func expandApprunPacketFilter(model *apprunSharedResourceModel) *v1.PatchPacketFilter {
-	ret := &v1.PatchPacketFilter{
+func expandApprunPacketFilter(model *apprunSharedResourceModel) *v1.PatchPacketFilterBody {
+	ret := &v1.PatchPacketFilterBody{
 		IsEnabled: v1.NewOptBool(false),
 	}
 	if model.PacketFilter != nil {
 		enabled := model.PacketFilter.Enabled.ValueBool()
-		var settings []v1.PatchPacketFilterSettingsItem
+		var settings []v1.PatchPacketFilterBodySettingsItem
 		for _, setting := range model.PacketFilter.Settings {
-			settings = append(settings, v1.PatchPacketFilterSettingsItem{
+			settings = append(settings, v1.PatchPacketFilterBodySettingsItem{
 				FromIP:             setting.FromIP.ValueString(),
 				FromIPPrefixLength: int(setting.FromIPPrefixLength.ValueInt32()),
 			})
@@ -763,7 +861,7 @@ func expandApprunPacketFilter(model *apprunSharedResourceModel) *v1.PatchPacketF
 	return ret
 }
 
-func flattenApprunApplicationTraffics(traffics []v1.HandlerListTrafficsDataItem, versions []v1.HandlerListVersionsDataItem) []apprunSharedTrafficsModel {
+func flattenApprunApplicationTraffics(traffics []v1.HandlerListTrafficDataItem, versions []v1.HandlerListVersionsDataItem) []apprunSharedTrafficsModel {
 	if len(traffics) == 0 {
 		return nil
 	}

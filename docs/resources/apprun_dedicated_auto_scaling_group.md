@@ -64,7 +64,7 @@ resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
 - `max_nodes` (Number) Maximum number of nodes
 - `min_nodes` (Number) Minimum number of nodes
 - `name` (String) The name of the auto_scaling_group.
-- `worker_service_class_path` (String) The worker service class path, e.g. `cloud/apprun/dedicated/worker/2vcpu_2gb`. Get from sakura_apprun_dedicated_lb_service_classes data source
+- `worker_service_class_path` (String) The worker service class path, e.g. `cloud/apprun/dedicated/worker/2vcpu_2gb`. Get from sakura_apprun_dedicated_worker_service_classes data source
 - `zone` (String) The zone name where the auto scaling group will be created
 
 ### Optional
