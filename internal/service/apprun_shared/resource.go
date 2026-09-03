@@ -635,17 +635,21 @@ func expandApprunApplicationComponentsForUpdate(model, config *apprunSharedResou
 			containerRegistry.Password = v1.NewOptNilString(password)
 		}
 
-		envModel := make([]apprunSharedComponentEnvModel, 0, len(component.Env.Elements()))
-		_ = component.Env.ElementsAs(context.Background(), &envModel, false)
-		envParam := v1.OptNilRequestEnv{}
-		if len(envModel) > 0 {
-			env := make(v1.RequestEnv, 0)
-			for _, e := range envModel {
-				key := e.Key.ValueString()
-				value := e.Value.ValueString()
-				env = append(env, v1.RequestEnvItem{Key: key, Value: value})
+		var envParam v1.OptNilRequestEnv
+		if utils.IsKnown(component.Env) {
+			envModel := make([]apprunSharedComponentEnvModel, 0, len(component.Env.Elements()))
+			_ = component.Env.ElementsAs(context.Background(), &envModel, false)
+			if len(envModel) > 0 {
+				env := make(v1.RequestEnv, 0)
+				for _, e := range envModel {
+					key := e.Key.ValueString()
+					value := e.Value.ValueString()
+					env = append(env, v1.RequestEnvItem{Key: key, Value: value})
+				}
+				envParam = v1.NewOptNilRequestEnv(env)
 			}
-			envParam = v1.NewOptNilRequestEnv(env)
+		} else {
+			envParam = v1.NewOptNilRequestEnv([]v1.RequestEnvItem{})
 		}
 
 		probe := v1.OptNilPatchApplicationBodyComponentsItemProbe{}
@@ -774,7 +778,7 @@ func expandApprunApplicationComponents(model, config *apprunSharedResourceModel)
 
 func expandApprunApplicationComponentSecretsForUpdate(secret, config types.List) v1.OptNilPatchApplicationBodyComponentsItemSecretItemArray {
 	if secret.IsNull() || secret.IsUnknown() {
-		return v1.OptNilPatchApplicationBodyComponentsItemSecretItemArray{}
+		return v1.NewOptNilPatchApplicationBodyComponentsItemSecretItemArray([]v1.PatchApplicationBodyComponentsItemSecretItem{})
 	}
 
 	var secretModel []apprunSharedComponentSecretModel

@@ -224,6 +224,15 @@ func TestAccSakuraApprunShared_withEnvUpdate(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "components.0.env.1.value", "value3"),
 				),
 			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withEnvRemoved, rand, pass),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraApprunSharedExists(resourceName, &application),
+					testCheckSakuraApprunSharedAttributes(&application),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "components.0.env.#", "0"),
+				),
+			},
 		},
 	})
 }
@@ -265,6 +274,14 @@ func TestAccSakuraApprunShared_withSecret(t *testing.T) {
 					resource.TestCheckNoResourceAttr(resourceName, "components.0.secret.0.value_wo"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.secret.0.value_wo_version", "2"),
 					resource.TestCheckNoResourceAttr(resourceName, "components.0.secret.1"),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraApprunShared_withSecretRemoved, rand, pass),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraApprunSharedExists(resourceName, &application),
+					testCheckSakuraApprunSharedAttributes(&application),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.#", "0"),
 				),
 			},
 		},
@@ -736,6 +753,69 @@ resource "sakura_apprun_shared" "foobar" {
 }
 `
 
+const testAccSakuraApprunShared_withEnvUpdate = `
+resource "sakura_apprun_shared" "foobar" {
+  name            = "{{ .arg0 }}"
+  timeout_seconds = 90
+  port            = 80
+  min_scale       = 0
+  max_scale       = 1
+  components = [{
+    name       = "compo1"
+    max_cpu    = "0.5"
+    max_memory = "1Gi"
+    deploy_source = {
+      container_registry = {
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
+      }
+    }
+	// Updated
+    env = [{
+      key   = "key"
+      value = "value-updated"
+    },
+	// Removed
+    // env {
+    //   key   = "key2"
+    //   value = "value2"
+    // }
+	// Added
+    {
+      key   = "key3"
+      value = "value3"
+    }]
+  }]
+}
+`
+
+const testAccSakuraApprunShared_withEnvRemoved = `
+resource "sakura_apprun_shared" "foobar" {
+  name            = "{{ .arg0 }}"
+  timeout_seconds = 90
+  port            = 80
+  min_scale       = 0
+  max_scale       = 1
+  components = [{
+    name       = "compo1"
+    max_cpu    = "0.5"
+    max_memory = "1Gi"
+    deploy_source = {
+      container_registry = {
+        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
+        server   = "sakura-oss-dev.sakuracr.jp"
+        username = "test-user"
+        password_wo = "{{ .arg1 }}"
+        password_wo_version = 1
+      }
+    }
+  }]
+}
+`
+
 //nolint:gosec
 const testAccSakuraApprunShared_withSecret = `
 resource "sakura_apprun_shared" "foobar" {
@@ -798,45 +878,29 @@ resource "sakura_apprun_shared" "foobar" {
 			value_wo_version = 2
 		}]
 	}]
-}
-`
+}`
 
-const testAccSakuraApprunShared_withEnvUpdate = `
+const testAccSakuraApprunShared_withSecretRemoved = `
 resource "sakura_apprun_shared" "foobar" {
-  name            = "{{ .arg0 }}"
-  timeout_seconds = 90
-  port            = 80
-  min_scale       = 0
-  max_scale       = 1
-  components = [{
-    name       = "compo1"
-    max_cpu    = "0.5"
-    max_memory = "1Gi"
-    deploy_source = {
-      container_registry = {
-        image    = "sakura-oss-dev.sakuracr.jp/test:latest"
-        server   = "sakura-oss-dev.sakuracr.jp"
-        username = "test-user"
-        password_wo = "{{ .arg1 }}"
-        password_wo_version = 1
-      }
-    }
-	// Updated
-    env = [{
-      key   = "key"
-      value = "value-updated"
-    },
-	// Removed
-    // env {
-    //   key   = "key2"
-    //   value = "value2"
-    // }
-	// Added
-    {
-      key   = "key3"
-      value = "value3"
-    }]
-  }]
+	name            = "{{ .arg0 }}"
+	timeout_seconds = 90
+	port            = 80
+	min_scale       = 0
+	max_scale       = 1
+	components = [{
+		name       = "compo1"
+		max_cpu    = "0.5"
+		max_memory = "1Gi"
+		deploy_source = {
+			container_registry = {
+				image               = "sakura-oss-dev.sakuracr.jp/test:latest"
+				server              = "sakura-oss-dev.sakuracr.jp"
+				username            = "test-user"
+				password_wo         = "{{ .arg1 }}"
+				password_wo_version = 1
+			}
+		}
+	}]
 }
 `
 
