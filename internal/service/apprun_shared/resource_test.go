@@ -880,6 +880,7 @@ resource "sakura_apprun_shared" "foobar" {
 	}]
 }`
 
+//nolint:gosec
 const testAccSakuraApprunShared_withSecretRemoved = `
 resource "sakura_apprun_shared" "foobar" {
 	name            = "{{ .arg0 }}"
