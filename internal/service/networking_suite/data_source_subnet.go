@@ -45,12 +45,12 @@ func (r *subnetDataSource) Configure(ctx context.Context, req datasource.Configu
 }
 
 type subnetDataSourceModel struct {
-	SRN                  sctypes.SRN          `tfsdk:"srn"`
-	Name                 types.String         `tfsdk:"name"`
-	Description          types.String         `tfsdk:"description"`
-	SubnetGroupSRN       sctypes.SRN          `tfsdk:"subnet_group_srn"`
-	IPv4AddressRangeCIDR cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range_cidr"`
-	Zone                 types.String         `tfsdk:"zone"`
+	SRN              sctypes.SRN          `tfsdk:"srn"`
+	Name             types.String         `tfsdk:"name"`
+	Description      types.String         `tfsdk:"description"`
+	SubnetGroupSRN   sctypes.SRN          `tfsdk:"subnet_group_srn"`
+	IPv4AddressRange cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range"`
+	Zone             types.String         `tfsdk:"zone"`
 }
 
 func (r *subnetDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -60,7 +60,7 @@ func (r *subnetDataSource) Schema(ctx context.Context, _ datasource.SchemaReques
 			"name":             common.SchemaDataSourceName("Networking Suite Subnet"),
 			"description":      common.SchemaDataSourceDescription("Networking Suite Subnet"),
 			"subnet_group_srn": common.SchemaDataSourceSRN("Networking Suite Subnet Group associated with the Networking Suite Subnet"),
-			"ipv4_address_range_cidr": schema.StringAttribute{
+			"ipv4_address_range": schema.StringAttribute{
 				CustomType:  cidrtypes.IPv4PrefixType{},
 				Computed:    true,
 				Description: "The IPv4 address range in CIDR format",
@@ -131,7 +131,7 @@ func (m *subnetDataSourceModel) updateState(subnet *v1.ReadSubnet) {
 	m.Name = types.StringValue(subnet.Name)
 	m.Description = types.StringValue(subnet.Description)
 	m.SubnetGroupSRN = sctypes.SRNValue(subnet.SubnetGroup.SRN)
-	m.IPv4AddressRangeCIDR = cidrtypes.NewIPv4PrefixValue(subnet.IPv4AddressRangeCIDR)
+	m.IPv4AddressRange = cidrtypes.NewIPv4PrefixValue(subnet.IPv4AddressRangeCIDR)
 	m.Zone = types.StringValue(subnet.Zone.Code)
 }
 

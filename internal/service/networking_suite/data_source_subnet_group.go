@@ -45,12 +45,12 @@ func (r *subnetGroupDataSource) Configure(ctx context.Context, req datasource.Co
 }
 
 type subnetGroupDataSourceModel struct {
-	SRN                  sctypes.SRN          `tfsdk:"srn"`
-	Name                 types.String         `tfsdk:"name"`
-	Description          types.String         `tfsdk:"description"`
-	IPv4AddressRangeCIDR cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range_cidr"`
-	Region               types.String         `tfsdk:"region"`
-	Zone                 types.String         `tfsdk:"zone"`
+	SRN              sctypes.SRN          `tfsdk:"srn"`
+	Name             types.String         `tfsdk:"name"`
+	Description      types.String         `tfsdk:"description"`
+	IPv4AddressRange cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range"`
+	Region           types.String         `tfsdk:"region"`
+	Zone             types.String         `tfsdk:"zone"`
 }
 
 func (r *subnetGroupDataSource) Schema(ctx context.Context, _ datasource.SchemaRequest, resp *datasource.SchemaResponse) {
@@ -59,7 +59,7 @@ func (r *subnetGroupDataSource) Schema(ctx context.Context, _ datasource.SchemaR
 			"srn":         common.SchemaDataSourceSRN("Networking Suite Subnet Group"),
 			"name":        common.SchemaDataSourceName("Networking Suite Subnet Group"),
 			"description": common.SchemaDataSourceDescription("Networking Suite Subnet Group"),
-			"ipv4_address_range_cidr": schema.StringAttribute{
+			"ipv4_address_range": schema.StringAttribute{
 				CustomType:  cidrtypes.IPv4PrefixType{},
 				Computed:    true,
 				Description: "The IPv4 address range in CIDR format",
@@ -129,7 +129,7 @@ func (m *subnetGroupDataSourceModel) updateState(group *v1.ReadSubnetGroup, zone
 	m.SRN = sctypes.SRNValue(group.SRN)
 	m.Name = types.StringValue(group.Name)
 	m.Description = types.StringValue(group.Description)
-	m.IPv4AddressRangeCIDR = cidrtypes.NewIPv4PrefixValue(group.IPv4AddressRangeCIDR)
+	m.IPv4AddressRange = cidrtypes.NewIPv4PrefixValue(group.IPv4AddressRangeCIDR)
 	m.Region = types.StringValue(group.Region.Code)
 	m.Zone = types.StringValue(zone)
 }

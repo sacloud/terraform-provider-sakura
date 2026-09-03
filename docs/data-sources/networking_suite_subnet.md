@@ -34,4 +34,4 @@ data "sakura_networking_suite_subnet" "foobar" {
 ### Read-Only
 
 - `description` (String) The description of the Networking Suite Subnet.
-- `ipv4_address_range_cidr` (String) The IPv4 address range in CIDR format
+- `ipv4_address_range` (String) The IPv4 address range in CIDR format

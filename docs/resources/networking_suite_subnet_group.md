@@ -16,7 +16,7 @@ Manages a Networking Suite Subnet Group.
 resource "sakura_networking_suite_subnet_group" "foobar" {
   name                    = "foobar"
   description             = "description"
-  ipv4_address_range_cidr = "10.0.0.0/20"
+  ipv4_address_range = "10.0.0.0/20"
   region                  = "is1"
 }
 ```
@@ -26,7 +26,7 @@ resource "sakura_networking_suite_subnet_group" "foobar" {
 
 ### Required
 
-- `ipv4_address_range_cidr` (String) The IPv4 address range in CIDR format
+- `ipv4_address_range` (String) The IPv4 address range in CIDR format
 - `name` (String) The name of the Networking Suite Subnet Group.
 - `region` (String) The target region code of the subnet group
 

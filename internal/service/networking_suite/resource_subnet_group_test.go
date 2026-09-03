@@ -39,7 +39,7 @@ func TestAccSakuraNetworkingSuiteSubnetGroup_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "srn"),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
-					resource.TestCheckResourceAttr(resourceName, "ipv4_address_range_cidr", "10.0.0.0/20"),
+					resource.TestCheckResourceAttr(resourceName, "ipv4_address_range", "10.0.0.0/20"),
 					resource.TestCheckResourceAttr(resourceName, "region", region),
 					resource.TestCheckResourceAttrSet(resourceName, "zone"),
 				),
@@ -51,7 +51,7 @@ func TestAccSakuraNetworkingSuiteSubnetGroup_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "srn"),
 					resource.TestCheckResourceAttr(resourceName, "name", rand+"-updated"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
-					resource.TestCheckResourceAttr(resourceName, "ipv4_address_range_cidr", "10.0.0.0/20"),
+					resource.TestCheckResourceAttr(resourceName, "ipv4_address_range", "10.0.0.0/20"),
 					resource.TestCheckResourceAttr(resourceName, "region", region),
 					resource.TestCheckResourceAttrSet(resourceName, "zone"),
 				),
@@ -69,10 +69,10 @@ func TestAccImportSakuraNetworkingSuiteSubnetGroup_basic(t *testing.T) {
 			return fmt.Errorf("expected 1 state: %#v", s)
 		}
 		expects := map[string]string{
-			"name":                    rand,
-			"description":             "description",
-			"ipv4_address_range_cidr": "10.0.0.0/20",
-			"region":                  region,
+			"name":               rand,
+			"description":        "description",
+			"ipv4_address_range": "10.0.0.0/20",
+			"region":             region,
 		}
 
 		if err := test.CompareStateMulti(s[0], expects); err != nil {
@@ -188,7 +188,7 @@ var testAccSakuraNetworkingSuiteSubnetGroup_basic = `
 resource "sakura_networking_suite_subnet_group" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
-  ipv4_address_range_cidr = "10.0.0.0/20"
+  ipv4_address_range = "10.0.0.0/20"
   region = "{{ .arg1 }}"
 }
 `
@@ -197,7 +197,7 @@ var testAccSakuraNetworkingSuiteSubnetGroup_update = `
 resource "sakura_networking_suite_subnet_group" "foobar" {
   name        = "{{ .arg0 }}-updated"
   description = "description-updated"
-  ipv4_address_range_cidr = "10.0.0.0/20"
+  ipv4_address_range = "10.0.0.0/20"
   region = "{{ .arg1 }}"
 }
 `

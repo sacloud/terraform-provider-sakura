@@ -51,13 +51,13 @@ func (r *subnetGroupResource) Configure(ctx context.Context, req resource.Config
 }
 
 type subnetGroupResourceModel struct {
-	SRN                  sctypes.SRN          `tfsdk:"srn"`
-	Name                 types.String         `tfsdk:"name"`
-	Description          types.String         `tfsdk:"description"`
-	IPv4AddressRangeCIDR cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range_cidr"`
-	Region               types.String         `tfsdk:"region"`
-	Zone                 types.String         `tfsdk:"zone"`
-	Timeouts             timeouts.Value       `tfsdk:"timeouts"`
+	SRN              sctypes.SRN          `tfsdk:"srn"`
+	Name             types.String         `tfsdk:"name"`
+	Description      types.String         `tfsdk:"description"`
+	IPv4AddressRange cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range"`
+	Region           types.String         `tfsdk:"region"`
+	Zone             types.String         `tfsdk:"zone"`
+	Timeouts         timeouts.Value       `tfsdk:"timeouts"`
 }
 
 func (r *subnetGroupResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -66,7 +66,7 @@ func (r *subnetGroupResource) Schema(ctx context.Context, _ resource.SchemaReque
 			"srn":         common.SchemaResourceSRN("Networking Suite Subnet Group"),
 			"name":        common.SchemaResourceName("Networking Suite Subnet Group"),
 			"description": common.SchemaResourceDescription("Networking Suite Subnet Group"),
-			"ipv4_address_range_cidr": schema.StringAttribute{
+			"ipv4_address_range": schema.StringAttribute{
 				CustomType:  cidrtypes.IPv4PrefixType{},
 				Required:    true,
 				Description: "The IPv4 address range in CIDR format",
@@ -129,7 +129,7 @@ func (r *subnetGroupResource) Create(ctx context.Context, req resource.CreateReq
 	created, err := op.Create(ctx, v1.CreateSubnetGroup{
 		Name:                 plan.Name.ValueString(),
 		Description:          plan.Description.ValueString(),
-		IPv4AddressRangeCIDR: plan.IPv4AddressRangeCIDR.ValueString(),
+		IPv4AddressRangeCIDR: plan.IPv4AddressRange.ValueString(),
 		Region:               v1.Region{Code: plan.Region.ValueString()},
 	})
 	if err != nil {
@@ -243,7 +243,7 @@ func (m *subnetGroupResourceModel) updateState(group *v1.ReadSubnetGroup, zone s
 	m.SRN = sctypes.SRNValue(group.SRN)
 	m.Name = types.StringValue(group.Name)
 	m.Description = types.StringValue(group.Description)
-	m.IPv4AddressRangeCIDR = cidrtypes.NewIPv4PrefixValue(group.IPv4AddressRangeCIDR)
+	m.IPv4AddressRange = cidrtypes.NewIPv4PrefixValue(group.IPv4AddressRangeCIDR)
 	m.Region = types.StringValue(group.Region.Code)
 	m.Zone = types.StringValue(zone)
 }

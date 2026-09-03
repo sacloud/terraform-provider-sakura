@@ -49,13 +49,13 @@ func (r *subnetResource) Configure(ctx context.Context, req resource.ConfigureRe
 }
 
 type subnetResourceModel struct {
-	SRN                  sctypes.SRN          `tfsdk:"srn"`
-	Name                 types.String         `tfsdk:"name"`
-	Description          types.String         `tfsdk:"description"`
-	SubnetGroupSRN       sctypes.SRN          `tfsdk:"subnet_group_srn"`
-	IPv4AddressRangeCIDR cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range_cidr"`
-	Zone                 types.String         `tfsdk:"zone"`
-	Timeouts             timeouts.Value       `tfsdk:"timeouts"`
+	SRN              sctypes.SRN          `tfsdk:"srn"`
+	Name             types.String         `tfsdk:"name"`
+	Description      types.String         `tfsdk:"description"`
+	SubnetGroupSRN   sctypes.SRN          `tfsdk:"subnet_group_srn"`
+	IPv4AddressRange cidrtypes.IPv4Prefix `tfsdk:"ipv4_address_range"`
+	Zone             types.String         `tfsdk:"zone"`
+	Timeouts         timeouts.Value       `tfsdk:"timeouts"`
 }
 
 func (r *subnetResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -65,7 +65,7 @@ func (r *subnetResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"name":             common.SchemaResourceName("Networking Suite Subnet"),
 			"description":      common.SchemaResourceDescription("Networking Suite Subnet"),
 			"subnet_group_srn": common.SchemaResourceSRNAttr("The Networking Suite Subnet Group's SRN associated with the Networking Suite Subnet", true),
-			"ipv4_address_range_cidr": schema.StringAttribute{
+			"ipv4_address_range": schema.StringAttribute{
 				CustomType:  cidrtypes.IPv4PrefixType{},
 				Required:    true,
 				Description: "The IPv4 address range in CIDR notation for the subnet.",
@@ -118,7 +118,7 @@ func (r *subnetResource) Create(ctx context.Context, req resource.CreateRequest,
 	created, err := op.Create(ctx, v1.CreateSubnet{
 		Name:                 plan.Name.ValueString(),
 		Description:          plan.Description.ValueString(),
-		IPv4AddressRangeCIDR: plan.IPv4AddressRangeCIDR.ValueString(),
+		IPv4AddressRangeCIDR: plan.IPv4AddressRange.ValueString(),
 		Zone:                 v1.Zone{Code: zone},
 		SubnetGroup:          v1.SakuraResourceNameRef{SRN: plan.SubnetGroupSRN.ValueString()},
 	})
@@ -234,6 +234,6 @@ func (m *subnetResourceModel) updateState(subnet *v1.ReadSubnet) {
 	m.Name = types.StringValue(subnet.Name)
 	m.Description = types.StringValue(subnet.Description)
 	m.SubnetGroupSRN = sctypes.SRNValue(subnet.SubnetGroup.SRN)
-	m.IPv4AddressRangeCIDR = cidrtypes.NewIPv4PrefixValue(subnet.IPv4AddressRangeCIDR)
+	m.IPv4AddressRange = cidrtypes.NewIPv4PrefixValue(subnet.IPv4AddressRangeCIDR)
 	m.Zone = types.StringValue(subnet.Zone.Code)
 }

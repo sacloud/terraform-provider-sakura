@@ -30,7 +30,7 @@ func TestAccSakuraDataSourceNetworkingSuiteSubnet_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "srn"),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
-					resource.TestCheckResourceAttr(resourceName, "ipv4_address_range_cidr", "10.0.0.0/24"),
+					resource.TestCheckResourceAttr(resourceName, "ipv4_address_range", "10.0.0.0/24"),
 					resource.TestCheckResourceAttr(resourceName, "zone", zone),
 					resource.TestCheckResourceAttrPair(resourceName, "subnet_group_srn", "sakura_networking_suite_subnet_group.foobar", "srn"),
 				),
@@ -43,14 +43,14 @@ var testAccSakuraDataSourceNetworkingSuiteSubnet_basic = `
 resource "sakura_networking_suite_subnet_group" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
-  ipv4_address_range_cidr = "10.0.0.0/20"
+  ipv4_address_range = "10.0.0.0/20"
   region = "{{ .arg1 }}"
 }
 
 resource "sakura_networking_suite_subnet" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
-  ipv4_address_range_cidr = "10.0.0.0/24"
+  ipv4_address_range = "10.0.0.0/24"
   zone = "{{ .arg2 }}"
   subnet_group_srn = sakura_networking_suite_subnet_group.foobar.srn
 }
