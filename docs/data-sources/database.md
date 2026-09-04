@@ -49,6 +49,7 @@ data "sakura_database" "foobar" {
 
 Read-Only:
 
+- `connect` (String) The NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`)
 - `days_of_week` (Set of String) The list of name of days of week that doing backup. This will be in [`sun`/`mon`/`tue`/`wed`/`thu`/`fri`/`sat`]
 - `time` (String) The time to take backup. This will be formatted with `HH:mm`
 
