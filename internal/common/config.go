@@ -17,8 +17,6 @@ import (
 	client "github.com/sacloud/api-client-go"
 	"github.com/sacloud/apigw-api-go"
 	apigwapi "github.com/sacloud/apigw-api-go/apis/v1"
-	"github.com/sacloud/apprun-api-go"
-	apprunapi "github.com/sacloud/apprun-api-go/apis/v1"
 	apprun_dedicated "github.com/sacloud/apprun-dedicated-api-go"
 	apprundedicatedapi "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
 	dedicatedstorage "github.com/sacloud/dedicated-storage-api-go"
@@ -38,6 +36,8 @@ import (
 	nosqlapi "github.com/sacloud/nosql-api-go/apis/v1"
 	objectstorage "github.com/sacloud/object-storage-api-go"
 	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/apprun"
+	apprunapi "github.com/sacloud/sacloud-sdk-go/api/apprun/apis/v1"
 	saclientsdk "github.com/sacloud/sacloud-sdk-go/common/saclient"
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
@@ -411,7 +411,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	apprunClient, err := apprun.NewClient(theClient)
+	apprunClient, err := apprun.NewClient(theClient2)
 	if err != nil {
 		return nil, err
 	}
