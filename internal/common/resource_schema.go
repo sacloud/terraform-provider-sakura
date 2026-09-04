@@ -18,6 +18,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	sctypes "github.com/sacloud/terraform-provider-sakura/internal/types"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -29,6 +30,34 @@ func SchemaResourceId(name string) schema.Attribute {
 			stringplanmodifier.UseStateForUnknown(),
 		},
 	}
+}
+
+func SchemaResourceSRN(name string) schema.Attribute {
+	return schema.StringAttribute{
+		CustomType:  sctypes.SRNType,
+		Computed:    true,
+		Description: desc.Sprintf("The SRN of the %s.", name),
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
+	}
+}
+
+func SchemaResourceSRNAttr(description string, replace bool) schema.Attribute {
+	a := schema.StringAttribute{
+		CustomType:  sctypes.SRNType,
+		Required:    true,
+		Description: description,
+		Validators: []validator.String{
+			sacloudvalidator.SRNValidator(),
+		},
+	}
+	if replace {
+		a.PlanModifiers = []planmodifier.String{
+			stringplanmodifier.RequiresReplace(),
+		}
+	}
+	return a
 }
 
 func SchemaResourceName(name string) schema.Attribute {
