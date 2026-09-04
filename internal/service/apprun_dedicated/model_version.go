@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"slices"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
@@ -194,7 +195,7 @@ func (p *exposedPortModel) updateState(d version.ExposedPort) {
 }
 
 func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, aid appID) (ret diag.Diagnostics) {
-	v.ID = types.StringValue(fmt.Sprintf("%s/%d", aid, d.Version))
+	v.ID = types.StringValue(fmt.Sprintf("%s/%d", uuid.UUID(aid).String(), d.Version))
 	v.Version = types.Int32Value(common.ToInt32(d.Version))
 	v.ApplicationID = uuid2StringValue(aid)
 	v.CPU = types.Int64Value(d.CPU)
