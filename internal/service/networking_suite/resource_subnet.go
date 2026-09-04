@@ -138,8 +138,9 @@ func (r *subnetResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
-	zone := common.GetZone(state.Zone, r.client, &resp.Diagnostics)
-	if resp.Diagnostics.HasError() {
+	zone := common.GetZoneFromSRN(state.SRN.ValueSRN())
+	if zone == "" {
+		resp.Diagnostics.AddError("Read: Attribute Error", fmt.Sprintf("failed to get zone from srn: %s", state.SRN.ValueString()))
 		return
 	}
 

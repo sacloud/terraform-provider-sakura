@@ -22,6 +22,7 @@ import (
 	"github.com/sacloud/iaas-api-go"
 	"github.com/sacloud/iaas-api-go/helper/plans"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
+	"github.com/sacloud/sacloud-sdk-go/srn"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
@@ -83,6 +84,20 @@ func GetZone(zone basetypes.StringValue, client *APIClient, diags *diag.Diagnost
 	}
 
 	return z
+}
+
+// get is1c from srnv1:sakura-is1c:sakura.iaas.interface:2345678901
+func GetZoneFromSRN(s srn.SRN) string {
+	loc := s.Location
+	parts := strings.Split(loc, "-")
+	switch len(parts) {
+	case 1:
+		return parts[0]
+	case 2:
+		return parts[1]
+	default:
+		return "" // handle unexpected format in callers
+	}
 }
 
 func GetApiClientFromProvider(providerData any, diags *diag.Diagnostics) *APIClient {

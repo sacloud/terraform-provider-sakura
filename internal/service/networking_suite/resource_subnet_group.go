@@ -6,6 +6,7 @@ package networking_suite
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-nettypes/cidrtypes"
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
@@ -101,7 +102,19 @@ func (r *subnetGroupResource) Schema(ctx context.Context, _ resource.SchemaReque
 }
 
 func (r *subnetGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("srn"), req, resp)
+	// Import format: zone/srn or srn
+	parts := strings.Split(req.ID, "/")
+	if len(parts) == 1 {
+		zone := common.GetZone(types.StringUnknown(), r.client, &resp.Diagnostics)
+		parts = []string{zone, parts[0]}
+	}
+	if len(parts) != 2 {
+		resp.Diagnostics.AddError("Import: ID Format Error", fmt.Sprintf("expected import ID format: zone/srn or srn, got: %q", req.ID))
+		return
+	}
+
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("zone"), parts[0])...)
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("srn"), parts[1])...)
 }
 
 func (r *subnetGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
