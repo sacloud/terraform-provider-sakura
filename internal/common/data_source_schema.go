@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	iaastypes "github.com/sacloud/iaas-api-go/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	sctypes "github.com/sacloud/terraform-provider-sakura/internal/types"
 )
 
 func SchemaDataSourceId(name string) schema.Attribute {
@@ -15,6 +16,23 @@ func SchemaDataSourceId(name string) schema.Attribute {
 		Optional:    true,
 		Computed:    true,
 		Description: desc.Sprintf("The ID of the %s.", name),
+	}
+}
+
+func SchemaDataSourceSRN(name string) schema.Attribute {
+	return schema.StringAttribute{
+		CustomType:  sctypes.SRNType,
+		Optional:    true,
+		Computed:    true,
+		Description: desc.Sprintf("The SRN of the %s.", name),
+	}
+}
+
+func SchemaDataSourceSRNAttr(description string) schema.Attribute {
+	return schema.StringAttribute{
+		CustomType:  sctypes.SRNType,
+		Computed:    true,
+		Description: description,
 	}
 }
 

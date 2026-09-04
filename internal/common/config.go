@@ -38,6 +38,7 @@ import (
 	nosqlapi "github.com/sacloud/nosql-api-go/apis/v1"
 	objectstorage "github.com/sacloud/object-storage-api-go"
 	"github.com/sacloud/saclient-go"
+	saclientsdk "github.com/sacloud/sacloud-sdk-go/common/saclient"
 	sm "github.com/sacloud/secretmanager-api-go"
 	smapi "github.com/sacloud/secretmanager-api-go/apis/v1"
 	seccon "github.com/sacloud/security-control-api-go"
@@ -112,6 +113,7 @@ type APIClient struct {
 	vpcRouterWaitAfterCreateDuration time.Duration
 	CallerOptions                    *client.Options
 	SaClient                         *saclient.Client
+	SaClient2                        *saclientsdk.Client
 	AppRunClient                     *apprunapi.Client
 	AppRunDedicatedClient            *apprundedicatedapi.Client
 	KmsClient                        *kmsapi.Client
@@ -395,6 +397,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err := theClient.SetEnviron(c.createSaclientEnvConfig()); err != nil {
 		return nil, fmt.Errorf("failed to create Sakura client via Envvars: %s", err.Error())
 	}
+	theClient2 := &saclientsdk.Client{}
+	if err := theClient2.SetEnviron(c.createSaclientEnvConfig()); err != nil {
+		return nil, fmt.Errorf("failed to create Sakura client 2 via Envvars: %s", err.Error())
+	}
 
 	zones := c.Zones
 	if len(zones) == 0 {
@@ -476,6 +482,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		vpcRouterWaitAfterCreateDuration: vpcRouterWaitAfterCreateDuration,
 		CallerOptions:                    callerOptions,
 		SaClient:                         theClient,
+		SaClient2:                        theClient2,
 		KmsClient:                        kmsClient,
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,
