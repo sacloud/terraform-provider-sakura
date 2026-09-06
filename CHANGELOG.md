@@ -1,5 +1,23 @@
 # Changelog
 
+## [v3.13.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.9...v3.13.0) - 2026-09-04
+
+### 🚀 New Features
+- Add Networking Suite resources by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/330
+### Other Changes
+- sakura_apprun_dedicated_version: sort environment variables by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/322
+- monitoring_suite: update alert_rule's query description for newline handling by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/325
+- enhanced_lb_acme: Support update action. also fix #305 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/315
+- Update insufficient descriptions. Fix typo, add enums, etc by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/326
+- nosql: Update database version to 4.1.11 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/332
+- apprun_shared: Use sacloud-sdk-go/api/apprun and add secret support by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/329
+- sakura_apprun_dedicated_version: need escape UUIDs by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/334
+### 📦 Dependency Updates
+- ci: bump actions/setup-go from 6.5.0 to 7.0.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/299
+- ci: bump actions/checkout from 6.0.3 to 7.0.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/301
+- go: bump github.com/stretchr/testify from 1.11.1 to 1.12.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/317
+- go: bump github.com/jlaffaye/ftp from 0.2.2 to 0.2.4 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/327
+
 ## [v3.12.9](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.8...v3.12.9) - 2026-08-25
 
 ### Other Changes
