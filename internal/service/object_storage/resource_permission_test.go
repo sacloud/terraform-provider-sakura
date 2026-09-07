@@ -11,7 +11,7 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	objectstorage "github.com/sacloud/object-storage-api-go"
+	objectstorage "github.com/sacloud/sacloud-sdk-go/api/object-storage"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )

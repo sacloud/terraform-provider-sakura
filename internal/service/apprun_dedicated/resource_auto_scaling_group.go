@@ -30,10 +30,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	asg "github.com/sacloud/apprun-dedicated-api-go/apis/autoscalinggroup"
-	lb "github.com/sacloud/apprun-dedicated-api-go/apis/loadbalancer"
-	wn "github.com/sacloud/apprun-dedicated-api-go/apis/workernode"
-	"github.com/sacloud/saclient-go"
+	asg "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/autoscalinggroup"
+	lb "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/loadbalancer"
+	wn "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/workernode"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

@@ -11,7 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/sacloud/packages-go/mutexkv"
+	"github.com/sacloud/sacloud-sdk-go/common/packages/mutexkv"
 )
 
 var SakuraMutexKV = mutexkv.NewMutexKV()

@@ -17,10 +17,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/iam-api-go"
-	"github.com/sacloud/iam-api-go/apis/user"
-	v1 "github.com/sacloud/iam-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/iam"
+	"github.com/sacloud/sacloud-sdk-go/api/iam/apis/user"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/iam/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
@@ -252,7 +252,7 @@ func expandUserCreateRequest(model, config *userResourceModel) user.CreateParams
 		Password:    config.PasswordWO.ValueString(),
 	}
 	if utils.IsKnown(model.Email) {
-		params.Email = saclient.Ptr(model.Email.ValueString())
+		params.Email = new(model.Email.ValueString())
 	}
 	return params
 }
@@ -263,7 +263,7 @@ func expandUserUpdateRequest(model, config, state *userResourceModel) user.Updat
 		Description: model.Description.ValueString(),
 	}
 	if model.PasswordWOVersion.ValueInt32() > state.PasswordWOVersion.ValueInt32() {
-		params.Password = saclient.Ptr(config.PasswordWO.ValueString())
+		params.Password = new(config.PasswordWO.ValueString())
 	}
 	return params
 }

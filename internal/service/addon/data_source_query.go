@@ -9,8 +9,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	"github.com/sacloud/addon-api-go"
-	v1 "github.com/sacloud/addon-api-go/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/addon"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/addon/apis/v1"
 )
 
 type queryDataSource struct {

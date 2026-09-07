@@ -11,9 +11,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	objectstorage "github.com/sacloud/object-storage-api-go"
-	v2 "github.com/sacloud/object-storage-api-go/apis/v2"
-	"github.com/sacloud/saclient-go"
+	objectstorage "github.com/sacloud/sacloud-sdk-go/api/object-storage"
+	v2 "github.com/sacloud/sacloud-sdk-go/api/object-storage/apis/v2"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

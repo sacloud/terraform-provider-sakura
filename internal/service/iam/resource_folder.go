@@ -13,10 +13,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/sacloud/iam-api-go"
-	"github.com/sacloud/iam-api-go/apis/folder"
-	v1 "github.com/sacloud/iam-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/iam"
+	"github.com/sacloud/sacloud-sdk-go/api/iam/apis/folder"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/iam/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
@@ -125,7 +125,7 @@ func (r *folderResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	var desc *string
 	if utils.IsKnown(plan.Description) {
-		desc = saclient.Ptr(plan.Description.ValueString())
+		desc = new(plan.Description.ValueString())
 	}
 	folderOp := iam.NewFolderOp(r.client)
 	_, err := folderOp.Update(ctx, utils.MustAtoI(plan.ID.ValueString()), plan.Name.ValueString(), desc)
@@ -184,10 +184,10 @@ func expandFolderCreateRequest(model *folderResourceModel) folder.CreateParams {
 		Name: model.Name.ValueString(),
 	}
 	if utils.IsKnown(model.Description) {
-		params.Description = saclient.Ptr(model.Description.ValueString())
+		params.Description = new(model.Description.ValueString())
 	}
 	if utils.IsKnown(model.ParentID) {
-		params.ParentID = saclient.Ptr(utils.MustAtoI(model.ParentID.ValueString()))
+		params.ParentID = new(utils.MustAtoI(model.ParentID.ValueString()))
 	}
 	return params
 }

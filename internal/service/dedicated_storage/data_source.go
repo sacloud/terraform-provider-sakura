@@ -10,8 +10,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
-	dedicatedstorage "github.com/sacloud/dedicated-storage-api-go"
-	v1 "github.com/sacloud/dedicated-storage-api-go/apis/v1"
+	dedicatedstorage "github.com/sacloud/sacloud-sdk-go/api/dedicated-storage"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/dedicated-storage/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

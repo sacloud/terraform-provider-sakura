@@ -5,7 +5,7 @@ package ondemand_db
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/iaas-service-go/enhanceddb/builder"
+	"github.com/sacloud/sacloud-sdk-go/service/iaas/enhanceddb/builder"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

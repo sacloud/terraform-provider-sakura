@@ -16,8 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-testing/statecheck"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	"github.com/hashicorp/terraform-plugin-testing/tfjsonpath"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
-	ver "github.com/sacloud/apprun-dedicated-api-go/apis/version"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
+	ver "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/version"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 

@@ -6,7 +6,7 @@ package monitoring_suite
 import (
 	"testing"
 
-	monitoringsuiteapi "github.com/sacloud/monitoring-suite-api-go/apis/v1"
+	monitoringsuiteapi "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite/apis/v1"
 )
 
 func TestFilterLogStorageByName(t *testing.T) {

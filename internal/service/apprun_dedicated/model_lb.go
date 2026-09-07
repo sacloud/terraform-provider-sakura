@@ -8,9 +8,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	lb "github.com/sacloud/apprun-dedicated-api-go/apis/loadbalancer"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	lb "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/loadbalancer"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -155,7 +154,7 @@ func (i *lbifModel) intoCreate() (ret lb.LoadBalancerInterface, diag diag.Diagno
 	ret.Vip = i.Vip.ValueStringPointer()
 	ret.PacketFilterID = i.PacketFilterID.ValueStringPointer()
 
-	n, d := intoInt16(saclient.Ptr(i.InterfaceIndex.ValueInt32()))
+	n, d := intoInt16(new(i.InterfaceIndex.ValueInt32()))
 	diag.Append(d...)
 	if n != nil {
 		ret.InterfaceIndex = *n

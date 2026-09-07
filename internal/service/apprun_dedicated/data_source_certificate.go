@@ -11,8 +11,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	cert "github.com/sacloud/apprun-dedicated-api-go/apis/certificate"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
+	cert "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/certificate"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -138,7 +138,7 @@ func (state *certDataSourceModel) byName(ctx context.Context, r *certDataSource)
 	name := state.Name.ValueString()
 	for _, i := range certs {
 		if i.Name == name {
-			return &clusterID, &i.CertificateID, d
+			return &clusterID, new(v1.CertificateID(i.CertificateID)), d
 		}
 	}
 

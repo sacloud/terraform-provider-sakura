@@ -5,8 +5,8 @@ package dedicated_storage
 
 import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v1 "github.com/sacloud/dedicated-storage-api-go/apis/v1"
-	iaastypes "github.com/sacloud/iaas-api-go/types"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/dedicated-storage/apis/v1"
+	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

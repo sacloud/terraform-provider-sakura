@@ -16,8 +16,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	cert "github.com/sacloud/apprun-dedicated-api-go/apis/certificate"
-	"github.com/sacloud/saclient-go"
+	cert "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/certificate"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

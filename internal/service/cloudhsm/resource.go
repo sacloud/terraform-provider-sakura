@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/sacloud/cloudhsm-api-go"
-	v1 "github.com/sacloud/cloudhsm-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/cloudhsm"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/cloudhsm/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -229,7 +229,7 @@ func getCloudHSM(ctx context.Context, client *v1.Client, id string, state *tfsdk
 func expandCloudHSMCreateParams(model *cloudHSMResourceModel) cloudhsm.CloudHSMCreateParams {
 	return cloudhsm.CloudHSMCreateParams{
 		Name:               model.Name.ValueString(),
-		Description:        common.Ptr(model.Description.ValueString()),
+		Description:        new(model.Description.ValueString()),
 		Tags:               common.TsetToStrings(model.Tags),
 		Ipv4NetworkAddress: model.IPv4NetworkAddress.ValueString(),
 		Ipv4PrefixLength:   int(model.IPv4Netmask.ValueInt32()),
@@ -239,7 +239,7 @@ func expandCloudHSMCreateParams(model *cloudHSMResourceModel) cloudhsm.CloudHSMC
 func expandCloudHSMUpdateParams(model *cloudHSMResourceModel) cloudhsm.CloudHSMUpdateParams {
 	return cloudhsm.CloudHSMUpdateParams{
 		Name:               model.Name.ValueString(),
-		Description:        common.Ptr(model.Description.ValueString()),
+		Description:        new(model.Description.ValueString()),
 		Tags:               common.TsetToStrings(model.Tags),
 		Ipv4NetworkAddress: model.IPv4NetworkAddress.ValueString(),
 		Ipv4PrefixLength:   int(model.IPv4Netmask.ValueInt32()),

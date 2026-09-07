@@ -11,9 +11,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	v1 "github.com/sacloud/apprun-dedicated-api-go/apis/v1"
-	"github.com/sacloud/apprun-dedicated-api-go/apis/version"
-	"github.com/sacloud/saclient-go"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/version"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -133,7 +132,7 @@ func (p exposedPortModel) intoCreate() (ret version.ExposedPort, diag diag.Diagn
 	ret.Host = common.TsetToStrings(p.Host)
 
 	if p.HealthCheck != nil {
-		ret.HealthCheck = saclient.Ptr(p.HealthCheck.intoCreate())
+		ret.HealthCheck = new(p.HealthCheck.intoCreate())
 	}
 
 	var port *uint16

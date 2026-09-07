@@ -15,10 +15,10 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/sacloud/sacloud-sdk-go/api/workflows"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
-	"github.com/sacloud/workflows-api-go"
-	v1 "github.com/sacloud/workflows-api-go/apis/v1"
 )
 
 type workflowsSubscriptionResource struct {

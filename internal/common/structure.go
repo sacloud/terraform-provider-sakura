@@ -19,9 +19,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-framework/types/basetypes"
 	"github.com/mitchellh/go-homedir"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/iaas-api-go/helper/plans"
-	iaastypes "github.com/sacloud/iaas-api-go/types"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/plans"
+	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
 	"github.com/sacloud/sacloud-sdk-go/srn"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
@@ -382,4 +382,6 @@ func ExpandMonitoringSuite(ms types.Object) *iaas.MonitoringSuite {
 }
 
 // Use saclient-go's version in the future
-func Ptr[T any](t T) *T { return &t }
+//
+//go:fix inline
+func Ptr[T any](t T) *T { return new(t) }

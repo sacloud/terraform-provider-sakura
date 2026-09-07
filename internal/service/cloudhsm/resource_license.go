@@ -13,9 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
-	"github.com/sacloud/cloudhsm-api-go"
-	v1 "github.com/sacloud/cloudhsm-api-go/apis/v1"
-	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/cloudhsm"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/cloudhsm/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -93,7 +93,7 @@ func (r *cloudHSMLicenseResource) Create(ctx context.Context, req resource.Creat
 	licenseOp := cloudhsm.NewLicenseOp(client)
 	created, err := licenseOp.Create(ctx, cloudhsm.CloudHSMSoftwareLicenseCreateParams{
 		Name:        plan.Name.ValueString(),
-		Description: common.Ptr(plan.Description.ValueString()),
+		Description: new(plan.Description.ValueString()),
 		Tags:        common.TsetToStrings(plan.Tags),
 	})
 	if err != nil {

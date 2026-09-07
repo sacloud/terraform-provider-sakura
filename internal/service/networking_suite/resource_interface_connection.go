@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
-	"github.com/sacloud/saclient-go"
 	networkingsuite "github.com/sacloud/sacloud-sdk-go/api/networking-suite"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	sctypes "github.com/sacloud/terraform-provider-sakura/internal/types"
@@ -91,7 +91,7 @@ func (r *interfaceConnectionResource) Create(ctx context.Context, req resource.C
 	ctx, cancel := common.SetupTimeoutCreate(ctx, plan.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	client, err := networkingsuite.NewClient(r.client.SaClient)
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return
@@ -142,7 +142,7 @@ func (r *interfaceConnectionResource) Delete(ctx context.Context, req resource.D
 	ctx, cancel := common.SetupTimeoutDelete(ctx, state.Timeouts, common.Timeout5min)
 	defer cancel()
 
-	client, err := networkingsuite.NewClient(r.client.SaClient2)
+	client, err := networkingsuite.NewClient(r.client.SaClient)
 	if err != nil {
 		resp.Diagnostics.AddError("Delete: API Client Error", fmt.Sprintf("failed to create networking suite API client: %s", err))
 		return

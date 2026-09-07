@@ -12,8 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	seccon "github.com/sacloud/security-control-api-go"
-	v1 "github.com/sacloud/security-control-api-go/apis/v1"
+	seccon "github.com/sacloud/sacloud-sdk-go/api/security-control"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/security-control/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 

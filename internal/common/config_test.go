@@ -10,9 +10,8 @@ import (
 	"regexp"
 	"testing"
 
-	"github.com/sacloud/api-client-go/profile"
-	"github.com/sacloud/iaas-api-go"
-	"github.com/sacloud/saclient-go"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	"github.com/stretchr/testify/require"
@@ -351,7 +350,7 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 			if len(tt.profiles) > 0 {
 				currentProfile := tt.currentProfile
 				if tt.currentProfile == "" {
-					currentProfile = profile.DefaultProfileName
+					currentProfile = "default"
 				}
 				if err := profileOp.SetCurrentName(currentProfile); err != nil {
 					t.Fatal(err)

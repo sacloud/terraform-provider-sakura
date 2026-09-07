@@ -13,8 +13,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/sacloud/sacloud-sdk-go/api/webaccel"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
-	"github.com/sacloud/webaccel-api-go"
 )
 
 type webAccelActivationResource struct {

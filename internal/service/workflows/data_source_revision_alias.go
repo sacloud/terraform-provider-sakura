@@ -12,12 +12,12 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	datasourceSchema "github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
+	"github.com/sacloud/sacloud-sdk-go/api/workflows"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
-	"github.com/sacloud/workflows-api-go"
-	v1 "github.com/sacloud/workflows-api-go/apis/v1"
 )
 
 type workflowRevisionAliasDataSource struct {

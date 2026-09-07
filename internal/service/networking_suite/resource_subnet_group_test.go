@@ -111,7 +111,7 @@ func TestAccImportSakuraNetworkingSuiteSubnetGroup_basic(t *testing.T) {
 }
 
 func testCheckSakuraNetworkingSuiteSubnetGroupDestroy(s *terraform.State) error {
-	client, err := networkingsuite.NewClient(test.AccClientGetter().SaClient2)
+	client, err := networkingsuite.NewClient(test.AccClientGetter().SaClient)
 	if err != nil {
 		return fmt.Errorf("Read: API Client Error: failed to create networking suite API client: %s", err)
 	}
@@ -146,7 +146,7 @@ func testCheckSakuraNetworkingSuiteSubnetGroupExists(n string, sg *v1.ReadSubnet
 			return errors.New("no subnet group ID is set")
 		}
 
-		client, err := networkingsuite.NewClient(test.AccClientGetter().SaClient2)
+		client, err := networkingsuite.NewClient(test.AccClientGetter().SaClient)
 		if err != nil {
 			return fmt.Errorf("Read: API Client Error: failed to create networking suite API client: %s", err)
 		}

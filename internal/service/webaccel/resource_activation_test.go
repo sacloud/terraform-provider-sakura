@@ -11,8 +11,8 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
+	"github.com/sacloud/sacloud-sdk-go/api/webaccel"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
-	"github.com/sacloud/webaccel-api-go"
 )
 
 func TestAccResourceSakuraWebAccelActivation_Basic(t *testing.T) {
