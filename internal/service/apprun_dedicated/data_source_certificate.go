@@ -138,7 +138,7 @@ func (state *certDataSourceModel) byName(ctx context.Context, r *certDataSource)
 	name := state.Name.ValueString()
 	for _, i := range certs {
 		if i.Name == name {
-			return &clusterID, &i.CertificateID, d
+			return &clusterID, new(v1.CertificateID(i.CertificateID)), d
 		}
 	}
 
