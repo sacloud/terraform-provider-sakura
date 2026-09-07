@@ -15,9 +15,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/saclient-go"
 	networkingsuite "github.com/sacloud/sacloud-sdk-go/api/networking-suite"
 	v1 "github.com/sacloud/sacloud-sdk-go/api/networking-suite/apis/v1"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sctypes "github.com/sacloud/terraform-provider-sakura/internal/types"
 )
