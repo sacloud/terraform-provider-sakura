@@ -252,7 +252,7 @@ func expandUserCreateRequest(model, config *userResourceModel) user.CreateParams
 		Password:    config.PasswordWO.ValueString(),
 	}
 	if utils.IsKnown(model.Email) {
-		params.Email = saclient.Ptr(model.Email.ValueString())
+		params.Email = new(model.Email.ValueString())
 	}
 	return params
 }
@@ -263,7 +263,7 @@ func expandUserUpdateRequest(model, config, state *userResourceModel) user.Updat
 		Description: model.Description.ValueString(),
 	}
 	if model.PasswordWOVersion.ValueInt32() > state.PasswordWOVersion.ValueInt32() {
-		params.Password = saclient.Ptr(config.PasswordWO.ValueString())
+		params.Password = new(config.PasswordWO.ValueString())
 	}
 	return params
 }

@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/sacloud-sdk-go/api/webaccel"
+	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
 type webAccelBaseModel struct {

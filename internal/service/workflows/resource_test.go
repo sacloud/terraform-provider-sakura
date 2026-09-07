@@ -13,9 +13,9 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/hashicorp/terraform-plugin-testing/terraform"
-	"github.com/sacloud/terraform-provider-sakura/internal/test"
 	"github.com/sacloud/sacloud-sdk-go/api/workflows"
 	v1 "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
+	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
 func TestAccSakuraResourceWorkflows_basic(t *testing.T) {

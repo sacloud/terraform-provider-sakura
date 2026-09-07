@@ -228,10 +228,10 @@ func expandProjectApiKeyCreateRequest(model *projectApiKeyResourceModel) project
 		IamRoles:    common.TlistToStrings(model.IAMRoles),
 	}
 	if utils.IsKnown(model.ServerResourceID) {
-		params.ServerResourceID = saclient.Ptr(model.ServerResourceID.ValueString())
+		params.ServerResourceID = new(model.ServerResourceID.ValueString())
 	}
 	if utils.IsKnown(model.Zone) {
-		params.Zone = saclient.Ptr(model.Zone.ValueString())
+		params.Zone = new(model.Zone.ValueString())
 	}
 	return params
 }
@@ -243,10 +243,10 @@ func expandProjectApiKeyUpdateRequest(model *projectApiKeyResourceModel) project
 		IamRoles:    common.TlistToStrings(model.IAMRoles),
 	}
 	if utils.IsKnown(model.ServerResourceID) {
-		params.ServerResourceID = saclient.Ptr(model.ServerResourceID.ValueString())
+		params.ServerResourceID = new(model.ServerResourceID.ValueString())
 	}
 	if utils.IsKnown(model.Zone) {
-		params.Zone = saclient.Ptr(model.Zone.ValueString())
+		params.Zone = new(model.Zone.ValueString())
 	}
 	return params
 }

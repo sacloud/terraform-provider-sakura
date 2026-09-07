@@ -9,9 +9,9 @@ import (
 	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
-	v1 "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
 )
 
 type workflowBaseModel struct {

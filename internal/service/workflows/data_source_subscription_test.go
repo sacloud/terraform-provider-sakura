@@ -7,8 +7,8 @@ import (
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
-	"github.com/sacloud/terraform-provider-sakura/internal/test"
 	v1 "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
+	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
 func TestAccSakuraDataSourceWorkflowsSubscription_basic(t *testing.T) {

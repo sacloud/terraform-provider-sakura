@@ -187,7 +187,7 @@ func expandProjectCreateRequest(model *projectResourceModel) project.CreateParam
 		Description: model.Description.ValueString(),
 	}
 	if utils.IsKnown(model.ParentFolderID) {
-		params.ParentFolderID = saclient.Ptr(utils.MustAtoI(model.ParentFolderID.ValueString()))
+		params.ParentFolderID = new(utils.MustAtoI(model.ParentFolderID.ValueString()))
 	}
 	return params
 }

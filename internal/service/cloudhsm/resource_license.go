@@ -93,7 +93,7 @@ func (r *cloudHSMLicenseResource) Create(ctx context.Context, req resource.Creat
 	licenseOp := cloudhsm.NewLicenseOp(client)
 	created, err := licenseOp.Create(ctx, cloudhsm.CloudHSMSoftwareLicenseCreateParams{
 		Name:        plan.Name.ValueString(),
-		Description: common.Ptr(plan.Description.ValueString()),
+		Description: new(plan.Description.ValueString()),
 		Tags:        common.TsetToStrings(plan.Tags),
 	})
 	if err != nil {
