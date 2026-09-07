@@ -11,7 +11,7 @@ import (
 )
 
 func createClient(zone string, apiClient *common.APIClient) (*v1.Client, error) {
-	client, err := apiClient.SaClient2.DupWith(saclient.WithZone(zone))
+	client, err := apiClient.SaClient.DupWith(saclient.WithZone(zone))
 	if err != nil {
 		return nil, err
 	}
