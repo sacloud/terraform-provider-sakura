@@ -107,7 +107,7 @@ func (r *workflowResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 					},
 					"runbook": schema.StringAttribute{
 						Required:    true,
-						Description: "The runbook definition of the revision.",
+						Description: "The runbook definition of the revision. See the manual: https://manual.sakura.ad.jp/cloud/appliance/workflows/reference-syntax.html",
 					},
 					"created_at": common.SchemaResourceCreatedAt(resourceName),
 					"updated_at": common.SchemaResourceUpdatedAt(resourceName),

@@ -91,7 +91,7 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 			"plain_key": schema.StringAttribute{
 				Optional:    true,
 				Sensitive:   true,
-				Description: "Plain key for imported KMS key. Required when `key_origin` is 'imported'.",
+				Description: "Base64 encoded plain key for imported KMS key. Required when `key_origin` is 'imported'.",
 				Validators: []validator.String{
 					stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("plain_key_wo")),
 					stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("plain_key_wo")),

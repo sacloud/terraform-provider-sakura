@@ -36,6 +36,12 @@ func TestAccSakuraDataSourceApprunShared_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "components.0.max_memory", "1Gi"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.image", "sakura-oss-dev.sakuracr.jp/test:latest"),
 					resource.TestCheckResourceAttr(resourceName, "components.0.deploy_source.container_registry.username", "test-user"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.env.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.env.0.key", "key"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.env.0.value", "value"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.#", "1"),
+					resource.TestCheckResourceAttr(resourceName, "components.0.secret.0.key", "seckey"),
+					resource.TestCheckNoResourceAttr(resourceName, "components.0.secret.0.value_wo"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 				),
 			},
@@ -185,6 +191,15 @@ resource "sakura_apprun_shared" "foobar" {
         password_wo_version = 1
       }
     }
+    env = [{
+      key   = "key"
+      value = "value"
+    }]
+    secret = [{
+      key              = "seckey"
+      value_wo         = "secvalue"
+      value_wo_version = 1
+    }]
   }]
 }
 

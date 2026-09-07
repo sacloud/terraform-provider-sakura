@@ -60,7 +60,7 @@ resource "sakura_archive" "foobar" {
 - `icon_id` (String) The icon id to attach to the Archive
 - `size` (Number) The size of archihve in GiB. This must be one of [`20`/`40`/`60`/`80`/`100`/`250`/`500`/`750`/`1024`]
 - `source_archive_id` (String) The id of the source archive. This conflicts with [`source_disk_id`]
-- `source_archive_zone` (String) The share key of source shared archive
+- `source_archive_zone` (String) The zone of source shared archive
 - `source_disk_id` (String) The id of the source disk. This conflicts with [`source_archive_id`]
 - `source_shared_key` (String, Sensitive) The share key of source shared archive
 - `source_shared_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The share key of source shared archive

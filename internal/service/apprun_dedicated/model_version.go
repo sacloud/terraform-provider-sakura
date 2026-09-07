@@ -6,7 +6,9 @@ package apprun_dedicated
 import (
 	"context"
 	"fmt"
+	"slices"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
@@ -193,7 +195,7 @@ func (p *exposedPortModel) updateState(d version.ExposedPort) {
 }
 
 func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, aid appID) (ret diag.Diagnostics) {
-	v.ID = types.StringValue(fmt.Sprintf("%s/%d", aid, d.Version))
+	v.ID = types.StringValue(fmt.Sprintf("%s/%d", uuid.UUID(aid).String(), d.Version))
 	v.Version = types.Int32Value(common.ToInt32(d.Version))
 	v.ApplicationID = uuid2StringValue(aid)
 	v.CPU = types.Int64Value(d.CPU)
@@ -212,12 +214,32 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 	v.ExposedPorts = common.MapTo(d.ExposedPorts, stateUpdater[version.ExposedPort, exposedPortModel])
 	v.Cmd, ret = types.ListValueFrom(ctx, types.StringType, common.MapTo(d.Cmd, types.StringValue))
 
-	buf := make([]envVarModel, len(d.EnvVars))
-	copy(buf, v.EnvVars)
+	buf := slices.Clone(v.EnvVars)
 
-	for i, j := range d.EnvVars {
-		k := &buf[i]
-		k.updateState(j)
+	for i := range slices.Values(d.EnvVars) {
+		// find matching variable by key and update its value
+		var updated bool
+		for j := range buf {
+			k := &buf[j]
+			switch {
+			case k.Key.IsUnknown():
+				continue
+			case k.Key.IsNull():
+				continue
+			case k.Key.ValueString() == i.Key:
+				k.updateState(i)
+				updated = true
+				break
+			}
+		}
+
+		if !updated {
+			// in case of terraform import previous state is empty.
+			// need to fill it
+			var e envVarModel
+			e.updateState(i)
+			buf = append(buf, e)
+		}
 	}
 
 	if v.EnvVars == nil && len(d.EnvVars) == 0 {

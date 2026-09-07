@@ -86,7 +86,7 @@ Required:
 
 Required:
 
-- `id` (String) The ID of the IAM Policy
+- `id` (String) The ID of the IAM Policy role
 - `type` (String) The type of the role
 
 

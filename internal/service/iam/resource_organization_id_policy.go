@@ -67,7 +67,7 @@ func (r *orgIDPolicyResource) Schema(ctx context.Context, _ resource.SchemaReque
 								},
 								"id": schema.StringAttribute{
 									Required:    true,
-									Description: "The ID of the IAM Organization ID Policy",
+									Description: "The ID of the IAM Organization ID Policy role",
 								},
 							},
 						},

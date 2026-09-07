@@ -145,6 +145,18 @@ func (r *apprunSharedDataSource) Schema(ctx context.Context, req datasource.Sche
 								},
 							},
 						},
+						"secret": schema.ListNestedAttribute{
+							Computed:    true,
+							Description: "The secrets passed to components",
+							NestedObject: schema.NestedAttributeObject{
+								Attributes: map[string]schema.Attribute{
+									"key": schema.StringAttribute{
+										Computed:    true,
+										Description: "The secret name",
+									},
+								},
+							},
+						},
 						"probe": schema.SingleNestedAttribute{
 							Computed:    true,
 							Description: "The component probe settings",
@@ -241,7 +253,7 @@ func (d *apprunSharedDataSource) Read(ctx context.Context, req datasource.ReadRe
 	}
 
 	name := data.Name.ValueString()
-	var app *v1.HandlerGetApplication
+	var app *v1.HandlerReadApplication
 	for _, d := range apps.Data {
 		if d.Name == name {
 			a, err := appOp.Read(ctx, d.ID)
@@ -265,6 +277,6 @@ func (d *apprunSharedDataSource) Read(ctx context.Context, req datasource.ReadRe
 		return
 	}
 
-	data.updateState(app, pf)
+	data.updateState(app, pf, true)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

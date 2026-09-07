@@ -34,7 +34,7 @@ resource "sakura_simple_notification_group" "foobar" {
 
 ### Required
 
-- `destinations` (List of String) The ProcessConfiguration ID of the SimpleNotification group.
+- `destinations` (List of String) The destinations of the SimpleNotification group.
 - `name` (String) The name of the SimpleNotification group.
 
 ### Optional

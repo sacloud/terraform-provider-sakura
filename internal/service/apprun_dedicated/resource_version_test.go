@@ -58,14 +58,14 @@ func TestAccSakuraResourceApprunDedicatedVersion(t *testing.T) {
 						})),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("env_vars"), knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"key":    knownvalue.StringExact("ENV_VAR1"),
-								"value":  knownvalue.StringExact("value1"),
-								"secret": knownvalue.Bool(false),
-							}),
-							knownvalue.ObjectExact(map[string]knownvalue.Check{
 								"key":    knownvalue.StringExact("ENV_VAR2"),
 								"value":  knownvalue.StringExact("value2"),
 								"secret": knownvalue.Bool(true),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"key":    knownvalue.StringExact("ENV_VAR1"),
+								"value":  knownvalue.StringExact("value1"),
+								"secret": knownvalue.Bool(false),
 							}),
 						})),
 					},
@@ -75,8 +75,8 @@ func TestAccSakuraResourceApprunDedicatedVersion(t *testing.T) {
 					ImportState:       true,
 					ImportStateVerify: true,
 
-					// "env_vars.1.value" is secret and cannot be read
-					ImportStateVerifyIgnore: []string{"timeouts", "registry_password", "env_vars.1.value"},
+					// env_vars is randomized.  Not equal to the config order by nature.
+					ImportStateVerifyIgnore: []string{"timeouts", "registry_password", "env_vars"},
 					ImportStateIdFunc: func(s *terraform.State) (string, error) {
 						rs, ok := s.RootModule().Resources[resourceName]
 						if !ok {
@@ -200,14 +200,14 @@ resource "sakura_apprun_dedicated_version" "main" {
 
   env_vars = [
     {
-      key    = "ENV_VAR1"
-      value  = "value1"
-      secret = false
-    },
-    {
       key    = "ENV_VAR2"
       value  = "value2"
       secret = true
+    },
+    {
+      key    = "ENV_VAR1"
+      value  = "value1"
+      secret = false
     }
   ]
 }

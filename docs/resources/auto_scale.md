@@ -65,7 +65,7 @@ resource "sakura_auto_scale" "foobar" {
 ### Required
 
 - `api_key_id` (String) The ID of the API key
-- `config` (String) The configuration file for sacloud/autoscaler
+- `config` (String) The configuration file for sacloud/autoscaler. See the manual: https://docs.usacloud.jp/autoscaler/configuration/
 - `name` (String) The name of the AutoScale.
 - `trigger_type` (String) Trigger type of schedule. This must be one of [`cpu`/`router`/`schedule`/`none`]
 - `zones` (Set of String) Set of zone names where monitored resources are located

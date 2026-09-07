@@ -49,6 +49,7 @@ Read-Only:
 - `max_memory` (String) The maximum memory of component. The values in the list must be in [`1Gi`/`2Gi`/`4Gi`]
 - `name` (String) The component name
 - `probe` (Attributes) The component probe settings (see [below for nested schema](#nestedatt--components--probe))
+- `secret` (Attributes List) The secrets passed to components (see [below for nested schema](#nestedatt--components--secret))
 
 <a id="nestedatt--components--deploy_source"></a>
 ### Nested Schema for `components.deploy_source`
@@ -105,6 +106,14 @@ Read-Only:
 - `value` (String) The header field value
 
 
+
+
+<a id="nestedatt--components--secret"></a>
+### Nested Schema for `components.secret`
+
+Read-Only:
+
+- `key` (String) The secret name
 
 
 

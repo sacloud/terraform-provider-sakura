@@ -23,6 +23,11 @@ resource "sakura_apprun_shared" "foobar" {
       key   = "key"
       value = "value"
     }]
+    secret = [{
+      key      = "secret-key" # key must be unique in env and secret
+      value_wo = "secret-value"
+      value_wo_version = 1
+    }]
     probe = {
       http_get = {
         path = "/"

@@ -100,7 +100,7 @@ resource "sakura_disk" "foobar" {
 - `memory` (Number) The size of memory in GiB
 - `network_interface` (Attributes List) (see [below for nested schema](#nestedatt--network_interface))
 - `private_host_id` (String) The id of the PrivateHost which the Server is assigned
-- `private_host_name` (String) The id of the PrivateHost which the Server is assigned
+- `private_host_name` (String) The name of the PrivateHost which the Server is assigned
 - `tags` (Set of String) The tags of the Server.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `user_data` (String) A string representing the user data used by cloud-init. This conflicts with [`disk_edit_parameter`]

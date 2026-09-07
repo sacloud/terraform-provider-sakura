@@ -20,7 +20,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
-	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -132,9 +131,6 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 					"vip": schema.StringAttribute{
 						Optional:    true,
 						Description: "The virtual IP address of the VPN Router. This is only required when `plan` is not `standard`",
-						PlanModifiers: []planmodifier.String{
-							stringplanmodifier.RequiresReplaceIfConfigured(),
-						},
 					},
 					"ip_addresses": schema.ListAttribute{
 						ElementType: types.StringType,
@@ -143,9 +139,6 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 						Validators: []validator.List{
 							listvalidator.SizeAtLeast(2),
 							listvalidator.SizeAtMost(2),
-						},
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.RequiresReplaceIfConfigured(),
 						},
 					},
 					"vrid": schema.Int64Attribute{
@@ -162,9 +155,6 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 						Validators: []validator.List{
 							listvalidator.SizeAtMost(19),
 						},
-						PlanModifiers: []planmodifier.List{
-							listplanmodifier.RequiresReplaceIfConfigured(),
-						},
 					},
 				},
 			},
@@ -175,6 +165,9 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			"public_netmask": schema.Int64Attribute{
 				Computed:    true,
 				Description: "The bit length of the subnet to assign to the public network interface",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"syslog_host": schema.StringAttribute{
 				Optional:    true,

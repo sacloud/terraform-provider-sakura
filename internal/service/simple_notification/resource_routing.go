@@ -61,7 +61,7 @@ func (r *routingResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 			"icon_id":     common.SchemaResourceIconID(resourceName),
 			"match_labels": schema.ListNestedAttribute{
 				Required:    true,
-				Description: desc.Sprintf("The type of the %s.", resourceName),
+				Description: desc.Sprintf("The match labels of the %s.", resourceName),
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"name": schema.StringAttribute{

@@ -38,6 +38,11 @@ resource "sakura_apprun_shared" "foobar" {
       key   = "key"
       value = "value"
     }]
+    secret = [{
+      key      = "secret-key" # key must be unique in env and secret
+      value_wo = "secret-value"
+      value_wo_version = 1
+    }]
     probe = {
       http_get = {
         path = "/"
@@ -106,6 +111,7 @@ Optional:
 
 - `env` (Attributes Set) The environment variables passed to components (see [below for nested schema](#nestedatt--components--env))
 - `probe` (Attributes) The component probe settings (see [below for nested schema](#nestedatt--components--probe))
+- `secret` (Attributes List) The secrets passed to components (see [below for nested schema](#nestedatt--components--secret))
 
 <a id="nestedatt--components--deploy_source"></a>
 ### Nested Schema for `components.deploy_source`
@@ -168,6 +174,19 @@ Required:
 - `value` (String) The header field value
 
 
+
+
+<a id="nestedatt--components--secret"></a>
+### Nested Schema for `components.secret`
+
+Required:
+
+- `key` (String) The secret name
+- `value_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The secret value
+
+Optional:
+
+- `value_wo_version` (Number) The version of the secret value. Increment this when changing value.
 
 
 

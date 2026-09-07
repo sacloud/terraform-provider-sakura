@@ -48,6 +48,7 @@ import (
 	"github.com/sacloud/sacloud-sdk-go/api/workflows"
 	workflowsapi "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
 	"github.com/sacloud/sacloud-sdk-go/common/saclient"
+	saclientsdk "github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
 	ver "github.com/sacloud/terraform-provider-sakura/version"
 )
@@ -111,6 +112,7 @@ type APIClient struct {
 	vpcRouterWaitAfterCreateDuration time.Duration
 	CallerOptions                    *api.ClientOptions
 	SaClient                         *saclient.Client
+	SaClient2                        *saclientsdk.Client
 	AppRunClient                     *apprunapi.Client
 	AppRunDedicatedClient            *apprundedicatedapi.Client
 	KmsClient                        *kmsapi.Client
@@ -394,6 +396,10 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err := theClient.SetEnviron(c.createSaclientEnvConfig()); err != nil {
 		return nil, fmt.Errorf("failed to create Sakura client via Envvars: %s", err.Error())
 	}
+	theClient2 := &saclientsdk.Client{}
+	if err := theClient2.SetEnviron(c.createSaclientEnvConfig()); err != nil {
+		return nil, fmt.Errorf("failed to create Sakura client 2 via Envvars: %s", err.Error())
+	}
 
 	zones := c.Zones
 	if len(zones) == 0 {
@@ -404,7 +410,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	apprunClient, err := apprun.NewClient(theClient)
+	apprunClient, err := apprun.NewClient(theClient2)
 	if err != nil {
 		return nil, err
 	}
@@ -475,6 +481,7 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		vpcRouterWaitAfterCreateDuration: vpcRouterWaitAfterCreateDuration,
 		CallerOptions:                    callerOptions,
 		SaClient:                         theClient,
+		SaClient2:                        theClient2,
 		KmsClient:                        kmsClient,
 		SecretManagerClient:              smClient,
 		SimpleMqClient:                   simplemqClient,

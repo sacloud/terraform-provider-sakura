@@ -74,7 +74,7 @@ resource "sakura_workflows" "foobar" {
 
 Required:
 
-- `runbook` (String) The runbook definition of the revision.
+- `runbook` (String) The runbook definition of the revision. See the manual: https://manual.sakura.ad.jp/cloud/appliance/workflows/reference-syntax.html
 
 Read-Only:
 

@@ -46,6 +46,9 @@ Networking:
   - internet
   - ipv4_ptr
   - local_router
+  - networking_suite_subnet_group
+  - networking_suite_subnet
+  - networking_suite_interface_connection
   - packet_filter
   - packet_filter_rules
   - seg 

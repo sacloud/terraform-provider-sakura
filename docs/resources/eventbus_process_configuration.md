@@ -41,9 +41,9 @@ resource "sakura_eventbus_process_configuration" "foobar" {
 
 ### Required
 
-- `destination` (String) The destination of the EventBus ProcessConfiguration.
+- `destination` (String) The destination of the EventBus ProcessConfiguration. This must be one of [`simplenotification`/`simplemq`/`autoscale`]
 - `name` (String) The name of the EventBus ProcessConfiguration.
-- `parameters` (String) The parameter of the EventBus ProcessConfiguration.
+- `parameters` (String) The parameter of the EventBus ProcessConfiguration. `{"group_id":"simple-notification-group-id", "message":"message"}` for simplenotification and `{"queue_name":"simplemq-queue-name", "content":"Content"}` for simplemq
 
 ### Optional
 

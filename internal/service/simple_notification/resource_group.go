@@ -62,7 +62,7 @@ func (r *groupResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 			"destinations": schema.ListAttribute{
 				Required:    true,
 				ElementType: types.StringType,
-				Description: desc.Sprintf("The ProcessConfiguration ID of the %s.", resourceName),
+				Description: desc.Sprintf("The destinations of the %s.", resourceName),
 				Validators: []validator.List{
 					listvalidator.SizeAtLeast(1),
 				},

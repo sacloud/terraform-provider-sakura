@@ -6,6 +6,7 @@ package apprun_dedicated
 import (
 	"testing"
 
+	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 	"github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/version"
@@ -60,5 +61,61 @@ func TestExposedPortModelIntoCreateNilHealthCheck(t *testing.T) {
 	}
 	if got.HealthCheck != nil {
 		t.Fatalf("HealthCheck should be nil when omitted, got %+v", got.HealthCheck)
+	}
+}
+
+func TestVerModelUpdateStatePreservesSecretByKey(t *testing.T) {
+	model := verModel{
+		EnvVars: []envVarModel{
+			{Key: types.StringValue("ENV_VAR2"), Value: types.StringValue("value2"), Secret: types.BoolValue(true)},
+			{Key: types.StringValue("ENV_VAR1"), Value: types.StringValue("value1"), Secret: types.BoolValue(false)},
+		},
+	}
+
+	detail := version.VersionDetail{
+		EnvVars: []version.EnvironmentVariable{
+			{Key: "ENV_VAR1", Value: types.StringValue("value1").ValueStringPointer(), Secret: false},
+			{Key: "ENV_VAR2", Value: nil, Secret: true},
+		},
+	}
+
+	var aid v1.ApplicationID
+
+	diagnostics := model.updateState(t.Context(), &detail, aid)
+
+	if diagnostics.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diagnostics)
+	}
+	if len(model.EnvVars) != 2 {
+		t.Fatalf("EnvVars length = %d, want 2", len(model.EnvVars))
+	}
+	if got := model.EnvVars[0].Key.ValueString(); got != "ENV_VAR2" {
+		t.Fatalf("EnvVars[0].Key = %q, want %q", got, "ENV_VAR2")
+	}
+	if got := model.EnvVars[0].Value.ValueString(); got != "value2" {
+		t.Fatalf("EnvVars[0].Value = %q, want %q", got, "value2")
+	}
+	if got := model.EnvVars[1].Key.ValueString(); got != "ENV_VAR1" {
+		t.Fatalf("EnvVars[1].Key = %q, want %q", got, "ENV_VAR1")
+	}
+	if got := model.EnvVars[1].Value.ValueString(); got != "value1" {
+		t.Fatalf("EnvVars[1].Value = %q, want %q", got, "value1")
+	}
+}
+
+func TestVerModelUpdateStateEscapesUUIDInID(t *testing.T) {
+	model := verModel{}
+
+	aid := v1.ApplicationID(uuid.MustParse("12345678-1234-1234-1234-123456789abc"))
+	detail := version.VersionDetail{Version: 42}
+
+	diag := model.updateState(t.Context(), &detail, aid)
+	if diag.HasError() {
+		t.Fatalf("unexpected diagnostics: %v", diag)
+	}
+
+	expected := "12345678-1234-1234-1234-123456789abc/42"
+	if actual := model.ID.ValueString(); actual != expected {
+		t.Fatalf("ID = %q, want %q", actual, expected)
 	}
 }

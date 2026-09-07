@@ -78,7 +78,7 @@ func (r *autoScaleResource) Schema(ctx context.Context, req resource.SchemaReque
 			},
 			"config": schema.StringAttribute{
 				Required:    true,
-				Description: "The configuration file for sacloud/autoscaler",
+				Description: "The configuration file for sacloud/autoscaler. See the manual: https://docs.usacloud.jp/autoscaler/configuration/",
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
 						config := autoScaler.Config{}
