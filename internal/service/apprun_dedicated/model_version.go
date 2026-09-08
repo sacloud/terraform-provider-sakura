@@ -28,6 +28,16 @@ type envVarModel struct {
 	Secret types.Bool   `tfsdk:"secret"`
 }
 
+// Resource-only variant of envVarModel.  value_wo is a write-only attribute,
+// which a data source cannot have.  Hence the separation.
+type envVarResourceModel struct {
+	Key            types.String `tfsdk:"key"`
+	Value          types.String `tfsdk:"value"`
+	ValueWO        types.String `tfsdk:"value_wo"`
+	ValueWOVersion types.Int32  `tfsdk:"value_wo_version"`
+	Secret         types.Bool   `tfsdk:"secret"`
+}
+
 type exposedPortModel struct {
 	TargetPort       types.Int32       `tfsdk:"target_port"`
 	LoadBalancerPort types.Int32       `tfsdk:"lb_port"`
@@ -54,7 +64,6 @@ type verModel struct {
 	ActiveNodeCount   types.Int64        `tfsdk:"active_node_count"`
 	CreatedAt         types.String       `tfsdk:"created_at"`
 	ExposedPorts      []exposedPortModel `tfsdk:"exposed_ports"`
-	EnvVars           []envVarModel      `tfsdk:"env_vars"`
 }
 
 var healthCheckAttrs = attrTypes{
@@ -97,7 +106,6 @@ var versionAttrs = attrTypes{
 	"active_node_count":        types.Int64Type,
 	"created_at":               types.StringType,
 	"exposed_ports":            types.ListType{ElemType: types.ObjectType{AttrTypes: exposedPortAttrs}},
-	"env_vars":                 types.ListType{ElemType: types.ObjectType{AttrTypes: envVarAttrs}},
 }
 
 func (healthCheckModel) AttributeTypes() attrTypes { return healthCheckAttrs }
@@ -118,7 +126,7 @@ func (h healthCheckModel) intoCreate() (ret v1.HealthCheck) {
 	return
 }
 
-func (e envVarModel) intoCreate() (ret version.EnvironmentVariable) {
+func (e envVarResourceModel) intoCreate() (ret version.EnvironmentVariable) {
 	ret.Key = e.Key.ValueString()
 	ret.Value = e.Value.ValueStringPointer()
 	ret.Secret = e.Secret.ValueBool()
@@ -156,12 +164,23 @@ func (h *healthCheckModel) updateState(d *v1.HealthCheck) {
 
 func (e *envVarModel) updateState(d version.EnvironmentVariable) {
 	e.Key = types.StringValue(d.Key)
+	e.Value = types.StringPointerValue(d.Value) // null when concealed
+	e.Secret = types.BoolValue(d.Secret)
+}
+
+func (e *envVarResourceModel) updateState(d version.EnvironmentVariable) {
+	e.Key = types.StringValue(d.Key)
 	e.Secret = types.BoolValue(d.Secret)
 
-	if d.Secret == true && d.Value == nil {
+	switch {
+	case !e.ValueWOVersion.IsNull():
+		// The value was given via value_wo, which is write-only.
+		// It must not land in the state even when the API tells us the value.
+		e.Value = types.StringNull()
+	case d.Secret && d.Value == nil:
 		// This means "value is concealed".
 		// However we already know the value from the state, so we keep it as is instead of setting to null.
-	} else {
+	default:
 		e.Value = types.StringPointerValue(d.Value)
 	}
 }
@@ -213,6 +232,19 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 	v.ExposedPorts = common.MapTo(d.ExposedPorts, stateUpdater[version.ExposedPort, exposedPortModel])
 	v.Cmd, ret = types.ListValueFrom(ctx, types.StringType, common.MapTo(d.Cmd, types.StringValue))
 
+	return ret
+}
+
+func (v *verDataSourceModel) updateState(ctx context.Context, d *version.VersionDetail, aid appID) (ret diag.Diagnostics) {
+	ret = v.verModel.updateState(ctx, d, aid)
+	v.EnvVars = common.MapTo(d.EnvVars, stateUpdater[version.EnvironmentVariable, envVarModel])
+
+	return ret
+}
+
+func (v *verResourceModel) updateState(ctx context.Context, d *version.VersionDetail, aid appID) (ret diag.Diagnostics) {
+	ret = v.verModel.updateState(ctx, d, aid)
+
 	buf := slices.Clone(v.EnvVars)
 
 	for i := range slices.Values(d.EnvVars) {
@@ -235,7 +267,7 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 		if !updated {
 			// in case of terraform import previous state is empty.
 			// need to fill it
-			var e envVarModel
+			var e envVarResourceModel
 			e.updateState(i)
 			buf = append(buf, e)
 		}

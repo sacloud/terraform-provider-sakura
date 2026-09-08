@@ -30,6 +30,20 @@ resource "sakura_apprun_dedicated_version" "main" {
   cmd            = ["/bin/sh"]
   scaling_mode   = "manual"
   fixed_scale    = 1
+
+  env_vars = [
+    {
+      key    = "LOG_LEVEL"
+      value  = "info"
+      secret = false
+    },
+    {
+      key              = "API_TOKEN"
+      value_wo         = "s3cr3t" # write-only: never stored in the state
+      value_wo_version = 1        # bump this to create a new version with a new value_wo
+      secret           = true
+    },
+  ]
 }
 ```
 
@@ -78,7 +92,9 @@ Required:
 
 Optional:
 
-- `value` (String) The value.  Omitting this field and set `secret` to true retains old secret value
+- `value` (String) The value.  Consider `value_wo` for secrets to keep them out of the state.  Omitting both this field and `value_wo` while `secret` is true retains old secret value
+- `value_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The value, write-only.  Unlike `value` this never lands in the state, whatever `secret` is (`secret` only controls whether the API conceals the value).  Must be set together with `value_wo_version`
+- `value_wo_version` (Number) The version of the `value_wo` field.  This value must be greater than 0 when set.  Terraform cannot detect changes of write-only values, so increment this to create a new application version with the new `value_wo`.  Note that `terraform import` cannot restore this field; the first plan after importing replaces the version unless `value_wo` and `value_wo_version` are left out of the configuration
 
 
 <a id="nestedatt--exposed_ports"></a>

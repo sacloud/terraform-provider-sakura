@@ -19,7 +19,10 @@ import (
 )
 
 type verDataSource struct{ dataSourceClient }
-type verDataSourceModel struct{ verModel }
+type verDataSourceModel struct {
+	verModel
+	EnvVars []envVarModel `tfsdk:"env_vars"`
+}
 
 var (
 	_ datasource.DataSource              = &verDataSource{}
