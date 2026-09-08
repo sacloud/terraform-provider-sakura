@@ -190,7 +190,7 @@ resource "sakura_vswitch" "foobar" {
 - `dhcp_static_mapping` (Attributes List) (see [below for nested schema](#nestedatt--dhcp_static_mapping))
 - `dns_forwarding` (Attributes) (see [below for nested schema](#nestedatt--dns_forwarding))
 - `firewall` (Attributes Set) (see [below for nested schema](#nestedatt--firewall))
-- `icon_id` (String) The icon id to attach to the VPN Router
+- `icon_id` (String) The icon's resource id to attach to the VPN Router
 - `internet_connection` (Boolean) The flag to enable connecting to the Internet from the VPN Router
 - `l2tp` (Attributes) (see [below for nested schema](#nestedatt--l2tp))
 - `monitoring_suite` (Attributes) The monitoring suite settings of the VPN Router. (see [below for nested schema](#nestedatt--monitoring_suite))
@@ -208,7 +208,7 @@ resource "sakura_vswitch" "foobar" {
 - `tags` (Set of String) The tags of the VPN Router.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `user` (Attributes List) (see [below for nested schema](#nestedatt--user))
-- `version` (Number) The version of the VPN Router.
+- `version` (Number) The version of the VPN Router. This must be in the range [`1`-`2`]
 - `wire_guard` (Attributes) (see [below for nested schema](#nestedatt--wire_guard))
 - `zone` (String) The name of zone that the VPN Router will be created (e.g. `is1a`, `tk1a`)
 
@@ -355,7 +355,7 @@ Optional:
 - `ip_addresses` (List of String) The list of the IP address to assign to the VPN Router. This is required only one value when `plan` is `standard`, two values otherwise
 - `vip` (String) The virtual IP address of the VPN Router. This is only required when `plan` is not `standard`
 - `vrid` (Number) The Virtual Router Identifier. This is only required when `plan` is not `standard`
-- `vswitch_id` (String) The id of the vSwitch to connect. This is only required when when `plan` is not `standard`
+- `vswitch_id` (String) The resource id of the vSwitch to connect. This is only required when when `plan` is not `standard`
 
 
 <a id="nestedatt--scheduled_maintenance"></a>

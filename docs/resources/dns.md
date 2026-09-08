@@ -33,7 +33,7 @@ resource "sakura_dns" "foobar" {
 ### Optional
 
 - `description` (String) The description of the DNS. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the DNS
+- `icon_id` (String) The icon's resource id to attach to the DNS
 - `monitoring_suite` (Attributes) The monitoring suite settings of the DNS. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `tags` (Set of String) The tags of the DNS.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

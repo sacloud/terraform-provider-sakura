@@ -77,7 +77,7 @@ func (r *subnetGroupResource) Schema(ctx context.Context, _ resource.SchemaReque
 			},
 			"region": schema.StringAttribute{
 				Required:    true,
-				Description: "The target region code of the subnet group",
+				Description: "The target region code of the subnet group (e.g. `is1`, `tk1`)",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
 				},

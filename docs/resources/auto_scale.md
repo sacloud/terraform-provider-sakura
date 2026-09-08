@@ -75,7 +75,7 @@ resource "sakura_auto_scale" "foobar" {
 - `cpu_threshold_scaling` (Attributes) (see [below for nested schema](#nestedatt--cpu_threshold_scaling))
 - `description` (String) The description of the AutoScale. The length of this value must be in the range [`1`-`512`]
 - `enabled` (Boolean) Whether to enable AutoScale
-- `icon_id` (String) The icon id to attach to the AutoScale
+- `icon_id` (String) The icon's resource id to attach to the AutoScale
 - `router_threshold_scaling` (Attributes) (see [below for nested schema](#nestedatt--router_threshold_scaling))
 - `schedule_scaling` (Attributes List) (see [below for nested schema](#nestedatt--schedule_scaling))
 - `tags` (Set of String) The tags of the AutoScale.

@@ -45,7 +45,7 @@ resource "sakura_vswitch" "foobar" {
 ### Optional
 
 - `description` (String) The description of the NFS. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the NFS
+- `icon_id` (String) The icon's resource id to attach to the NFS
 - `plan` (String) The plan name of the NFS. This must be one of [`hdd`/`ssd`]
 - `size` (Number) The size of NFS in GiB
 - `tags` (Set of String) The tags of the NFS.

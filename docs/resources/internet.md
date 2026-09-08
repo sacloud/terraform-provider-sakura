@@ -37,7 +37,7 @@ resource "sakura_internet" "foobar" {
 - `band_width` (Number) The bandwidth of the network connected to the Internet in Mbps. `100`/`250`/`500`/`1000`/`1500`/`2000`/`2500`/`3000`/`3500`/`4000`/`4500`/`5000`/`5500`/`6000`/`6500`/`7000`/`7500`/`8000`/`8500`/`9000`/`9500`/`10000`
 - `description` (String) The description of the Internet(router+switch). The length of this value must be in the range [`1`-`512`]
 - `enable_ipv6` (Boolean) The flag to enable IPv6
-- `icon_id` (String) The icon id to attach to the Internet(router+switch)
+- `icon_id` (String) The icon's resource id to attach to the Internet(router+switch)
 - `netmask` (Number) The bit length of the subnet assigned to the Internet(router+switch). `26`/`27`/`28`
 - `tags` (Set of String) The tags of the Internet(router+switch).
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

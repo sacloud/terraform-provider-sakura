@@ -39,9 +39,9 @@ resource "sakura_apprun_dedicated_version" "main" {
 ### Required
 
 - `application_id` (String) The ID of the application.
-- `cpu` (Number) The CPU limit in millicores (e.g., 1000 = 1 CPU)
+- `cpu` (Number) The CPU limit in millicores (e.g., 1000 = 1 CPU). This must be in the range [`100`-`64000`]
 - `image` (String) The container image, e.g. `nginx:latest`
-- `memory` (Number) The memory limit in megabytes
+- `memory` (Number) The memory limit in megabytes. This must be in the range [`128`-`131072`]
 - `scaling_mode` (String) The scaling mode (manual, autoscale)
 
 ### Optional
@@ -51,14 +51,14 @@ resource "sakura_apprun_dedicated_version" "main" {
 - `cmd` (List of String) application command line i.e. the command and arguments
 - `env_vars` (Attributes List) Environment variables (see [below for nested schema](#nestedatt--env_vars))
 - `exposed_ports` (Attributes List) Ports that the application exposes (see [below for nested schema](#nestedatt--exposed_ports))
-- `fixed_scale` (Number) Number of nodes when scaling mode is `manual`
-- `max_scale` (Number) Maximum number of nodes when scaling mode is `autoscale`
-- `min_scale` (Number) Minimum number of nodes when scaling mode is `autoscale`
+- `fixed_scale` (Number) Number of nodes when scaling mode is `manual`. This must be in the range [`1`-`50`]
+- `max_scale` (Number) Maximum number of nodes when scaling mode is `autoscale`. This must be in the range [`1`-`50`]
+- `min_scale` (Number) Minimum number of nodes when scaling mode is `autoscale`. This must be in the range [`1`-`50`]
 - `registry_password` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Login password for the container registry
 - `registry_password_action` (String) Password configuration method. This must be one of [`keep`/`remove`/`new`]
 - `registry_username` (String) Login user name for the container registry
-- `scale_in_threshold` (Number) When to scale in when scaling mode is `autoscale`
-- `scale_out_threshold` (Number) When to scale out when scaling mode is `autoscale`
+- `scale_in_threshold` (Number) When to scale in when scaling mode is `autoscale`. This must be in the range [`30`-`70`]
+- `scale_out_threshold` (Number) When to scale out when scaling mode is `autoscale`. This must be in the range [`50`-`99`]
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -86,13 +86,13 @@ Optional:
 
 Required:
 
-- `target_port` (Number) The port that the application listens to
+- `target_port` (Number) The port that the application listens to. This must be in the range [`1`-`65535`]
 
 Optional:
 
 - `health_check` (Attributes) Health check configuration (see [below for nested schema](#nestedatt--exposed_ports--health_check))
 - `host` (Set of String) Target `Host:` header value (only applicable when `http` or `https`)
-- `lb_port` (Number) The port that the load balancer listens to.  Explicitly set it to `null` when you want to disconnect from the load balancer
+- `lb_port` (Number) The port that the load balancer listens to.  Explicitly set it to `null` when you want to disconnect from the load balancer. This must be in the range [`1`-`65535`]
 - `use_lets_encrypt` (Boolean) Whether the load balancer uses Let's Encrypt (applicable only when `https`)
 
 <a id="nestedatt--exposed_ports--health_check"></a>
@@ -100,9 +100,9 @@ Optional:
 
 Required:
 
-- `interval_seconds` (Number) Health check intervals in seconds
+- `interval_seconds` (Number) Health check intervals in seconds. This must be in the range [`3`-`60`]
 - `path` (String) Health check endpoint
-- `timeout_seconds` (Number) Time out in seconds until the health check fails
+- `timeout_seconds` (Number) Time out in seconds until the health check fails. This must be in the range [`1`-`60`]
 
 
 

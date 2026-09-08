@@ -40,7 +40,7 @@ resource "sakura_eventbus_schedule" "foobar" {
 
 - `crontab` (String) Crontab of the EventBus Schedule.
 - `description` (String) The description of the EventBus Schedule. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the EventBus Schedule
+- `icon_id` (String) The icon's resource id to attach to the EventBus Schedule
 - `recurring_step` (Number) The RecurringStep of the EventBus Schedule.
 - `recurring_unit` (String) The RecurringUnit of the EventBus Schedule.
 - `tags` (Set of String) The tags of the EventBus Schedule.

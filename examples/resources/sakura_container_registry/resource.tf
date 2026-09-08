@@ -1,19 +1,22 @@
-variable users {
+variable "users" {
   type = list(object({
-    name       = string
-    password   = string
-    permission = string
+    name             = string
+    password         = string
+    password_version = optional(number, 1)
+    permission       = string
   }))
   default = [
     {
-      name       = "user1"
-      password   = "password1"
-      permission = "all"
+      name             = "user1"
+      password         = "password1"
+      password_version = 1
+      permission       = "all"
     },
     {
-      name       = "user2"
-      password   = "password2"
-      permission = "readwrite"
+      name             = "user2"
+      password         = "password2"
+      password_version = 1
+      permission       = "readwrite"
     }
   ]
 }
@@ -21,16 +24,15 @@ variable users {
 resource "sakura_container_registry" "foobar" {
   name            = "foobar"
   subdomain_label = "your-subdomain-label"
+  description     = "description"
+  tags            = ["tag1", "tag2"]
 
-  description = "description"
-  tags        = ["tag1", "tag2"]
-
-  dynamic user {
-    for_each = var.users
-    content {
-      name       = user.value.name
-      password   = user.value.password
-      permission = user.value.permission
+  user = [
+    for user in var.users : {
+      name                = user.name
+      password_wo         = user.password
+      password_wo_version = user.password_version
+      permission          = user.permission
     }
-  }
+  ]
 }
