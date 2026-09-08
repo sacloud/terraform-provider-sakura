@@ -34,7 +34,7 @@ resource "sakura_simple_mq" "foobar" {
 
 - `description` (String) The description of the SimpleMQ. The length of this value must be in the range [`1`-`512`]
 - `expire_seconds` (Number) The duration in seconds that a message is stored in a queue. Default is 345600 seconds (4 days).
-- `icon_id` (String) The icon id to attach to the SimpleMQ
+- `icon_id` (String) The icon's resource id to attach to the SimpleMQ
 - `tags` (Set of String) The tags of the SimpleMQ.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `visibility_timeout_seconds` (Number) The duration in seconds that a message is invisible to others after being read from a queue. Default is 30 seconds.

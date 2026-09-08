@@ -56,7 +56,7 @@ resource "sakura_database_read_replica" "foobar" {
 
 - `description` (String) The description of the Database Read Replica. The length of this value must be in the range [`1`-`512`]
 - `disk` (Attributes) (see [below for nested schema](#nestedatt--disk))
-- `icon_id` (String) The icon id to attach to the Database Read Replica
+- `icon_id` (String) The icon's resource id to attach to the Database Read Replica
 - `replica_password_wo_version` (Number) The version of the replica_password_wo field. This value must be greater than 0 when set. Increment this when changing password.
 - `tags` (Set of String) The tags of the Database Read Replica.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

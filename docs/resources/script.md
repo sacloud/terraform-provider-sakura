@@ -30,7 +30,7 @@ resource "sakura_script" "foobar" {
 ### Optional
 
 - `class` (String) The class of the Script. This must be one of `shell`/`yaml_cloud_config`
-- `icon_id` (String) The icon id to attach to the Script
+- `icon_id` (String) The icon's resource id to attach to the Script
 - `tags` (Set of String) The tags of the Script.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 

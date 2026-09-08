@@ -57,7 +57,7 @@ resource "sakura_archive" "foobar" {
 - `archive_file` (String) The file path to upload to the SakuraCloud Archive.
 - `description` (String) The description of the Archive. The length of this value must be in the range [`1`-`512`]
 - `hash` (String) The md5 checksum calculated from the base64 encoded file body
-- `icon_id` (String) The icon id to attach to the Archive
+- `icon_id` (String) The icon's resource id to attach to the Archive
 - `size` (Number) The size of archihve in GiB. This must be one of [`20`/`40`/`60`/`80`/`100`/`250`/`500`/`750`/`1024`]
 - `source_archive_id` (String) The id of the source archive. This conflicts with [`source_disk_id`]
 - `source_archive_zone` (String) The zone of source shared archive

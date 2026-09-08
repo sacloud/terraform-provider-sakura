@@ -64,7 +64,7 @@ resource "sakura_dsr_lb" "foobar" {
 ### Optional
 
 - `description` (String) The description of the DSR LB. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the DSR LB
+- `icon_id` (String) The icon's resource id to attach to the DSR LB
 - `plan` (String) The plan name of the DSR LB. This must be one of [`standard`/`highspec`]
 - `tags` (Set of String) The tags of the DSR LB.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

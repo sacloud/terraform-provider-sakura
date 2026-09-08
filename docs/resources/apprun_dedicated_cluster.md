@@ -56,7 +56,7 @@ resource "sakura_apprun_dedicated_cluster" "main" {
 
 Required:
 
-- `port` (Number) The port number where the cluster listens for requests
+- `port` (Number) The port number where the cluster listens for requests. 5950-5959 are reserved. This must be in the range [`1`-`65535`]
 - `protocol` (String) Either `http`, `https`, or `tcp`
 
 

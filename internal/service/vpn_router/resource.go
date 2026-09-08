@@ -110,7 +110,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 				Optional:    true,
 				Computed:    true,
 				Default:     int32default.StaticInt32(2),
-				Description: "The version of the VPN Router.",
+				Description: desc.Sprintf("The version of the VPN Router. %s", desc.Range(1, 2)),
 				PlanModifiers: []planmodifier.Int32{
 					int32planmodifier.RequiresReplaceIfConfigured(),
 				},
@@ -120,7 +120,7 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 				Attributes: map[string]schema.Attribute{
 					"vswitch_id": schema.StringAttribute{
 						Optional:    true,
-						Description: "The id of the vSwitch to connect. This is only required when when `plan` is not `standard`",
+						Description: "The resource id of the vSwitch to connect. This is only required when when `plan` is not `standard`",
 						Validators: []validator.String{
 							sacloudvalidator.SakuraIDValidator(),
 						},

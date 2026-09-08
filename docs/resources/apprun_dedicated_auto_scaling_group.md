@@ -61,8 +61,8 @@ resource "sakura_apprun_dedicated_auto_scaling_group" "main" {
 
 - `cluster_id` (String) The ID of the cluster.
 - `interfaces` (Attributes Set) The network interfaces for the nodes (see [below for nested schema](#nestedatt--interfaces))
-- `max_nodes` (Number) Maximum number of nodes
-- `min_nodes` (Number) Minimum number of nodes
+- `max_nodes` (Number) Maximum number of nodes. This must be in the range [`1`-`10`]
+- `min_nodes` (Number) Minimum number of nodes. This must be in the range [`1`-`10`]
 - `name` (String) The name of the auto_scaling_group.
 - `worker_service_class_path` (String) The worker service class path, e.g. `cloud/apprun/dedicated/worker/2vcpu_2gb`. Get from sakura_apprun_dedicated_worker_service_classes data source
 - `zone` (String) The zone name where the auto scaling group will be created
@@ -91,7 +91,7 @@ Optional:
 
 - `default_gateway` (String) The default gateway.  Makes sense only when upstream is not `shared`
 - `ip_pool` (Attributes Set) The IP pool for the interface.  Must omit when upstream is `shared`.  Mandatory otherwise. (see [below for nested schema](#nestedatt--interfaces--ip_pool))
-- `netmask` (Number) The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.
+- `netmask` (Number) The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise. This must be in the range [`8`-`29`]
 - `packet_filter_id` (String) The packet filter ID
 
 <a id="nestedatt--interfaces--ip_pool"></a>

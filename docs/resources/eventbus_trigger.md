@@ -49,7 +49,7 @@ resource "sakura_eventbus_trigger" "foobar" {
 
 - `conditions` (Attributes List) The conditions of the EventBus Trigger. (see [below for nested schema](#nestedatt--conditions))
 - `description` (String) The description of the EventBus Trigger. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the EventBus Trigger
+- `icon_id` (String) The icon's resource id to attach to the EventBus Trigger
 - `tags` (Set of String) The tags of the EventBus Trigger.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `types` (Set of String) The types of the EventBus Trigger.
