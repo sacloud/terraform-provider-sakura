@@ -1,5 +1,15 @@
 # Changelog
 
+## [v3.14.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.13.0...v3.14.0) - 2026-09-10
+
+### 🚀 New Features
+- sacloud-sdk-go migration by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/243
+### Other Changes
+- docs: Update description and examples by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/337
+### 📦 Dependency Updates
+- ci: bump Songmu/tagpr from 1.20.1 to 1.20.2 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/331
+- go: bump github.com/sacloud/autoscaler from 0.19.5 to 0.20.0 in the sacloud group across 1 directory by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/336
+
 ## [v3.13.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.12.9...v3.13.0) - 2026-09-04
 
 ### 🚀 New Features
