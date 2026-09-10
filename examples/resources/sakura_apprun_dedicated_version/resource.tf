@@ -15,4 +15,18 @@ resource "sakura_apprun_dedicated_version" "main" {
   cmd            = ["/bin/sh"]
   scaling_mode   = "manual"
   fixed_scale    = 1
+
+  env_vars = [
+    {
+      key    = "LOG_LEVEL"
+      value  = "info"
+      secret = false
+    },
+    {
+      key              = "API_TOKEN"
+      value_wo         = "s3cr3t" # write-only: never stored in the state
+      value_wo_version = 1        # bump this to create a new version with a new value_wo
+      secret           = true
+    },
+  ]
 }

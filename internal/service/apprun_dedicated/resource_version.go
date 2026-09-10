@@ -42,9 +42,10 @@ type verResource struct{ resourceClient }
 
 type verResourceModel struct {
 	verModel
-	RegistryPassword       types.String   `tfsdk:"registry_password"`
-	RegistryPasswordAction types.String   `tfsdk:"registry_password_action"`
-	Timeouts               timeouts.Value `tfsdk:"timeouts"`
+	EnvVars                []envVarResourceModel `tfsdk:"env_vars"`
+	RegistryPassword       types.String          `tfsdk:"registry_password"`
+	RegistryPasswordAction types.String          `tfsdk:"registry_password_action"`
+	Timeouts               timeouts.Value        `tfsdk:"timeouts"`
 }
 
 var (
@@ -248,9 +249,30 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 						},
 						"value": schema.StringAttribute{
 							Optional:      true,
-							Description:   "The value.  Omitting this field and set `secret` to true retains old secret value",
+							Description:   "The value.  Consider `value_wo` for secrets to keep them out of the state.  Omitting both this field and `value_wo` while `secret` is true retains old secret value",
 							Validators:    []validator.String{stringvalidator.LengthAtMost(4096)},
 							PlanModifiers: []planmodifier.String{stringplanmodifier.RequiresReplace()},
+						},
+						"value_wo": schema.StringAttribute{
+							WriteOnly:   true,
+							Optional:    true,
+							Description: "The value, write-only.  Unlike `value` this never lands in the state, whatever `secret` is (`secret` only controls whether the API conceals the value).  Must be set together with `value_wo_version`",
+							Validators: []validator.String{
+								stringvalidator.LengthAtMost(4096),
+								stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("value")),
+								stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("value_wo_version")),
+							},
+							// No RequiresReplace here: a write-only value is null in both plan and state, so it could never fire.
+							// Replacement is driven by value_wo_version.
+						},
+						"value_wo_version": schema.Int32Attribute{
+							Optional:    true,
+							Description: "The version of the `value_wo` field.  This value must be greater than 0 when set.  Terraform cannot detect changes of write-only values, so increment this to create a new application version with the new `value_wo`.  Note that `terraform import` cannot restore this field; the first plan after importing replaces the version unless `value_wo` and `value_wo_version` are left out of the configuration",
+							Validators: []validator.Int32{
+								int32validator.AtLeast(1),
+								int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("value_wo")),
+							},
+							PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 						},
 						"secret": schema.BoolAttribute{
 							Required:      true,
@@ -421,13 +443,40 @@ func (v *verResourceModel) intoCreate(transitional *verResourceModel) (ret ver.C
 		diag.Append(d...)
 		return dst
 	})
-	ret.EnvVars = common.MapTo(v.EnvVars, envVarModel.intoCreate)
+	envVars, d := v.envVarsIntoCreate(transitional)
+	ret.EnvVars = envVars
+	diag.Append(d...)
 
 	// API cannot omit RegistryPasswordAction, but can omit username and password...
 	ret.RegistryPasswordAction = v1.RegistryPasswordActionRemove
 
 	if !v.RegistryPasswordAction.IsNull() && !v.RegistryPasswordAction.IsUnknown() {
 		ret.RegistryPasswordAction = v1.RegistryPasswordAction(v.RegistryPasswordAction.ValueString())
+	}
+
+	return
+}
+
+// Write-only values never appear in the plan.  Take them from the config.
+// env_vars has no computed child attribute, so the plan is a copy of the config and the two lists are index-aligned.
+// Should that ever not hold, fail loudly rather than silently dropping a secret.
+func (v *verResourceModel) envVarsIntoCreate(config *verResourceModel) (ret []ver.EnvironmentVariable, diag diag.Diagnostics) {
+	if len(config.EnvVars) != len(v.EnvVars) {
+		diag.AddError("Create: Inconsistent Configuration", fmt.Sprintf("env_vars has %d elements in the plan but %d in the config", len(v.EnvVars), len(config.EnvVars)))
+		return
+	}
+
+	ret = common.MapTo(v.EnvVars, envVarResourceModel.intoCreate)
+
+	for i, e := range config.EnvVars {
+		if key := e.Key.ValueString(); key != ret[i].Key {
+			diag.AddError("Create: Inconsistent Configuration", fmt.Sprintf("env_vars[%d] is %q in the plan but %q in the config", i, ret[i].Key, key))
+			return
+		}
+
+		if !e.ValueWO.IsNull() {
+			ret[i].Value = e.ValueWO.ValueStringPointer()
+		}
 	}
 
 	return

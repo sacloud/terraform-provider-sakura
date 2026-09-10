@@ -58,14 +58,93 @@ func TestAccSakuraResourceApprunDedicatedVersion(t *testing.T) {
 						})),
 						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("env_vars"), knownvalue.ListExact([]knownvalue.Check{
 							knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"key":    knownvalue.StringExact("ENV_VAR2"),
-								"value":  knownvalue.StringExact("value2"),
-								"secret": knownvalue.Bool(true),
+								"key":              knownvalue.StringExact("ENV_VAR2"),
+								"value":            knownvalue.StringExact("value2"),
+								"value_wo":         knownvalue.Null(),
+								"value_wo_version": knownvalue.Null(),
+								"secret":           knownvalue.Bool(true),
 							}),
 							knownvalue.ObjectExact(map[string]knownvalue.Check{
-								"key":    knownvalue.StringExact("ENV_VAR1"),
-								"value":  knownvalue.StringExact("value1"),
-								"secret": knownvalue.Bool(false),
+								"key":              knownvalue.StringExact("ENV_VAR1"),
+								"value":            knownvalue.StringExact("value1"),
+								"value_wo":         knownvalue.Null(),
+								"value_wo_version": knownvalue.Null(),
+								"secret":           knownvalue.Bool(false),
+							}),
+						})),
+					},
+				},
+				{
+					ResourceName:      resourceName,
+					ImportState:       true,
+					ImportStateVerify: true,
+
+					// env_vars is randomized.  Not equal to the config order by nature.
+					ImportStateVerifyIgnore: []string{"timeouts", "registry_password", "env_vars"},
+					ImportStateIdFunc: func(s *terraform.State) (string, error) {
+						rs, ok := s.RootModule().Resources[resourceName]
+						if !ok {
+							return "", fmt.Errorf("not found: %s", resourceName)
+						}
+						appID := rs.Primary.Attributes["application_id"]
+						version := rs.Primary.Attributes["version"]
+						return fmt.Sprintf("%s/%s", appID, version), nil
+					},
+				},
+			},
+		})
+	})
+
+	t.Run("write_only_env_var", func(t *testing.T) {
+		resourceName := "sakura_apprun_dedicated_version.main"
+		name := acctest.RandStringFromCharSet(14, acctest.CharSetAlphaNum)
+
+		resource.ParallelTest(t, resource.TestCase{
+			ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+			PreCheck:                 AccPreCheck(t),
+			CheckDestroy:             testCheckSakuraApprunDedicatedVersionDestroy,
+			Steps: []resource.TestStep{
+				{
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedVersion_writeOnlyEnvVar, name, globalClusterID, "1", "s3cr3t"),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("version"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("env_vars"), knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"key":              knownvalue.StringExact("SECRET_VAR"),
+								"value":            knownvalue.Null(),
+								"value_wo":         knownvalue.Null(),
+								"value_wo_version": knownvalue.Int32Exact(1),
+								"secret":           knownvalue.Bool(true),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"key":              knownvalue.StringExact("PLAIN_VAR"),
+								"value":            knownvalue.StringExact("plain"),
+								"value_wo":         knownvalue.Null(),
+								"value_wo_version": knownvalue.Null(),
+								"secret":           knownvalue.Bool(false),
+							}),
+						})),
+					},
+				},
+				{
+					// bump value_wo_version to roll out a new value_wo
+					Config: test.BuildConfigWithArgs(testAccSakuraResourceApprunDedicatedVersion_writeOnlyEnvVar, name, globalClusterID, "2", "r0tated"),
+					ConfigStateChecks: []statecheck.StateCheck{
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("version"), knownvalue.NotNull()),
+						statecheck.ExpectKnownValue(resourceName, tfjsonpath.New("env_vars"), knownvalue.ListExact([]knownvalue.Check{
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"key":              knownvalue.StringExact("SECRET_VAR"),
+								"value":            knownvalue.Null(),
+								"value_wo":         knownvalue.Null(),
+								"value_wo_version": knownvalue.Int32Exact(2),
+								"secret":           knownvalue.Bool(true),
+							}),
+							knownvalue.ObjectExact(map[string]knownvalue.Check{
+								"key":              knownvalue.StringExact("PLAIN_VAR"),
+								"value":            knownvalue.StringExact("plain"),
+								"value_wo":         knownvalue.Null(),
+								"value_wo_version": knownvalue.Null(),
+								"secret":           knownvalue.Bool(false),
 							}),
 						})),
 					},
@@ -207,6 +286,44 @@ resource "sakura_apprun_dedicated_version" "main" {
     {
       key    = "ENV_VAR1"
       value  = "value1"
+      secret = false
+    }
+  ]
+}
+`
+
+var testAccSakuraResourceApprunDedicatedVersion_writeOnlyEnvVar = `
+resource "sakura_apprun_dedicated_application" "main" {
+  cluster_id     = "{{ .arg1 }}"
+  name           = "tfacc-{{ .arg0 }}"
+  active_version = null
+}
+
+resource "sakura_apprun_dedicated_version" "main" {
+  application_id = sakura_apprun_dedicated_application.main.id
+  cpu            = 100
+  memory         = 256
+  scaling_mode   = "manual"
+  fixed_scale    = 1
+  image          = "nginx:latest"
+
+  exposed_ports = [
+    {
+      target_port = 80
+      lb_port     = null
+    }
+  ]
+
+  env_vars = [
+    {
+      key              = "SECRET_VAR"
+      value_wo         = "{{ .arg3 }}"
+      value_wo_version = {{ .arg2 }}
+      secret           = true
+    },
+    {
+      key    = "PLAIN_VAR"
+      value  = "plain"
       secret = false
     }
   ]
