@@ -60,6 +60,7 @@ func TestAccSakuraDatabase_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "backup.days_of_week.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "backup.days_of_week.0", "mon"),
 					resource.TestCheckResourceAttr(resourceName, "backup.days_of_week.1", "tue"),
+					resource.TestCheckResourceAttr(resourceName, "backup.connect", "file:///backup"),
 					resource.TestCheckResourceAttr(resourceName, "parameters.%", "2"),
 					resource.TestCheckResourceAttr(resourceName, "parameters.max_connections", "100"),
 					resource.TestCheckResourceAttr(resourceName, "parameters.event_scheduler", "ON"),

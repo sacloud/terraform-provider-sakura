@@ -22,8 +22,8 @@ resource "sakura_kms" "foobar" {
 }
 
 resource "sakura_database_read_replica" "foobar" {
-  master_id                 = data.sakura_database.master.id
-  replica_password_wo     = "your-replica-password"
+  master_id           = data.sakura_database.master.id
+  replica_password_wo = "your-replica-password"
   replica_password_wo_version = 1
   network_interface = {
     ip_address = "192.168.11.111"
