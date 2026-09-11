@@ -20,7 +20,7 @@ require (
 	github.com/jlaffaye/ftp v0.2.4
 	github.com/minio/minio-go/v7 v7.3.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/sacloud/autoscaler v0.19.5
+	github.com/sacloud/autoscaler v0.20.0
 	github.com/sacloud/sacloud-sdk-go v0.1.1-0.20260901002419-ef3faa2aceee
 	github.com/stretchr/testify v1.12.1
 )
@@ -89,19 +89,12 @@ require (
 	github.com/ogen-go/ogen v1.23.0 // indirect
 	github.com/oklog/run v1.2.0 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
-	github.com/prometheus/client_golang v1.23.2 // indirect
+	github.com/prometheus/client_golang v1.24.1 // indirect
 	github.com/prometheus/client_model v0.6.2 // indirect
 	github.com/prometheus/common v0.70.1 // indirect
 	github.com/prometheus/procfs v0.21.1 // indirect
 	github.com/rs/xid v1.6.0 // indirect
-	github.com/sacloud/api-client-go v0.3.5 // indirect
-	github.com/sacloud/go-http v0.1.9 // indirect
 	github.com/sacloud/go-otelsetup v0.9.0 // indirect
-	github.com/sacloud/iaas-api-go v1.29.1 // indirect
-	github.com/sacloud/iaas-api-go/trace/otel v0.0.0-20251222225644-7df65ab7d2cf // indirect
-	github.com/sacloud/iaas-service-go v1.25.1 // indirect
-	github.com/sacloud/packages-go v0.1.0 // indirect
-	github.com/sacloud/saclient-go v0.4.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shivamMg/ppds v0.0.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
@@ -112,7 +105,6 @@ require (
 	github.com/zclconf/go-cty v1.18.1 // indirect
 	github.com/zeebo/xxh3 v1.1.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.2.1 // indirect
-	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.45.0 // indirect
 	go.opentelemetry.io/otel v1.45.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.45.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.45.0 // indirect
@@ -138,7 +130,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20260803160001-6ac0973c030d // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260803160001-6ac0973c030d // indirect
 	google.golang.org/grpc v1.83.0 // indirect
-	google.golang.org/protobuf v1.36.11 // indirect
+	google.golang.org/protobuf v1.36.12 // indirect
 	gopkg.in/ini.v1 v1.67.3 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )

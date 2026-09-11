@@ -31,7 +31,7 @@ resource "sakura_vswitch" "foobar" {
 
 - `bridge_id` (String) The bridge id attached to the vSwitch
 - `description` (String) The description of the vSwitch. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the vSwitch
+- `icon_id` (String) The icon's resource id to attach to the vSwitch
 - `tags` (Set of String) The tags of the vSwitch.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `zone` (String) The name of zone that the vSwitch will be created (e.g. `is1a`, `tk1a`)

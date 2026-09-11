@@ -31,7 +31,7 @@ resource "sakura_dedicated_storage" "foobar" {
 ### Optional
 
 - `description` (String) The description of the Dedicated Storage. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the Dedicated Storage
+- `icon_id` (String) The icon's resource id to attach to the Dedicated Storage
 - `tags` (Set of String) The tags of the Dedicated Storage.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 

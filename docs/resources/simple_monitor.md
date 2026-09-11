@@ -67,7 +67,7 @@ resource "sakura_simple_monitor" "foobar" {
 - `delay_loop` (Number) The interval in seconds between checks. This must be in the range [`60`-`3600`]
 - `description` (String) The description of the Simple Monitor. The length of this value must be in the range [`1`-`512`]
 - `enabled` (Boolean) The flag to enable monitoring by the simple monitor
-- `icon_id` (String) The icon id to attach to the Simple Monitor
+- `icon_id` (String) The icon's resource id to attach to the Simple Monitor
 - `max_check_attempts` (Number) The number of retry. This must be in the range [`1`-`10`]
 - `monitoring_suite` (Attributes) The monitoring suite settings of the Simple Monitor. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `notify_email_enabled` (Boolean) The flag to enable notification by email

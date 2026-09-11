@@ -43,7 +43,7 @@ resource "sakura_enhanced_db" "foobar" {
 
 - `allowed_networks` (List of String) A list of CIDR blocks allowed to connect
 - `description` (String) The description of the Enhanced Database. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the Enhanced Database
+- `icon_id` (String) The icon's resource id to attach to the Enhanced Database
 - `password_wo_version` (Number) The version of the password_wo field. This value must be greater than 0 when set. Increment this when changing password.
 - `tags` (Set of String) The tags of the Enhanced Database.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

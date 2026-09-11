@@ -35,6 +35,7 @@ import (
 	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -93,7 +94,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 			"password_wo": schema.StringAttribute{
 				Required:    true,
 				WriteOnly:   true,
-				Description: "Password for NoSQL appliance",
+				Description: desc.Sprintf("Password for NoSQL appliance. %s", desc.Length(12, 30)),
 				Validators: []validator.String{
 					stringvalidator.LengthBetween(12, 30),
 					stringvalidator.RegexMatches(regexp.MustCompile(`^[a-zA-Z0-9-._]+$`), "only alphanumeric characters and - . _ are allowed"),
@@ -253,7 +254,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 								Optional:    true,
 								Computed:    true,
 								Default:     int32default.StaticInt32(9042),
-								Description: "Port number used by NoSQL appliance.",
+								Description: desc.Sprintf("Port number used by NoSQL appliance. %s", desc.Range(1024, 65535)),
 								Validators: []validator.Int32{
 									int32validator.Between(1024, 65535),
 								},

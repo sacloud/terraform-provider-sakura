@@ -84,7 +84,7 @@ func SchemaResourceDescription(name string) schema.Attribute {
 func SchemaResourceIconID(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Optional:    true,
-		Description: desc.Sprintf("The icon id to attach to the %s", name),
+		Description: desc.Sprintf("The icon's resource id to attach to the %s", name),
 		Validators: []validator.String{
 			sacloudvalidator.SakuraIDValidator(),
 		},

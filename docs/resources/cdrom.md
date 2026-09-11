@@ -34,7 +34,7 @@ resource "sakura_cdrom" "foobar" {
 ### Optional
 
 - `description` (String) The description of the CD-ROM. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the CD-ROM
+- `icon_id` (String) The icon's resource id to attach to the CD-ROM
 - `size` (Number) The size of CD-ROM in GiB. This must be one of [`5`/`10`/`20`]
 - `tags` (Set of String) The tags of the CD-ROM.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

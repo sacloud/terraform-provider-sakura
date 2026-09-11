@@ -66,12 +66,12 @@ func (r *subnetGroupDataSource) Schema(ctx context.Context, _ datasource.SchemaR
 			},
 			"region": schema.StringAttribute{
 				Computed:    true,
-				Description: "The target region code of the subnet group",
+				Description: "The target region code of the subnet group (e.g. `is1`, `tk1`)",
 			},
 			"zone": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,
-				Description: "The target zone code of the subnet group",
+				Description: "The target zone code of the subnet group (e.g. `is1a`, `tk1a`)",
 			},
 		},
 		MarkdownDescription: "Get information of a Networking Suite Subnet Group.",

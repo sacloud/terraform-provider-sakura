@@ -110,7 +110,7 @@ resource "sakura_kms" "foobar" {
 - `database_version` (String) The version of the database
 - `description` (String) The description of the Database. The length of this value must be in the range [`1`-`512`]
 - `disk` (Attributes) (see [below for nested schema](#nestedatt--disk))
-- `icon_id` (String) The icon id to attach to the Database
+- `icon_id` (String) The icon's resource id to attach to the Database
 - `monitoring_suite` (Attributes) The monitoring suite settings of the Database. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `parameters` (Map of String) The map for setting RDBMS-specific parameters. Valid keys can be found with the `usacloud database list-parameters` command
 - `password` (String, Sensitive) The password of default user on the database. Use password_wo instead for newer deployments.

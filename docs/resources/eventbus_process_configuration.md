@@ -51,7 +51,7 @@ resource "sakura_eventbus_process_configuration" "foobar" {
 
 - `credentials_wo_version` (Number) Version number for credentials. Change this when changing credentials.
 - `description` (String) The description of the EventBus ProcessConfiguration. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the EventBus ProcessConfiguration
+- `icon_id` (String) The icon's resource id to attach to the EventBus ProcessConfiguration
 - `sakura_access_token_secret_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The SimpleNotification/AutoScale access token secret for EventBus ProcessConfiguration.
 - `sakura_access_token_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The SimpleNotification/AutoScale access token for EventBus ProcessConfiguration.
 - `simplemq_api_key_wo` (String, Sensitive, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The SimpleMQ API key for EventBus ProcessConfiguration.

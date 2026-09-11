@@ -95,7 +95,7 @@ resource "sakura_disk" "foobar" {
 - `force_shutdown` (Boolean) The flag to use force shutdown when need to reboot/shutdown while applying
 - `gpu` (Number) The number of GPUs
 - `gpu_model` (String) The model of gpu
-- `icon_id` (String) The icon id to attach to the Server
+- `icon_id` (String) The icon's resource id to attach to the Server
 - `interface_driver` (String) The driver name of network interface. This must be one of [`virtio`/`e1000`]
 - `memory` (Number) The size of memory in GiB
 - `network_interface` (Attributes List) (see [below for nested schema](#nestedatt--network_interface))

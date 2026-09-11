@@ -112,7 +112,7 @@ resource "sakura_nosql" "foobar40GB" {
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `name` (String) The name of the NoSQL appliance.
-- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password for NoSQL appliance
+- `password_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Password for NoSQL appliance. The length of this value must be in the range [`12`-`30`]
 - `remark` (Attributes) (see [below for nested schema](#nestedatt--remark))
 - `settings` (Attributes) Settings of the NoSQL appliance (see [below for nested schema](#nestedatt--settings))
 - `vswitch_id` (String) The ID of the vSwitch to connect to the NoSQL appliance.
@@ -168,7 +168,7 @@ Required:
 
 Optional:
 
-- `port` (Number) Port number used by NoSQL appliance.
+- `port` (Number) Port number used by NoSQL appliance. This must be in the range [`1024`-`65535`]
 - `version` (String) Version of database engine used by NoSQL appliance.
 
 Read-Only:

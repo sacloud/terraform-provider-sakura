@@ -57,7 +57,7 @@ resource "sakura_gslb" "foobar" {
 ### Optional
 
 - `description` (String) The description of the GSLB. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the GSLB
+- `icon_id` (String) The icon's resource id to attach to the GSLB
 - `monitoring_suite` (Attributes) The monitoring suite settings of the GSLB. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `server` (Attributes List) (see [below for nested schema](#nestedatt--server))
 - `sorry_server` (String) The IP address of the SorryServer. This will be used when all servers are down

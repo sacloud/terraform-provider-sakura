@@ -35,6 +35,7 @@ import (
 	wn "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/workernode"
 	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
 type asgResource struct{ resourceClient }
@@ -87,13 +88,13 @@ func (r *asgResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 			},
 			"min_nodes": schema.Int32Attribute{
 				Required:      true,
-				Description:   "Minimum number of nodes",
+				Description:   desc.Sprintf("Minimum number of nodes. %s", desc.Range(1, 10)),
 				Validators:    []validator.Int32{int32validator.Between(1, 10)},
 				PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 			},
 			"max_nodes": schema.Int32Attribute{
 				Required:      true,
-				Description:   "Maximum number of nodes",
+				Description:   desc.Sprintf("Maximum number of nodes. %s", desc.Range(1, 10)),
 				Validators:    []validator.Int32{int32validator.Between(1, 10)},
 				PlanModifiers: []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 			},
@@ -153,7 +154,7 @@ func (r *asgResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 						},
 						"netmask": schema.Int32Attribute{
 							Optional:            true,
-							MarkdownDescription: "The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.",
+							MarkdownDescription: desc.Sprintf("The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise. %s", desc.Range(8, 29)),
 							Validators:          []validator.Int32{int32validator.Between(8, 29)},
 							PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 						},

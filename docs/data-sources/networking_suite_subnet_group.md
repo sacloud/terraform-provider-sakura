@@ -27,10 +27,10 @@ data "sakura_networking_suite_subnet_group" "foobar" {
 
 - `name` (String) The name of the Networking Suite Subnet Group.
 - `srn` (String) The SRN of the Networking Suite Subnet Group.
-- `zone` (String) The target zone code of the subnet group
+- `zone` (String) The target zone code of the subnet group (e.g. `is1a`, `tk1a`)
 
 ### Read-Only
 
 - `description` (String) The description of the Networking Suite Subnet Group.
 - `ipv4_address_range` (String) The IPv4 address range in CIDR format
-- `region` (String) The target region code of the subnet group
+- `region` (String) The target region code of the subnet group (e.g. `is1`, `tk1`)

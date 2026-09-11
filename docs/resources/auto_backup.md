@@ -39,7 +39,7 @@ resource "sakura_auto_backup" "foobar" {
 ### Optional
 
 - `description` (String) The description of the AutoBackup. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the AutoBackup
+- `icon_id` (String) The icon's resource id to attach to the AutoBackup
 - `max_backup_num` (Number) The number backup files to keep. This must be in the range [`1`-`10`]
 - `tags` (Set of String) The tags of the AutoBackup.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

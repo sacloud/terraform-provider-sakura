@@ -13,22 +13,25 @@ Manages a Container Registry.
 ## Example Usage
 
 ```terraform
-variable users {
+variable "users" {
   type = list(object({
-    name       = string
-    password   = string
-    permission = string
+    name             = string
+    password         = string
+    password_version = optional(number, 1)
+    permission       = string
   }))
   default = [
     {
-      name       = "user1"
-      password   = "password1"
-      permission = "all"
+      name             = "user1"
+      password         = "password1"
+      password_version = 1
+      permission       = "all"
     },
     {
-      name       = "user2"
-      password   = "password2"
-      permission = "readwrite"
+      name             = "user2"
+      password         = "password2"
+      password_version = 1
+      permission       = "readwrite"
     }
   ]
 }
@@ -36,18 +39,17 @@ variable users {
 resource "sakura_container_registry" "foobar" {
   name            = "foobar"
   subdomain_label = "your-subdomain-label"
+  description     = "description"
+  tags            = ["tag1", "tag2"]
 
-  description = "description"
-  tags        = ["tag1", "tag2"]
-
-  dynamic user {
-    for_each = var.users
-    content {
-      name       = user.value.name
-      password   = user.value.password
-      permission = user.value.permission
+  user = [
+    for user in var.users : {
+      name                = user.name
+      password_wo         = user.password
+      password_wo_version = user.password_version
+      permission          = user.permission
     }
-  }
+  ]
 }
 ```
 
@@ -63,7 +65,7 @@ resource "sakura_container_registry" "foobar" {
 
 - `access_level` (String, Deprecated) The level of access that allow to users. This must be one of [`readonly`/`none`]
 - `description` (String) The description of the Container Registry. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the Container Registry
+- `icon_id` (String) The icon's resource id to attach to the Container Registry
 - `tags` (Set of String) The tags of the Container Registry.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `user` (Attributes List) User accounts for accessing the Container Registry (see [below for nested schema](#nestedatt--user))

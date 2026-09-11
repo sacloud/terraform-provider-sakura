@@ -31,7 +31,7 @@ resource "sakura_switch" "foobar" {
 
 - `bridge_id` (String) The bridge id attached to the switch
 - `description` (String) The description of the Switch. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the Switch
+- `icon_id` (String) The icon's resource id to attach to the Switch
 - `tags` (Set of String) The tags of the Switch.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `zone` (String) The name of zone that the Switch will be created (e.g. `is1a`, `tk1a`)

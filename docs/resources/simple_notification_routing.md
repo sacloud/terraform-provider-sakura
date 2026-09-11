@@ -52,7 +52,7 @@ resource "sakura_simple_notification_routing" "foobar" {
 ### Optional
 
 - `description` (String) The description of the SimpleNotification Routing. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the SimpleNotification Routing
+- `icon_id` (String) The icon's resource id to attach to the SimpleNotification Routing
 - `tags` (Set of String) The tags of the SimpleNotification Routing.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 

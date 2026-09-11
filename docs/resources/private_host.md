@@ -34,7 +34,7 @@ resource "sakura_private_host" "foobar" {
 - `class` (String) The class of the PrivateHost. This will be one of [`dynamic`/`ms_windows`]
 - `dedicated_storage_id` (String) ID of the dedicated storage (input-only). This value is not returned by the backend API, so Terraform cannot detect drift for this attribute. Note: it cannot be restored via `terraform import`
 - `description` (String) The description of the PrivateHost. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the PrivateHost
+- `icon_id` (String) The icon's resource id to attach to the PrivateHost
 - `tags` (Set of String) The tags of the PrivateHost.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `zone` (String) The name of zone that the PrivateHost will be created (e.g. `is1a`, `tk1a`)

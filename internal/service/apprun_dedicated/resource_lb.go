@@ -30,6 +30,7 @@ import (
 	lb "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/loadbalancer"
 	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 )
 
 type lbResource struct{ resourceClient }
@@ -126,7 +127,7 @@ func (r *lbResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *
 						},
 						"netmask": schema.Int32Attribute{
 							Optional:            true,
-							MarkdownDescription: "The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise.",
+							MarkdownDescription: desc.Sprintf("The netmask length.  Must omit when upstream is `shared`.  Mandatory otherwise. %s", desc.Range(8, 29)),
 							Validators:          []validator.Int32{int32validator.Between(8, 29)},
 							PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 						},
@@ -146,7 +147,7 @@ func (r *lbResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *
 						},
 						"virtual_router_id": schema.Int32Attribute{
 							Optional:            true,
-							MarkdownDescription: "The virtual router ID. Makes sense only when upstream is not `shared`",
+							MarkdownDescription: desc.Sprintf("The virtual router ID. Makes sense only when upstream is not `shared`. %s", desc.Range(1, 255)),
 							Validators:          []validator.Int32{int32validator.Between(1, 255)},
 							PlanModifiers:       []planmodifier.Int32{int32planmodifier.RequiresReplace()},
 						},

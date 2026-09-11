@@ -70,7 +70,7 @@ resource "sakura_local_router" "example" {
 ### Optional
 
 - `description` (String) The description of the Local Router. The length of this value must be in the range [`1`-`512`]
-- `icon_id` (String) The icon id to attach to the Local Router
+- `icon_id` (String) The icon's resource id to attach to the Local Router
 - `peer` (Attributes List) (see [below for nested schema](#nestedatt--peer))
 - `static_route` (Attributes List) (see [below for nested schema](#nestedatt--static_route))
 - `tags` (Set of String) The tags of the Local Router.

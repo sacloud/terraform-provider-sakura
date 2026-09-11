@@ -119,7 +119,7 @@ resource "sakura_server" "foobar" {
 - `certificate` (Attributes) (see [below for nested schema](#nestedatt--certificate))
 - `description` (String) The description of the Enhanced LB. The length of this value must be in the range [`1`-`512`]
 - `gzip` (Boolean) The flag to enable gzip compression
-- `icon_id` (String) The icon id to attach to the Enhanced LB
+- `icon_id` (String) The icon's resource id to attach to the Enhanced LB
 - `monitoring_suite` (Attributes) The monitoring suite settings of the Enhanced LB. (see [below for nested schema](#nestedatt--monitoring_suite))
 - `origin_guard` (Attributes) The origin guard configuration (see [below for nested schema](#nestedatt--origin_guard))
 - `plan` (Number) The plan name of the Enhanced LB. This must be one of [`100`/`500`/`1000`/`5000`/`10000`/`50000`/`100000`/`400000`]

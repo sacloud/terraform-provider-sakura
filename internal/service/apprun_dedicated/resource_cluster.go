@@ -24,6 +24,7 @@ import (
 	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/desc"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -80,7 +81,7 @@ func (r *clusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, 
 					Attributes: map[string]schema.Attribute{
 						"port": schema.Int32Attribute{
 							Required:    true,
-							Description: "The port number where the cluster listens for requests",
+							Description: desc.Sprintf("The port number where the cluster listens for requests. 5950-5959 are reserved. %s", desc.Range(1, 65535)),
 							Validators: []validator.Int32{
 								int32validator.Between(1, 65535),
 								int32validator.NoneOf(reservedPorts...),
