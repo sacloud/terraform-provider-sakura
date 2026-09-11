@@ -33,15 +33,16 @@ resource "sakura_apprun_dedicated_version" "main" {
 
   env_vars = [
     {
-      key    = "LOG_LEVEL"
-      value  = "info"
-      secret = false
+      key   = "LOG_LEVEL"
+      value = "info"
     },
+  ]
+
+  secret_vars = [
     {
       key              = "API_TOKEN"
       value_wo         = "s3cr3t" # write-only: never stored in the state
       value_wo_version = 1        # bump this to create a new version with a new value_wo
-      secret           = true
     },
   ]
 }
@@ -63,7 +64,7 @@ resource "sakura_apprun_dedicated_version" "main" {
 > **NOTE**: [Write-only arguments](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments) are supported in Terraform 1.11 and later.
 
 - `cmd` (List of String) application command line i.e. the command and arguments
-- `env_vars` (Attributes List) Environment variables (see [below for nested schema](#nestedatt--env_vars))
+- `env_vars` (Attributes List) Environment variables.  Use `secret_vars` for secrets (see [below for nested schema](#nestedatt--env_vars))
 - `exposed_ports` (Attributes List) Ports that the application exposes (see [below for nested schema](#nestedatt--exposed_ports))
 - `fixed_scale` (Number) Number of nodes when scaling mode is `manual`
 - `max_scale` (Number) Maximum number of nodes when scaling mode is `autoscale`
@@ -73,6 +74,7 @@ resource "sakura_apprun_dedicated_version" "main" {
 - `registry_username` (String) Login user name for the container registry
 - `scale_in_threshold` (Number) When to scale in when scaling mode is `autoscale`
 - `scale_out_threshold` (Number) When to scale out when scaling mode is `autoscale`
+- `secret_vars` (Attributes List) Secret environment variables.  Unlike `env_vars`, values are write-only and never land in the state.  `terraform import` puts every secret here; declare each as `{ key = "..." }` alone to adopt the imported version as is, and set `value_wo` only when a new version with a new value is wanted (see [below for nested schema](#nestedatt--secret_vars))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
@@ -88,13 +90,11 @@ resource "sakura_apprun_dedicated_version" "main" {
 Required:
 
 - `key` (String) Environment variable name
-- `secret` (Boolean) Whether the value is sensitive
 
 Optional:
 
-- `value` (String) The value.  Consider `value_wo` for secrets to keep them out of the state.  Omitting both this field and `value_wo` while `secret` is true retains old secret value
-- `value_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The value, write-only.  Unlike `value` this never lands in the state, whatever `secret` is (`secret` only controls whether the API conceals the value).  Must be set together with `value_wo_version`
-- `value_wo_version` (Number) The version of the `value_wo` field.  This value must be greater than 0 when set.  Terraform cannot detect changes of write-only values, so increment this to create a new application version with the new `value_wo`.  Note that `terraform import` cannot restore this field; the first plan after importing replaces the version unless `value_wo` and `value_wo_version` are left out of the configuration
+- `secret` (Boolean, Deprecated) Whether the value is sensitive
+- `value` (String) The value.  Use `secret_vars` for secrets.  Omitting this field with the deprecated `secret = true` retains the previous version's secret value
 
 
 <a id="nestedatt--exposed_ports"></a>
@@ -120,6 +120,19 @@ Required:
 - `path` (String) Health check endpoint
 - `timeout_seconds` (Number) Time out in seconds until the health check fails
 
+
+
+<a id="nestedatt--secret_vars"></a>
+### Nested Schema for `secret_vars`
+
+Required:
+
+- `key` (String) Environment variable name
+
+Optional:
+
+- `value_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The value, write-only.  Omitting this field retains the previous version's secret value.  Must be set together with `value_wo_version`
+- `value_wo_version` (Number) The version of the `value_wo` field.  This value must be greater than 0 when set.  Terraform cannot detect changes of write-only values, so increment this to create a new application version with the new `value_wo`.  Note that `terraform import` cannot restore this field
 
 
 <a id="nestedatt--timeouts"></a>

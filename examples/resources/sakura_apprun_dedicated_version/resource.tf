@@ -18,15 +18,16 @@ resource "sakura_apprun_dedicated_version" "main" {
 
   env_vars = [
     {
-      key    = "LOG_LEVEL"
-      value  = "info"
-      secret = false
+      key   = "LOG_LEVEL"
+      value = "info"
     },
+  ]
+
+  secret_vars = [
     {
       key              = "API_TOKEN"
       value_wo         = "s3cr3t" # write-only: never stored in the state
       value_wo_version = 1        # bump this to create a new version with a new value_wo
-      secret           = true
     },
   ]
 }
