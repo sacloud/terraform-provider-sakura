@@ -19,12 +19,9 @@ import (
 )
 
 const (
-	envSEGObjectStorageEndpoint1    = "SAKURA_SEG_OBJECT_STORAGE_ENDPOINT_1"
-	envSEGObjectStorageEndpoint2    = "SAKURA_SEG_OBJECT_STORAGE_ENDPOINT_2"
-	envSEGMonitoringSuiteEndpoint   = "SAKURA_SEG_MONITORING_SUITE_ENDPOINT"
-	envSEGContainerRegistryEndpoint = "SAKURA_SEG_CONTAINER_REGISTRY_ENDPOINT"
-	envSEGAIEngineEndpoint          = "SAKURA_SEG_AI_ENGINE_ENDPOINT"
-	envSEGDNSPrivateHostedZone      = "SAKURA_SEG_DNS_PRIVATE_HOSTED_ZONE"
+	envSEGMonitoringSuiteEndpoint   = "SAKURA_SEG_MONITORING_ENDPOINTS"
+	envSEGContainerRegistryEndpoint = "SAKURA_SEG_CR_ENDPOINTS"
+	envSEGDNSPrivateHostedZone      = "SAKURA_SEG_DNS_PRIVATEZONE"
 	envSEGDNSUpstreamServer1        = "SAKURA_SEG_DNS_UPSTREAM_SERVER_1"
 	envSEGDNSUpstreamServer2        = "SAKURA_SEG_DNS_UPSTREAM_SERVER_2"
 )
@@ -33,15 +30,14 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 	resourceName := "sakura_seg.foobar"
 
 	test.SkipIfEnvIsNotSet(t,
-		envSEGObjectStorageEndpoint1, envSEGObjectStorageEndpoint2, envSEGMonitoringSuiteEndpoint, envSEGContainerRegistryEndpoint, envSEGAIEngineEndpoint,
+		envSEGMonitoringSuiteEndpoint, envSEGContainerRegistryEndpoint,
 		envSEGDNSPrivateHostedZone, envSEGDNSUpstreamServer1, envSEGDNSUpstreamServer2,
 	)
 	rand := test.RandomName()
-	objectStorageEndpoint1 := os.Getenv(envSEGObjectStorageEndpoint1)
-	objectStorageEndpoint2 := os.Getenv(envSEGObjectStorageEndpoint2)
+	objectStorageEndpoint1 := "s3.isk01.sakurastorage.jp"
+	objectStorageEndpoint2 := "s3.tky01.sakurastorage.jp"
 	monitoringSuiteEndpoint := os.Getenv(envSEGMonitoringSuiteEndpoint)
 	containerRegistryEndpoint := os.Getenv(envSEGContainerRegistryEndpoint)
-	aiEngineEndpoint := os.Getenv(envSEGAIEngineEndpoint)
 	dnsPrivateHostedZone := os.Getenv(envSEGDNSPrivateHostedZone)
 	dnsUpstreamServer1 := os.Getenv(envSEGDNSUpstreamServer1)
 	dnsUpstreamServer2 := os.Getenv(envSEGDNSUpstreamServer2)
@@ -54,7 +50,7 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraSEGBasic, rand, objectStorageEndpoint1, objectStorageEndpoint2, monitoringSuiteEndpoint, containerRegistryEndpoint, aiEngineEndpoint, dnsPrivateHostedZone, dnsUpstreamServer1, dnsUpstreamServer2),
+				Config: test.BuildConfigWithArgs(testAccSakuraSEGBasic, rand, objectStorageEndpoint1, objectStorageEndpoint2, monitoringSuiteEndpoint, containerRegistryEndpoint, dnsPrivateHostedZone, dnsUpstreamServer1, dnsUpstreamServer2),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSEGExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "zone", "tk1b"),
@@ -65,7 +61,8 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.object_storage_endpoints.1", objectStorageEndpoint2),
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.monitoring_suite_endpoints.0", monitoringSuiteEndpoint),
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.container_registry_endpoints.0", containerRegistryEndpoint),
-					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.ai_engine_endpoints.0", aiEngineEndpoint),
+					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.ai_engine_endpoints.0", "api.ai.sakura.ad.jp"),
+					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.simple_ai_endpoints.0", "simpleai.is1.api.sacloud.jp"),
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.apprun_dedicated_control_enabled", "false"),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite_enabled", "true"),
 					resource.TestCheckResourceAttr(resourceName, "dns_forwarding.enabled", "true"),
@@ -99,10 +96,9 @@ func TestAccSakuraSEG_basic(t *testing.T) {
 func TestAccSakuraSEG_NoDNS(t *testing.T) {
 	resourceName := "sakura_seg.foobar"
 
-	test.SkipIfEnvIsNotSet(t, envSEGObjectStorageEndpoint1, envSEGObjectStorageEndpoint2)
 	rand := test.RandomName()
-	objectStorageEndpoint1 := os.Getenv(envSEGObjectStorageEndpoint1)
-	objectStorageEndpoint2 := os.Getenv(envSEGObjectStorageEndpoint2)
+	objectStorageEndpoint1 := "s3.isk01.sakurastorage.jp"
+	objectStorageEndpoint2 := "s3.tky01.sakurastorage.jp"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -230,14 +226,15 @@ resource "sakura_seg" "foobar" {
 		object_storage_endpoints = ["{{ .arg1 }}", "{{ .arg2 }}"]
 		monitoring_suite_endpoints = ["{{ .arg3 }}"]
 		container_registry_endpoints = ["{{ .arg4 }}"]
-		ai_engine_endpoints = ["{{ .arg5 }}"]
+		ai_engine_endpoints = ["api.ai.sakura.ad.jp"]
+		simple_ai_endpoints = ["simpleai.is1.api.sacloud.jp"]
 		apprun_dedicated_control_enabled = false
 	}
 	monitoring_suite_enabled = true
 	dns_forwarding = {
 		enabled = true
-		private_hosted_zone = "{{ .arg6 }}"
-		dns_servers = ["{{ .arg7 }}","{{ .arg8 }}"]
+		private_hosted_zone = "{{ .arg5 }}"
+		dns_servers = ["{{ .arg6 }}","{{ .arg7	 }}"]
 	}
 }
 `

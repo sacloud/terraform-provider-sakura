@@ -18,6 +18,7 @@ type segEndpointSettingModel struct {
 	MonitoringSuiteEndpoints      types.List `tfsdk:"monitoring_suite_endpoints"`
 	ContainerRegistryEndpoints    types.List `tfsdk:"container_registry_endpoints"`
 	AIEngineEndpoints             types.List `tfsdk:"ai_engine_endpoints"`
+	SimpleAIEndpoints             types.List `tfsdk:"simple_ai_endpoints"`
 	AppRunDedicatedControlEnabled types.Bool `tfsdk:"apprun_dedicated_control_enabled"`
 }
 
@@ -64,6 +65,7 @@ func flattenEndpointSetting(setting v1.NilModelsSettingsApplianceSettings) types
 		MonitoringSuiteEndpoints:      types.ListNull(types.StringType),
 		ContainerRegistryEndpoints:    types.ListNull(types.StringType),
 		AIEngineEndpoints:             types.ListNull(types.StringType),
+		SimpleAIEndpoints:             types.ListNull(types.StringType),
 		AppRunDedicatedControlEnabled: types.BoolNull(),
 	}
 
@@ -78,6 +80,8 @@ func flattenEndpointSetting(setting v1.NilModelsSettingsApplianceSettings) types
 			settingModel.ContainerRegistryEndpoints = common.StringsToTlist(setting.Config.Endpoints)
 		case v1.ModelsSettingsEnabledServiceTypeAIEngine:
 			settingModel.AIEngineEndpoints = common.StringsToTlist(setting.Config.Endpoints)
+		case v1.ModelsSettingsEnabledServiceTypeSimpleAI:
+			settingModel.SimpleAIEndpoints = common.StringsToTlist(setting.Config.Endpoints)
 		case v1.ModelsSettingsEnabledServiceTypeAppRunDedicatedControlPlane:
 			settingModel.AppRunDedicatedControlEnabled = types.BoolValue(setting.Config.Mode.Value == v1.ModelsSettingsServiceConfigModeManaged)
 		}
@@ -163,6 +167,7 @@ func (dns segEndpointSettingModel) AttributeTypes() map[string]attr.Type {
 		"monitoring_suite_endpoints":       types.ListType{ElemType: types.StringType},
 		"container_registry_endpoints":     types.ListType{ElemType: types.StringType},
 		"ai_engine_endpoints":              types.ListType{ElemType: types.StringType},
+		"simple_ai_endpoints":              types.ListType{ElemType: types.StringType},
 		"apprun_dedicated_control_enabled": types.BoolType,
 	}
 }

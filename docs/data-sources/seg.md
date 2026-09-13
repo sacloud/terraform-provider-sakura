@@ -51,8 +51,9 @@ Read-Only:
 
 Read-Only:
 
-- `ai_engine_endpoints` (List of String) The list of AI engine endpoints to connect to the Service Endpoint Gateway
+- `ai_engine_endpoints` (List of String) The list of AI engine endpoints to connect to the Service Endpoint Gateway. Only api.ai.sakura.ad.jp is supported for now
 - `apprun_dedicated_control_enabled` (Boolean) The flag to enable AppRun Dedicated Control Plane endpoint on the Service Endpoint Gateway
 - `container_registry_endpoints` (List of String) The list of sakura container registry endpoints to connect to the Service Endpoint Gateway
 - `monitoring_suite_endpoints` (List of String) The list of monitoring suite endpoints to connect to the Service Endpoint Gateway
 - `object_storage_endpoints` (List of String) The list of sakura object storage endpoints to connect to the Service Endpoint Gateway
+- `simple_ai_endpoints` (List of String) The list of Simple AI endpoints to connect to the Service Endpoint Gateway. Only simpleai.is1.api.sacloud.jp is supported for now

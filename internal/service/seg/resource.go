@@ -116,7 +116,13 @@ func (r *segResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 					"ai_engine_endpoints": schema.ListAttribute{
 						Optional:    true,
 						ElementType: types.StringType,
-						Description: "The list of AI engine endpoints to connect to the Service Endpoint Gateway",
+						Description: "The list of AI engine endpoints to connect to the Service Endpoint Gateway. Only api.ai.sakura.ad.jp is supported for now",
+						// validator is not added here because api is not required validation and endpoint is validated by server side,
+					},
+					"simple_ai_endpoints": schema.ListAttribute{
+						Optional:    true,
+						ElementType: types.StringType,
+						Description: "The list of Simple AI endpoints to connect to the Service Endpoint Gateway. Only simpleai.is1.api.sacloud.jp is supported for now",
 						// validator is not added here because api is not required validation and endpoint is validated by server side,
 					},
 					"apprun_dedicated_control_enabled": schema.BoolAttribute{

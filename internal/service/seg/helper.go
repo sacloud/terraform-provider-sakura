@@ -155,6 +155,15 @@ func expandEndpointSetting(d types.Object) []v1.ModelsSettingsEnabledService {
 		})
 	}
 
+	if !model.SimpleAIEndpoints.IsNull() {
+		settings = append(settings, v1.ModelsSettingsEnabledService{
+			Type: v1.ModelsSettingsEnabledServiceTypeSimpleAI,
+			Config: v1.ModelsSettingsServiceConfig{
+				Endpoints: common.TlistToStrings(model.SimpleAIEndpoints),
+			},
+		})
+	}
+
 	if !model.AppRunDedicatedControlEnabled.IsNull() {
 		settings = append(settings, v1.ModelsSettingsEnabledService{
 			Type: v1.ModelsSettingsEnabledServiceTypeAppRunDedicatedControlPlane,
