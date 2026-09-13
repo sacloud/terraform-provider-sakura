@@ -4,23 +4,16 @@
 package seg_test
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
 	"github.com/sacloud/terraform-provider-sakura/internal/test"
 )
 
-const (
-	envSEGObjectStorageEndpoint = "SAKURA_SEG_OBJECT_STORAGE_ENDPOINT"
-)
-
 func TestAccSakuraDataSourceSEG_basic(t *testing.T) {
-	test.SkipIfEnvIsNotSet(t, envSEGObjectStorageEndpoint)
-
 	resourceName := "data.sakura_seg.foobar"
 	rand := test.RandomName()
-	objectStorageEndpointDatasource := os.Getenv(envSEGObjectStorageEndpoint)
+	objectStorageEndpointDatasource := "s3.isk01.sakurastorage.jp"
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -35,6 +28,7 @@ func TestAccSakuraDataSourceSEG_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "server_ip_addresses.0", "192.168.100.10"),
 					resource.TestCheckResourceAttr(resourceName, "netmask", "28"),
 					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.object_storage_endpoints.0", objectStorageEndpointDatasource),
+					resource.TestCheckResourceAttr(resourceName, "endpoint_setting.simple_ai_endpoints.0", "simpleai.is1.api.sacloud.jp"),
 				),
 			},
 		},
@@ -53,6 +47,7 @@ resource "sakura_seg" "foobar" {
 	netmask     = 28
 	endpoint_setting = {
 		object_storage_endpoints = ["{{ .arg1 }}"]
+		simple_ai_endpoints = ["simpleai.is1.api.sacloud.jp"]
 	}
 }
 data "sakura_seg" "foobar" {
