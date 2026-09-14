@@ -7,6 +7,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
@@ -353,6 +354,9 @@ func createSEGAppliance(ctx context.Context, segAPI seg.ServiceEndpointGatewayAP
 	if err != nil {
 		return nil, err
 	}
+
+	// waitForInstanceStatusではインスタンスがUpになるまでしか確認できないため、デーモンの起動などが安定するまで待機する。60秒は実測からの十分な時間と判断。
+	time.Sleep(60 * time.Second)
 
 	return updateSEGAppliance(ctx, segAPI, types.StringValue(instanceID), d)
 }

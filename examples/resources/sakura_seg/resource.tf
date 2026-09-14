@@ -9,7 +9,7 @@ resource "sakura_seg" "foobar" {
 	server_ip_addresses = ["192.168.1.1"]
 	netmask     = 28 # 8-29
 	endpoint_setting = {
-		object_storage_endpoints = ["s3.isk01.sakurastorage.jp"] # tky01 and arc02 are alsosupported
+		object_storage_endpoints = ["s3.isk01.sakurastorage.jp"] # tky01 and arc02 are also supported
 		monitoring_suite_endpoints = ["*****.logs.monitoring.global.api.salocloud.jp"] # metrics is also supported
 		container_registry_endpoints = ["*****.sakuracr.jp"]
 		ai_engine_endpoints = ["api.ai.sakura.ad.jp"]  # only api.ai.sakura.ad.jp is supported
