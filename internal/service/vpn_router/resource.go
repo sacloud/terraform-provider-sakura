@@ -42,9 +42,10 @@ type vpnRouterResource struct {
 }
 
 var (
-	_ resource.Resource                = &vpnRouterResource{}
-	_ resource.ResourceWithConfigure   = &vpnRouterResource{}
-	_ resource.ResourceWithImportState = &vpnRouterResource{}
+	_ resource.Resource                   = &vpnRouterResource{}
+	_ resource.ResourceWithConfigure      = &vpnRouterResource{}
+	_ resource.ResourceWithImportState    = &vpnRouterResource{}
+	_ resource.ResourceWithValidateConfig = &vpnRouterResource{}
 )
 
 func NewVPNRouterResource() resource.Resource {
@@ -722,6 +723,19 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			}),
 		},
 		MarkdownDescription: "Manages a VPN Router(vpc_router in v2).",
+	}
+}
+
+func (r *vpnRouterResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var config vpnRouterResourceModel
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	// In ValidateConfig, plan is null when it is not explicitly set.
+	if (config.Plan.IsNull() || config.Plan.ValueString() == "standard") && utils.IsKnown(config.PublicNetworkInterface) {
+		resp.Diagnostics.AddError("Validate Config Error", "standard plan cannot have a public network interface. Use a different plan if you need a public network interface.")
 	}
 }
 

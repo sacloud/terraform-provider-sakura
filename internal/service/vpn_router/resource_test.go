@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -393,6 +394,21 @@ func TestAccSakuraVPNRouter_Issue306(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "public_network_interface.vrid", "1"),
 					resource.TestCheckNoResourceAttr(resourceName, "public_network_interface.aliases"),
 				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraVPNRouter_standardAndPublicNetworkInterface(t *testing.T) {
+	rand := test.RandomName()
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		Steps: []resource.TestStep{
+			{
+				Config:      test.BuildConfigWithArgs(testAccSakuraVPNRouter_standardAndPublicNetworkInterface, rand),
+				ExpectError: regexp.MustCompile("standard plan cannot have a public network interface"),
 			},
 		},
 	})
@@ -905,5 +921,15 @@ resource "sakura_vpn_router" "foobar" {
     ip_addresses = ["192.168.11.2", "192.168.11.3"]
     netmask      = 24
   }]
+}
+`
+
+var testAccSakuraVPNRouter_standardAndPublicNetworkInterface = `
+resource "sakura_vpn_router" "main" {
+  name                = "{{ .arg0 }}"
+
+  public_network_interface =  {
+       vswitch_id = 11234567890
+  }
 }
 `
