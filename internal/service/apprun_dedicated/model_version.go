@@ -28,6 +28,12 @@ type envVarModel struct {
 	Secret types.Bool   `tfsdk:"secret"`
 }
 
+type secretVarModel struct {
+	Key            types.String `tfsdk:"key"`
+	ValueWO        types.String `tfsdk:"value_wo"`
+	ValueWOVersion types.Int32  `tfsdk:"value_wo_version"`
+}
+
 type exposedPortModel struct {
 	TargetPort       types.Int32       `tfsdk:"target_port"`
 	LoadBalancerPort types.Int32       `tfsdk:"lb_port"`
@@ -69,6 +75,12 @@ var envVarAttrs = attrTypes{
 	"secret": types.BoolType,
 }
 
+var secretVarAttrs = attrTypes{
+	"key":              types.StringType,
+	"value_wo":         types.StringType,
+	"value_wo_version": types.Int32Type,
+}
+
 var exposedPortAttrs = attrTypes{
 	"target_port":      types.Int32Type,
 	"lb_port":          types.Int32Type,
@@ -98,10 +110,12 @@ var versionAttrs = attrTypes{
 	"created_at":               types.StringType,
 	"exposed_ports":            types.ListType{ElemType: types.ObjectType{AttrTypes: exposedPortAttrs}},
 	"env_vars":                 types.ListType{ElemType: types.ObjectType{AttrTypes: envVarAttrs}},
+	"secret_vars":              types.ListType{ElemType: types.ObjectType{AttrTypes: secretVarAttrs}},
 }
 
 func (healthCheckModel) AttributeTypes() attrTypes { return healthCheckAttrs }
 func (envVarModel) AttributeTypes() attrTypes      { return envVarAttrs }
+func (secretVarModel) AttributeTypes() attrTypes   { return secretVarAttrs }
 func (exposedPortModel) AttributeTypes() attrTypes { return exposedPortAttrs }
 func (verModel) AttributeTypes() attrTypes         { return versionAttrs }
 func (v *verModel) appId() (appID, error)          { return intoUUID[appID](v.ApplicationID) }
@@ -122,6 +136,14 @@ func (e envVarModel) intoCreate() (ret version.EnvironmentVariable) {
 	ret.Key = e.Key.ValueString()
 	ret.Value = e.Value.ValueStringPointer()
 	ret.Secret = e.Secret.ValueBool()
+
+	return
+}
+
+func (s secretVarModel) intoCreate(value *string) (ret version.EnvironmentVariable) {
+	ret.Key = s.Key.ValueString()
+	ret.Value = value
+	ret.Secret = true
 
 	return
 }
@@ -248,4 +270,39 @@ func (v *verModel) updateState(ctx context.Context, d *version.VersionDetail, ai
 	}
 
 	return ret
+}
+
+func (v *verResourceModel) hasEnvVar(key string) bool {
+	return slices.ContainsFunc(v.EnvVars, func(e envVarModel) bool { return e.Key.ValueString() == key })
+}
+
+func (v *verResourceModel) hasSecretVar(key string) bool {
+	return slices.ContainsFunc(v.SecretVars, func(s secretVarModel) bool { return s.Key.ValueString() == key })
+}
+
+// secrets go to secret_vars, unless env_vars already has them (deprecated secret = true)
+func (v *verResourceModel) updateState(ctx context.Context, d *version.VersionDetail, aid appID) (ret diag.Diagnostics) {
+	rest := *d
+	rest.EnvVars = nil
+	buf := slices.Clone(v.SecretVars)
+
+	for i := range slices.Values(d.EnvVars) {
+		switch {
+		case v.hasSecretVar(i.Key):
+			// nothing to update
+		case i.Secret && i.Value == nil && !v.hasEnvVar(i.Key):
+			// terraform import; only the key is known
+			buf = append(buf, secretVarModel{Key: types.StringValue(i.Key)})
+		default:
+			rest.EnvVars = append(rest.EnvVars, i)
+		}
+	}
+
+	if v.SecretVars == nil && len(buf) == 0 {
+		// keep null, not empty list
+	} else {
+		v.SecretVars = buf
+	}
+
+	return v.verModel.updateState(ctx, &rest, aid)
 }
