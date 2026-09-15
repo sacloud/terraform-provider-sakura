@@ -72,11 +72,9 @@ resource "sakura_apprun_dedicated_version" "main" {
 - `registry_password` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Login password for the container registry
 - `registry_password_action` (String) Password configuration method. This must be one of [`keep`/`remove`/`new`]
 - `registry_username` (String) Login user name for the container registry
-- `scale_in_threshold` (Number) When to scale in when scaling mode is `autoscale`
-- `scale_out_threshold` (Number) When to scale out when scaling mode is `autoscale`
-- `secret_vars` (Attributes List) Secret environment variables.  Unlike `env_vars`, values are write-only and never land in the state.  `terraform import` puts every secret here; declare each as `{ key = "..." }` alone to adopt the imported version as is, and set `value_wo` only when a new version with a new value is wanted (see [below for nested schema](#nestedatt--secret_vars))
 - `scale_in_threshold` (Number) When to scale in when scaling mode is `autoscale`. This must be in the range [`30`-`70`]
 - `scale_out_threshold` (Number) When to scale out when scaling mode is `autoscale`. This must be in the range [`50`-`99`]
+- `secret_vars` (Attributes List) Secret environment variables.  Unlike `env_vars`, values are write-only and never land in the state.  `terraform import` puts every secret here; declare each as `{ key = "..." }` alone to adopt the imported version as is, and set `value_wo` only when a new version with a new value is wanted (see [below for nested schema](#nestedatt--secret_vars))
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
