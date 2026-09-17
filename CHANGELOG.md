@@ -1,5 +1,11 @@
 # Changelog
 
+## [v3.14.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.0...v3.14.1) - 2026-09-17
+
+### Other Changes
+- vpn_router: standard plan doesn't support public_network_interface by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/344
+- sakura_apprun_dedicated_version: support write-only environment variables by @DCS-koyano in https://github.com/sacloud/terraform-provider-sakura/pull/339
+
 ## [v3.14.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.13.0...v3.14.0) - 2026-09-14
 
 ### 🚀 New Features
