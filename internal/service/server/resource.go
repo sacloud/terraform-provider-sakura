@@ -222,6 +222,9 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 						"mac_address": schema.StringAttribute{
 							Computed:    true,
 							Description: "The MAC address",
+							PlanModifiers: []planmodifier.String{
+								stringplanmodifier.UseStateForUnknown(),
+							},
 						},
 					},
 				},
@@ -244,6 +247,9 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Optional:    true,
 				Computed:    true,
 				Description: "The name of the PrivateHost which the Server is assigned",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"user_data": schema.StringAttribute{
 				Optional:    true,

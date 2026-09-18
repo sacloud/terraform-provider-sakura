@@ -149,11 +149,17 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 											Optional:    true,
 											Computed:    true,
 											Description: "The container registry server name",
+											PlanModifiers: []planmodifier.String{
+												stringplanmodifier.UseStateForUnknown(),
+											},
 										},
 										"username": schema.StringAttribute{
 											Optional:    true,
 											Computed:    true,
 											Description: "The container registry credentials",
+											PlanModifiers: []planmodifier.String{
+												stringplanmodifier.UseStateForUnknown(),
+											},
 										},
 										"password": schema.StringAttribute{
 											Optional:    true,

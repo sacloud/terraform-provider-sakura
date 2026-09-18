@@ -162,6 +162,9 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 			"public_ip": schema.StringAttribute{
 				Computed:    true,
 				Description: "The public ip address of the VPN Router",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"public_netmask": schema.Int64Attribute{
 				Computed:    true,
