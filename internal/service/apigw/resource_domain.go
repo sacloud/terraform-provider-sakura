@@ -67,8 +67,8 @@ func (r *apigwDomainResource) Schema(ctx context.Context, req resource.SchemaReq
 					stringvalidator.RegexMatches(regexp.MustCompile(`^\s*(([a-z\d]([a-z\d-]*[a-z\d])?)\.)+([a-z\d-]{2,})(\.)?\s*$`), "Valid domain name is required. IPv4 and wildcard are not allowed."),
 				},
 			},
-			"created_at": schemaResourceAPIGWCreatedAt("API Gateway Domain"),
-			"updated_at": schemaResourceAPIGWUpdatedAt("API Gateway Domain"),
+			"created_at": common.SchemaResourceCreatedAt("API Gateway Domain"),
+			"updated_at": common.SchemaResourceUpdatedAt("API Gateway Domain"),
 			"certificate_id": schema.StringAttribute{
 				Optional:    true,
 				Description: "ID of the API Gateway Certificate",

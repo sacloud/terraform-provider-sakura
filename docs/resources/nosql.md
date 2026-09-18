@@ -131,7 +131,7 @@ resource "sakura_nosql" "foobar40GB" {
 ### Read-Only
 
 - `availability` (String) Availability state. state is one of migrating / available / failed
-- `created_at` (String) Creation time
+- `created_at` (String) The creation timestamp of the NoSQL appliance
 - `generation` (Number) Generation number
 - `id` (String) The ID of the NoSQL appliance.
 - `instance` (Attributes) Instance and host information (see [below for nested schema](#nestedatt--instance))

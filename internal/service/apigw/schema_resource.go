@@ -27,20 +27,6 @@ func schemaResourceAPIGWName(name string) schema.Attribute {
 	}
 }
 
-func schemaResourceAPIGWCreatedAt(name string) schema.Attribute {
-	return schema.StringAttribute{
-		Computed:    true,
-		Description: desc.Sprintf("The creation timestamp of the %s", name),
-	}
-}
-
-func schemaResourceAPIGWUpdatedAt(name string) schema.Attribute {
-	return schema.StringAttribute{
-		Computed:    true,
-		Description: desc.Sprintf("The last update timestamp of the %s", name),
-	}
-}
-
 func schemaResourceAPIGWCert(description string, required bool) schema.Attribute {
 	s := schema.SingleNestedAttribute{
 		Description: description,

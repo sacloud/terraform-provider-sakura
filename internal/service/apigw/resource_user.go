@@ -88,8 +88,8 @@ func (r *apigwUserResource) Schema(ctx context.Context, req resource.SchemaReque
 			"id":         common.SchemaResourceId("API Gateway User"),
 			"name":       common.SchemaResourceName("API Gateway User"),
 			"tags":       common.SchemaResourceTags("API Gateway User"),
-			"created_at": schemaResourceAPIGWCreatedAt("API Gateway User"),
-			"updated_at": schemaResourceAPIGWUpdatedAt("API Gateway User"),
+			"created_at": common.SchemaResourceCreatedAt("API Gateway User"),
+			"updated_at": common.SchemaResourceUpdatedAt("API Gateway User"),
 			"custom_id": schema.StringAttribute{
 				Optional:    true,
 				Computed:    true,

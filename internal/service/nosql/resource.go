@@ -485,10 +485,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 				Computed:    true,
 				Description: "Generation number",
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "Creation time",
-			},
+			"created_at": common.SchemaResourceCreatedAt("NoSQL appliance"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),

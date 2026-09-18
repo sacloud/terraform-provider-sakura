@@ -124,10 +124,7 @@ func (r *automatedActionResource) Schema(ctx context.Context, _ resource.SchemaR
 				Required:    true,
 				Description: "The CEL expression that defines the condition for Automated Action trigger. See the manual: https://manual.sakura.ad.jp/cloud/controlpanel/eventlog/security-control.html#id28",
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The creation timestamp of the Automated Action",
-			},
+			"created_at": common.SchemaDataSourceCreatedAt("Automated Action"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),

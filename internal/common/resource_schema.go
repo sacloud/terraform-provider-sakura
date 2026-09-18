@@ -145,6 +145,7 @@ func SchemaResourceZone(name string) schema.Attribute {
 		Description: desc.Sprintf("The name of zone that the %s will be created (e.g. `is1a`, `tk1a`)", name),
 		PlanModifiers: []planmodifier.String{
 			stringplanmodifier.RequiresReplaceIfConfigured(),
+			stringplanmodifier.UseStateForUnknown(),
 		},
 	}
 }
@@ -245,6 +246,9 @@ func SchemaResourceCreatedAt(name string) schema.Attribute {
 	return schema.StringAttribute{
 		Computed:    true,
 		Description: desc.Sprintf("The creation timestamp of the %s", name),
+		PlanModifiers: []planmodifier.String{
+			stringplanmodifier.UseStateForUnknown(),
+		},
 	}
 }
 

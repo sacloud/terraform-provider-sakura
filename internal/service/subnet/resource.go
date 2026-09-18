@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -88,23 +89,38 @@ func (r *subnetResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"vswitch_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The id of the vSwitch connected from the Subnet",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"network_address": schema.StringAttribute{
 				Computed:    true,
 				Description: "The IPv4 network address assigned to the Subnet",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"min_ip_address": schema.StringAttribute{
 				Computed:    true,
 				Description: "Minimum IP address in assigned global addresses to the Subnet",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"max_ip_address": schema.StringAttribute{
 				Computed:    true,
 				Description: "Maximum IP address in assigned global addresses to the Subnet",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"ip_addresses": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "A list of assigned global address to the Subnet",
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,

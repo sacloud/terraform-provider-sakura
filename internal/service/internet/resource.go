@@ -16,7 +16,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -101,6 +103,9 @@ func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"vswitch_id": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The id of the vSwitch"),
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"server_ids": schema.ListAttribute{
 				ElementType: types.StringType,
@@ -110,35 +115,59 @@ func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"network_address": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The IPv4 network address assigned to the %s", resourceName),
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"gateway": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The IP address of the gateway used by the %s", resourceName),
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"min_ip_address": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("Minimum IP address in assigned global addresses to the %s", resourceName),
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"max_ip_address": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("Maximum IP address in assigned global addresses to the %s", resourceName),
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"ip_addresses": schema.ListAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: desc.Sprintf("A set of assigned global address to the %s", resourceName),
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"ipv6_prefix": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The network prefix of assigned IPv6 addresses to the %s", resourceName),
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"ipv6_prefix_len": schema.Int32Attribute{
 				Computed:    true,
 				Description: "The bit length of IPv6 network prefix",
+				PlanModifiers: []planmodifier.Int32{
+					int32planmodifier.UseStateForUnknown(),
+				},
 			},
 			"ipv6_network_address": schema.StringAttribute{
 				Computed:    true,
 				Description: desc.Sprintf("The IPv6 network address assigned to the %s", resourceName),
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,

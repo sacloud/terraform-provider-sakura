@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/setplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -95,11 +96,17 @@ func (r *evaluationRuleResource) Schema(ctx context.Context, _ resource.SchemaRe
 			"description": schema.StringAttribute{
 				Computed:    true,
 				Description: "The description of the Evaluation Rule",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"iam_roles_required": schema.SetAttribute{
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "The set of IAM roles required for the Evaluation Rule",
+				PlanModifiers: []planmodifier.Set{
+					setplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"no_action_on_delete": schema.BoolAttribute{
 				Optional:    true,

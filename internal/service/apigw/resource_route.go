@@ -70,8 +70,8 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"id":         common.SchemaResourceId("API Gateway Route"),
 			"name":       common.SchemaResourceName("API Gateway Route"),
 			"tags":       common.SchemaResourceTags("API Gateway Route"),
-			"created_at": schemaResourceAPIGWCreatedAt("API Gateway Route"),
-			"updated_at": schemaResourceAPIGWUpdatedAt("API Gateway Route"),
+			"created_at": common.SchemaResourceCreatedAt("API Gateway Route"),
+			"updated_at": common.SchemaResourceUpdatedAt("API Gateway Route"),
 			"service_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The Service ID associated with the API Gateway Route",
@@ -107,6 +107,9 @@ func (r *apigwRouteResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"host": schema.StringAttribute{
 				Computed:    true,
 				Description: "The auto-issued host when hosts is not specified",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"hosts": schema.ListAttribute{
 				ElementType: types.StringType,

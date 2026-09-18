@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/listplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -70,6 +71,9 @@ func (r *dnsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				ElementType: types.StringType,
 				Computed:    true,
 				Description: "A list of IP address of DNS server that manage this zone",
+				PlanModifiers: []planmodifier.List{
+					listplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"monitoring_suite": common.SchemaResourceMonitoringSuite("DNS"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

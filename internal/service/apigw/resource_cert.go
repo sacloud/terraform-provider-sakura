@@ -66,8 +66,8 @@ func (r *apigwCertResource) Schema(ctx context.Context, req resource.SchemaReque
 		Attributes: map[string]schema.Attribute{
 			"id":         common.SchemaResourceId("API Gateway Certificate"),
 			"name":       schemaResourceAPIGWName("API Gateway Certificate"),
-			"created_at": schemaResourceAPIGWCreatedAt("API Gateway Certificate"),
-			"updated_at": schemaResourceAPIGWUpdatedAt("API Gateway Certificate"),
+			"created_at": common.SchemaResourceCreatedAt("API Gateway Certificate"),
+			"updated_at": common.SchemaResourceUpdatedAt("API Gateway Certificate"),
 			"rsa":        schemaResourceAPIGWCert("RSA setting for API Gateway Certificate", true),
 			"ecdsa":      schemaResourceAPIGWCert("ECDSA setting for API Gateway Certificate", false),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

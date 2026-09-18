@@ -15,6 +15,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	objectstorage "github.com/sacloud/sacloud-sdk-go/api/object-storage"
@@ -78,11 +80,17 @@ func (r *objectStoragePermissionResource) Schema(ctx context.Context, _ resource
 				Computed:    true,
 				Sensitive:   true,
 				Description: "The access key for the Object Storage Permission.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"secret_key": schema.StringAttribute{
 				Computed:    true,
 				Sensitive:   true,
 				Description: "The secret key for the Object Storage Permission.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"bucket_controls": schema.ListNestedAttribute{
 				Required:    true,

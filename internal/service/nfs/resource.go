@@ -74,7 +74,7 @@ func (r *nfsResource) Schema(ctx context.Context, req resource.SchemaRequest, re
 				Required:    true,
 				Description: "The network interface of the NFS.",
 				Attributes: map[string]schema.Attribute{
-					"vswitch_id": common.SchemaResourceSwitchID("NFS"),
+					"vswitch_id": common.SchemaResourceVSwitchID("NFS"),
 					"ip_address": schema.StringAttribute{
 						Required:    true,
 						Description: "The IP address to assign to the NFS",

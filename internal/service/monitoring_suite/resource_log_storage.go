@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
@@ -68,10 +69,16 @@ func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"project_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the project to which the Log Storage belongs.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the Log Storage.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"is_system": schema.BoolAttribute{
 				Optional:    true,
@@ -109,6 +116,9 @@ func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "The endpoints of the Log Storage.",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"ingester": schema.SingleNestedAttribute{
 						Computed:    true,

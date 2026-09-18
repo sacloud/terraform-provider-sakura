@@ -18,6 +18,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/sacloud-sdk-go/api/webaccel"
@@ -105,14 +107,23 @@ func (r *webAccelResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 			"subdomain": schema.StringAttribute{
 				Computed:    true,
 				Description: "Subdomain of the site",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"cname_record_value": schema.StringAttribute{
 				Computed:    true,
 				Description: "CNAME record value for the site",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"txt_record_value": schema.StringAttribute{
 				Computed:    true,
 				Description: "TXT record value for the site",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"domain": schema.StringAttribute{
 				Optional:    true,

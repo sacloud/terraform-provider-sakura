@@ -78,8 +78,8 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 			"id":         common.SchemaResourceId("API Gateway Service"),
 			"name":       common.SchemaResourceName("API Gateway Service"),
 			"tags":       common.SchemaResourceTags("API Gateway Service"),
-			"created_at": schemaResourceAPIGWCreatedAt("API Gateway Service"),
-			"updated_at": schemaResourceAPIGWUpdatedAt("API Gateway Service"),
+			"created_at": common.SchemaResourceCreatedAt("API Gateway Service"),
+			"updated_at": common.SchemaResourceUpdatedAt("API Gateway Service"),
 			"subscription_id": schema.StringAttribute{
 				Required:    true,
 				Description: "The subscription plan ID associated with the service",
@@ -157,6 +157,9 @@ func (r *apigwServiceResource) Schema(ctx context.Context, req resource.SchemaRe
 			"route_host": schema.StringAttribute{
 				Computed:    true,
 				Description: "The route host for the service",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"oidc": schema.SingleNestedAttribute{
 				Optional:    true,
