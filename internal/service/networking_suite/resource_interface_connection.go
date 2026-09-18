@@ -67,6 +67,7 @@ func (r *interfaceConnectionResource) Schema(ctx context.Context, _ resource.Sch
 				Description: "Ephemeral IPv4 address used on connect. If you omit this attribute, the networking-suite assigns one automatically.",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

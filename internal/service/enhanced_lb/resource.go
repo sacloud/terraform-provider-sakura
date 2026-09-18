@@ -504,10 +504,16 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 			"fqdn": schema.StringAttribute{
 				Computed:    true,
 				Description: "The FQDN for accessing to the Enhanced LB. This is typically used as value of CNAME record",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"vip": schema.StringAttribute{
 				Computed:    true,
 				Description: "The virtual IP address assigned to the Enhanced LB",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"proxy_networks": schema.ListAttribute{
 				ElementType: types.StringType,

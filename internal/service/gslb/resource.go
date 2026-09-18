@@ -17,6 +17,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	iaas "github.com/sacloud/sacloud-sdk-go/api/iaas"
@@ -69,6 +71,9 @@ func (r *gslbResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"fqdn": schema.StringAttribute{
 				Computed:    true,
 				Description: "The FQDN for accessing to the GSLB. This is typically used as value of CNAME record",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"health_check": schema.SingleNestedAttribute{
 				Required:    true,

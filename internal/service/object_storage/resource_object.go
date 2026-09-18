@@ -130,6 +130,9 @@ func (r *objectStorageObjectResource) Schema(ctx context.Context, _ resource.Sch
 			"storage_class": schema.StringAttribute{
 				Computed:    true,
 				Description: "The storage class of the Object Storage Object.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 				/*
 					Default:     stringdefault.StaticString("STANDARD"),
 					Validators: []validator.String{

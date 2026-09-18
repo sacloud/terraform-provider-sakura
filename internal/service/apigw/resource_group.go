@@ -57,8 +57,8 @@ func (r *apigwGroupResource) Schema(ctx context.Context, req resource.SchemaRequ
 			"id":         common.SchemaResourceId("API Gateway Group"),
 			"name":       schemaResourceAPIGWName("API Gateway Group"),
 			"tags":       common.SchemaResourceTags("API Gateway Group"),
-			"created_at": schemaResourceAPIGWCreatedAt("API Gateway Group"),
-			"updated_at": schemaResourceAPIGWUpdatedAt("API Gateway Group"),
+			"created_at": common.SchemaResourceCreatedAt("API Gateway Group"),
+			"updated_at": common.SchemaResourceUpdatedAt("API Gateway Group"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),

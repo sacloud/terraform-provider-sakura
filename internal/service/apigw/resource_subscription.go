@@ -13,6 +13,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -59,8 +60,8 @@ func (r *apigwSubscriptionResource) Schema(ctx context.Context, req resource.Sch
 		Attributes: map[string]schema.Attribute{
 			"id":         common.SchemaResourceId("API Gateway Subscription"),
 			"name":       schemaResourceAPIGWName("API Gateway Subscription"),
-			"created_at": schemaResourceAPIGWCreatedAt("API Gateway Subscription"),
-			"updated_at": schemaResourceAPIGWUpdatedAt("API Gateway Subscription"),
+			"created_at": common.SchemaResourceCreatedAt("API Gateway Subscription"),
+			"updated_at": common.SchemaResourceUpdatedAt("API Gateway Subscription"),
 			"plan_id": schema.StringAttribute{
 				Required:    true,
 				Description: "Plan ID of the API Gateway Subscription",
@@ -74,6 +75,9 @@ func (r *apigwSubscriptionResource) Schema(ctx context.Context, req resource.Sch
 			"resource_id": schema.Int64Attribute{
 				Computed:    true,
 				Description: "Resource ID of the API Gateway Subscription",
+				PlanModifiers: []planmodifier.Int64{
+					int64planmodifier.UseStateForUnknown(),
+				},
 			},
 			"monthly_request": schema.Int64Attribute{
 				Computed:    true,
