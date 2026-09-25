@@ -159,6 +159,7 @@ func TestAccImportSakuraVPNRouter_basic(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraVPNRouterExists(resourceName, &vpcRouter),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "user.#", "1"),
 				),
 			},
 			{
@@ -890,6 +891,12 @@ resource "sakura_vpn_router" "foobar" {
 var testAccSakuraVPNRouter_import = `
 resource "sakura_vpn_router" "foobar" {
   name = "{{ .arg0 }}"
+
+  user = [{
+    name                = "username"
+	password_wo         = "password"
+	password_wo_version = 1
+  }]
 }
 `
 
