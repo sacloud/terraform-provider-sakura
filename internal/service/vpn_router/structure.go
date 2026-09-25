@@ -17,6 +17,7 @@ import (
 	"github.com/sacloud/sacloud-sdk-go/service/iaas/setup"
 	"github.com/sacloud/sacloud-sdk-go/service/iaas/vpcrouter/builder"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
 // resource.goに入れてもいいが、量が多いのでとりあえず分割
@@ -509,15 +510,23 @@ func expandVPNRouterStaticRoute(model *vpnRouterStaticRouteModel) *iaas.VPCRoute
 }
 
 func expandVPNRouterUserList(model, config *vpnRouterResourceModel) []*iaas.VPCRouterRemoteAccessUser {
-	if len(model.User) > 0 {
-		var results []*iaas.VPCRouterRemoteAccessUser
-		for i, u := range model.User {
-			cu := config.User[i]
-			results = append(results, expandVPNRouterUser(&u, &cu))
-		}
-		return results
+	if !utils.IsKnown(model.User) {
+		return nil
 	}
-	return nil
+
+	var users, configUsers []vpnRouterUserModel
+	if model.User.ElementsAs(context.Background(), &users, false).HasError() {
+		return nil
+	}
+	if config == nil || config.User.ElementsAs(context.Background(), &configUsers, false).HasError() {
+		return nil
+	}
+
+	results := make([]*iaas.VPCRouterRemoteAccessUser, 0, len(users))
+	for i, user := range users {
+		results = append(results, expandVPNRouterUser(&user, &configUsers[i]))
+	}
+	return results
 }
 
 func expandVPNRouterUser(model, config *vpnRouterUserModel) *iaas.VPCRouterRemoteAccessUser {

@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/listvalidator"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -68,7 +69,7 @@ type vpnRouterResourceModel struct {
 	vpnRouterBaseModel
 	L2TP          *vpnRouterL2TPModel           `tfsdk:"l2tp"`
 	SiteToSiteVPN []vpnRouterSiteToSiteVPNModel `tfsdk:"site_to_site_vpn"`
-	User          []vpnRouterUserModel          `tfsdk:"user"`
+	User          types.List                    `tfsdk:"user"`
 	Timeouts      timeouts.Value                `tfsdk:"timeouts"`
 }
 
@@ -95,6 +96,15 @@ type vpnRouterUserModel struct {
 	Password          types.String `tfsdk:"password"`
 	PasswordWO        types.String `tfsdk:"password_wo"`
 	PasswordWOVersion types.Int32  `tfsdk:"password_wo_version"`
+}
+
+func (m vpnRouterUserModel) AttributeTypes() map[string]attr.Type {
+	return map[string]attr.Type{
+		"name":                types.StringType,
+		"password":            types.StringType,
+		"password_wo":         types.StringType,
+		"password_wo_version": types.Int32Type,
+	}
 }
 
 func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp *resource.SchemaResponse) {
@@ -809,6 +819,11 @@ func (r *vpnRouterResource) Read(ctx context.Context, req resource.ReadRequest, 
 		resp.Diagnostics.AddError("Read: Terraform Error", fmt.Sprintf("failed to update state for VPNRouter[%s] resource: %s", sid, err))
 		return
 	}
+	// importではUserが空のことがあるため、その場合APIから取得して設定する
+	if !utils.IsKnown(state.User) {
+		state.User = flattenVPNRouterUsers(vpnRouter)
+	}
+
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -991,4 +1006,27 @@ func flattenVPNRouterSiteToSiteConfig(vpcRouter *iaas.VPCRouter, confs []vpnRout
 		}
 	}
 	return s2sSettings
+}
+
+func flattenVPNRouterUsers(vpnRouter *iaas.VPCRouter) types.List {
+	if len(vpnRouter.Settings.RemoteAccessUsers) == 0 {
+		return types.ListNull(types.ObjectType{AttrTypes: vpnRouterUserModel{}.AttributeTypes()})
+	}
+
+	users := make([]vpnRouterUserModel, 0, len(vpnRouter.Settings.RemoteAccessUsers))
+	for _, user := range vpnRouter.Settings.RemoteAccessUsers {
+		model := vpnRouterUserModel{
+			Name:              types.StringValue(user.UserName),
+			Password:          types.StringNull(),
+			PasswordWO:        types.StringNull(),
+			PasswordWOVersion: types.Int32Value(1), //　新規の設定ではwoが推奨され、また多くのケースで1となるため初期値として1を設定
+		}
+		users = append(users, model)
+	}
+
+	value, diags := types.ListValueFrom(context.Background(), types.ObjectType{AttrTypes: vpnRouterUserModel{}.AttributeTypes()}, users)
+	if diags.HasError() {
+		return types.ListNull(types.ObjectType{AttrTypes: vpnRouterUserModel{}.AttributeTypes()})
+	}
+	return value
 }
