@@ -79,6 +79,7 @@ func (r *subnetResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Description: "The name of zone that the subnet will be created (e.g. `is1c`, `tk1a`)",
 				PlanModifiers: []planmodifier.String{
 					stringplanmodifier.RequiresReplaceIfConfigured(),
+					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{

@@ -27,7 +27,7 @@ func TestAccSakuraDataSourceAPIGWUser_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "custom_id", "custom-test-id-3500"),
-					resource.TestCheckResourceAttr(resourceName, "ip_restriction.protocols", "http"),
+					resource.TestCheckResourceAttr(resourceName, "ip_restriction.protocols", "https"),
 					resource.TestCheckResourceAttr(resourceName, "ip_restriction.restricted_by", "allowIps"),
 					resource.TestCheckResourceAttr(resourceName, "ip_restriction.ips.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "ip_restriction.ips.0", "192.168.1.10"),
@@ -52,7 +52,7 @@ resource "sakura_apigw_user" "foobar" {
   tags = ["tag1"]
   custom_id = "custom-test-id-3500"
   ip_restriction = {
-    protocols = "http"
+    protocols = "https"
     restricted_by = "allowIps"
     ips = ["192.168.1.10"]
   }

@@ -122,14 +122,8 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Computed:    true,
 				Description: "The latest material version of the KMS key.",
 			},
-			"created_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The creation time of the KMS key.",
-			},
-			"modified_at": schema.StringAttribute{
-				Computed:    true,
-				Description: "The last modification time of the KMS key.",
-			},
+			"created_at":  common.SchemaResourceCreatedAt("KMS key"),
+			"modified_at": common.SchemaDataSourceUpdatedAt("KMS key"),
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,
 			}),

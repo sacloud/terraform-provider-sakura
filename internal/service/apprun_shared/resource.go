@@ -320,6 +320,9 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 			"public_url": schema.StringAttribute{
 				Computed:    true,
 				Description: "The public URL of the AppRun Shared application",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"timeouts": timeouts.Attributes(ctx, timeouts.Opts{
 				Create: true, Update: true, Delete: true,

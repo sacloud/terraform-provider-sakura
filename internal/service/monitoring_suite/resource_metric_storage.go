@@ -14,7 +14,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/booldefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/boolplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	monitoringsuite "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite"
 	monitoringsuiteapi "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite/apis/v1"
@@ -62,10 +64,16 @@ func (r *metricStorageResource) Schema(ctx context.Context, _ resource.SchemaReq
 			"project_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the project to which the Metric Storage belongs.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the Metric Storage.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"is_system": schema.BoolAttribute{
 				Optional:    true,
@@ -80,6 +88,9 @@ func (r *metricStorageResource) Schema(ctx context.Context, _ resource.SchemaReq
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "The endpoints of the Metric Storage.",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"address": schema.StringAttribute{
 						Computed:    true,

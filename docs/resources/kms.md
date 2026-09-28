@@ -45,10 +45,10 @@ resource "sakura_kms" "foobar" {
 
 ### Read-Only
 
-- `created_at` (String) The creation time of the KMS key.
+- `created_at` (String) The creation timestamp of the KMS key
 - `id` (String) The ID of the KMS key.
 - `latest_version` (Number) The latest material version of the KMS key.
-- `modified_at` (String) The last modification time of the KMS key.
+- `modified_at` (String) The last update timestamp of the KMS key
 
 <a id="nestedatt--timeouts"></a>
 ### Nested Schema for `timeouts`

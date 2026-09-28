@@ -13,6 +13,9 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	monitoringsuite "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite"
@@ -62,10 +65,16 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 			"project_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the project to which the Trace Storage belongs.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"resource_id": schema.StringAttribute{
 				Computed:    true,
 				Description: "The resource ID of the Trace Storage.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"retention_period_days": schema.Int32Attribute{
 				Optional:    true,
@@ -79,6 +88,9 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 			"endpoints": schema.SingleNestedAttribute{
 				Computed:    true,
 				Description: "The endpoints of the Trace Storage.",
+				PlanModifiers: []planmodifier.Object{
+					objectplanmodifier.UseStateForUnknown(),
+				},
 				Attributes: map[string]schema.Attribute{
 					"ingester": schema.SingleNestedAttribute{
 						Computed:    true,

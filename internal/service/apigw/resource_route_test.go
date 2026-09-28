@@ -157,14 +157,14 @@ func TestAccSakuraResourceAPIGWRoute_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttrSet(resourceName, "service_id"),
-					resource.TestCheckResourceAttr(resourceName, "protocols", "http,https"),
+					resource.TestCheckResourceAttr(resourceName, "protocols", "https"),
 					resource.TestCheckResourceAttr(resourceName, "path", "/"+rand+"2"),
 					resource.TestCheckResourceAttr(resourceName, "hosts.#", "1"), // maybe only 1 auto-issued host is returned from APIGW
 					resource.TestCheckResourceAttr(resourceName, "methods.#", "3"),
 					resource.TestCheckResourceAttr(resourceName, "methods.0", "GET"),
 					resource.TestCheckResourceAttr(resourceName, "methods.1", "HEAD"),
 					resource.TestCheckResourceAttr(resourceName, "methods.2", "OPTIONS"),
-					resource.TestCheckResourceAttr(resourceName, "ip_restriction.protocols", "http,https"),
+					resource.TestCheckResourceAttr(resourceName, "ip_restriction.protocols", "https"),
 					resource.TestCheckResourceAttr(resourceName, "ip_restriction.restricted_by", "allowIps"),
 					resource.TestCheckResourceAttr(resourceName, "ip_restriction.ips.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "ip_restriction.ips.0", "192.168.0.1"),
@@ -442,11 +442,11 @@ resource "sakura_apigw_route" "foobar" {
   name       = "{{ .arg0 }}-updated"
   tags       = ["tag1", "tag2"]
   service_id = sakura_apigw_service.foobar.id
-  protocols  = "http,https"
+  protocols  = "https"
   path       = "/{{ .arg0 }}2"
   methods    = ["GET","HEAD","OPTIONS"]
   ip_restriction = {
-    protocols = "http,https"
+    protocols = "https"
     restricted_by = "allowIps"
     ips = ["192.168.0.1"]
   }

@@ -109,6 +109,9 @@ func (r *containerRegistryResource) Schema(ctx context.Context, req resource.Sch
 			"fqdn": schema.StringAttribute{
 				Computed:    true,
 				Description: "The FQDN for accessing the Container Registry. FQDN is built from `subdomain_label` + `.sakuracr.jp`",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			// Setではwrite-onlyが使えないため、Listにする。CR API経由でのユーザ取得は順序が不定なため、レスポンスはチェックせず、configの値をそのまま使う。
 			"user": schema.ListNestedAttribute{
