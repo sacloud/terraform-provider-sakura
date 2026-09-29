@@ -31,6 +31,7 @@ func TestAccSakuraDataSourceServer_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.2", "tag3"),
 					resource.TestCheckResourceAttr(resourceName, "core", "1"),
 					resource.TestCheckResourceAttr(resourceName, "memory", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.id"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "shared"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "1"),
 				),

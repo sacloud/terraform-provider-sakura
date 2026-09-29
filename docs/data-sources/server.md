@@ -57,6 +57,7 @@ data "sakura_server" "foobar" {
 
 Read-Only:
 
+- `id` (String) The resource id of the network interface
 - `mac_address` (String) The MAC address
 - `packet_filter_id` (String) The id of the packet filter attached to the network interface
 - `upstream` (String) The upstream type or upstream switch id. This will be one of [`shared`/`disconnect`/`<switch id>`]

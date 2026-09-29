@@ -38,6 +38,7 @@ type serverBaseModel struct {
 }
 
 type serverNetworkInterfaceModel struct {
+	ID             types.String `tfsdk:"id"`
 	Upstream       types.String `tfsdk:"upstream"`
 	UserIPAddress  types.String `tfsdk:"user_ip_address"` // iptypes.IPv4Address `tfsdk:"user_ip_address"`
 	PacketFilterID types.String `tfsdk:"packet_filter_id"`
@@ -96,6 +97,7 @@ func flattenServerNICs(server *iaas.Server) []serverNetworkInterfaceModel {
 			upstream = nic.SwitchID.String()
 		}
 		r := serverNetworkInterfaceModel{
+			ID:            types.StringValue(nic.ID.String()),
 			Upstream:      types.StringValue(upstream),
 			MACAddress:    types.StringValue(strings.ToLower(nic.MACAddress)),
 			UserIPAddress: types.StringValue(nic.UserIPAddress), // iptypes.NewIPv4AddressValue(nic.UserIPAddress),

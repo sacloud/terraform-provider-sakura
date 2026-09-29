@@ -100,6 +100,10 @@ func (d *serverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed:    true,
+							Description: "The resource id of the network interface",
+						},
 						"upstream": schema.StringAttribute{
 							Computed: true,
 							Description: desc.Sprintf(
