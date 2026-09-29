@@ -182,6 +182,10 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"id": schema.StringAttribute{
+							Computed:    true,
+							Description: "The resource id of the network interface",
+						},
 						"upstream": schema.StringAttribute{
 							Required: true,
 							Description: desc.Sprintf(

@@ -163,6 +163,7 @@ Optional:
 
 Read-Only:
 
+- `id` (String) The resource id of the network interface
 - `mac_address` (String) The MAC address
 
 
