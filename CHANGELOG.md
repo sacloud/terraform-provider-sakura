@@ -1,5 +1,15 @@
 # Changelog
 
+## [v3.14.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.1...v3.14.2) - 2026-09-29
+
+### Other Changes
+- tools: update go.mod and dependency by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/347
+- vpn_router: Use types.List to support unknown state and fix missing users during import. fix #346 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/349
+- Add UseStateForUnknown to Computed attributes and refactor some codes by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/350
+- workflows: fix regression of workflows's CreatedAt by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/352
+### 📦 Dependency Updates
+- ci: bump Songmu/tagpr from 1.20.2 to 1.20.3 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/340
+
 ## [v3.14.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.0...v3.14.1) - 2026-09-17
 
 ### Other Changes
