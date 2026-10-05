@@ -373,6 +373,7 @@ func TestAccSakuraServer_interfaces(t *testing.T) {
 					test.CheckSakuraServerExists(resourceName, &server),
 					test.CheckSakuraServerAttributes(&server),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.srn"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "shared"),
 				),
 			},
@@ -382,6 +383,8 @@ func TestAccSakuraServer_interfaces(t *testing.T) {
 					test.CheckSakuraServerExists(resourceName, &server),
 					test.CheckSakuraServerAttributes(&server),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "2"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.srn"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.1.srn"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "shared"),
 				),
 			},
@@ -391,6 +394,10 @@ func TestAccSakuraServer_interfaces(t *testing.T) {
 					test.CheckSakuraServerExists(resourceName, &server),
 					test.CheckSakuraServerAttributes(&server),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "4"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.srn"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.1.srn"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.2.srn"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.3.srn"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "shared"),
 				),
 			},
@@ -400,7 +407,100 @@ func TestAccSakuraServer_interfaces(t *testing.T) {
 					test.CheckSakuraServerExists(resourceName, &server),
 					testCheckSakuraServerSharedInterface(&server),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "2"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.srn"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.1.srn"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "disconnect"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraServer_networkingSuiteSubnet(t *testing.T) {
+	resourceName := "sakura_server.foobar"
+	rand := test.RandomName()
+	interfaceSRNPattern := regexp.MustCompile(`^srnv1:sakura-is1c:sakura\.iaas\.interface:[0-9]+$`)
+	connectionSRNPattern := regexp.MustCompile(`^srnv1:sakura-is1c:sakura\.networking-suite\.interface-connection:[^:]+$`)
+
+	var server iaas.Server
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             test.CheckSakuraServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraServer_networkingSuiteSubnet, rand),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					//test.CheckSakuraServerAttributes(&server),
+					resource.TestCheckResourceAttr(resourceName, "name", "nws-"+rand),
+					resource.TestCheckResourceAttr(resourceName, "zone", "is1c"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.srn"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.mac_address"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "networking_suite_subnet"),
+					resource.TestCheckResourceAttrPair(resourceName, "network_interface.0.subnet_srn", "sakura_networking_suite_subnet.foobar", "srn"),
+					resource.TestMatchResourceAttr(resourceName, "network_interface.0.srn", connectionSRNPattern),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraServer_networkingSuiteSubnetAdded, rand),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "2"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.srn"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "networking_suite_subnet"),
+					resource.TestCheckResourceAttrPair(resourceName, "network_interface.0.subnet_srn", "sakura_networking_suite_subnet.foobar", "srn"),
+					resource.TestMatchResourceAttr(resourceName, "network_interface.0.srn", connectionSRNPattern),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.1.srn"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.1.mac_address"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.1.upstream", "disconnect"),
+					resource.TestCheckNoResourceAttr(resourceName, "network_interface.1.subnet_srn"),
+					resource.TestMatchResourceAttr(resourceName, "network_interface.1.srn", interfaceSRNPattern),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraServer_networkingSuiteSubnetUpdated, rand),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "2"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.srn"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "shared"),
+					resource.TestCheckNoResourceAttr(resourceName, "network_interface.0.subnet_srn"),
+					resource.TestMatchResourceAttr(resourceName, "network_interface.0.srn", interfaceSRNPattern),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.1.srn"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.1.upstream", "networking_suite_subnet"),
+					resource.TestCheckResourceAttrPair(resourceName, "network_interface.1.subnet_srn", "sakura_networking_suite_subnet.foobar", "srn"),
+					resource.TestMatchResourceAttr(resourceName, "network_interface.1.srn", connectionSRNPattern),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraServer_networkingSuiteSubnetDisconnect, rand),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "3"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.srn"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "disconnect"),
+					resource.TestCheckNoResourceAttr(resourceName, "network_interface.0.subnet_srn"),
+					resource.TestMatchResourceAttr(resourceName, "network_interface.0.srn", interfaceSRNPattern),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.1.srn"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.1.upstream", "networking_suite_subnet"),
+					resource.TestCheckResourceAttrPair(resourceName, "network_interface.1.subnet_srn", "sakura_networking_suite_subnet.foobar", "srn"),
+					resource.TestMatchResourceAttr(resourceName, "network_interface.1.srn", connectionSRNPattern),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.2.srn"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.2.upstream", "disconnect"),
+					resource.TestCheckNoResourceAttr(resourceName, "network_interface.2.subnet_srn"),
+					resource.TestMatchResourceAttr(resourceName, "network_interface.2.srn", interfaceSRNPattern),
+				),
+			},
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraServer_networkingSuiteSubnet, rand),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "1"),
+					resource.TestCheckResourceAttrSet(resourceName, "network_interface.0.srn"),
+					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "networking_suite_subnet"),
+					resource.TestMatchResourceAttr(resourceName, "network_interface.0.srn", connectionSRNPattern),
 				),
 			},
 		},
@@ -872,6 +972,134 @@ resource "sakura_server" "foobar" {
 }
 resource "sakura_vswitch" "foobar0" {
   name = "{{ .arg0 }}-0"
+}
+`
+
+const testAccSakuraServer_networkingSuiteSubnet = `
+resource "sakura_networking_suite_subnet_group" "foobar" {
+	name               = "{{ .arg0 }}"
+	description        = "description"
+	ipv4_address_range = "10.0.0.0/20"
+	region             = "is1"
+}
+
+resource "sakura_networking_suite_subnet" "foobar" {
+	name               = "{{ .arg0 }}"
+	description        = "description"
+	ipv4_address_range = "10.0.0.0/24"
+	zone               = "is1c"
+	subnet_group_srn   = sakura_networking_suite_subnet_group.foobar.srn
+}
+
+resource "sakura_server" "foobar" {
+	name = "nws-{{ .arg0 }}"
+	zone = "is1c"
+
+	network_interface = [{
+		upstream   = "networking_suite_subnet"
+		subnet_srn = sakura_networking_suite_subnet.foobar.srn
+		#subnet_srn = "srnv1:sakura-is1c:sakura.networking-suite.subnet:113802555033"
+	}]
+
+	force_shutdown = true
+}
+`
+
+const testAccSakuraServer_networkingSuiteSubnetAdded = `
+resource "sakura_networking_suite_subnet_group" "foobar" {
+	name               = "{{ .arg0 }}"
+	description        = "description"
+	ipv4_address_range = "10.0.0.0/20"
+	region             = "is1"
+}
+
+resource "sakura_networking_suite_subnet" "foobar" {
+	name               = "{{ .arg0 }}"
+	description        = "description"
+	ipv4_address_range = "10.0.0.0/24"
+	zone               = "is1c"
+	subnet_group_srn   = sakura_networking_suite_subnet_group.foobar.srn
+}
+
+resource "sakura_server" "foobar" {
+	name = "nws-{{ .arg0 }}"
+	zone = "is1c"
+
+	network_interface = [{
+		upstream   = "networking_suite_subnet"
+		subnet_srn = sakura_networking_suite_subnet.foobar.srn
+	},
+	{
+		upstream = "disconnect"
+	}]
+
+	force_shutdown = true
+}
+`
+
+const testAccSakuraServer_networkingSuiteSubnetUpdated = `
+resource "sakura_networking_suite_subnet_group" "foobar" {
+	name               = "{{ .arg0 }}"
+	description        = "description"
+	ipv4_address_range = "10.0.0.0/20"
+	region             = "is1"
+}
+
+resource "sakura_networking_suite_subnet" "foobar" {
+	name               = "{{ .arg0 }}"
+	description        = "description"
+	ipv4_address_range = "10.0.0.0/24"
+	zone               = "is1c"
+	subnet_group_srn   = sakura_networking_suite_subnet_group.foobar.srn
+}
+resource "sakura_server" "foobar" {
+	name = "nws-{{ .arg0 }}"
+	zone = "is1c"
+
+	network_interface = [{
+		upstream = "shared"
+	},
+	{
+		upstream   = "networking_suite_subnet"
+		subnet_srn = sakura_networking_suite_subnet.foobar.srn
+	}]
+
+	force_shutdown = true
+}
+`
+
+const testAccSakuraServer_networkingSuiteSubnetDisconnect = `
+resource "sakura_networking_suite_subnet_group" "foobar" {
+	name               = "{{ .arg0 }}"
+	description        = "description"
+	ipv4_address_range = "10.0.0.0/20"
+	region             = "is1"
+}
+
+resource "sakura_networking_suite_subnet" "foobar" {
+	name               = "{{ .arg0 }}"
+	description        = "description"
+	ipv4_address_range = "10.0.0.0/24"
+	zone               = "is1c"
+	subnet_group_srn   = sakura_networking_suite_subnet_group.foobar.srn
+}
+
+resource "sakura_server" "foobar" {
+	name = "nws-{{ .arg0 }}"
+	zone = "is1c"
+
+	network_interface = [{
+		upstream = "disconnect"
+	},
+	{
+		upstream   = "networking_suite_subnet"
+		subnet_srn = sakura_networking_suite_subnet.foobar.srn
+	},
+	{
+		upstream = "disconnect"
+	}]
+
+	force_shutdown = true
 }
 `
 

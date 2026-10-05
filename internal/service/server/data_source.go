@@ -13,6 +13,7 @@ import (
 	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	sctypes "github.com/sacloud/terraform-provider-sakura/internal/types"
 )
 
 type serverDataSource struct {
@@ -100,6 +101,16 @@ func (d *serverDataSource) Schema(_ context.Context, _ datasource.SchemaRequest,
 				Computed: true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"srn": schema.StringAttribute{
+							CustomType:  sctypes.SRNType,
+							Computed:    true,
+							Description: "The SRN of the IaaS network interface",
+						},
+						"subnet_srn": schema.StringAttribute{
+							CustomType:  sctypes.SRNType,
+							Computed:    true,
+							Description: "The SRN of the Networking Suite Subnet",
+						},
 						"upstream": schema.StringAttribute{
 							Computed: true,
 							Description: desc.Sprintf(
