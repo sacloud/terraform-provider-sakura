@@ -49,7 +49,7 @@ func TestAccSakuraServer_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.ssh_key_ids.0", "100000000000"),
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.disable_pw_auth", "true"),
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.id", "100000000000"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.id", "113702263994"),
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.api_key_id", "100000000001"),
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.variables.%", "2"),
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.variables.foo1", "bar1"),
@@ -144,7 +144,7 @@ func TestAccSakuraServer_basicWithWO(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.ssh_key_ids.0", "100000000000"),
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.disable_pw_auth", "true"),
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.#", "1"),
-					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.id", "100000000000"),
+					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.id", "113702263994"),
 					resource.TestCheckResourceAttr(resourceName, "disk_edit_parameter.script.0.api_key_id", "100000000001"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.0.upstream", "shared"),
@@ -695,7 +695,7 @@ resource "sakura_server" "foobar" {
     ssh_key_ids     = ["100000000000", "200000000000"]
     disable_pw_auth = true
     script = [{
-      id         = "100000000000"
+      id         = "113702263994"
       api_key_id = "100000000001"
       variables  = {
         foo1 = "bar1"
@@ -758,7 +758,7 @@ resource "sakura_server" "foobar" {
     ssh_key_ids     = ["100000000000", "200000000000"]
     disable_pw_auth = true
     script = [{
-      id         = "100000000000"
+      id         = "113702263994"
       api_key_id = "100000000001"
     }]
   }
@@ -1313,7 +1313,7 @@ resource "sakura_server" "foobar" {
     ssh_key_ids     = ["100000000000", "200000000000"]
     disable_pw_auth = true
     script = [{
-      id         = "100000000000"
+      id         = "113702263994"
       api_key_id = "100000000001"
       variables  = {
         foo1 = "bar1"
