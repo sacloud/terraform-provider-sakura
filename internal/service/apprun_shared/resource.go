@@ -154,12 +154,16 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 											Optional:    true,
 											Computed:    true,
 											Description: "The container registry credentials",
+											Validators: []validator.String{
+												stringvalidator.LengthBetween(1, 63),
+											},
 										},
 										"password": schema.StringAttribute{
 											Optional:    true,
 											Sensitive:   true,
 											Description: "The container registry credentials. Use password_wo instead for newer deployments.",
 											Validators: []validator.String{
+												stringvalidator.LengthBetween(1, 63),
 												stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("components").AtAnyListIndex().AtName("deploy_source").AtName("container_registry").AtName("password_wo")),
 												stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password_wo")),
 											},
@@ -169,6 +173,7 @@ func (r *apprunSharedResource) Schema(ctx context.Context, req resource.SchemaRe
 											WriteOnly:   true,
 											Description: "The container registry credentials",
 											Validators: []validator.String{
+												stringvalidator.LengthBetween(1, 63),
 												stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("password")),
 												stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
 											},
