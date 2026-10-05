@@ -75,6 +75,7 @@ func (r *userResource) Schema(ctx context.Context, _ resource.SchemaRequest, res
 				WriteOnly:   true,
 				Description: "Password for IAM User",
 				Validators: []validator.String{
+					stringvalidator.LengthBetween(8, 64),
 					stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("password_wo_version")),
 				},
 			},
