@@ -26,7 +26,7 @@ func TestAccSakuraDataSourceIAMRole_Basic(t *testing.T) {
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "id", "securitycontrol-agent"),
 					resource.TestCheckResourceAttr(resourceName, "name", "セキュリティコントロールエージェント"),
-					resource.TestCheckResourceAttr(resourceName, "description", "セキュリティコントロールの全評価ルールの実行ができる"),
+					resource.TestCheckResourceAttr(resourceName, "description", "セキュリティコントロールの全評価ルールの実行が行える"),
 					resource.TestCheckResourceAttr(resourceName, "category", "securitycontrol"),
 					resource.TestCheckResourceAttrSet(resourceName, "lowest_grantable_resource"),
 				),
