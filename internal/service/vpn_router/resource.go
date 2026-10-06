@@ -737,14 +737,16 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 }
 
 func (r *vpnRouterResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
-	var config vpnRouterResourceModel
-	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
+	var plan types.String
+	var publicNetworkInterface types.Object
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("plan"), &plan)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("public_network_interface"), &publicNetworkInterface)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// In ValidateConfig, plan is null when it is not explicitly set.
-	if (config.Plan.IsNull() || config.Plan.ValueString() == "standard") && utils.IsKnown(config.PublicNetworkInterface) {
+	if (plan.IsNull() || plan.ValueString() == "standard") && utils.IsKnown(publicNetworkInterface) {
 		resp.Diagnostics.AddError("Validate Config Error", "standard plan cannot have a public network interface. Use a different plan if you need a public network interface.")
 	}
 }
