@@ -626,8 +626,26 @@ var testAccSakuraVPNRouter_complete = `
 resource "sakura_internet" "foobar" {
   name = "{{ .arg0 }}"
 }
-resource sakura_vswitch "foobar" {
+resource "sakura_vswitch" "foobar" {
   name = "{{ .arg0 }}"
+}
+
+// check ValidateConfig's Value Conversion Error regression
+variable "port_forwardings" {
+  type = list(object({
+    protocol     = string
+    private_ip   = string
+    private_port = number
+    public_port  = number
+	description  = string
+  }))
+  default = [{
+    protocol     = "udp"
+    private_ip   = "192.168.11.11"
+    private_port = 22
+    public_port  = 10022
+    description  = "desc"
+  }]
 }
 
 resource "sakura_vpn_router" "foobar" {
@@ -705,13 +723,7 @@ resource "sakura_vpn_router" "foobar" {
     range_stop        = "192.168.11.30"
   }
 
-  port_forwarding = [{
-    protocol     = "udp"
-    public_port  = 10022
-    private_ip   = "192.168.11.11"
-    private_port = 22
-    description  = "desc"
-  }]
+  port_forwarding = var.port_forwardings
 
   pptp = {
     range_start = "192.168.11.31"
