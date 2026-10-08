@@ -208,7 +208,7 @@ resource "sakura_vswitch" "foobar" {
 - `tags` (Set of String) The tags of the VPN Router.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 - `user` (Attributes List) (see [below for nested schema](#nestedatt--user))
-- `version` (Number) The version of the VPN Router. This must be in the range [`1`-`2`]
+- `version` (Number) The version of the VPN Router. This must be in the range [`1`-`3`]
 - `wire_guard` (Attributes) (see [below for nested schema](#nestedatt--wire_guard))
 - `zone` (String) The name of zone that the VPN Router will be created (e.g. `is1a`, `tk1a`)
 
