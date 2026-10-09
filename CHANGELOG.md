@@ -1,5 +1,14 @@
 # Changelog
 
+## [v3.14.3](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.2...v3.14.3) - 2026-10-08
+
+### Other Changes
+- server: fix test. server resource now check script's id by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/355
+- Add length validator to password attribute. fix #354 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/358
+- vpn_router: fix potential cause of conversion error. fix #357 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/359
+### 📦 Dependency Updates
+- ci: bump Songmu/tagpr from 1.20.3 to 1.21.1 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/360
+
 ## [v3.14.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.1...v3.14.2) - 2026-09-29
 
 ### Other Changes
