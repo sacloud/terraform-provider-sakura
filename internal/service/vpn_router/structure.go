@@ -54,7 +54,7 @@ func expandVPNRouterNICSetting(model *vpnRouterResourceModel) builder.NICSetting
 	default:
 		nic := expandVPNRouterPublicNetworkInterface(model)
 		if nic == nil {
-			tflog.Warn(context.Background(), fmt.Sprintf("Can't expand VPN Router public_network_interface. This is something wrong with the configuration or broken state"))
+			tflog.Warn(context.Background(), "Can't expand VPN Router public_network_interface. This is something wrong with the configuration or broken state")
 			return &builder.PremiumNICSetting{}
 		}
 		return &builder.PremiumNICSetting{
