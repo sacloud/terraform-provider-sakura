@@ -190,7 +190,7 @@ func TestAccSakuraVPNRouter_Full(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraVPNRouterExists(resourceName, &vpcRouter),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
-					resource.TestCheckResourceAttr(resourceName, "version", "2"),
+					resource.TestCheckResourceAttr(resourceName, "version", "3"),
 					resource.TestCheckResourceAttrSet(resourceName, "public_ip"),
 					resource.TestCheckResourceAttrSet(resourceName, "public_netmask"),
 					resource.TestCheckResourceAttr(resourceName, "private_network_interface.#", "1"),
@@ -286,6 +286,7 @@ func TestAccSakuraVPNRouter_Full(t *testing.T) {
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraVPNRouterExists(resourceName, &vpcRouter),
 					resource.TestCheckResourceAttr(resourceName, "name", rand+"-upd"),
+					resource.TestCheckResourceAttr(resourceName, "version", "3"),
 					resource.TestCheckResourceAttrSet(resourceName, "public_ip"),
 					resource.TestCheckResourceAttrSet(resourceName, "public_netmask"),
 					resource.TestCheckNoResourceAttr(resourceName, "private_network_interface.#"),
@@ -653,7 +654,7 @@ resource "sakura_vpn_router" "foobar" {
   description = "description"
   tags        = ["tag1" , "tag2"]
   plan        = "premium"
-  version     = 2
+  version     = 3
 
   internet_connection = true
 
@@ -803,6 +804,7 @@ resource "sakura_vpn_router" "foobar" {
   description = "description-upd"
   tags        = ["tag1-upd" , "tag2-upd"]
   plan        = "premium"
+  version     = 3
 
   internet_connection = true
 

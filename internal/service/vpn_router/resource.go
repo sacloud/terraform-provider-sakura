@@ -121,9 +121,12 @@ func (d *vpnRouterResource) Schema(ctx context.Context, _ resource.SchemaRequest
 				Optional:    true,
 				Computed:    true,
 				Default:     int32default.StaticInt32(2),
-				Description: desc.Sprintf("The version of the VPN Router. %s", desc.Range(1, 2)),
+				Description: desc.Sprintf("The version of the VPN Router. %s", desc.Range(1, 3)),
 				PlanModifiers: []planmodifier.Int32{
 					int32planmodifier.RequiresReplaceIfConfigured(),
+				},
+				Validators: []validator.Int32{
+					int32validator.OneOf(1, 2, 3),
 				},
 			},
 			"public_network_interface": schema.SingleNestedAttribute{
