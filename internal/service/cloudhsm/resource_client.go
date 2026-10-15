@@ -165,7 +165,7 @@ func (r *cloudHSMClientResource) Update(ctx context.Context, req resource.Update
 	}
 
 	clientOp, _ := cloudhsm.NewClientOp(client, chsm)
-	updated, err := clientOp.Update(ctx, plan.ID.ValueString(), cloudhsm.CloudHSMClientUpdateParams{Name: plan.Name.ValueString()})
+	updated, err := clientOp.Update(ctx, plan.ID.ValueString(), plan.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", err.Error())
 		return

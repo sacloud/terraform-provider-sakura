@@ -85,7 +85,7 @@ func (d *cloudHSMLicenseDataSource) Read(ctx context.Context, req datasource.Rea
 	var chsmLicense *v1.CloudHSMSoftwareLicense
 	var err error
 	if len(name) > 0 {
-		chsmLicenses, err := licenseOp.List(ctx)
+		chsmLicenses, err := licenseOp.List(ctx, nil, nil)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list CloudHSM License resource: %s", err))
 			return

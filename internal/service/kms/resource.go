@@ -74,9 +74,9 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 				Optional:    true,
 				Computed:    true,
 				Description: "The status of the KMS key.",
-				Default:     stringdefault.StaticString(string(v1.ChangeKeyStatusStatusActive)),
+				Default:     stringdefault.StaticString(string(v1.ChangeKeyStateRequestStatusActive)),
 				Validators: []validator.String{
-					stringvalidator.OneOf(common.MapTo(v1.ChangeKeyStatusStatusActive.AllValues(), common.ToString)...),
+					stringvalidator.OneOf(common.MapTo(v1.ChangeKeyStateRequestStatusActive.AllValues(), common.ToString)...),
 				},
 			},
 			"key_origin": schema.StringAttribute{
@@ -250,7 +250,7 @@ func (r *kmsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 	}
 
 	if !state.ScheduleDestructionDays.IsNull() {
-		err := keyOp.ScheduleDestruction(ctx, state.ID.ValueString(), int(state.ScheduleDestructionDays.ValueInt32()))
+		_, err := keyOp.ScheduleDestruction(ctx, state.ID.ValueString(), int(state.ScheduleDestructionDays.ValueInt32()))
 		if err != nil {
 			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to set schedule destruction of KMS key[%s]: %s", state.ID.ValueString(), err))
 			return
@@ -278,26 +278,16 @@ func getKMS(ctx context.Context, client *v1.Client, id string, state *tfsdk.Stat
 	return key
 }
 
-func expandKMSCreateKey(model, config *kmsResourceModel) (v1.CreateKey, error) {
+func expandKMSCreateKey(model, config *kmsResourceModel) (kms.CreateParams, error) {
 	keyOrig := model.KeyOrigin.ValueString()
-	var req v1.CreateKey
-	if keyOrig == "generated" {
-		req = v1.CreateKey{
-			Name:      model.Name.ValueString(),
-			KeyOrigin: v1.KeyOriginEnumGenerated,
-		}
-	} else {
-		plainKey := model.PlainKey.ValueString()
+	req := kms.CreateParams{Name: model.Name.ValueString()}
+	if keyOrig != "generated" {
+		req.PlainKey = model.PlainKey.ValueStringPointer()
 		if config != nil && config.PlainKeyWO.ValueString() != "" {
-			plainKey = config.PlainKeyWO.ValueString()
+			req.PlainKey = config.PlainKeyWO.ValueStringPointer()
 		}
-		if plainKey == "" {
-			return v1.CreateKey{}, errors.New("plain_key is required when key_origin is 'imported'")
-		}
-		req = v1.CreateKey{
-			Name:      model.Name.ValueString(),
-			KeyOrigin: v1.KeyOriginEnumImported,
-			PlainKey:  v1.NewOptString(plainKey),
+		if req.PlainKey == nil || *req.PlainKey == "" {
+			return kms.CreateParams{}, errors.New("plain_key is required when key_origin is 'imported'")
 		}
 	}
 
@@ -305,17 +295,16 @@ func expandKMSCreateKey(model, config *kmsResourceModel) (v1.CreateKey, error) {
 		req.Tags = common.TsetToStrings(model.Tags)
 	}
 	if !model.Description.IsNull() {
-		req.Description = v1.NewOptString(model.Description.ValueString())
+		req.Description = model.Description.ValueStringPointer()
 	}
 
 	return req, nil
 }
 
-func expandKMSUpdateKey(model *kmsResourceModel, before *v1.Key) v1.Key {
-	req := v1.Key{
+func expandKMSUpdateKey(model *kmsResourceModel, before *v1.Key) kms.UpdateParams {
+	req := kms.UpdateParams{
 		Name:        model.Name.ValueString(),
-		Description: model.Description.ValueString(),
-		KeyOrigin:   before.KeyOrigin,
+		Description: model.Description.ValueStringPointer(),
 	}
 	if utils.IsKnown(model.Tags) {
 		req.Tags = common.TsetToStrings(model.Tags)
@@ -331,14 +320,14 @@ func updateKMS(ctx context.Context, client *v1.Client, model *kmsResourceModel, 
 
 	status := model.Status.ValueString()
 	if before != nil && status != beforeStatus {
-		err := keyOp.ChangeStatus(ctx, id, v1.ChangeKeyStatusStatus(status))
+		_, err := keyOp.ChangeStatus(ctx, id, v1.ChangeKeyStateRequestStatus(status))
 		if err != nil {
 			return fmt.Errorf("failed to change status of KMS key[%s]: %s", id, err)
 		}
 	}
 
 	if before != nil && !model.RotateVersion.Equal(before.RotateVersion) {
-		if beforeStatus == string(v1.ChangeKeyStatusStatusActive) {
+		if beforeStatus == string(v1.ChangeKeyStateRequestStatusActive) {
 			tflog.Info(ctx, fmt.Sprintf("Rotating KMS key[%s]", id))
 			_, err := keyOp.Rotate(ctx, id)
 			if err != nil {

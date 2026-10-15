@@ -76,9 +76,9 @@ func (d *secretManagerSecretDataSource) Read(ctx context.Context, req datasource
 		return
 	}
 
-	unveilReq := v1.Unveil{Name: data.Name.ValueString()}
+	unveilReq := sm.UnveilParams{Name: data.Name.ValueString()}
 	if !data.Version.IsNull() {
-		unveilReq.Version = v1.NewOptNilInt(int(data.Version.ValueInt64()))
+		unveilReq.Version = new(int(data.Version.ValueInt64()))
 	}
 
 	secretOp := sm.NewSecretOp(d.client, data.VaultID.ValueString())
@@ -90,9 +90,7 @@ func (d *secretManagerSecretDataSource) Read(ctx context.Context, req datasource
 
 	data.Name = types.StringValue(unveil.Name)
 	data.Value = types.StringValue(unveil.Value)
-	if unveil.Version.IsSet() {
-		data.Version = types.Int64Value(int64(unveil.Version.Value))
-	}
+	data.Version = types.Int64Value(int64(unveil.Version))
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
