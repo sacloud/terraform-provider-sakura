@@ -1,5 +1,11 @@
 # Changelog
 
+## [v3.14.4](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.3...v3.14.4) - 2026-10-15
+
+### Other Changes
+- vpn_router: Support VPN Router v3 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/362
+- Potential fix for code scanning alert no. 23: Workflow does not contain permissions by @tokuhirom in https://github.com/sacloud/terraform-provider-sakura/pull/363
+
 ## [v3.14.3](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.2...v3.14.3) - 2026-10-08
 
 ### Other Changes
