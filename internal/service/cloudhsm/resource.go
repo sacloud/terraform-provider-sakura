@@ -128,17 +128,9 @@ func (r *cloudHSMResource) Create(ctx context.Context, req resource.CreateReques
 		return
 	}
 
-	chsm := &v1.CloudHSM{
-		ID:                 created.ID,
-		Name:               created.Name,
-		Description:        created.Description,
-		Tags:               created.Tags,
-		Ipv4NetworkAddress: created.Ipv4NetworkAddress,
-		Ipv4PrefixLength:   created.Ipv4PrefixLength,
-		Ipv4Address:        created.Ipv4Address,
-		CreatedAt:          created.CreatedAt,
-		ModifiedAt:         created.ModifiedAt,
-		Availability:       created.Availability,
+	chsm := getCloudHSM(ctx, client, created.ID.Value, &resp.State, &resp.Diagnostics)
+	if chsm == nil {
+		return
 	}
 	plan.updateState(chsm, zone)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -231,8 +223,8 @@ func expandCloudHSMCreateParams(model *cloudHSMResourceModel) cloudhsm.CloudHSMC
 		Name:               model.Name.ValueString(),
 		Description:        new(model.Description.ValueString()),
 		Tags:               common.TsetToStrings(model.Tags),
-		Ipv4NetworkAddress: model.IPv4NetworkAddress.ValueString(),
-		Ipv4PrefixLength:   int(model.IPv4Netmask.ValueInt32()),
+		IPv4NetworkAddress: model.IPv4NetworkAddress.ValueString(),
+		IPv4PrefixLength:   int(model.IPv4Netmask.ValueInt32()),
 	}
 }
 
@@ -241,7 +233,7 @@ func expandCloudHSMUpdateParams(model *cloudHSMResourceModel) cloudhsm.CloudHSMU
 		Name:               model.Name.ValueString(),
 		Description:        new(model.Description.ValueString()),
 		Tags:               common.TsetToStrings(model.Tags),
-		Ipv4NetworkAddress: model.IPv4NetworkAddress.ValueString(),
-		Ipv4PrefixLength:   int(model.IPv4Netmask.ValueInt32()),
+		IPv4NetworkAddress: model.IPv4NetworkAddress.ValueString(),
+		IPv4PrefixLength:   int(model.IPv4Netmask.ValueInt32()),
 	}
 }

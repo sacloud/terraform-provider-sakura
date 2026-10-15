@@ -109,7 +109,7 @@ func (d *cloudHSMClientDataSource) Read(ctx context.Context, req datasource.Read
 
 	var chsmClient *v1.CloudHSMClient
 	if len(name) > 0 {
-		chsmClients, err := clientOp.List(ctx)
+		chsmClients, err := clientOp.List(ctx, nil, nil)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list CloudHSM Client resource: %s", err))
 			return

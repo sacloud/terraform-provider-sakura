@@ -116,7 +116,7 @@ func (d *cloudHSMDataSource) Read(ctx context.Context, req datasource.ReadReques
 	var cloudhsm *v1.CloudHSM
 	var err error
 	if len(name) > 0 {
-		cloudHSMs, err := cloudhsmOp.List(ctx)
+		cloudHSMs, err := cloudhsmOp.List(ctx, nil, nil)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to find CloudHSM resource: %s", err))
 			return

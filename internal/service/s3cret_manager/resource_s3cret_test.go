@@ -21,7 +21,7 @@ func TestAccSakuraSecretManagerSecret_basic(t *testing.T) {
 	resourceName := "sakura_secret_manager_secret.foobar"
 	rand := test.RandomName()
 
-	var secret v1.Secret
+	var secret v1.SecretResponse
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -53,7 +53,7 @@ func TestAccSakuraSecretManagerSecret_basicWithWO(t *testing.T) {
 	resourceName := "sakura_secret_manager_secret.foobar"
 	rand := test.RandomName()
 
-	var secret v1.Secret
+	var secret v1.SecretResponse
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -139,7 +139,7 @@ func testCheckSakuraSecretManagerSecretDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testCheckSakuraSecretManagerSecretExists(n string, secret *v1.Secret) resource.TestCheckFunc {
+func testCheckSakuraSecretManagerSecretExists(n string, secret *v1.SecretResponse) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
