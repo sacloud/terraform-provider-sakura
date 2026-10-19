@@ -4,11 +4,14 @@ page_title: "sakura_internet Resource - sakura"
 subcategory: "Networking"
 description: |-
   Manages an Internet(router+switch).
+  Note: The Control Panel displays the switch's name, description, and tags. Updating name, description, or tags on this Internet resource updates the router information only, so the displayed values will not change.
 ---
 
 # sakura_internet (Resource)
 
 Manages an Internet(router+switch).
+
+Note: The Control Panel displays the switch's name, description, and tags. Updating name, description, or tags on this Internet resource updates the router information only, so the displayed values will not change.
 
 ## Example Usage
 

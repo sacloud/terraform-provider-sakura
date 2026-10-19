@@ -144,7 +144,7 @@ func (r *internetResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages an Internet(router+switch).",
+		MarkdownDescription: "Manages an Internet(router+switch).\n\nNote: The Control Panel displays the switch's name, description, and tags. Updating name, description, or tags on this Internet resource updates the router information only, so the displayed values will not change.",
 	}
 }
 
@@ -236,6 +236,12 @@ func (r *internetResource) Update(ctx context.Context, req resource.UpdateReques
 		return
 	}
 	internetId := state.ID.ValueString() // ModifyPlanでIDがUnknownにされている場合があるため、StateからIDを取得する
+	if plan.Name.ValueString() != state.Name.ValueString() || plan.Description.ValueString() != state.Description.ValueString() || !plan.Tags.Equal(state.Tags) {
+		resp.Diagnostics.AddWarning(
+			"Attribute Change Warning",
+			"Internet metadata is not reflected in Control Panel. Internet resource consists of router and switch. The Control Panel displays the switch's name, description, and tags. Updating name, description, or tags on this Internet resource updates the router information only, so the displayed values will not change.",
+		)
+	}
 
 	common.SakuraMutexKV.Lock(internetId)
 	defer common.SakuraMutexKV.Unlock(internetId)
