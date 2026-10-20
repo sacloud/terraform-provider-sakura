@@ -22,7 +22,7 @@ func (m *kmsBaseModel) updateState(key *v1.Key) {
 	m.UpdateBaseState(key.ID, key.Name, key.Description, key.Tags)
 	m.KeyOrigin = types.StringValue(string(key.KeyOrigin))
 	m.Status = types.StringValue(string(key.Status))
-	m.LatestVersion = types.Int64Value(int64(key.LatestVersion.Value))
+	m.LatestVersion = types.Int64Value(int64(key.LatestVersion))
 	m.CreatedAt = types.StringValue(string(key.CreatedAt))
 	m.ModifiedAt = types.StringValue(string(key.ModifiedAt))
 }

@@ -159,7 +159,7 @@ func (r *secretManagerSecretResource) Create(ctx context.Context, req resource.C
 	}
 
 	secretOp := sm.NewSecretOp(r.client, plan.VaultID.ValueString())
-	createdSec, err := secretOp.Create(ctx, v1.CreateSecret{
+	createdSec, err := secretOp.Create(ctx, sm.CreateSecretParams{
 		Name:  plan.Name.ValueString(),
 		Value: value,
 	})
@@ -208,7 +208,7 @@ func (r *secretManagerSecretResource) Update(ctx context.Context, req resource.U
 	}
 
 	secretOp := sm.NewSecretOp(r.client, plan.VaultID.ValueString())
-	createdSec, err := secretOp.Create(ctx, v1.CreateSecret{
+	createdSec, err := secretOp.Update(ctx, sm.UpdateSecretParams{
 		Name:  plan.Name.ValueString(),
 		Value: value,
 	})
@@ -238,14 +238,14 @@ func (r *secretManagerSecretResource) Delete(ctx context.Context, req resource.D
 	}
 
 	secretOp := sm.NewSecretOp(r.client, state.VaultID.ValueString())
-	err := secretOp.Delete(ctx, v1.DeleteSecret{Name: state.Name.ValueString()})
+	err := secretOp.Delete(ctx, state.Name.ValueString())
 	if err != nil {
 		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete Secret Manager's secret: %s", err))
 		return
 	}
 }
 
-func getSecretManagerSecret(ctx context.Context, client *v1.Client, model *secretManagerSecretResourceModel, state *tfsdk.State, diags *diag.Diagnostics) *v1.Secret {
+func getSecretManagerSecret(ctx context.Context, client *v1.Client, model *secretManagerSecretResourceModel, state *tfsdk.State, diags *diag.Diagnostics) *v1.SecretResponse {
 	secretOp := sm.NewSecretOp(client, model.VaultID.ValueString())
 	secret, err := FilterSecretManagerSecretByName(ctx, secretOp, model.Name.ValueString())
 	if err != nil {
@@ -260,13 +260,13 @@ func getSecretManagerSecret(ctx context.Context, client *v1.Client, model *secre
 	return secret
 }
 
-func FilterSecretManagerSecretByName(ctx context.Context, secretOp sm.SecretAPI, name string) (*v1.Secret, error) {
-	secrets, err := secretOp.List(ctx)
+func FilterSecretManagerSecretByName(ctx context.Context, secretOp sm.SecretAPI, name string) (*v1.SecretResponse, error) {
+	secrets, err := secretOp.List(ctx, nil, nil)
 	if err != nil {
 		return nil, err
 	}
 
-	match := slices.Collect(func(yield func(v1.Secret) bool) {
+	match := slices.Collect(func(yield func(v1.SecretResponse) bool) {
 		for _, v := range secrets {
 			if name != v.Name {
 				continue
