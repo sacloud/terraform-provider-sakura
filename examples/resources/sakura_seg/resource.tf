@@ -14,7 +14,7 @@ resource "sakura_seg" "foobar" {
 		container_registry_endpoints = ["*****.sakuracr.jp"]
 		ai_engine_endpoints = ["api.ai.sakura.ad.jp"]  # only api.ai.sakura.ad.jp is supported
 		simple_ai_endpoints = ["simpleai.is1.api.sacloud.jp"] # only simpleai.is1.api.sacloud.jp is supported
-		app_run_dedicated_control_enabled = true 
+		apprun_dedicated_control_enabled = true
 	}
 	monitoring_suite_enabled = true
 	dns_forwarding = {

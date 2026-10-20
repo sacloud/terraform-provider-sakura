@@ -1,4 +1,4 @@
 data "sakura_seg" "foobar" {
-  name = "foobar"
+  id   = "seg-resource-id"
   zone = "tk1b"
 }

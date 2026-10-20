@@ -13,7 +13,7 @@ Manages a Monitoring Suite Alert Log Measure Rule.
 ## Example Usage
 
 ```terraform
-resource "sakura_monitoring_suite_log_measure_rule" "foobar" {
+resource "sakura_monitoring_suite_alert_log_measure_rule" "foobar" {
   name = "foobar"
   description = "description"
   alert_project_id  = "alert-project-resource-id"  # e.g. sakura_monitoring_suite_alert_project.foobar.id
