@@ -33,6 +33,8 @@ func TestAccSakuraDataSourceDatabase_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "backup.days_of_week.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "backup.days_of_week.0", "mon"),
 					resource.TestCheckResourceAttr(resourceName, "backup.days_of_week.1", "tue"),
+					resource.TestCheckResourceAttr(resourceName, "backup.time", "00:00"),
+					resource.TestCheckResourceAttr(resourceName, "backup.connect", "nfs://192.168.0.31/export"),
 				),
 			},
 		},
@@ -63,6 +65,7 @@ resource "sakura_database" "foobar" {
   backup = {
     days_of_week = ["mon", "tue"]
     time         = "00:00"
+    connect      = "nfs://192.168.0.31/export"
   }
 }
 

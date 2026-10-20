@@ -103,6 +103,10 @@ func (d *databaseDataSource) Schema(ctx context.Context, req datasource.SchemaRe
 						Computed:    true,
 						Description: "The time to take backup. This will be formatted with `HH:mm`",
 					},
+					"connect": schema.StringAttribute{
+						Computed:    true,
+						Description: "The NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`)",
+					},
 				},
 			},
 			"continuous_backup": schema.SingleNestedAttribute{

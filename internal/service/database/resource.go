@@ -226,6 +226,11 @@ func (r *databaseResource) Schema(ctx context.Context, _ resource.SchemaRequest,
 							sacloudvalidator.BackupTimeValidator(),
 						},
 					},
+					"connect": schema.StringAttribute{
+						Optional:    true,
+						Computed:    true,
+						Description: "The NFS server address for storing backups (e.g., `nfs://192.0.2.1/export`)",
+					},
 				},
 			},
 			"continuous_backup": schema.SingleNestedAttribute{
@@ -503,9 +508,11 @@ func expandDatabaseBackupSetting(model *databaseResourceModel) *iaas.DatabaseSet
 
 	backupTime := backup.Time.ValueString()
 	backupDaysOfWeek := common.ExpandBackupDaysOfWeek(backup.DaysOfWeek)
+	backupConnect := backup.Connect.ValueString()
 	return &iaas.DatabaseSettingBackup{
 		Time:      backupTime,
 		DayOfWeek: backupDaysOfWeek,
+		Connect:   backupConnect,
 		Rotate:    8,
 	}
 }
