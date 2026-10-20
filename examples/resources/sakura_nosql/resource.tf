@@ -63,7 +63,8 @@ resource "sakura_nosql" "foobar40GB" {
   tags = ["nosql"]
   plan = "40GB"
   description = "Test database"
-  password    = "sdktest-12345678"
+  password_wo = "sdktest-12345678"
+  password_wo_version = 1
   vswitch_id  = data.sakura_vswitch.foobar.id
   settings = {
     backup = {
