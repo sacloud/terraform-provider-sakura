@@ -3,12 +3,15 @@
 page_title: "sakura_apprun_dedicated_application Resource - sakura"
 subcategory: "Computing"
 description: |-
-  Manages an AppRun dedicated application
+  Manages an AppRun dedicated application.
+  The active_version attribute is deprecated; use the sakura_apprun_dedicated_active_version resource instead.  Setting it to null or omitting it no longer deactivates the application; deactivate by destroying that resource, or from the console or the API.
 ---
 
 # sakura_apprun_dedicated_application (Resource)
 
-Manages an AppRun dedicated application
+Manages an AppRun dedicated application.
+
+The `active_version` attribute is deprecated; use the `sakura_apprun_dedicated_active_version` resource instead.  Setting it to `null` or omitting it no longer deactivates the application; deactivate by destroying that resource, or from the console or the API.
 
 ## Example Usage
 
@@ -33,7 +36,7 @@ resource "sakura_apprun_dedicated_application" "main" {
 
 ### Optional
 
-- `active_version` (Number) The active version of the application
+- `active_version` (Number, Deprecated) The active version of the application
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
