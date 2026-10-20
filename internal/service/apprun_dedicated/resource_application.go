@@ -12,6 +12,8 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	app "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/application"
 	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
@@ -34,7 +36,9 @@ func NewAppResource() resource.Resource { return &appResource{resourceNamed("app
 
 func (r *appResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
 	res.Schema = schema.Schema{
-		Description: "Manages an AppRun dedicated application",
+		MarkdownDescription: "Manages an AppRun dedicated application.\n\n" +
+			"The `active_version` attribute is deprecated; use the `sakura_apprun_dedicated_active_version` resource instead.  " +
+			"Setting it to `null` or omitting it no longer deactivates the application; deactivate by destroying that resource, or from the console or the API.",
 		Attributes: map[string]schema.Attribute{
 			"id":         r.schemaID(),
 			"cluster_id": r.schemaClusterID(),
@@ -47,8 +51,11 @@ func (r *appResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 				Description: "The name of the cluster",
 			},
 			"active_version": schema.Int32Attribute{
-				Optional:    true,
-				Description: "The active version of the application",
+				Optional:           true,
+				Computed:           true,
+				Description:        "The active version of the application",
+				DeprecationMessage: "The \"active_version\" attribute is deprecated and will become read-only in a future major version. Use the sakura_apprun_dedicated_active_version resource instead.",
+				PlanModifiers:      []planmodifier.Int32{int32planmodifier.UseStateForUnknown()},
 			},
 			"desired_count": schema.Int32Attribute{
 				Computed:    true,
@@ -129,10 +136,21 @@ func (r *appResource) Read(ctx context.Context, req resource.ReadRequest, res *r
 }
 
 func (r *appResource) Update(ctx context.Context, req resource.UpdateRequest, res *resource.UpdateResponse) {
-	var plan appResourceModel
+	var plan, state appResourceModel
 	res.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	res.Diagnostics.Append(req.State.Get(ctx, &state)...)
 
 	if res.Diagnostics.HasError() {
+		return
+	}
+
+	// active_version is all the API takes; unchanged (e.g. a change of timeouts, or a stale
+	// plan carrying the state's value) nothing is sent, so that it is neither re-activated nor deactivated
+	if plan.ActiveVersion.Equal(state.ActiveVersion) {
+		plan.ClusterName = state.ClusterName
+		plan.DesiredCount = state.DesiredCount
+		plan.ScalingCooldownSeconds = state.ScalingCooldownSeconds
+		res.Diagnostics.Append(res.State.Set(ctx, &plan)...)
 		return
 	}
 

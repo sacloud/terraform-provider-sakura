@@ -155,6 +155,16 @@ func (r *resourceClient) schemaASGID() (ret rschema.StringAttribute) {
 	return
 }
 
+func (r *resourceClient) schemaAppID() (ret rschema.StringAttribute) {
+	ret = common.SchemaResourceId("application").(rschema.StringAttribute)
+	ret.Computed = false
+	ret.Required = true
+	ret.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
+	ret.Validators = []validator.String{sacloudvalidator.UUIDValidator}
+
+	return
+}
+
 func (r *resourceClient) schemaCreatedAt() rschema.StringAttribute {
 	return common.SchemaResourceCreatedAt(r.name).(rschema.StringAttribute)
 }
