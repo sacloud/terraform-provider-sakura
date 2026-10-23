@@ -59,5 +59,7 @@ Read-Only:
 
 - `mac_address` (String) The MAC address
 - `packet_filter_id` (String) The id of the packet filter attached to the network interface
+- `srn` (String) The SRN of the IaaS network interface
+- `subnet_srn` (String) The SRN of the Networking Suite Subnet
 - `upstream` (String) The upstream type or upstream switch id. This will be one of [`shared`/`disconnect`/`<switch id>`]
 - `user_ip_address` (String) The IP address for only display. This value doesn't affect actual NIC settings
