@@ -1,5 +1,11 @@
 # Changelog
 
+## [v3.14.5](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.4...v3.14.5) - 2026-10-30
+
+### Other Changes
+- go.mod: toolchain go1.27.3 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/374
+- sacloud-sdk-go v0.3.0 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/365
+
 ## [v3.14.4](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.3...v3.14.4) - 2026-10-20
 
 ### Other Changes
