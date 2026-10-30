@@ -274,7 +274,7 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 			expect: &common.Config{
 				Profile: "test",
 			},
-			errre: regexp.MustCompile(`^failed to load profile\[test\]: API Error - failed to open test.config\.json: openat test.config\.json: .+`),
+			errre: regexp.MustCompile(`^failed to load profile\[test\]: API Error - failed to open test.config\.json: open(at)? test.config\.json: .+`),
 		},
 		{
 			scenario: "Profile name specified with normal profile",

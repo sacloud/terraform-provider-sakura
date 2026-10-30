@@ -15,7 +15,7 @@ func TestAccSakuraDataSourceSecretManagerSecret_basic(t *testing.T) {
 	resourceName := "data.sakura_secret_manager_secret.foobar"
 	rand := test.RandomName()
 
-	var secret v1.Secret
+	var secret v1.SecretResponse
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,

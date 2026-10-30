@@ -57,7 +57,7 @@ func (d *authContextDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"auth_type": schema.StringAttribute{
 				Computed:    true,
-				Description: desc.Sprintf("The authentication type. This will be one of [%s].", common.MapTo(v1.GetAuthContextOKAuthTypeApikey.AllValues(), common.ToString)),
+				Description: desc.Sprintf("The authentication type. This will be one of [%s].", common.MapTo(v1.ReadAuthContextOKAuthTypeApikey.AllValues(), common.ToString)),
 			},
 			"limited_to_project_id": schema.StringAttribute{
 				Computed:    true,

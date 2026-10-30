@@ -93,7 +93,7 @@ func (d *kmsDataSource) Read(ctx context.Context, req datasource.ReadRequest, re
 	var key *v1.Key
 	var err error
 	if !data.Name.IsNull() {
-		keys, err := keyOp.List(ctx)
+		keys, err := keyOp.List(ctx, nil, nil)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list KMS resources: %s", err))
 			return
