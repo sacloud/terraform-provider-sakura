@@ -283,9 +283,8 @@ func testCheckSakuraApprunDedicatedVersionEnvVars(n string, expects map[string]b
 
 var testAccSakuraResourceApprunDedicatedVersion_basic = `
 resource "sakura_apprun_dedicated_application" "main" {
-  cluster_id     = "{{ .arg1 }}"
-  name           = "tfacc-{{ .arg0 }}"
-  active_version = null
+  cluster_id = "{{ .arg1 }}"
+  name       = "tfacc-{{ .arg0 }}"
 }
 
 resource "sakura_apprun_dedicated_version" "main" {
@@ -326,9 +325,8 @@ resource "sakura_apprun_dedicated_version" "main" {
 //nolint:gosec
 var testAccSakuraResourceApprunDedicatedVersion_secretVars = `
 resource "sakura_apprun_dedicated_application" "main" {
-  cluster_id     = "{{ .arg1 }}"
-  name           = "tfacc-{{ .arg0 }}"
-  active_version = null
+  cluster_id = "{{ .arg1 }}"
+  name       = "tfacc-{{ .arg0 }}"
 }
 
 resource "sakura_apprun_dedicated_version" "main" {
@@ -365,9 +363,8 @@ resource "sakura_apprun_dedicated_version" "main" {
 
 var testAccSakuraResourceApprunDedicatedVersion_noHealthCheck = `
 resource "sakura_apprun_dedicated_application" "main" {
-  cluster_id     = "{{ .arg1 }}"
-  name           = "tfacc-{{ .arg0 }}"
-  active_version = null
+  cluster_id = "{{ .arg1 }}"
+  name       = "tfacc-{{ .arg0 }}"
 }
 
 resource "sakura_apprun_dedicated_version" "main" {

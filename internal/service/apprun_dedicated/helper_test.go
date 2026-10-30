@@ -19,7 +19,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/hashicorp/terraform-plugin-testing/helper/acctest"
+	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
+	"github.com/hashicorp/terraform-plugin-testing/terraform"
 	apprun_dedicated "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated"
+	app "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/application"
 	"github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/cluster"
 	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 	"github.com/sacloud/sacloud-sdk-go/common/saclient"
@@ -124,5 +127,28 @@ func AccPreCheck(t *testing.T) func() {
 		if spid == "" {
 			t.Fatalf("need valid SAKURA_APPRUN_DEDICATED_SERVICE_PRINCIPAL_ID environment variable")
 		}
+	}
+}
+
+// remembers the ID of a resource for a later PreConfig, which has no access to the state
+func testCheckSakuraApprunDedicatedResourceID(n string, id *string) resource.TestCheckFunc {
+	return func(s *terraform.State) error {
+		rs, ok := s.RootModule().Resources[n]
+		if !ok {
+			return fmt.Errorf("not found: %s", n)
+		}
+
+		*id = rs.Primary.ID
+		return nil
+	}
+}
+
+func testAccSakuraApprunDedicatedActivateVersion(t *testing.T, appID string, version int32) {
+	t.Helper()
+
+	api := app.NewApplicationOp(test.AccClientGetter().AppRunDedicatedClient)
+
+	if err := api.Update(t.Context(), v1.ApplicationID(uuid.MustParse(appID)), &version); err != nil {
+		t.Fatalf("failed to activate version %d of application %s: %s", version, appID, err)
 	}
 }

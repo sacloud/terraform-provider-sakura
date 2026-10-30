@@ -411,6 +411,7 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		apigw.NewApigwServiceResource,
 		apigw.NewApigwSubscriptionResource,
 		apigw.NewApigwUserResource,
+		apprun_dedicated.NewActiveVersionResource,
 		apprun_dedicated.NewAppResource,
 		apprun_dedicated.NewAutoScalingGroupResource,
 		apprun_dedicated.NewCertResource,

@@ -36,7 +36,6 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
-	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
 type verResource struct{ resourceClient }
@@ -71,15 +70,7 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 				Computed:    true,
 				Description: "(Synthetic ID, only for internal use)",
 			},
-			"application_id": func() (attr schema.StringAttribute) {
-				attr = common.SchemaResourceId("application").(schema.StringAttribute)
-				attr.Required = true
-				attr.Computed = false
-				attr.Optional = false
-				attr.Validators = []validator.String{sacloudvalidator.UUIDValidator}
-				attr.PlanModifiers = []planmodifier.String{stringplanmodifier.RequiresReplace()}
-				return
-			}(),
+			"application_id": r.schemaAppID(),
 			"version": schema.Int32Attribute{
 				Computed:      true,
 				Description:   "The version number",
@@ -307,6 +298,11 @@ func (r *verResource) Schema(ctx context.Context, _ resource.SchemaRequest, res 
 }
 
 func (r *verResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, res *resource.ValidateConfigResponse) {
+	validateVersionConfig(ctx, req, res)
+}
+
+// env_vars and secret_vars: no duplicate key, at most 50 in total; shared with the active version resource
+func validateVersionConfig(ctx context.Context, req resource.ValidateConfigRequest, res *resource.ValidateConfigResponse) {
 	var envVars, secretVars types.List
 	res.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("env_vars"), &envVars)...)
 	res.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("secret_vars"), &secretVars)...)
