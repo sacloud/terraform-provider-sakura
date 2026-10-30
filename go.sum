@@ -226,12 +226,10 @@ github.com/rogpeppe/go-internal v1.14.1 h1:UQB4HGPB6osV0SQTLymcB4TgvyWu6ZyliaW0t
 github.com/rogpeppe/go-internal v1.14.1/go.mod h1:MaRKkUm5W0goXpeCfT7UZI6fk/L7L7so1lCWt35ZSgc=
 github.com/rs/xid v1.6.0 h1:fV591PaemRlL6JfRxGDEPl69wICngIQ3shQtzfy2gxU=
 github.com/rs/xid v1.6.0/go.mod h1:7XoLgs4eV+QndskICGsho+ADou8ySMSjJKDIan90Nz0=
-github.com/sacloud/autoscaler v0.20.0 h1:YPotIFdp9wCsp10pnOsMQOoJ3e0NxleaXUebZyfQIvY=
-github.com/sacloud/autoscaler v0.20.0/go.mod h1:2dWVXfMS+o+8trDMy9nUQm7yeR+ryjVQHT9okYIQwQo=
+github.com/sacloud/autoscaler v0.20.1 h1:BqugvDHbuus3ndit4b8EWGdhv1mswrMv8hQZQc5PSjs=
+github.com/sacloud/autoscaler v0.20.1/go.mod h1:2dWVXfMS+o+8trDMy9nUQm7yeR+ryjVQHT9okYIQwQo=
 github.com/sacloud/go-otelsetup v0.9.0 h1:1lD50C7M7W1boEAml19BN6j9ZCfdkE9Ees12Aub39yI=
 github.com/sacloud/go-otelsetup v0.9.0/go.mod h1:pPtzQjCP4X0Jxp/O+Opvy25CBmvgFhxGajM/jF/Bs5c=
-github.com/sacloud/sacloud-sdk-go v0.4.0 h1:GAjZaMszS2W97W3Nzh3WoYJYpzVUcsVZ3dvQXswWQDo=
-github.com/sacloud/sacloud-sdk-go v0.4.0/go.mod h1:DcCOG6woWISmr/KCiNxWeWvN7SLNVJuLQL1hucIWyX0=
 github.com/sacloud/sacloud-sdk-go v0.4.1-0.20261020080613-7344760b7fbc h1:gGcozR/FF6oxL7Y63/L/HwPNgCV8OnVnBqOZBpvWiIY=
 github.com/sacloud/sacloud-sdk-go v0.4.1-0.20261020080613-7344760b7fbc/go.mod h1:DcCOG6woWISmr/KCiNxWeWvN7SLNVJuLQL1hucIWyX0=
 github.com/segmentio/asm v1.2.1 h1:DTNbBqs57ioxAD4PrArqftgypG4/qNpXoJx8TVXxPR0=
