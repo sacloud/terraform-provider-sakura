@@ -232,6 +232,8 @@ github.com/sacloud/go-otelsetup v0.9.0 h1:1lD50C7M7W1boEAml19BN6j9ZCfdkE9Ees12Au
 github.com/sacloud/go-otelsetup v0.9.0/go.mod h1:pPtzQjCP4X0Jxp/O+Opvy25CBmvgFhxGajM/jF/Bs5c=
 github.com/sacloud/sacloud-sdk-go v0.4.0 h1:GAjZaMszS2W97W3Nzh3WoYJYpzVUcsVZ3dvQXswWQDo=
 github.com/sacloud/sacloud-sdk-go v0.4.0/go.mod h1:DcCOG6woWISmr/KCiNxWeWvN7SLNVJuLQL1hucIWyX0=
+github.com/sacloud/sacloud-sdk-go v0.4.1-0.20261020080613-7344760b7fbc h1:gGcozR/FF6oxL7Y63/L/HwPNgCV8OnVnBqOZBpvWiIY=
+github.com/sacloud/sacloud-sdk-go v0.4.1-0.20261020080613-7344760b7fbc/go.mod h1:DcCOG6woWISmr/KCiNxWeWvN7SLNVJuLQL1hucIWyX0=
 github.com/segmentio/asm v1.2.1 h1:DTNbBqs57ioxAD4PrArqftgypG4/qNpXoJx8TVXxPR0=
 github.com/segmentio/asm v1.2.1/go.mod h1:BqMnlJP91P8d+4ibuonYZw9mfnzI9HfxselHZr5aAcs=
 github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 h1:n661drycOFuPLCN3Uc8sB6B/s6Z4t2xvBgU1htSHuq8=
