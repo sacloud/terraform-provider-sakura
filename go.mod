@@ -20,7 +20,7 @@ require (
 	github.com/jlaffaye/ftp v0.2.4
 	github.com/minio/minio-go/v7 v7.3.0
 	github.com/mitchellh/go-homedir v1.1.0
-	github.com/sacloud/autoscaler v0.20.0
+	github.com/sacloud/autoscaler v0.20.1
 	github.com/sacloud/sacloud-sdk-go v0.4.1-0.20261020080613-7344760b7fbc
 	github.com/stretchr/testify v1.12.1
 )
