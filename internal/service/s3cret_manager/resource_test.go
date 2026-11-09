@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -17,8 +18,10 @@ import (
 )
 
 func TestAccSakuraSecretManager_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 	resourceName := "sakura_secret_manager.foobar"
 	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	var vault v1.Vault
 	resource.Test(t, resource.TestCase{
@@ -27,7 +30,7 @@ func TestAccSakuraSecretManager_basic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraSecretManagerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraSecretManager_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManager_basic, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSecretManagerExists(resourceName, &vault),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -35,18 +38,18 @@ func TestAccSakuraSecretManager_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
-					resource.TestCheckResourceAttrPair(resourceName, "kms_key_id", "sakura_kms.foobar", "id"),
+					resource.TestCheckResourceAttr(resourceName, "kms_key_id", kmsKeyID),
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraSecretManager_update, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManager_update, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSecretManagerExists(resourceName, &vault),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-updated"),
 					resource.TestCheckResourceAttr(resourceName, "tags.#", "1"),
 					resource.TestCheckResourceAttr(resourceName, "tags.0", "tag1-upd"),
-					resource.TestCheckResourceAttrPair(resourceName, "kms_key_id", "sakura_kms.foobar", "id"),
+					resource.TestCheckResourceAttr(resourceName, "kms_key_id", kmsKeyID),
 				),
 			},
 		},
@@ -54,8 +57,10 @@ func TestAccSakuraSecretManager_basic(t *testing.T) {
 }
 
 func TestAccImportSakuraSecretManager_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 	resourceName := "sakura_secret_manager.foobar"
 	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -63,7 +68,7 @@ func TestAccImportSakuraSecretManager_basic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraSecretManagerDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraSecretManager_import, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManager_import, rand, kmsKeyID),
 			},
 			{
 				ResourceName:      resourceName,
@@ -125,51 +130,27 @@ func testCheckSakuraSecretManagerExists(n string, vault *v1.Vault) resource.Test
 
 //nolint:gosec
 var testAccSakuraSecretManager_import = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-  tags        = ["tag1", "tag2"]
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }`
 
 //nolint:gosec
 var testAccSakuraSecretManager_basic = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-  tags        = ["tag1", "tag2"]
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }`
 
 //nolint:gosec
 var testAccSakuraSecretManager_update = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-  tags        = ["tag1", "tag2"]
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description-updated"
   tags        = ["tag1-upd"]
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }`

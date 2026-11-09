@@ -4,6 +4,7 @@
 package secret_manager_test
 
 import (
+	"os"
 	"reflect"
 	"testing"
 
@@ -14,8 +15,10 @@ import (
 )
 
 func TestAccSakuraDataSourceSecretManager_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 	resourceName := "data.sakura_secret_manager.foobar"
 	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	var vault v1.Vault
 	resource.Test(t, resource.TestCase{
@@ -23,7 +26,7 @@ func TestAccSakuraDataSourceSecretManager_basic(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceSecretManager_byName, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceSecretManager_byName, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSecretManagerExists("sakura_secret_manager.foobar", &vault),
 					test.CheckSakuraDataSourceExists(resourceName),
@@ -37,7 +40,7 @@ func TestAccSakuraDataSourceSecretManager_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceSecretManager_byResourceId, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceSecretManager_byResourceId, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSecretManagerExists("sakura_secret_manager.foobar", &vault),
 					test.CheckSakuraDataSourceExists(resourceName),
@@ -55,19 +58,11 @@ func TestAccSakuraDataSourceSecretManager_basic(t *testing.T) {
 
 //nolint:gosec
 var testAccSakuraDataSourceSecretManager_byName = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-  tags        = ["tag1", "tag2"]
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }
 
 data "sakura_secret_manager" "foobar" {
@@ -78,19 +73,11 @@ data "sakura_secret_manager" "foobar" {
 
 //nolint:gosec
 var testAccSakuraDataSourceSecretManager_byResourceId = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-  tags        = ["tag1", "tag2"]
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
   tags        = ["tag1", "tag2"]
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }
 
 data "sakura_secret_manager" "foobar" {
