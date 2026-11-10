@@ -4,6 +4,7 @@
 package secret_manager_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,8 +13,10 @@ import (
 )
 
 func TestAccSakuraDataSourceSecretManagerSecret_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 	resourceName := "data.sakura_secret_manager_secret.foobar"
 	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	var secret v1.SecretResponse
 	resource.Test(t, resource.TestCase{
@@ -21,7 +24,7 @@ func TestAccSakuraDataSourceSecretManagerSecret_basic(t *testing.T) {
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceSecretManagerSecret_byName, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceSecretManagerSecret_byName, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSecretManagerSecretExists("sakura_secret_manager_secret.foobar", &secret),
 					test.CheckSakuraDataSourceExists(resourceName),
@@ -36,17 +39,10 @@ func TestAccSakuraDataSourceSecretManagerSecret_basic(t *testing.T) {
 
 //nolint:gosec
 var testAccSakuraDataSourceSecretManagerSecret_byName = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }
 
 resource "sakura_secret_manager_secret" "foobar" {

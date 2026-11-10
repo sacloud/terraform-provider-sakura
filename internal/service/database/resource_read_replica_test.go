@@ -6,6 +6,7 @@ package database_test
 import (
 	"context"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -16,6 +17,8 @@ import (
 )
 
 func TestAccSakuraDatabaseReplica_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 	resourceName := "sakura_database_read_replica.foobar"
 	rand := test.RandomName()
 	password := test.RandomPassword()
@@ -31,7 +34,7 @@ func TestAccSakuraDatabaseReplica_basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDatabaseReplica_basic, rand, password),
+				Config: test.BuildConfigWithArgs(testAccSakuraDatabaseReplica_basic, rand, password, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "description", "description"),
@@ -42,10 +45,7 @@ func TestAccSakuraDatabaseReplica_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "network_interface.netmask", "24"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.gateway", "192.168.151.1"),
 					resource.TestCheckResourceAttr(resourceName, "disk.encryption_algorithm", "aes256_xts"),
-					resource.TestCheckResourceAttrPair(
-						resourceName, "disk.kms_key_id",
-						"sakura_kms.foobar", "id",
-					),
+					resource.TestCheckResourceAttr(resourceName, "disk.kms_key_id", kmsKeyID),
 					resource.TestCheckResourceAttrPair(
 						resourceName, "icon_id",
 						"sakura_icon.foobar", "id",
@@ -53,7 +53,7 @@ func TestAccSakuraDatabaseReplica_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDatabaseReplica_update, rand, password),
+				Config: test.BuildConfigWithArgs(testAccSakuraDatabaseReplica_update, rand, password, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					resource.TestCheckResourceAttr(resourceName, "name", rand+"-upd"),
 					resource.TestCheckResourceAttr(resourceName, "description", "description-upd"),
@@ -64,10 +64,7 @@ func TestAccSakuraDatabaseReplica_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "network_interface.netmask", "24"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.gateway", "192.168.151.1"),
 					resource.TestCheckResourceAttr(resourceName, "disk.encryption_algorithm", "aes256_xts"),
-					resource.TestCheckResourceAttrPair(
-						resourceName, "disk.kms_key_id",
-						"sakura_kms.foobar", "id",
-					),
+					resource.TestCheckResourceAttr(resourceName, "disk.kms_key_id", kmsKeyID),
 					resource.TestCheckNoResourceAttr(resourceName, "icon_id"),
 				),
 			},
@@ -76,8 +73,10 @@ func TestAccSakuraDatabaseReplica_basic(t *testing.T) {
 }
 
 func TestAccImportSakuraDatabaseReadReplica_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 	rand := test.RandomName()
 	password := test.RandomPassword()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	checkFn := func(s []*terraform.InstanceState) error {
 		if len(s) != 1 {
@@ -113,7 +112,7 @@ func TestAccImportSakuraDatabaseReadReplica_basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDatabaseReplica_import, rand, password),
+				Config: test.BuildConfigWithArgs(testAccSakuraDatabaseReplica_import, rand, password, kmsKeyID),
 			},
 			{
 				ResourceName:      resourceName,
@@ -153,10 +152,6 @@ func testCheckSakuraDatabaseReadReplicaDestroy(s *terraform.State) error {
 
 const testAccSakuraDatabaseReplica_basic = `
 resource "sakura_vswitch" "foobar" {
-    name = "{{ .arg0 }}"
-}
-
-resource "sakura_kms" "foobar" {
   name = "{{ .arg0 }}"
 }
 
@@ -189,7 +184,7 @@ resource "sakura_database_read_replica" "foobar" {
   }
   disk = {
     encryption_algorithm = "aes256_xts"
-    kms_key_id           = sakura_kms.foobar.id
+    kms_key_id           = "{{ .arg2 }}"
   }
   name         = "{{ .arg0 }}"
   description  = "description"
@@ -205,10 +200,6 @@ resource "sakura_icon" "foobar" {
 
 const testAccSakuraDatabaseReplica_update = `
 resource "sakura_vswitch" "foobar" {
-  name = "{{ .arg0 }}"
-}
-
-resource "sakura_kms" "foobar" {
   name = "{{ .arg0 }}"
 }
 
@@ -240,7 +231,7 @@ resource "sakura_database_read_replica" "foobar" {
   }
   disk = {
     encryption_algorithm = "aes256_xts"
-    kms_key_id           = sakura_kms.foobar.id
+    kms_key_id           = "{{ .arg2 }}"
   }
   name         = "{{ .arg0 }}-upd"
   description  = "description-upd"
@@ -249,10 +240,6 @@ resource "sakura_database_read_replica" "foobar" {
 
 const testAccSakuraDatabaseReplica_import = `
 resource "sakura_vswitch" "foobar" {
-    name = "{{ .arg0 }}"
-}
-
-resource "sakura_kms" "foobar" {
   name = "{{ .arg0 }}"
 }
 
@@ -285,7 +272,7 @@ resource "sakura_database_read_replica" "foobar" {
   }
   disk = {
     encryption_algorithm = "aes256_xts"
-    kms_key_id           = sakura_kms.foobar.id
+    kms_key_id           = "{{ .arg2 }}"
   }
   name         = "{{ .arg0 }}"
   description  = "description"

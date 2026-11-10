@@ -4,6 +4,7 @@
 package object_storage_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -11,8 +12,10 @@ import (
 )
 
 func TestAccSakuraObjectStorageBucketEncryptionConfig_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 	resourceName := "sakura_object_storage_bucket_encryption_config.foobar"
 	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -22,7 +25,7 @@ func TestAccSakuraObjectStorageBucketEncryptionConfig_basic(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraObjectStorageBucketEncryptionConfig_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraObjectStorageBucketEncryptionConfig_basic, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					// testCheckSakuraObjectStorageBucketExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "bucket", "tf-enc-config-"+rand),
@@ -37,7 +40,7 @@ func TestAccSakuraObjectStorageBucketEncryptionConfig_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraObjectStorageBucketEncryptionConfig_update, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraObjectStorageBucketEncryptionConfig_update, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					// testCheckSakuraObjectStorageBucketExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "bucket", "tf-enc-config-"+rand),
@@ -45,10 +48,7 @@ func TestAccSakuraObjectStorageBucketEncryptionConfig_basic(t *testing.T) {
 						resourceName, "site_id",
 						"sakura_object_storage_bucket.foobar", "site_id",
 					),
-					resource.TestCheckResourceAttrPair(
-						resourceName, "kms_key_id",
-						"sakura_kms.foobar2", "id",
-					),
+					resource.TestCheckResourceAttr(resourceName, "kms_key_id", kmsKeyID),
 				),
 			},
 		},
@@ -64,12 +64,6 @@ resource "sakura_kms" "foobar1" {
   name        = "{{ .arg0 }}-1"
   description = "description-1"
   tags        = ["tag1"]
-}
-
-resource "sakura_kms" "foobar2" {
-  name        = "{{ .arg0 }}-2"
-  description = "description-2"
-  tags        = ["tag2"]
 }
 
 data "sakura_object_storage_site" "foobar" {
@@ -94,12 +88,6 @@ resource "sakura_kms" "foobar1" {
   tags        = ["tag1"]
 }
 
-resource "sakura_kms" "foobar2" {
-  name        = "{{ .arg0 }}-2"
-  description = "description-2"
-  tags        = ["tag2"]
-}
-
 data "sakura_object_storage_site" "foobar" {
   id = "tky01"
 }
@@ -112,5 +100,5 @@ resource "sakura_object_storage_bucket" "foobar" {
 resource "sakura_object_storage_bucket_encryption_config" "foobar" {
   bucket = "tf-enc-config-{{ .arg0 }}"
   site_id = sakura_object_storage_bucket.foobar.site_id
-  kms_key_id = sakura_kms.foobar2.id
+  kms_key_id = "{{ .arg1 }}"
 }`

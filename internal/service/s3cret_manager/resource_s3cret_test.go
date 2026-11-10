@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -18,8 +19,10 @@ import (
 )
 
 func TestAccSakuraSecretManagerSecret_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 	resourceName := "sakura_secret_manager_secret.foobar"
 	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	var secret v1.SecretResponse
 	resource.Test(t, resource.TestCase{
@@ -28,7 +31,7 @@ func TestAccSakuraSecretManagerSecret_basic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraSecretManagerSecretDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_basic, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSecretManagerSecretExists(resourceName, &secret),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -37,7 +40,7 @@ func TestAccSakuraSecretManagerSecret_basic(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_update, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_update, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSecretManagerSecretExists(resourceName, &secret),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -50,8 +53,10 @@ func TestAccSakuraSecretManagerSecret_basic(t *testing.T) {
 }
 
 func TestAccSakuraSecretManagerSecret_basicWithWO(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 	resourceName := "sakura_secret_manager_secret.foobar"
 	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	var secret v1.SecretResponse
 	resource.Test(t, resource.TestCase{
@@ -60,7 +65,7 @@ func TestAccSakuraSecretManagerSecret_basicWithWO(t *testing.T) {
 		CheckDestroy:             testCheckSakuraSecretManagerSecretDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_basicWithWO, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_basicWithWO, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSecretManagerSecretExists(resourceName, &secret),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -71,7 +76,7 @@ func TestAccSakuraSecretManagerSecret_basicWithWO(t *testing.T) {
 				),
 			},
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_updateWithWO, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_updateWithWO, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraSecretManagerSecretExists(resourceName, &secret),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -86,8 +91,10 @@ func TestAccSakuraSecretManagerSecret_basicWithWO(t *testing.T) {
 }
 
 func TestAccImportSakuraSecretManagerSecret_basic(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 	resourceName := "sakura_secret_manager_secret.foobar"
 	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -95,7 +102,7 @@ func TestAccImportSakuraSecretManagerSecret_basic(t *testing.T) {
 		CheckDestroy:             testCheckSakuraSecretManagerSecretDestroy,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_import, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraSecretManagerSecret_import, rand, kmsKeyID),
 			},
 			{
 				ResourceName:                         resourceName,
@@ -167,17 +174,10 @@ func testCheckSakuraSecretManagerSecretExists(n string, secret *v1.SecretRespons
 
 //nolint:gosec
 var testAccSakuraSecretManagerSecret_import = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }
 
 resource "sakura_secret_manager_secret" "foobar" {
@@ -190,17 +190,10 @@ resource "sakura_secret_manager_secret" "foobar" {
 
 //nolint:gosec
 var testAccSakuraSecretManagerSecret_basic = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }
 
 resource "sakura_secret_manager_secret" "foobar" {
@@ -213,17 +206,10 @@ resource "sakura_secret_manager_secret" "foobar" {
 
 //nolint:gosec
 var testAccSakuraSecretManagerSecret_update = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }
 
 resource "sakura_secret_manager_secret" "foobar" {
@@ -236,17 +222,10 @@ resource "sakura_secret_manager_secret" "foobar" {
 
 //nolint:gosec
 var testAccSakuraSecretManagerSecret_basicWithWO = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }
 
 resource "sakura_secret_manager_secret" "foobar" {
@@ -260,17 +239,10 @@ resource "sakura_secret_manager_secret" "foobar" {
 
 //nolint:gosec
 var testAccSakuraSecretManagerSecret_updateWithWO = `
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-}
-
 resource "sakura_secret_manager" "foobar" {
   name        = "{{ .arg0 }}"
   description = "description"
-  kms_key_id  = sakura_kms.foobar.id
-
-  depends_on = [sakura_kms.foobar]
+  kms_key_id  = "{{ .arg1 }}"
 }
 
 resource "sakura_secret_manager_secret" "foobar" {
