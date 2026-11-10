@@ -238,7 +238,7 @@ func (m nosqlInterfaceModelSwitchUserSubnetModel) AttributeTypes() map[string]at
 	}
 }
 
-func (m *nosqlBaseModel) updateState(data *v1.GetNosqlAppliance) {
+func (m *nosqlBaseModel) updateState(data *v1.NosqlApplianceResponse) {
 	m.UpdateBaseState(data.ID.Value, data.Name.Value, data.Description.Value, data.Tags.Value)
 	m.Plan = types.StringValue(string(nosql.GetPlanFromID(data.Plan.Value.ID.Value)))
 	m.Settings = flattenSettings(data)
@@ -252,7 +252,7 @@ func (m *nosqlBaseModel) updateState(data *v1.GetNosqlAppliance) {
 	m.Zone = types.StringValue(data.Remark.Value.Nosql.Value.Zone.Value)
 }
 
-func flattenSettings(data *v1.GetNosqlAppliance) *nosqlSettingsModel {
+func flattenSettings(data *v1.NosqlApplianceResponse) *nosqlSettingsModel {
 	if !data.Settings.IsSet() {
 		return nil
 	}
@@ -329,7 +329,7 @@ func toStrs[S ~string](s []S) []string {
 	return t
 }
 
-func flattenRemark(data *v1.GetNosqlAppliance) *nosqlRemarkModel {
+func flattenRemark(data *v1.NosqlApplianceResponse) *nosqlRemarkModel {
 	if !data.Remark.IsSet() {
 		return nil
 	}
@@ -379,7 +379,7 @@ func flattenRemark(data *v1.GetNosqlAppliance) *nosqlRemarkModel {
 	return model
 }
 
-func flattenInstance(data *v1.GetNosqlAppliance) types.Object {
+func flattenInstance(data *v1.NosqlApplianceResponse) types.Object {
 	v := types.ObjectNull(nosqlInstanceModel{}.AttributeTypes())
 	if !data.Instance.IsSet() {
 		return v
@@ -415,7 +415,7 @@ func flattenInstance(data *v1.GetNosqlAppliance) types.Object {
 	return value
 }
 
-func flattenDisk(data *v1.GetNosqlAppliance) types.Object {
+func flattenDisk(data *v1.NosqlApplianceResponse) types.Object {
 	v := types.ObjectNull(common.SakuraEncryptionDiskModel{}.AttributeTypes())
 	if disk, ok := data.Disk.Get(); ok {
 		m := &common.SakuraEncryptionDiskModel{
@@ -432,7 +432,7 @@ func flattenDisk(data *v1.GetNosqlAppliance) types.Object {
 	}
 }
 
-func flattenInterfaces(data *v1.GetNosqlAppliance) types.List {
+func flattenInterfaces(data *v1.NosqlApplianceResponse) types.List {
 	v := types.ListNull(types.ObjectType{AttrTypes: nosqlInterfaceModel{}.AttributeTypes()})
 	if len(data.Interfaces) == 0 {
 		return v
@@ -458,7 +458,7 @@ func flattenInterfaces(data *v1.GetNosqlAppliance) types.List {
 	return value
 }
 
-func flattenSwitch(switchInfo *v1.OptGetNosqlApplianceInterfacesItemSwitch) *nosqlInterfaceSwitchModel {
+func flattenSwitch(switchInfo *v1.OptNosqlApplianceResponseInterfacesItemSwitch) *nosqlInterfaceSwitchModel {
 	if !switchInfo.IsSet() {
 		return nil
 	}

@@ -17,6 +17,6 @@ type groupBaseModel struct {
 func (model *groupBaseModel) updateState(data *v1.CommonServiceItem) {
 	model.UpdateBaseState(data.ID, data.Name, data.Description, data.Tags)
 
-	gr, _ := data.Settings.GetGroupSettings()
+	gr, _ := data.Settings.GetCommonServiceItemGroupSettings()
 	model.Destinations = common.StringsToTlist(gr.Destinations)
 }

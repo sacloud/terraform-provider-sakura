@@ -194,14 +194,12 @@ func makeRoutingCreateRequest(d *routingResourceModel) v1.PostCommonServiceItemR
 					ID: d.IconID.ValueString(),
 				},
 			},
-			Settings: v1.CommonServiceItemSettings{
-				RoutingSettings: v1.RoutingSettings{
-					MatchLabels:   expandMatchLabels(d.MatchLabels),
-					SourceID:      d.SourceID.ValueString(),
-					TargetGroupID: d.TargetGroupID.ValueString(),
-					PriorityRank:  1, // API requires this value, but it is not managed by this resource, so we set a init value.
-				},
-			},
+			Settings: v1.NewCommonServiceItemRoutingSettingsPostCommonServiceItemRequestCommonServiceItemSettings(v1.CommonServiceItemRoutingSettings{
+				MatchLabels:   expandMatchLabels(d.MatchLabels),
+				SourceID:      d.SourceID.ValueString(),
+				TargetGroupID: d.TargetGroupID.ValueString(),
+				PriorityRank:  1,
+			}),
 			Tags: common.TsetToStrings(d.Tags),
 		},
 	}
@@ -218,16 +216,14 @@ func makeRoutingUpdateRequest(d *routingResourceModel) v1.PutCommonServiceItemRe
 					ID: d.IconID.ValueString(),
 				},
 			},
-			Settings: v1.OptCommonServiceItemSettings{
+			Settings: v1.OptPutCommonServiceItemRequestCommonServiceItemSettings{
 				Set: true,
-				Value: v1.CommonServiceItemSettings{
-					RoutingSettings: v1.RoutingSettings{
-						MatchLabels:   expandMatchLabels(d.MatchLabels),
-						SourceID:      d.SourceID.ValueString(),
-						TargetGroupID: d.TargetGroupID.ValueString(),
-						PriorityRank:  1, // API requires this value, but it is not managed by this resource, so we set a init value.
-					},
-				},
+				Value: v1.NewCommonServiceItemRoutingSettingsPutCommonServiceItemRequestCommonServiceItemSettings(v1.CommonServiceItemRoutingSettings{
+					MatchLabels:   expandMatchLabels(d.MatchLabels),
+					SourceID:      d.SourceID.ValueString(),
+					TargetGroupID: d.TargetGroupID.ValueString(),
+					PriorityRank:  1,
+				}),
 			},
 			Tags: common.TsetToStrings(d.Tags),
 		},
@@ -235,10 +231,10 @@ func makeRoutingUpdateRequest(d *routingResourceModel) v1.PutCommonServiceItemRe
 	return req
 }
 
-func expandMatchLabels(models []matchLabelModel) []v1.RoutingSettingsMatchLabelsItem {
-	result := make([]v1.RoutingSettingsMatchLabelsItem, len(models))
+func expandMatchLabels(models []matchLabelModel) []v1.CommonServiceItemRoutingSettingsMatchLabelsItem {
+	result := make([]v1.CommonServiceItemRoutingSettingsMatchLabelsItem, len(models))
 	for i, ml := range models {
-		result[i] = v1.RoutingSettingsMatchLabelsItem{
+		result[i] = v1.CommonServiceItemRoutingSettingsMatchLabelsItem{
 			Name:  ml.Name.ValueString(),
 			Value: ml.Value.ValueString(),
 		}

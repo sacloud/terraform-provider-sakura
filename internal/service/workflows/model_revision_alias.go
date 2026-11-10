@@ -16,8 +16,8 @@ type workflowRevisionAliasBaseModel struct {
 	Alias      types.String `tfsdk:"alias"`
 }
 
-func (model *workflowRevisionAliasBaseModel) toUpdateRequest() v1.UpdateWorkflowRevisionAliasReq {
-	return v1.UpdateWorkflowRevisionAliasReq{
+func (model *workflowRevisionAliasBaseModel) toUpdateRequest() v1.UpdateRevisionAliasReq {
+	return v1.UpdateRevisionAliasReq{
 		RevisionAlias: model.Alias.ValueString(),
 	}
 }

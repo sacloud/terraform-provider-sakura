@@ -50,7 +50,7 @@ var reservedPorts = []int32{
 }
 
 func (r *clusterResource) Schema(ctx context.Context, _ resource.SchemaRequest, res *resource.SchemaResponse) {
-	var p v1.CreateLoadBalancerPortProtocol
+	var p v1.ClusterLoadBalancerPortProtocol
 	protocols := common.MapTo(p.AllValues(), common.ToString)
 
 	res.Schema = schema.Schema{
@@ -246,7 +246,7 @@ func (c *clusterResourceModel) intoCreate() (ret cluster.CreateParams, diag diag
 	ret.Name = c.Name.ValueString()
 	ret.ServicePrincipalID = c.ServicePrincipalID.ValueString()
 	ret.LetsEncryptEmail = c.LetsEncryptEmail.ValueStringPointer()
-	ret.Ports = common.MapTo(c.Ports, func(p portModel) v1.CreateLoadBalancerPort {
+	ret.Ports = common.MapTo(c.Ports, func(p portModel) v1.ClusterLoadBalancerPort {
 		q, d := p.intoCreate()
 		diag.Append(d...)
 		return q
@@ -254,7 +254,7 @@ func (c *clusterResourceModel) intoCreate() (ret cluster.CreateParams, diag diag
 
 	// `ports = []` makes no sense for us, but the API mandates empty array
 	if ret.Ports == nil {
-		ret.Ports = make([]v1.CreateLoadBalancerPort, 0)
+		ret.Ports = make([]v1.ClusterLoadBalancerPort, 0)
 	}
 
 	return

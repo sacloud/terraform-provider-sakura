@@ -65,7 +65,7 @@ func (r *destinationResource) Schema(ctx context.Context, _ resource.SchemaReque
 				Description: desc.Sprintf("The type of the %s.", resourceName),
 				Validators: []validator.String{
 					sacloudvalidator.StringFuncValidator(func(v string) error {
-						if err := v1.DestinationSettingsType(v).Validate(); err != nil {
+						if err := v1.CommonServiceItemDestinationSettingsType(v).Validate(); err != nil {
 							return fmt.Errorf("invalid operator: %s", v)
 						}
 						return nil
@@ -184,12 +184,10 @@ func makeDestinationCreateRequest(d *destinationResourceModel) v1.PostCommonServ
 					ID: d.IconID.ValueString(),
 				},
 			},
-			Settings: v1.CommonServiceItemSettings{
-				DestinationSettings: v1.DestinationSettings{
-					Type:  v1.DestinationSettingsType(d.Type.ValueString()),
-					Value: d.Value.ValueString(),
-				},
-			},
+			Settings: v1.NewCommonServiceItemDestinationSettingsPostCommonServiceItemRequestCommonServiceItemSettings(v1.CommonServiceItemDestinationSettings{
+				Type:  v1.CommonServiceItemDestinationSettingsType(d.Type.ValueString()),
+				Value: d.Value.ValueString(),
+			}),
 			Tags: common.TsetToStrings(d.Tags),
 		},
 	}
@@ -206,14 +204,12 @@ func makeDestinationUpdateRequest(d *destinationResourceModel) v1.PutCommonServi
 					ID: d.IconID.ValueString(),
 				},
 			},
-			Settings: v1.OptCommonServiceItemSettings{
+			Settings: v1.OptPutCommonServiceItemRequestCommonServiceItemSettings{
 				Set: true,
-				Value: v1.CommonServiceItemSettings{
-					DestinationSettings: v1.DestinationSettings{
-						Type:  v1.DestinationSettingsType(d.Type.ValueString()),
-						Value: d.Value.ValueString(),
-					},
-				},
+				Value: v1.NewCommonServiceItemDestinationSettingsPutCommonServiceItemRequestCommonServiceItemSettings(v1.CommonServiceItemDestinationSettings{
+					Type:  v1.CommonServiceItemDestinationSettingsType(d.Type.ValueString()),
+					Value: d.Value.ValueString(),
+				}),
 			},
 			Tags: common.TsetToStrings(d.Tags),
 		},

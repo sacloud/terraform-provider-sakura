@@ -180,7 +180,7 @@ func (state *asgDataSourceModel) byName(ctx context.Context, r *asgDataSource) (
 	}
 
 	api := r.api(clusterID)
-	certs, err := listed(func(cursor *asgID) ([]v1.ReadAutoScalingGroupDetail, *asgID, error) {
+	certs, err := listed(func(cursor *asgID) ([]v1.ReadAutoScalingGroup, *asgID, error) {
 		return api.List(ctx, 10, cursor)
 	})
 

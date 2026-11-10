@@ -13,7 +13,7 @@ import (
 
 func TestAccSakuraDataSourceWorkflowsSubscription_basic(t *testing.T) {
 	resourceName := "data.sakura_workflows_subscription.foobar"
-	var subscription v1.GetSubscriptionOK
+	var subscription v1.ReadSubscriptionOK
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },

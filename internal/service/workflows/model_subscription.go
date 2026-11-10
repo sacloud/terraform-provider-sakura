@@ -21,7 +21,7 @@ type workflowsSubscriptionBaseModel struct {
 	UpdatedAt    types.String `tfsdk:"updated_at"`
 }
 
-func (model *workflowsSubscriptionBaseModel) updateState(data *v1.GetSubscriptionOK) {
+func (model *workflowsSubscriptionBaseModel) updateState(data *v1.ReadSubscriptionOK) {
 	if v, ok := data.CurrentPlan.Get(); ok {
 		model.ID = types.StringValue(v.ID)
 		model.AccountID = types.StringValue(v.AccountId)
