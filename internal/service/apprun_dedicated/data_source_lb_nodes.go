@@ -12,6 +12,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	lb "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/loadbalancer"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
@@ -137,7 +138,9 @@ func (d *lbnsDataSource) Read(ctx context.Context, req datasource.ReadRequest, r
 	}
 
 	api := d.api(cid, asgID)
-	list, err := api.ListNodes(ctx, lbID, 10, nil)
+	list, err := listed(func(cursor *v1.LoadBalancerNodeID) ([]v1.LoadBalancerNode, *v1.LoadBalancerNodeID, error) {
+		return api.ListNodes(ctx, lbID, 10, cursor)
+	})
 
 	if err != nil {
 		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list load balancer nodes: %s", err))

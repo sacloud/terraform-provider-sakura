@@ -100,7 +100,7 @@ func (state *appDataSourceModel) byId(context.Context, *appDataSource) (ret *app
 }
 
 func (state *appDataSourceModel) byName(ctx context.Context, d *appDataSource) (ret *appID, ds diag.Diagnostics) {
-	apps, err := listed(func(c *string) ([]v1.ReadApplicationDetail, *string, error) { return d.api().List(ctx, 10, c) })
+	apps, err := listed(func(c *appID) ([]v1.ReadApplication, *appID, error) { return d.api().List(ctx, 10, c) })
 
 	if err != nil {
 		ds.AddError("Read: API Error", fmt.Sprintf("failed to list AppRun Dedicated applications: %s", err))

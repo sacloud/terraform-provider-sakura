@@ -15,8 +15,8 @@ func TestAccSakuraDataSourceWorkflowsRevisionAlias_basic(t *testing.T) {
 	resourceName := "data.sakura_workflows_revision_alias.foobar"
 	rand := test.RandomName()
 
-	var workflow v1.GetWorkflowOKWorkflow
-	var revisionAlias v1.GetWorkflowRevisionsOKRevision
+	var workflow v1.ReadWorkflowOKWorkflow
+	var revisionAlias v1.ReadRevisionOKRevision
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },

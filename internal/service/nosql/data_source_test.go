@@ -21,7 +21,7 @@ func TestAccSakuraDataSourceNosql_basic(t *testing.T) {
 	rand := test.RandomName()
 	password := os.Getenv(envNosqlPassword) // test.RandomPassword() often causes bad request
 
-	var nosql v1.GetNosqlAppliance
+	var nosql v1.NosqlApplianceResponse
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,

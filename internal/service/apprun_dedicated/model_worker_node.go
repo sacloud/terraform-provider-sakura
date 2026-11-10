@@ -87,7 +87,7 @@ func (i *wnifModel) updateState(ctx context.Context, ni wn.WorkerNodeNetworkInte
 	return
 }
 
-func (r *containerModel) updateState(rc v1.RunningContainer) {
+func (r *containerModel) updateState(rc v1.WorkerNodeRunningContainer) {
 	r.ContainerID = types.StringValue(rc.ContainerID)
 	r.Name = types.StringValue(rc.Name)
 	r.State = types.StringValue(rc.State)
@@ -95,8 +95,7 @@ func (r *containerModel) updateState(rc v1.RunningContainer) {
 	r.Image = types.StringValue(rc.Image)
 	r.StartedAt = intoRFC2822(rc.StartedAt)
 	r.ApplicationID = uuid2StringValue(rc.ApplicationID)
-	r.ApplicationVersion = types.Int32Value(rc.ApplicationVersion)
-	return
+	r.ApplicationVersion = types.Int32Value(int32(rc.ApplicationVersion))
 }
 
 func (m *wnModel) updateState(ctx context.Context, detail *wn.WorkerNodeDetail) (ret diag.Diagnostics) {
@@ -109,7 +108,7 @@ func (m *wnModel) updateState(ctx context.Context, detail *wn.WorkerNodeDetail) 
 	m.Created = intoRFC2822(detail.Created)
 	m.ArchiveVersion = types.StringPointerValue(detail.ArchiveVersion)
 	m.CreateErrorMessage = types.StringPointerValue(detail.CreateErrorMessage)
-	m.RunningContainers = common.MapTo(detail.RunningContainers, stateUpdater[v1.RunningContainer, containerModel])
+	m.RunningContainers = common.MapTo(detail.RunningContainers, stateUpdater[v1.WorkerNodeRunningContainer, containerModel])
 	m.NetworkInterfaces = common.MapTo(detail.NetworkInterfaces, func(src wn.WorkerNodeNetworkInterface) (dst wnifModel) {
 		ret.Append(dst.updateState(ctx, src)...)
 		return

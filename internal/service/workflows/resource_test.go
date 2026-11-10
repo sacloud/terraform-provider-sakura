@@ -22,7 +22,7 @@ func TestAccSakuraResourceWorkflows_basic(t *testing.T) {
 	resourceName := "sakura_workflows.foobar"
 	rand := test.RandomName()
 
-	var workflow v1.GetWorkflowOKWorkflow
+	var workflow v1.ReadWorkflowOKWorkflow
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -72,7 +72,7 @@ func TestAccSakuraResourceWorkflows_sameLatestRevision(t *testing.T) {
 	resourceName := "sakura_workflows.foobar"
 	rand := test.RandomName()
 
-	var workflow v1.GetWorkflowOKWorkflow
+	var workflow v1.ReadWorkflowOKWorkflow
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
@@ -145,7 +145,7 @@ func testCheckSakuraWorkflowsDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testCheckSakuraWorkflowsExists(n string, workflow *v1.GetWorkflowOKWorkflow) resource.TestCheckFunc {
+func testCheckSakuraWorkflowsExists(n string, workflow *v1.ReadWorkflowOKWorkflow) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 

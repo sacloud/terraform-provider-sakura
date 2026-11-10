@@ -116,7 +116,7 @@ func (d *workflowsDataSource) Read(ctx context.Context, req datasource.ReadReque
 	}
 
 	revisionOp := workflows.NewRevisionOp(d.client)
-	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflow.ID})
+	revisions, err := revisionOp.List(ctx, v1.ListRevisionsParams{ID: workflow.ID})
 	if err != nil {
 		resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Workflow[%s] revisions: %s", workflow.ID, err))
 		return

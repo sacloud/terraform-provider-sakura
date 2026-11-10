@@ -18,7 +18,7 @@ import (
 
 func TestAccSakuraResourceWorkflowsSubscription_basic(t *testing.T) {
 	resourceName := "sakura_workflows_subscription.foobar"
-	var subscription v1.GetSubscriptionOK
+	var subscription v1.ReadSubscriptionOK
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -70,7 +70,7 @@ func testCheckSakuraWorkflowsSubscriptionDestroy(s *terraform.State) error {
 	return nil
 }
 
-func testCheckSakuraWorkflowsSubscriptionExists(n string, subscription *v1.GetSubscriptionOK) resource.TestCheckFunc {
+func testCheckSakuraWorkflowsSubscriptionExists(n string, subscription *v1.ReadSubscriptionOK) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[n]
 
