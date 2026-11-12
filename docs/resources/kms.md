@@ -38,7 +38,7 @@ resource "sakura_kms" "foobar" {
 - `plain_key` (String, Sensitive) Base64 encoded plain key for imported KMS key. Required when `key_origin` is 'imported'.
 - `plain_key_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) Plain key for imported KMS key. Required when `key_origin` is 'imported'.
 - `rotate_version` (Number) The rotation version. This number is incremented when you want rotate KMS key.
-- `schedule_destruction_days` (Number) The number of days to schedule the destruction of the KMS key. If set, the KMS key will be scheduled for destruction after the specified number of days instead of immediate destruction in 'terraform destroy'.
+- `schedule_destruction_days` (Number) The number of days to schedule the destruction of the KMS key. The KMS key will be scheduled for destruction after the specified number of days. The default is 7 days.
 - `status` (String) The status of the KMS key.
 - `tags` (Set of String) The tags of the KMS key.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))

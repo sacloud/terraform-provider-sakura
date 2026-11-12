@@ -15,6 +15,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int32default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/int64default"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
@@ -107,7 +108,9 @@ func (r *kmsResource) Schema(ctx context.Context, _ resource.SchemaRequest, resp
 			},
 			"schedule_destruction_days": schema.Int32Attribute{
 				Optional:    true,
-				Description: "The number of days to schedule the destruction of the KMS key. If set, the KMS key will be scheduled for destruction after the specified number of days instead of immediate destruction in 'terraform destroy'.",
+				Computed:    true,
+				Default:     int32default.StaticInt32(7),
+				Description: "The number of days to schedule the destruction of the KMS key. The KMS key will be scheduled for destruction after the specified number of days. The default is 7 days.",
 				Validators: []validator.Int32{
 					int32validator.Between(7, 90),
 				},
@@ -249,17 +252,10 @@ func (r *kmsResource) Delete(ctx context.Context, req resource.DeleteRequest, re
 		return
 	}
 
-	if !state.ScheduleDestructionDays.IsNull() {
-		_, err := keyOp.ScheduleDestruction(ctx, state.ID.ValueString(), int(state.ScheduleDestructionDays.ValueInt32()))
-		if err != nil {
-			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to set schedule destruction of KMS key[%s]: %s", state.ID.ValueString(), err))
-			return
-		}
-	} else {
-		if err := keyOp.Delete(ctx, key.ID); err != nil {
-			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to delete KMS key: %s", err))
-			return
-		}
+	_, err := keyOp.ScheduleDestruction(ctx, state.ID.ValueString(), int(state.ScheduleDestructionDays.ValueInt32()))
+	if err != nil {
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to set schedule destruction of KMS key[%s]: %s", state.ID.ValueString(), err))
+		return
 	}
 }
 

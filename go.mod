@@ -21,7 +21,7 @@ require (
 	github.com/minio/minio-go/v7 v7.4.1
 	github.com/mitchellh/go-homedir v1.1.0
 	github.com/sacloud/autoscaler v0.20.0
-	github.com/sacloud/sacloud-sdk-go v0.5.0
+	github.com/sacloud/sacloud-sdk-go v0.6.0
 	github.com/stretchr/testify v1.12.1
 )
 

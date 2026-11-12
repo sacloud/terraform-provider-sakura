@@ -98,6 +98,8 @@ func TestAccSakuraResourceKMS_imported(t *testing.T) {
 }
 
 func TestAccSakuraResourceKMS_importedWithWO(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_TEST_ALL")
+
 	resourceName := "sakura_kms.foobar"
 	rand := test.RandomName()
 
@@ -128,6 +130,8 @@ func TestAccSakuraResourceKMS_importedWithWO(t *testing.T) {
 
 // OpenAPI定義の更新によってUpdate時のtagsが必須になったことに対するテスト
 func TestAccSakuraResourceKMS_tagsIssue(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_TEST_ALL")
+
 	resourceName := "sakura_kms.foobar"
 	rand := test.RandomName()
 	var key v1.Key
@@ -214,8 +218,8 @@ func testCheckSakuraKMSDestroy(s *terraform.State) error {
 			continue
 		}
 
-		_, err := keyOp.Read(context.Background(), rs.Primary.ID)
-		if err == nil {
+		k, _ := keyOp.Read(context.Background(), rs.Primary.ID)
+		if k != nil && (k.Status != v1.KeyStatusPendingDestruction && k.Status != v1.KeyStatusDestroyed) {
 			return fmt.Errorf("still exists KMS: %s", rs.Primary.ID)
 		}
 	}
