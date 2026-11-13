@@ -102,6 +102,14 @@ func (d *localRouterDataSource) Schema(_ context.Context, _ datasource.SchemaReq
 							Sensitive:   true,
 							Description: "The secret key of the peer LocalRouter",
 						},
+						"secret_key_wo": schema.StringAttribute{
+							Computed:    true,
+							Description: "Placeholder for resource schema. Always empty in data source.",
+						},
+						"secret_key_wo_version": schema.Int32Attribute{
+							Computed:    true,
+							Description: "Placeholder for resource schema. Always empty in data source.",
+						},
 						"enabled": schema.BoolAttribute{
 							Computed:    true,
 							Description: "The flag to enable the LocalRouter",
