@@ -99,7 +99,9 @@ type enhancedLBRuleModel struct {
 }
 
 type enhancedLBOriginGuardModel struct {
-	Token types.String `tfsdk:"token"`
+	Token          types.String `tfsdk:"token"`
+	TokenWO        types.String `tfsdk:"token_wo"`
+	TokenWOVersion types.Int32  `tfsdk:"token_wo_version"`
 }
 
 type enhancedLBStrictRuleModel struct {
@@ -188,7 +190,7 @@ func (model *enhancedLBBaseModel) updateState(ctx context.Context, client *commo
 	model.LetsEncrypt = flattenEnhancedLBACMESetting(data)
 	model.Certificate = flattenEnhancedLBCerts(certs, model.Certificate)
 	model.MonitoringSuite = common.FlattenMonitoringSuiteLog(data.MonitoringSuiteLog)
-	model.OriginGuard = flattenEnhancedLBOriginGuard(data)
+	model.OriginGuard = flattenEnhancedLBOriginGuard(data, model.OriginGuard)
 	model.StrictRule = flattenEnhancedLBStrictRule(data)
 	if data.IconID.IsEmpty() {
 		model.IconID = types.StringNull()
@@ -385,8 +387,15 @@ func flattenEnhancedLBTimeout(elb *iaas.ProxyLB) int {
 	return 0
 }
 
-func flattenEnhancedLBOriginGuard(elb *iaas.ProxyLB) *enhancedLBOriginGuardModel {
+func flattenEnhancedLBOriginGuard(elb *iaas.ProxyLB, previous *enhancedLBOriginGuardModel) *enhancedLBOriginGuardModel {
 	if elb.OriginGuard != nil {
+		// write-onlyバージョンを使っている時はtokenを保存しない
+		if previous != nil && previous.TokenWOVersion.ValueInt32() > 0 {
+			return &enhancedLBOriginGuardModel{
+				Token:          types.StringNull(),
+				TokenWOVersion: previous.TokenWOVersion,
+			}
+		}
 		return &enhancedLBOriginGuardModel{
 			Token: types.StringValue(elb.OriginGuard.Token),
 		}

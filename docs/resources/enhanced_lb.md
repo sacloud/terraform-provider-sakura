@@ -41,7 +41,11 @@ resource "sakura_enhanced_lb" "foobar" {
   }
 
   origin_guard = {
-    token = "exampletoken"
+    token_wo         = "exampletoken"
+    token_wo_version = 1
+
+    # or token. token will be stored in tf state.
+    # token = "exampletoken"
   }
 
   strict_rule = {
@@ -223,9 +227,11 @@ Optional:
 <a id="nestedatt--origin_guard"></a>
 ### Nested Schema for `origin_guard`
 
-Required:
+Optional:
 
-- `token` (String) The token used for origin guard. This must be between 8 and 32 alphanumeric characters
+- `token` (String, Sensitive) The token used for origin guard. This must be between 8 and 32 alphanumeric characters. Use token_wo instead for newer deployments.
+- `token_wo` (String, [Write-only](https://developer.hashicorp.com/terraform/language/resources/ephemeral#write-only-arguments)) The token used for origin guard. This must be between 8 and 32 alphanumeric characters
+- `token_wo_version` (Number) The version of the token_wo field. This value must be greater than 0 when set. Increment this when changing token.
 
 
 <a id="nestedatt--rule"></a>

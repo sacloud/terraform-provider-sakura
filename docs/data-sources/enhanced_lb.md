@@ -133,7 +133,9 @@ Read-Only:
 
 Read-Only:
 
-- `token` (String) The token used for origin guard
+- `token` (String, Sensitive) The token used for origin guard
+- `token_wo` (String) Placeholder for resource schema. Always empty in data source.
+- `token_wo_version` (Number) Placeholder for resource schema. Always empty in data source.
 
 
 <a id="nestedatt--rule"></a>
