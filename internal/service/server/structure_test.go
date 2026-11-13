@@ -9,7 +9,11 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	"github.com/sacloud/sacloud-sdk-go/api/iaas"
+	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
+	serverBuilder "github.com/sacloud/sacloud-sdk-go/service/iaas/server/builder"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	sctypes "github.com/sacloud/terraform-provider-sakura/internal/types"
 )
 
 type dummyResourceValueChangeHandler struct {
@@ -361,5 +365,167 @@ func TestStructureServer_isDiskEditParameterChanged(t *testing.T) {
 			fmt.Printf("diff: %s", cmp.Diff(tc.in.oldState, tc.in.newState, cmp.AllowUnexported(serverResourceModel{}, serverDiskEditModel{}, serverDiskEditScriptModel{}, serverNetworkInterfaceModel{})))
 			t.Fatalf("got unexpected state: pattern: %s expected: %t actual: %t", tc.msg, tc.expect, got)
 		}
+	}
+}
+
+func TestFlattenServerNICsSRN(t *testing.T) {
+	cases := []struct {
+		name     string
+		zone     string
+		switchID iaastypes.ID
+		scope    iaastypes.EScope
+		upstream string
+	}{
+		{name: "disconnected", zone: "is1c", upstream: "disconnect"},
+		{name: "shared", zone: "tk1a", switchID: iaastypes.ID(2), scope: iaastypes.Scopes.Shared, upstream: "shared"},
+		{name: "switch", zone: "is1b", switchID: iaastypes.ID(3), upstream: "3"},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			nic := &iaas.InterfaceView{}
+			nic.ID = iaastypes.ID(100000000001)
+			nic.SwitchID = tc.switchID
+			nic.SwitchScope = tc.scope
+			server := &iaas.Server{Interfaces: []*iaas.InterfaceView{nic}}
+			got := flattenServerNICs(server, tc.zone)
+			if len(got) != 1 {
+				t.Fatalf("flattenServerNICs() returned %d NICs, want 1", len(got))
+			}
+			wantSRN := sctypes.SRNValue(fmt.Sprintf("srnv1:sakura-%s:sakura.iaas.interface:100000000001", tc.zone))
+			if !got[0].SRN.Equal(wantSRN) {
+				t.Fatalf("SRN = %s, want %s", got[0].SRN, wantSRN)
+			}
+			if got[0].Upstream.ValueString() != tc.upstream {
+				t.Fatalf("Upstream = %s, want %s", got[0].Upstream.ValueString(), tc.upstream)
+			}
+		})
+	}
+}
+
+func TestPreserveNetworkingSuiteNICSRN(t *testing.T) {
+	interfaceSRN := sctypes.SRNValue("srnv1:sakura-is1c:sakura.iaas.interface:100000000001")
+	connectionSRN := sctypes.SRNValue("srnv1:sakura-is1c:sakura.networking-suite.interface-connection:100000000002")
+	subnetSRN := sctypes.SRNValue("srnv1:sakura-is1c:sakura.networking-suite.subnet:100000000003")
+	cases := []struct {
+		name     string
+		upstream string
+		wantSRN  sctypes.SRN
+	}{
+		{name: "networking suite connection", upstream: networkingSuiteSubnetUpstream, wantSRN: connectionSRN},
+		{name: "ordinary interface", upstream: "shared", wantSRN: interfaceSRN},
+	}
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			target := []serverNetworkInterfaceModel{{
+				SRN:      interfaceSRN,
+				Upstream: types.StringValue("disconnect"),
+			}}
+			source := []serverNetworkInterfaceModel{{
+				SRN:       connectionSRN,
+				Upstream:  types.StringValue(tc.upstream),
+				SubnetSRN: subnetSRN,
+			}}
+			got := mergeNetworkingSuiteNICState(target, source)
+			if !got[0].SRN.Equal(tc.wantSRN) {
+				t.Fatalf("SRN = %s, want %s", got[0].SRN, tc.wantSRN)
+			}
+			if tc.upstream == networkingSuiteSubnetUpstream && (!got[0].SubnetSRN.Equal(subnetSRN) || !got[0].Upstream.Equal(source[0].Upstream)) {
+				t.Fatal("Networking Suite upstream and subnet SRN were not preserved")
+			}
+		})
+	}
+}
+
+func TestValidateNetworkingSuiteNICs(t *testing.T) {
+	subnetSRN := sctypes.SRNValue("srnv1:sakura-is1a:sakura.networking-suite.subnet:subnet-id")
+	cases := []struct {
+		name    string
+		nic     serverNetworkInterfaceModel
+		wantErr bool
+	}{
+		{
+			name: "networking suite requires subnet srn",
+			nic: serverNetworkInterfaceModel{
+				Upstream: types.StringValue(networkingSuiteSubnetUpstream),
+			},
+			wantErr: true,
+		},
+		{
+			name: "networking suite accepts subnet srn",
+			nic: serverNetworkInterfaceModel{
+				Upstream:  types.StringValue(networkingSuiteSubnetUpstream),
+				SubnetSRN: subnetSRN,
+			},
+		},
+		{
+			name: "other upstream rejects subnet srn",
+			nic: serverNetworkInterfaceModel{
+				Upstream:  types.StringValue("shared"),
+				SubnetSRN: subnetSRN,
+			},
+			wantErr: true,
+		},
+	}
+
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			err := validateNetworkingSuiteNICs([]serverNetworkInterfaceModel{tc.nic})
+			if (err != nil) != tc.wantErr {
+				t.Fatalf("validateNetworkingSuiteNICs() error = %v, wantErr %t", err, tc.wantErr)
+			}
+		})
+	}
+}
+
+func TestExpandNetworkingSuiteNICAsDisconnected(t *testing.T) {
+	model := &serverResourceModel{
+		serverBaseModel: serverBaseModel{
+			NetworkInterface: []serverNetworkInterfaceModel{{
+				Upstream: types.StringValue(networkingSuiteSubnetUpstream),
+			}},
+		},
+	}
+	if _, ok := expandServerNIC(model).(*serverBuilder.DisconnectedNICSetting); !ok {
+		t.Fatal("expected a disconnected NIC setting for a Networking Suite interface")
+	}
+}
+
+func TestNetworkingSuiteConfigChanged(t *testing.T) {
+	subnetSRN := sctypes.SRNValue("srnv1:sakura-is1a:sakura.networking-suite.subnet:subnet-id")
+	managedNIC := serverNetworkInterfaceModel{
+		Upstream:  types.StringValue(networkingSuiteSubnetUpstream),
+		SubnetSRN: subnetSRN,
+	}
+	tests := []struct {
+		name string
+		plan []serverNetworkInterfaceModel
+		old  []serverNetworkInterfaceModel
+		want bool
+	}{
+		{
+			name: "unchanged",
+			plan: []serverNetworkInterfaceModel{managedNIC},
+			old:  []serverNetworkInterfaceModel{managedNIC},
+		},
+		{
+			name: "other nic upstream changed",
+			plan: []serverNetworkInterfaceModel{
+				managedNIC,
+				{Upstream: types.StringValue("100000000000")},
+			},
+			old: []serverNetworkInterfaceModel{
+				managedNIC,
+				{Upstream: types.StringValue("shared")},
+			},
+			want: true,
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			if got := networkingSuiteConfigChanged(tc.plan, tc.old); got != tc.want {
+				t.Fatalf("networkingSuiteConfigChanged() = %t, want %t", got, tc.want)
+			}
+		})
 	}
 }

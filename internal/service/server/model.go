@@ -4,12 +4,14 @@
 package server
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/sacloud/sacloud-sdk-go/api/iaas"
 	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	sctypes "github.com/sacloud/terraform-provider-sakura/internal/types"
 )
 
 type serverBaseModel struct {
@@ -38,7 +40,10 @@ type serverBaseModel struct {
 }
 
 type serverNetworkInterfaceModel struct {
+	// Networking Suite接続ではinterface-connection、それ以外ではServer NIC自身のSRNを保持する。
+	SRN            sctypes.SRN  `tfsdk:"srn"`
 	Upstream       types.String `tfsdk:"upstream"`
+	SubnetSRN      sctypes.SRN  `tfsdk:"subnet_srn"`
 	UserIPAddress  types.String `tfsdk:"user_ip_address"` // iptypes.IPv4Address `tfsdk:"user_ip_address"`
 	PacketFilterID types.String `tfsdk:"packet_filter_id"`
 	MACAddress     types.String `tfsdk:"mac_address"`
@@ -58,7 +63,7 @@ func (model *serverBaseModel) updateState(server *iaas.Server, zone string) {
 	model.Disks = common.StringsToTlist(flattenServerConnectedDiskIDs(server))
 	model.InterfaceDriver = types.StringValue(server.InterfaceDriver.String())
 	model.PrivateHostName = types.StringValue(server.PrivateHostName)
-	model.NetworkInterface = flattenServerNICs(server)
+	model.NetworkInterface = flattenServerNICs(server, zone)
 	model.IPAddress = types.StringValue(ip) // iptypes.NewIPAddressValue(ip)
 	model.Gateway = types.StringValue(gateway)
 	model.NetworkAddress = types.StringValue(nwAddress)
@@ -83,7 +88,8 @@ func (model *serverBaseModel) updateState(server *iaas.Server, zone string) {
 	}
 }
 
-func flattenServerNICs(server *iaas.Server) []serverNetworkInterfaceModel {
+// flattenServerNICsはServerのNIC情報を変換する。Networking Suiteの接続情報は呼び出し元で補完する。
+func flattenServerNICs(server *iaas.Server, zone string) []serverNetworkInterfaceModel {
 	var results []serverNetworkInterfaceModel
 	for _, nic := range server.Interfaces {
 		var upstream string
@@ -96,6 +102,7 @@ func flattenServerNICs(server *iaas.Server) []serverNetworkInterfaceModel {
 			upstream = nic.SwitchID.String()
 		}
 		r := serverNetworkInterfaceModel{
+			SRN:           sctypes.SRNValue(fmt.Sprintf("srnv1:sakura-%s:sakura.iaas.interface:%s", zone, nic.ID.String())),
 			Upstream:      types.StringValue(upstream),
 			MACAddress:    types.StringValue(strings.ToLower(nic.MACAddress)),
 			UserIPAddress: types.StringValue(nic.UserIPAddress), // iptypes.NewIPv4AddressValue(nic.UserIPAddress),
