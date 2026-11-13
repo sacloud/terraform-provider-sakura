@@ -1,5 +1,21 @@
 # Changelog
 
+## [v3.15.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.4...v3.15.0) - 2026-11-13
+
+### 🚀 New Features
+- Update sacloud-sdk-go to v0.6.0 and update kms resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/388
+### Other Changes
+- go.mod: toolchain go1.27.3 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/374
+- sacloud-sdk-go v0.3.0 by @shyouhei in https://github.com/sacloud/terraform-provider-sakura/pull/365
+- Use exsiting kms resource by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/382
+- Update sacloud-sdk-go to v0.5.0 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/383
+- enhanced_lb: Add write-only version to origin_guard.token. fix #380 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/386
+- local_router: fix data source schema mismatch by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/387
+### 📦 Dependency Updates
+- ci: bump Songmu/tagpr from 1.21.1 to 1.21.4 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/379
+- go: bump github.com/sacloud/autoscaler from 0.20.0 to 0.20.1 in the sacloud group across 1 directory by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/384
+- ci: bump Songmu/tagpr from 1.21.4 to 1.22.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/385
+
 ## [v3.14.4](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.3...v3.14.4) - 2026-10-20
 
 ### Other Changes
