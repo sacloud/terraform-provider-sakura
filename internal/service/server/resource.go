@@ -499,6 +499,9 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 			resp.Diagnostics.AddError("Create: Networking Suite Error", err.Error())
 			return
 		}
+		if err := reconcileNetworkingSuitePacketFilters(ctx, iaas.NewInterfaceOp(r.client), zone, server, plan.NetworkInterface); err != nil {
+			resp.Diagnostics.AddWarning("Create: Packet Filter Error", fmt.Sprintf("failed to reconcile packet filter: Configure it manually: %s", err.Error()))
+		}
 		if err := bootServer(ctx, r.client, zone, server.ID, plan.UserData.ValueString()); err != nil {
 			cleanupNetworkingSuiteConnections(ctx, r.client, plan.NetworkInterface)
 			if err := iaas.NewServerOp(r.client).Delete(ctx, zone, server.ID); err != nil {
@@ -613,6 +616,12 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 			cleanupNetworkingSuiteConnections(ctx, r.client, plan.NetworkInterface)
 			resp.Diagnostics.AddError("Update: Networking Suite Error", err.Error())
 			return
+		}
+	}
+	// ビルダーではNetworking SuiteのNICをdisconnectedで扱いパケットフィルターも削除するので、再設定が必要。
+	if hasNetworkingSuiteNIC(plan.NetworkInterface) {
+		if err := reconcileNetworkingSuitePacketFilters(ctx, iaas.NewInterfaceOp(r.client), zone, server, plan.NetworkInterface); err != nil {
+			resp.Diagnostics.AddWarning("Update: Packet Filter Error", fmt.Sprintf("failed to reconcile packet filter: Configure it manually: %s", err.Error()))
 		}
 	}
 	// 接続変更前に起動していた場合だけ再起動し、元から停止していたサーバーは停止状態を保つ。
@@ -917,6 +926,35 @@ func networkingSuiteConfigChanged(plan, state []serverNetworkInterfaceModel) boo
 
 func networkingSuiteInterfaceSRN(zone string, interfaceID iaastypes.ID) (srn.SRN, error) {
 	return srn.Parse(fmt.Sprintf("srnv1:sakura-%s:sakura.iaas.interface:%s", zone, interfaceID.String()))
+}
+
+func reconcileNetworkingSuitePacketFilters(ctx context.Context, op iaas.InterfaceAPI, zone string, server *iaas.Server, nics []serverNetworkInterfaceModel) error {
+	for i, nic := range nics {
+		if nic.Upstream.ValueString() != networkingSuiteSubnetUpstream {
+			continue
+		}
+		if i >= len(server.Interfaces) || server.Interfaces[i] == nil {
+			return fmt.Errorf("network interface[%d] is missing from Server[%s]", i, server.ID)
+		}
+		iface := server.Interfaces[i]
+		pfID := common.ExpandSakuraCloudID(nic.PacketFilterID)
+		if iface.PacketFilterID == pfID {
+			continue
+		}
+		if !iface.PacketFilterID.IsEmpty() {
+			if err := op.DisconnectFromPacketFilter(ctx, zone, iface.ID); err != nil {
+				return fmt.Errorf("failed to disconnect packet filter from interface[%s]: %w", iface.ID, err)
+			}
+			iface.PacketFilterID = 0
+		}
+		if !pfID.IsEmpty() {
+			if err := op.ConnectToPacketFilter(ctx, zone, iface.ID, pfID); err != nil {
+				return fmt.Errorf("failed to connect packet filter[%s] to interface[%s]: %w", pfID, iface.ID, err)
+			}
+			iface.PacketFilterID = pfID
+		}
+	}
+	return nil
 }
 
 func createNetworkingSuiteConnections(ctx context.Context, client *common.APIClient, zone string, server *iaas.Server, nics []serverNetworkInterfaceModel) error {

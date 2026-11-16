@@ -551,6 +551,76 @@ func TestAccSakuraServer_packetFilter(t *testing.T) {
 	})
 }
 
+func TestAccSakuraServer_networkingSuitePacketFilter(t *testing.T) {
+	resourceName := "sakura_server.foobar"
+	rand := test.RandomName()
+	var server iaas.Server
+
+	config := func(nics, description string) string {
+		return test.BuildConfigWithArgs(testAccSakuraServer_networkingSuitePacketFilter, rand, nics, description)
+	}
+	checkFilter := func(index int, filterResource string) resource.TestCheckFunc {
+		return func(state *terraform.State) error {
+			filter, ok := state.RootModule().Resources[filterResource]
+			if !ok {
+				return fmt.Errorf("packet filter %s not found in state", filterResource)
+			}
+			if len(server.Interfaces) <= index || server.Interfaces[index].PacketFilterID.String() != filter.Primary.ID {
+				return fmt.Errorf("server interface %d is not connected to packet filter %s", index, filter.Primary.ID)
+			}
+			return nil
+		}
+	}
+	primary := `{ upstream = "networking_suite_subnet", subnet_srn = sakura_networking_suite_subnet.foobar.srn, packet_filter_id = sakura_packet_filter.first.id }`
+	replaced := `{ upstream = "networking_suite_subnet", subnet_srn = sakura_networking_suite_subnet.foobar.srn, packet_filter_id = sakura_packet_filter.second.id }`
+	withoutFilter := `{ upstream = "networking_suite_subnet", subnet_srn = sakura_networking_suite_subnet.foobar.srn }`
+
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             test.CheckSakuraServerDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: config(primary, "initial"),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					resource.TestCheckResourceAttrPair(resourceName, "network_interface.0.packet_filter_id", "sakura_packet_filter.first", "id"),
+					checkFilter(0, "sakura_packet_filter.first"),
+				),
+			},
+			{
+				Config: config(primary, "updated"),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					resource.TestCheckResourceAttrPair(resourceName, "network_interface.0.packet_filter_id", "sakura_packet_filter.first", "id"),
+					checkFilter(0, "sakura_packet_filter.first"),
+				),
+			},
+			{
+				Config: config(replaced, "updated"),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					resource.TestCheckResourceAttrPair(resourceName, "network_interface.0.packet_filter_id", "sakura_packet_filter.second", "id"),
+					checkFilter(0, "sakura_packet_filter.second"),
+				),
+			},
+			{
+				Config: config(withoutFilter, "updated"),
+				Check: resource.ComposeTestCheckFunc(
+					test.CheckSakuraServerExists(resourceName, &server),
+					resource.TestCheckNoResourceAttr(resourceName, "network_interface.0.packet_filter_id"),
+					func(*terraform.State) error {
+						if len(server.Interfaces) == 0 || !server.Interfaces[0].PacketFilterID.IsEmpty() {
+							return fmt.Errorf("server interface 0 still has a packet filter")
+						}
+						return nil
+					},
+				),
+			},
+		},
+	})
+}
+
 func TestAccSakuraServer_withBlankDisk(t *testing.T) {
 	resourceName := "sakura_server.foobar"
 	rand := test.RandomName()
@@ -1100,6 +1170,39 @@ resource "sakura_server" "foobar" {
 	}]
 
 	force_shutdown = true
+}
+`
+
+const testAccSakuraServer_networkingSuitePacketFilter = `
+resource "sakura_networking_suite_subnet_group" "foobar" {
+  name               = "{{ .arg0 }}"
+  ipv4_address_range = "10.0.0.0/20"
+  region             = "is1"
+}
+
+resource "sakura_networking_suite_subnet" "foobar" {
+  name               = "{{ .arg0 }}"
+  ipv4_address_range = "10.0.0.0/24"
+  zone               = "is1c"
+  subnet_group_srn   = sakura_networking_suite_subnet_group.foobar.srn
+}
+
+resource "sakura_packet_filter" "first" {
+  name = "{{ .arg0 }}-first"
+  zone = "is1c"
+}
+
+resource "sakura_packet_filter" "second" {
+  name = "{{ .arg0 }}-second"
+  zone = "is1c"
+}
+
+resource "sakura_server" "foobar" {
+  name              = "nws-{{ .arg0 }}"
+  zone              = "is1c"
+  description       = "{{ .arg2 }}"
+  network_interface = [{{ .arg1 }}]
+  force_shutdown    = true
 }
 `
 
