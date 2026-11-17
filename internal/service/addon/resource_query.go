@@ -94,7 +94,7 @@ func (r *queryResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	plan.updateState(resourceGroupName, deploymentName, query.URL.Value, &v1.QueryPostRequestBody{
-		Location: plan.Location.ValueString(),
+		Location: v1.QueryPostRequestBodyLocation(plan.Location.ValueString()),
 	})
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -157,6 +157,6 @@ func decodeQueryResponse(resp *v1.GetResourceResponse) (v1.QueryPostRequestBody,
 		return result, err
 	}
 
-	result.Location = data["location"].(string)
+	result.Location = v1.QueryPostRequestBodyLocation(data["location"].(string))
 	return result, nil
 }

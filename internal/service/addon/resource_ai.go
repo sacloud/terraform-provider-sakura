@@ -95,7 +95,7 @@ func (r *aiResource) Create(ctx context.Context, req resource.CreateRequest, res
 	}
 
 	plan.updateState(id, deploymentName, ai.URL.Value, &v1.AiRequestBody{
-		Location: plan.Location.ValueString(),
+		Location: v1.AiRequestBodyLocation(plan.Location.ValueString()),
 		Sku:      v1.AiServiceSku(plan.Sku.ValueInt32()),
 	})
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -158,7 +158,7 @@ func decodeAIResponse(resp *v1.GetResourceResponse) (v1.AiRequestBody, error) {
 		return result, err
 	}
 
-	result.Location = data["location"].(map[string]interface{})["name"].(string)
+	result.Location = v1.AiRequestBodyLocation(data["location"].(map[string]interface{})["name"].(string))
 	result.Sku = v1.AiServiceSku(1) // TODO: get actual SKU from response when Addon API supports multiple SKUs
 	return result, nil
 }
