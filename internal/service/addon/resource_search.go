@@ -121,8 +121,8 @@ func (r *searchResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	plan.updateState(id, deploymentName, search.URL.Value, &v1.SearchPostRequestBody{
-		Location:       plan.Location.ValueString(),
-		PartitionCount: plan.PartitionCount.ValueInt32(),
+		Location:       v1.SearchPostRequestBodyLocation(plan.Location.ValueString()),
+		PartitionCount: v1.SearchPostRequestBodyPartitionCount(plan.PartitionCount.ValueInt32()),
 		ReplicaCount:   plan.ReplicaCount.ValueInt32(),
 		Sku:            v1.SearchSku(plan.Sku.ValueInt32()),
 	})
@@ -197,8 +197,8 @@ func decodeSearchResponse(resp *v1.GetResourceResponse) (v1.SearchPostRequestBod
 	}
 
 	props := data["properties"].(map[string]interface{})
-	result.Location = loweredLocation(data["location"].(string))
-	result.PartitionCount = int32(props["partitionCount"].(float64))
+	result.Location = v1.SearchPostRequestBodyLocation(loweredLocation(data["location"].(string)))
+	result.PartitionCount = v1.SearchPostRequestBodyPartitionCount(int32(props["partitionCount"].(float64)))
 	result.ReplicaCount = int32(props["replicaCount"].(float64))
 	result.Sku = searchSkuMap[data["sku"].(map[string]any)["name"].(string)]
 	if props["hostingMode"].(string) == "highDensity" {

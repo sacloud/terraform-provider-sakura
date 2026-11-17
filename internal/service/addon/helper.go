@@ -171,10 +171,9 @@ func getFrontDoorFamilyValues(data map[string]any) (string, string, []string, er
 }
 
 func decodeFrontDoorFamilyResponse[T interface {
-	SetLocation(val string)
 	SetProfile(val v1.FrontDoorProfile)
 	SetEndpoint(val v1.FrontDoorEndpoint)
-}](resp *v1.GetResourceResponse, result T) error {
+}](resp *v1.GetResourceResponse, result T, setLocation func(string)) error {
 	if resp == nil || len(resp.Data) == 0 {
 		return errors.New("got invalid response from Addon's FrontDoor related API")
 	}
@@ -192,7 +191,7 @@ func decodeFrontDoorFamilyResponse[T interface {
 	if err != nil {
 		return err
 	}
-	result.SetLocation(location)
+	setLocation(location)
 	result.SetProfile(profile)
 	result.SetEndpoint(endpoint)
 

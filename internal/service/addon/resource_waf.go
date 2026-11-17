@@ -134,7 +134,7 @@ func (r *wafResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	plan.updateState(id, deploymentName, waf.URL.Value, &v1.WafRequestBody{
-		Location: plan.Location.ValueString(),
+		Location: v1.WafRequestBodyLocation(plan.Location.ValueString()),
 		Profile: v1.FrontDoorProfile{
 			Level: v1.PricingLevel(plan.PricingLevel.ValueInt32()),
 		},
@@ -167,7 +167,9 @@ func (r *wafResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	var body v1.WafRequestBody
-	err := decodeFrontDoorFamilyResponse(result, &body)
+	err := decodeFrontDoorFamilyResponse(result, &body, func(location string) {
+		body.SetLocation(v1.WafRequestBodyLocation(location))
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Read: Decode Error", fmt.Sprintf("failed to decode Addon WAF[%s] response: %s", state.ID.ValueString(), err))
 		return

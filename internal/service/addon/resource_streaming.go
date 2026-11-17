@@ -104,7 +104,7 @@ func (r *streamingResource) Create(ctx context.Context, req resource.CreateReque
 	}
 
 	plan.updateState(id, deploymentName, streaming.URL.Value, &v1.StreamingRequestBody{
-		Location:  plan.Location.ValueString(),
+		Location:  v1.StreamingRequestBodyLocation(plan.Location.ValueString()),
 		UnitCount: plan.UnitCount.ValueString(),
 	})
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -167,7 +167,7 @@ func decodeStreamingResponse(resp *v1.GetResourceResponse) (v1.StreamingRequestB
 		return result, err
 	}
 
-	result.Location = loweredLocation(data["location"].(string))
+	result.Location = v1.StreamingRequestBodyLocation(loweredLocation(data["location"].(string)))
 	result.UnitCount = strconv.Itoa(int(data["sku"].(map[string]any)["capacity"].(float64)))
 	return result, nil
 }

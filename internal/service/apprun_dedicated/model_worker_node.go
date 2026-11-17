@@ -9,7 +9,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
-	wn "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/workernode"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -81,9 +80,12 @@ func (wnifModel) AttributeTypes() attrTypes      { return wnifAttrs }
 func (containerModel) AttributeTypes() attrTypes { return containerAttrs }
 func (wnModel) AttributeTypes() attrTypes        { return wnAttrs }
 
-func (i *wnifModel) updateState(ctx context.Context, ni wn.WorkerNodeNetworkInterface) (ret diag.Diagnostics) {
+func (i *wnifModel) updateState(ctx context.Context, ni v1.WorkerNodeNetworkInterface) (ret diag.Diagnostics) {
 	i.Index = types.Int32Value(common.ToInt32(ni.InterfaceIndex))
-	i.Addresses, ret = types.SetValueFrom(ctx, types.StringType, ni.Addresses)
+	addresses := common.MapTo(ni.Addresses, func(src v1.WorkerNodeInterfaceAddress) string {
+		return src.Address
+	})
+	i.Addresses, ret = types.SetValueFrom(ctx, types.StringType, addresses)
 	return
 }
 
@@ -98,18 +100,29 @@ func (r *containerModel) updateState(rc v1.WorkerNodeRunningContainer) {
 	r.ApplicationVersion = types.Int32Value(int32(rc.ApplicationVersion))
 }
 
-func (m *wnModel) updateState(ctx context.Context, detail *wn.WorkerNodeDetail) (ret diag.Diagnostics) {
+func (m *wnModel) updateState(ctx context.Context, detail *v1.WorkerNodeSummary) (ret diag.Diagnostics) {
 	m.ID = uuid2StringValue(detail.WorkerNodeID)
-	m.ResourceID = types.StringPointerValue(detail.ResourceID)
+	if resourceID, ok := detail.ResourceID.Get(); ok {
+		m.ResourceID = types.StringValue(resourceID)
+	} else {
+		m.ResourceID = types.StringNull()
+	}
 	m.Draining = types.BoolValue(detail.Draining)
 	m.Status = types.StringValue(string(detail.Status))
-	m.Healthy = types.BoolValue(detail.Healthy)
-	m.Creating = types.BoolValue(detail.Creating)
+	m.Healthy = types.BoolValue(detail.Status == v1.WorkerNodeStatusHealthy)
+	m.Creating = types.BoolValue(detail.Status == v1.WorkerNodeStatusCreating)
 	m.Created = intoRFC2822(detail.Created)
-	m.ArchiveVersion = types.StringPointerValue(detail.ArchiveVersion)
-	m.CreateErrorMessage = types.StringPointerValue(detail.CreateErrorMessage)
-	m.RunningContainers = common.MapTo(detail.RunningContainers, stateUpdater[v1.WorkerNodeRunningContainer, containerModel])
-	m.NetworkInterfaces = common.MapTo(detail.NetworkInterfaces, func(src wn.WorkerNodeNetworkInterface) (dst wnifModel) {
+	if archiveVersion, ok := detail.ArchiveVersion.Get(); ok {
+		m.ArchiveVersion = types.StringValue(archiveVersion)
+	} else {
+		m.ArchiveVersion = types.StringNull()
+	}
+	if createErrorMessage, ok := detail.CreateErrorMessage.Get(); ok {
+		m.CreateErrorMessage = types.StringValue(createErrorMessage)
+	} else {
+		m.CreateErrorMessage = types.StringNull()
+	}
+	m.NetworkInterfaces = common.MapTo(detail.NetworkInterfaces, func(src v1.WorkerNodeNetworkInterface) (dst wnifModel) {
 		ret.Append(dst.updateState(ctx, src)...)
 		return
 	})

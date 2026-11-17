@@ -18,7 +18,7 @@ type streamingBaseModel struct {
 
 func (model *streamingBaseModel) updateState(id, deploymentName, url string, body *v1.StreamingRequestBody) {
 	model.ID = types.StringValue(id)
-	model.Location = types.StringValue(body.Location)
+	model.Location = types.StringValue(string(body.Location))
 	model.UnitCount = types.StringValue(body.UnitCount)
 	model.DeploymentName = deploymentNameValue(deploymentName)
 	model.URL = types.StringValue(url)

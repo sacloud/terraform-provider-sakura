@@ -137,7 +137,7 @@ func (r *cdnResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	plan.updateState(id, deploymentName, cdn.URL.Value, &v1.NetworkRequestBody{
-		Location: plan.Location.ValueString(),
+		Location: v1.NetworkRequestBodyLocation(plan.Location.ValueString()),
 		Profile: v1.FrontDoorProfile{
 			Level: v1.PricingLevel(plan.PricingLevel.ValueInt32()),
 		},
@@ -170,7 +170,9 @@ func (r *cdnResource) Read(ctx context.Context, req resource.ReadRequest, resp *
 	}
 
 	var body v1.NetworkRequestBody
-	err := decodeFrontDoorFamilyResponse(result, &body)
+	err := decodeFrontDoorFamilyResponse(result, &body, func(location string) {
+		body.SetLocation(v1.NetworkRequestBodyLocation(location))
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Read: Decode Error", fmt.Sprintf("failed to decode Addon CDN[%s] response: %s", state.ID.ValueString(), err))
 		return

@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 	wn "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/workernode"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
@@ -162,7 +163,7 @@ func (d *workerNodesDataSource) Read(ctx context.Context, req datasource.ReadReq
 	}
 
 	api := d.api(cid, asgID)
-	nodes, err := listed(func(cursor *wnID) ([]wn.WorkerNodeDetail, *wnID, error) { return api.List(ctx, 10, cursor) })
+	nodes, err := listed(func(cursor *wnID) ([]v1.WorkerNodeSummary, *wnID, error) { return api.List(ctx, 10, cursor) })
 
 	if err != nil {
 		res.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list worker nodes: %s", err))
@@ -171,7 +172,7 @@ func (d *workerNodesDataSource) Read(ctx context.Context, req datasource.ReadReq
 
 	state.ClusterID = uuid2StringValue(cid)
 	state.AutoScalingGroupID = uuid2StringValue(asgID)
-	state.Nodes = common.MapTo(nodes, func(src wn.WorkerNodeDetail) (dst wnModel) {
+	state.Nodes = common.MapTo(nodes, func(src v1.WorkerNodeSummary) (dst wnModel) {
 		res.Diagnostics.Append(dst.updateState(ctx, &src)...)
 		return
 	})

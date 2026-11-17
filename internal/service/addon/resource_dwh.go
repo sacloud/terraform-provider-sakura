@@ -94,7 +94,7 @@ func (r *dwhResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	plan.updateState(id, deploymentName, dwh.URL.Value, &v1.DatawarehousePostRequestBody{
-		Location: plan.Location.ValueString(),
+		Location: v1.DatawarehousePostRequestBodyLocation(plan.Location.ValueString()),
 	})
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
@@ -156,6 +156,6 @@ func decodeDWHResponse(resp *v1.GetResourceResponse) (v1.DatawarehousePostReques
 		return result, err
 	}
 
-	result.Location = data["location"].(string)
+	result.Location = v1.DatawarehousePostRequestBodyLocation(data["location"].(string))
 	return result, nil
 }

@@ -20,8 +20,8 @@ type searchBaseModel struct {
 
 func (model *searchBaseModel) updateState(id, deploymentName, url string, body *v1.SearchPostRequestBody) {
 	model.ID = types.StringValue(id)
-	model.Location = types.StringValue(body.Location)
-	model.PartitionCount = types.Int32Value(body.PartitionCount)
+	model.Location = types.StringValue(string(body.Location))
+	model.PartitionCount = types.Int32Value(int32(body.PartitionCount))
 	model.ReplicaCount = types.Int32Value(body.ReplicaCount)
 	model.Sku = types.Int32Value(int32(body.Sku))
 	model.URL = types.StringValue(url)
