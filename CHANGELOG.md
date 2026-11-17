@@ -1,5 +1,13 @@
 # Changelog
 
+## [v3.15.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.15.0...v3.15.1) - 2026-11-17
+
+### Other Changes
+- Pass the profile directory override to service clients by @fujiwara in https://github.com/sacloud/terraform-provider-sakura/pull/389
+- Update sacloud-sdk-go to v0.7.0 by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/391
+### 📦 Dependency Updates
+- ci: bump goreleaser/goreleaser-action from 7.2.3 to 7.3.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/368
+
 ## [v3.15.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.14.4...v3.15.0) - 2026-11-13
 
 ### 🚀 New Features
