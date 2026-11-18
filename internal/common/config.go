@@ -4,14 +4,8 @@
 package common
 
 import (
-	"errors"
-	"fmt"
-	"log"
-	"os"
-	"strings"
 	"time"
 
-	"github.com/hashicorp/go-multierror"
 	"github.com/sacloud/sacloud-sdk-go/api/addon"
 	addonapi "github.com/sacloud/sacloud-sdk-go/api/addon/apis/v1"
 	"github.com/sacloud/sacloud-sdk-go/api/apigw"
@@ -25,7 +19,6 @@ import (
 	"github.com/sacloud/sacloud-sdk-go/api/eventbus"
 	eventbus_api "github.com/sacloud/sacloud-sdk-go/api/eventbus/apis/v1"
 	"github.com/sacloud/sacloud-sdk-go/api/iaas"
-	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/api"
 	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/query"
 	"github.com/sacloud/sacloud-sdk-go/api/iam"
 	iamapi "github.com/sacloud/sacloud-sdk-go/api/iam/apis/v1"
@@ -48,18 +41,6 @@ import (
 	"github.com/sacloud/sacloud-sdk-go/api/workflows"
 	workflowsapi "github.com/sacloud/sacloud-sdk-go/api/workflows/apis/v1"
 	"github.com/sacloud/sacloud-sdk-go/common/saclient"
-	"github.com/sacloud/terraform-provider-sakura/internal/defaults"
-	ver "github.com/sacloud/terraform-provider-sakura/version"
-)
-
-const (
-	traceHTTP = "http"
-	traceAPI  = "api"
-)
-
-const (
-	uaEnvVar        = "SAKURACLOUD_APPEND_USER_AGENT"
-	EndpointsEnvVar = "SAKURA_ENDPOINTS_"
 )
 
 const (
@@ -76,30 +57,6 @@ var (
 	vpcRouterWaitAfterCreateDuration = 2 * time.Minute
 )
 
-// Config type of SakuraCloud Config
-type Config struct {
-	Profile                string
-	AccessToken            string
-	AccessTokenSecret      string
-	ServicePrincipalID     string
-	ServicePrincipalKeyKID string
-	ServicePrivateKey      string
-	ServicePrivateKeyPath  string
-	Zone                   string
-	Zones                  []string
-	DefaultZone            string
-	TraceMode              string
-	AcceptLanguage         string
-	APIRootURL             string
-	RetryMax               int
-	RetryWaitMin           int
-	RetryWaitMax           int
-	APIRequestTimeout      int
-	APIRequestRateLimit    int
-	TerraformVersion       string
-	Endpoints              map[string]string
-}
-
 // APIClient for SakuraCloud API
 type APIClient struct {
 	iaas.APICaller
@@ -109,7 +66,6 @@ type APIClient struct {
 	deletionWaiterPollingInterval    time.Duration
 	databaseWaitAfterCreateDuration  time.Duration
 	vpcRouterWaitAfterCreateDuration time.Duration
-	CallerOptions                    *api.ClientOptions
 	SaClient                         *saclient.Client
 	AppRunClient                     *apprunapi.Client
 	AppRunDedicatedClient            *apprundedicatedapi.Client
@@ -141,259 +97,13 @@ func (c *APIClient) GetZones() []string {
 	return c.zones
 }
 
-func (c *Config) FillWith(other *Config) {
-	if c.Profile == "" {
-		c.Profile = other.Profile
-	}
-	if c.AccessToken == "" {
-		c.AccessToken = other.AccessToken
-	}
-	if c.AccessTokenSecret == "" {
-		c.AccessTokenSecret = other.AccessTokenSecret
-	}
-	if c.ServicePrincipalID == "" {
-		c.ServicePrincipalID = other.ServicePrincipalID
-	}
-	if c.ServicePrincipalKeyKID == "" {
-		c.ServicePrincipalKeyKID = other.ServicePrincipalKeyKID
-	}
-	if c.ServicePrivateKey == "" {
-		c.ServicePrivateKey = other.ServicePrivateKey
-	}
-	if c.ServicePrivateKeyPath == "" {
-		c.ServicePrivateKeyPath = other.ServicePrivateKeyPath
-	}
-	if c.Zone == "" {
-		c.Zone = other.Zone
-	}
-	if c.DefaultZone == "" {
-		c.DefaultZone = other.DefaultZone
-	}
-	if len(c.Zones) == 0 {
-		c.Zones = other.Zones
-	}
-	if c.APIRootURL == "" {
-		c.APIRootURL = other.APIRootURL
-	}
-	if c.TraceMode == "" {
-		c.TraceMode = other.TraceMode
-	}
-	if c.AcceptLanguage == "" {
-		c.AcceptLanguage = other.AcceptLanguage
-	}
-	if c.RetryMax == 0 && other.RetryMax > 0 {
-		c.RetryMax = other.RetryMax
-	}
-	if c.RetryWaitMax == 0 {
-		c.RetryWaitMax = other.RetryWaitMax
-	}
-	if c.RetryWaitMin == 0 {
-		c.RetryWaitMin = other.RetryWaitMin
-	}
-	if c.APIRequestTimeout == 0 && other.APIRequestTimeout > 0 {
-		c.APIRequestTimeout = other.APIRequestTimeout
-	}
-	if c.APIRequestRateLimit == 0 && other.APIRequestRateLimit > 0 {
-		c.APIRequestRateLimit = other.APIRequestRateLimit
-	}
-	if len(c.Endpoints) == 0 && len(other.Endpoints) > 0 {
-		c.Endpoints = other.Endpoints
-	}
-}
-
-func (c *Config) FillWithDefault() {
-	if c.Zone == "" {
-		c.Zone = defaults.Zone
-	}
-	if len(c.Zones) == 0 {
-		c.Zones = iaas.SakuraCloudZones
-	}
-	if c.RetryMax == 0 {
-		c.RetryMax = defaults.RetryMax
-	}
-	if c.APIRequestTimeout == 0 {
-		c.APIRequestTimeout = defaults.APIRequestTimeout
-	}
-	if c.APIRequestRateLimit == 0 {
-		c.APIRequestRateLimit = defaults.APIRequestRateLimit
-	}
-}
-
-func (c *Config) LoadFromProfile() (*Config, error) {
-	profileOp, err := saclient.NewProfileOp(os.Environ())
+func NewClient(theClient *saclient.Client) (*APIClient, error) {
+	c, err := theClient.EndpointConfig()
 	if err != nil {
-		return nil, fmt.Errorf("failed to initialize profile operator: %s", err)
-	}
-	var attrs map[string]any
-	if c.Profile == "" {
-		if name, err := profileOp.GetCurrentName(); err != nil {
-			if profile, err := profileOp.Read(defaults.DefaultProfileName); err != nil {
-				return &Config{}, nil
-			} else {
-				c.Profile = defaults.DefaultProfileName
-				attrs = profile.Attributes
-			}
-		} else {
-			if profile, err := profileOp.Read(name); err != nil {
-				return nil, fmt.Errorf("failed to load profile[%s]: %s", name, err)
-			} else {
-				c.Profile = name
-				attrs = profile.Attributes
-			}
-		}
-	} else {
-		if profile, err := profileOp.Read(c.Profile); err != nil {
-			return nil, fmt.Errorf("failed to load profile[%s]: %s", c.Profile, err)
-		} else {
-			attrs = profile.Attributes
-		}
-	}
-
-	conf := &Config{}
-	if v, ok := attrs["AccessToken"].(string); ok {
-		conf.AccessToken = v
-	}
-	if v, ok := attrs["AccessTokenSecret"].(string); ok {
-		conf.AccessTokenSecret = v
-	}
-	if v, ok := attrs["ServicePrincipalID"].(string); ok {
-		conf.ServicePrincipalID = v
-	}
-	if v, ok := attrs["ServicePrincipalKeyID"].(string); ok {
-		conf.ServicePrincipalKeyKID = v
-	}
-	if v, ok := attrs["ServicePrincipalKeyKID"].(string); ok {
-		conf.ServicePrincipalKeyKID = v
-	}
-	if v, ok := attrs["PrivateKeyPEMPath"].(string); ok {
-		conf.ServicePrivateKeyPath = v
-	}
-	if v, ok := attrs["Zone"].(string); ok {
-		conf.Zone = v
-	}
-	if v, ok := attrs["Zones"].([]any); ok {
-		zones := make([]string, 0, len(v))
-		for _, item := range v {
-			s, ok := item.(string)
-			if !ok {
-				return nil, fmt.Errorf("invalid type for Zones element: %T", item)
-			}
-			zones = append(zones, s)
-		}
-		conf.Zones = zones
-	}
-	if v, ok := attrs["DefaultZone"].(string); ok {
-		conf.DefaultZone = v
-	}
-	if v, ok := attrs["TraceMode"].(string); ok {
-		conf.TraceMode = v
-	}
-	if v, ok := attrs["AcceptLanguage"].(string); ok {
-		conf.AcceptLanguage = v
-	}
-	if v, ok := attrs["APIRootURL"].(string); ok {
-		conf.APIRootURL = v
-	}
-	if v, ok := attrs["RetryMax"].(float64); ok {
-		conf.RetryMax = int(v)
-	}
-	if v, ok := attrs["RetryWaitMin"].(float64); ok {
-		conf.RetryWaitMin = int(v)
-	}
-	if v, ok := attrs["RetryWaitMax"].(float64); ok {
-		conf.RetryWaitMax = int(v)
-	}
-	if v, ok := attrs["HTTPRequestTimeout"].(float64); ok {
-		conf.APIRequestTimeout = int(v)
-	}
-	if v, ok := attrs["HTTPRequestRateLimit"].(float64); ok {
-		conf.APIRequestRateLimit = int(v)
-	}
-	if v, ok := attrs["Endpoints"].(map[string]string); ok {
-		conf.Endpoints = v
-	}
-
-	return conf, nil
-}
-
-func (c *Config) validate() error {
-	var err error
-	if c.ServicePrivateKey != "" || c.ServicePrivateKeyPath != "" {
-		if c.ServicePrincipalID == "" {
-			err = multierror.Append(err, errors.New("service_principal_id is required when service_private_key or service_private_key_path is specified"))
-		}
-		if c.ServicePrincipalKeyKID == "" {
-			err = multierror.Append(err, errors.New("service_principal_key_kid is required when service_private_key or service_private_key_path is specified"))
-		}
-	} else {
-		if c.AccessToken == "" {
-			err = multierror.Append(err, errors.New("token is required"))
-		}
-		if c.AccessTokenSecret == "" {
-			err = multierror.Append(err, errors.New("secret is required"))
-		}
-	}
-	return err
-}
-
-func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
-	if profileConf, err := c.LoadFromProfile(); err != nil {
-		return nil, err
-	} else {
-		// 設定の優先度: tfファイル > 環境変数 > profile > プロバイダのデフォルト
-		// ref: https://docs.usacloud.jp/terraform/provider/#api
-		c.FillWith(envConf)
-		c.FillWith(profileConf)
-		c.FillWithDefault()
-	}
-	if err := c.validate(); err != nil {
 		return nil, err
 	}
 
-	tfUserAgent := terraformUserAgent(c.TerraformVersion)
-	providerUserAgent := fmt.Sprintf("%s/v%s", "terraform-provider-sakura", ver.Version)
-	ua := fmt.Sprintf("%s %s", tfUserAgent, providerUserAgent)
-	if add := os.Getenv(uaEnvVar); add != "" {
-		ua += " " + add
-		log.Printf("[DEBUG] Using modified User-Agent: %s", ua)
-	}
-
-	enableAPITrace := false
-	enableHTTPTrace := false
-	if c.TraceMode != "" {
-		enableAPITrace = true
-		enableHTTPTrace = true
-		mode := strings.ToLower(c.TraceMode)
-		switch mode {
-		case traceAPI:
-			enableHTTPTrace = false
-		case traceHTTP:
-			enableAPITrace = false
-		}
-	}
-	callerOptions := &api.ClientOptions{
-		AccessToken:          c.AccessToken,
-		AccessTokenSecret:    c.AccessTokenSecret,
-		AcceptLanguage:       c.AcceptLanguage,
-		HttpRequestTimeout:   c.APIRequestTimeout,
-		HttpRequestRateLimit: c.APIRequestRateLimit,
-		RetryMax:             c.RetryMax,
-		RetryWaitMax:         c.RetryWaitMax,
-		RetryWaitMin:         c.RetryWaitMin,
-		UserAgent:            ua,
-		Trace:                enableHTTPTrace,
-	}
-	caller := api.NewCallerWithOptions(&api.CallerOptions{
-		Options:     callerOptions,
-		APIRootURL:  c.APIRootURL,
-		DefaultZone: c.DefaultZone,
-		TraceAPI:    enableAPITrace,
-	})
-
-	theClient := &saclient.Client{}
-	if err := theClient.SetEnviron(c.createSaclientEnvConfig()); err != nil {
-		return nil, fmt.Errorf("failed to create Sakura client via Envvars: %s", err.Error())
-	}
+	caller := iaas.NewClientFromSaclient(theClient)
 
 	zones := c.Zones
 	if len(zones) == 0 {
@@ -473,7 +183,6 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		deletionWaiterPollingInterval:    deletionWaiterPollingInterval,
 		databaseWaitAfterCreateDuration:  databaseWaitAfterCreateDuration,
 		vpcRouterWaitAfterCreateDuration: vpcRouterWaitAfterCreateDuration,
-		CallerOptions:                    callerOptions,
 		SaClient:                         theClient,
 		KmsClient:                        kmsClient,
 		SecretManagerClient:              smClient,
@@ -493,94 +202,4 @@ func (c *Config) NewClient(envConf *Config) (*APIClient, error) {
 		MonitoringSuiteClient:            monitoringSuiteClient,
 		WebaccelClient:                   &webaccel.Client{Saclient: theClient},
 	}, nil
-}
-
-const tfUAEnvVar = "TF_APPEND_USER_AGENT"
-
-func terraformUserAgent(version string) string {
-	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io)", version)
-
-	if add := os.Getenv(tfUAEnvVar); add != "" {
-		add = strings.TrimSpace(add)
-		if len(add) > 0 {
-			ua += " " + add
-			log.Printf("[DEBUG] Using modified User-Agent: %s", ua)
-		}
-	}
-
-	return ua
-}
-
-// saclient.Clientには内部storageのパラメータ群を直接設定する方法が現状ないので環境変数経由で設定する。
-// profile -> 環境変数 -> TFファイルを全て適用した設定値を渡す
-func (c *Config) createSaclientEnvConfig() []string {
-	var envs []string
-
-	if c.Profile != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_PROFILE=%s", c.Profile))
-	}
-	// saclient resolves the profile directory from the environment it is given,
-	// so pass the override through like LoadFromProfile sees it. The keys are
-	// in saclient's precedence order, and only the first one set takes effect.
-	for _, k := range []string{"SAKURA_PROFILE_DIR", "SAKURACLOUD_PROFILE_DIR", "USACLOUD_PROFILE_DIR"} {
-		if v, ok := os.LookupEnv(k); ok {
-			envs = append(envs, fmt.Sprintf("%s=%s", k, v))
-			break
-		}
-	}
-	if c.AccessToken != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_ACCESS_TOKEN=%s", c.AccessToken))
-	}
-	if c.AccessTokenSecret != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_ACCESS_TOKEN_SECRET=%s", c.AccessTokenSecret))
-	}
-	if c.ServicePrincipalID != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_SERVICE_PRINCIPAL_ID=%s", c.ServicePrincipalID))
-	}
-	if c.ServicePrincipalKeyKID != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_SERVICE_PRINCIPAL_KEY_KID=%s", c.ServicePrincipalKeyKID))
-	}
-	if c.ServicePrivateKey != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_PRIVATE_KEY=%s", c.ServicePrivateKey))
-	}
-	if c.ServicePrivateKeyPath != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_PRIVATE_KEY_PATH=%s", c.ServicePrivateKeyPath))
-	}
-	if c.Zone != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_ZONE=%s", c.Zone))
-	}
-	if c.DefaultZone != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_DEFAULT_ZONE=%s", c.DefaultZone))
-	}
-	if len(c.Zones) > 0 {
-		envs = append(envs, fmt.Sprintf("SAKURA_ZONES=%s", strings.Join(c.Zones, ",")))
-	}
-	if c.APIRootURL != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_API_ROOT_URL=%s", c.APIRootURL))
-	}
-	if c.RetryMax > 0 {
-		envs = append(envs, fmt.Sprintf("SAKURA_RETRY_MAX=%d", c.RetryMax))
-	}
-	if c.RetryWaitMax > 0 {
-		envs = append(envs, fmt.Sprintf("SAKURA_RETRY_WAIT_MAX=%d", c.RetryWaitMax))
-	}
-	if c.RetryWaitMin > 0 {
-		envs = append(envs, fmt.Sprintf("SAKURA_RETRY_WAIT_MIN=%d", c.RetryWaitMin))
-	}
-	if c.APIRequestTimeout > 0 {
-		envs = append(envs, fmt.Sprintf("SAKURA_API_REQUEST_TIMEOUT=%d", c.APIRequestTimeout))
-	}
-	if c.APIRequestRateLimit > 0 {
-		envs = append(envs, fmt.Sprintf("SAKURA_RATE_LIMIT=%d", c.APIRequestRateLimit))
-	}
-	if c.TraceMode != "" {
-		envs = append(envs, fmt.Sprintf("SAKURA_TRACE=%s", c.TraceMode))
-	}
-	if len(c.Endpoints) > 0 {
-		for k, v := range c.Endpoints {
-			envs = append(envs, fmt.Sprintf("%s%s=%s", EndpointsEnvVar, strings.ToUpper(k), v))
-		}
-	}
-
-	return envs
 }
