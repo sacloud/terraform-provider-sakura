@@ -22,6 +22,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/types"
 	monitoringsuite "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite"
 	monitoringsuiteapi "github.com/sacloud/sacloud-sdk-go/api/monitoring-suite/apis/v1"
 	"github.com/sacloud/sacloud-sdk-go/common/saclient"
@@ -34,9 +35,10 @@ type logStorageResource struct {
 }
 
 var (
-	_ resource.Resource                = &logStorageResource{}
-	_ resource.ResourceWithConfigure   = &logStorageResource{}
-	_ resource.ResourceWithImportState = &logStorageResource{}
+	_ resource.Resource                   = &logStorageResource{}
+	_ resource.ResourceWithConfigure      = &logStorageResource{}
+	_ resource.ResourceWithImportState    = &logStorageResource{}
+	_ resource.ResourceWithValidateConfig = &logStorageResource{}
 )
 
 func NewLogStorageResource() resource.Resource {
@@ -104,6 +106,17 @@ func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaReques
 					stringplanmodifier.RequiresReplaceIfConfigured(),
 				},
 			},
+			"kms_key_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "The KMS key ID for encryption. Only available when classification is dedicated.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
+			"service_principal_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "The service principal ID used to access the KMS key. Only available when classification is dedicated.",
+			},
 			"retention_period_days": schema.Int32Attribute{
 				Optional:    true,
 				Computed:    true,
@@ -156,6 +169,26 @@ func (r *logStorageResource) Schema(ctx context.Context, _ resource.SchemaReques
 	}
 }
 
+func (r *logStorageResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	validateStorageConfig(ctx, req, resp)
+}
+
+func validateStorageConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	var classification, kmsKeyID, servicePrincipalID types.String
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("classification"), &classification)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("kms_key_id"), &kmsKeyID)...)
+	resp.Diagnostics.Append(req.Config.GetAttribute(ctx, path.Root("service_principal_id"), &servicePrincipalID)...)
+	if resp.Diagnostics.HasError() || classification.IsUnknown() || classification.ValueString() == string(monitoringsuiteapi.LogStorageCreateRequestClassificationDedicated) {
+		return
+	}
+	if utils.IsKnown(kmsKeyID) {
+		resp.Diagnostics.AddAttributeError(path.Root("kms_key_id"), "Validate Config Error", "kms_key_id is only available when classification is dedicated.")
+	}
+	if utils.IsKnown(servicePrincipalID) {
+		resp.Diagnostics.AddAttributeError(path.Root("service_principal_id"), "Validate Config Error", "service_principal_id is only available when classification is dedicated.")
+	}
+}
+
 func (r *logStorageResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -172,11 +205,18 @@ func (r *logStorageResource) Create(ctx context.Context, req resource.CreateRequ
 
 	op := monitoringsuite.NewLogsStorageOp(r.client)
 	classification := monitoringsuiteapi.LogStorageCreateRequestClassification(plan.Classification.ValueString())
+	kmsKeyID := expandStorageID(plan.KMSKeyID, "kms_key_id", &resp.Diagnostics)
+	servicePrincipalID := expandStorageID(plan.ServicePrincipalID, "service_principal_id", &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	created, err := op.Create(ctx, monitoringsuite.LogStorageCreateParams{
-		Name:           plan.Name.ValueString(),
-		Description:    expandOptionalString(plan.Description),
-		IsSystem:       plan.IsSystem.ValueBool(),
-		Classification: &classification,
+		Name:               plan.Name.ValueString(),
+		Description:        expandOptionalString(plan.Description),
+		IsSystem:           plan.IsSystem.ValueBool(),
+		Classification:     &classification,
+		KmsKeyID:           kmsKeyID,
+		ServicePrincipalID: servicePrincipalID,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Log Storage: %s", err))
@@ -227,9 +267,17 @@ func (r *logStorageResource) Update(ctx context.Context, req resource.UpdateRequ
 
 	op := monitoringsuite.NewLogsStorageOp(r.client)
 	name := plan.Name.ValueString()
+	servicePrincipalID := expandStorageID(plan.ServicePrincipalID, "service_principal_id", &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if plan.ServicePrincipalID.IsNull() && !state.ServicePrincipalID.IsNull() {
+		servicePrincipalID.SetToNull()
+	}
 	updated, err := op.Update(ctx, plan.ID.ValueString(), monitoringsuite.LogStorageUpdateParams{
-		Name:        &name,
-		Description: expandOptionalString(plan.Description),
+		Name:               &name,
+		Description:        expandOptionalString(plan.Description),
+		ServicePrincipalID: servicePrincipalID,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Log Storage[%s]: %s", plan.ID.ValueString(), err))

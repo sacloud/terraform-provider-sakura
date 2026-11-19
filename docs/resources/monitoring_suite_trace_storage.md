@@ -29,8 +29,11 @@ resource "sakura_monitoring_suite_trace_storage" "foobar" {
 
 ### Optional
 
+- `classification` (String) The bucket classification of the Trace Storage.
 - `description` (String) The description of the Monitoring Suite Trace Storage. The length of this value must be in the range [`1`-`512`]
+- `kms_key_id` (String) The KMS key ID for encryption. Only available when classification is dedicated.
 - `retention_period_days` (Number) The retention period days of the Trace Storage.
+- `service_principal_id` (String) The service principal ID used to access the KMS key. Only available when classification is dedicated.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
