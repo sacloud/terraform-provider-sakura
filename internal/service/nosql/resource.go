@@ -159,7 +159,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 								Computed:    true,
 								Description: "Backup schedule",
 								Validators: []validator.Set{
-									setvalidator.ValueStringsAre(stringvalidator.OneOf(toStrs(v1.GetNosqlSettingsBackupDayOfWeekItemSun.AllValues())...)),
+									setvalidator.ValueStringsAre(stringvalidator.OneOf(toStrs(v1.NosqlSettingsBackupDayOfWeekItem("").AllValues())...)),
 								},
 							},
 							"time": schema.StringAttribute{
@@ -194,7 +194,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 										Required:    true,
 										Description: "Repair schedule",
 										Validators: []validator.Set{
-											setvalidator.ValueStringsAre(stringvalidator.OneOf(toStrs(v1.GetNosqlSettingsRepairIncrementalDaysOfWeekItemSun.AllValues())...)),
+											setvalidator.ValueStringsAre(stringvalidator.OneOf(toStrs(v1.NosqlSettingsRepairIncrementalDaysOfWeekItem("").AllValues())...)),
 										},
 									},
 									"time": schema.StringAttribute{
@@ -222,7 +222,7 @@ func (d *nosqlResource) Schema(ctx context.Context, _ resource.SchemaRequest, re
 										Required:    true,
 										Description: "Repair schedule",
 										Validators: []validator.String{
-											stringvalidator.OneOf(toStrs(v1.GetNosqlSettingsRepairFullDayOfWeekSun.AllValues())...),
+											stringvalidator.OneOf(toStrs(v1.NosqlSettingsRepairFullDayOfWeek("").AllValues())...),
 										},
 									},
 									"time": schema.StringAttribute{
@@ -684,7 +684,7 @@ func (r *nosqlResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 }
 
-func getNosql(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.GetNosqlAppliance {
+func getNosql(ctx context.Context, client *v1.Client, id string, state *tfsdk.State, diags *diag.Diagnostics) *v1.NosqlApplianceResponse {
 	dbOp := nosql.NewDatabaseOp(client)
 	res, err := dbOp.Read(ctx, id)
 	if err != nil {
@@ -708,11 +708,11 @@ func updateParameters(ctx context.Context, client *v1.Client, id, zone string, m
 		return err
 	}
 
-	settings := make([]v1.NosqlPutParameter, 0, len(params))
+	settings := make([]v1.NosqlParameterSetting, 0, len(params))
 	for _, nosqlParam := range nosqlParameters {
 		for key, value := range params {
 			if nosqlParam.SettingItem == key {
-				settings = append(settings, v1.NosqlPutParameter{
+				settings = append(settings, v1.NosqlParameterSetting{
 					SettingItemId: nosqlParam.SettingItemId,
 					SettingValue:  value,
 				})

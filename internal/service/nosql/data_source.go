@@ -359,7 +359,7 @@ func (d *nosqlDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	}
 
 	databaseOp := nosql.NewDatabaseOp(d.client)
-	var res *v1.GetNosqlAppliance
+	var res *v1.NosqlApplianceResponse
 	var err error
 	if !data.Name.IsNull() {
 		nosqls, err := databaseOp.List(ctx)
@@ -384,8 +384,8 @@ func (d *nosqlDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-func filterNosqlByName(nosqls []v1.GetNosqlAppliance, name string) (*v1.GetNosqlAppliance, error) {
-	match := slices.Collect(func(yield func(v1.GetNosqlAppliance) bool) {
+func filterNosqlByName(nosqls []v1.NosqlApplianceResponse, name string) (*v1.NosqlApplianceResponse, error) {
+	match := slices.Collect(func(yield func(v1.NosqlApplianceResponse) bool) {
 		for _, v := range nosqls {
 			if name != v.Name.Value {
 				continue

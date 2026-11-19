@@ -191,7 +191,9 @@ func provisionLBsInternalNodes(ctx context.Context, api lb.LoadBalancerAPI, id l
 		return true, nil // provisioned, ok to proceed
 	}
 
-	list, err := api.ListNodes(ctx, id, 10, nil)
+	list, err := listed(func(i *v1.LoadBalancerNodeID) ([]v1.LoadBalancerNode, *v1.LoadBalancerNodeID, error) {
+		return api.ListNodes(ctx, id, 10, i)
+	})
 
 	if saclient.IsNotFoundError(err) {
 		return true, nil // no lb no problem
@@ -202,7 +204,7 @@ func provisionLBsInternalNodes(ctx context.Context, api lb.LoadBalancerAPI, id l
 	}
 
 	ok := true
-	err = errors.Join(common.MapTo(list, func(i v1.ReadLoadBalancerNodeSummary) error {
+	err = errors.Join(common.MapTo(list, func(i v1.LoadBalancerNode) error {
 		o, e := provisionLBsInternalNode(ctx, api, id, i.LoadBalancerNodeID)
 		ok = ok && o
 		return e
@@ -349,7 +351,7 @@ func deleteWNs(ctx context.Context, api wn.WorkerNodeAPI) (err error) {
 }
 
 func drainWNs(ctx context.Context, api wn.WorkerNodeAPI) (bool, error) {
-	list, err := listed(func(i *wnID) ([]wn.WorkerNodeDetail, *wnID, error) { return api.List(ctx, 10, i) })
+	list, err := listed(func(i *wnID) ([]v1.WorkerNodeSummary, *wnID, error) { return api.List(ctx, 10, i) })
 
 	if saclient.IsNotFoundError(err) {
 		return true, nil // no lb no problem
@@ -360,7 +362,7 @@ func drainWNs(ctx context.Context, api wn.WorkerNodeAPI) (bool, error) {
 	}
 
 	ok := true
-	err = errors.Join(common.MapTo(list, func(i wn.WorkerNodeDetail) error {
+	err = errors.Join(common.MapTo(list, func(i v1.WorkerNodeSummary) error {
 		o, e := drainWNsNode(ctx, api, i.WorkerNodeID)
 		ok = ok && o
 		return e

@@ -140,13 +140,36 @@ func (r *enhancedLBResource) Schema(ctx context.Context, _ resource.SchemaReques
 				Description: "The origin guard configuration",
 				Attributes: map[string]schema.Attribute{
 					"token": schema.StringAttribute{
-						Required:    true,
-						Description: "The token used for origin guard. This must be between 8 and 32 alphanumeric characters",
+						Optional:    true,
+						Sensitive:   true,
+						Description: "The token used for origin guard. This must be between 8 and 32 alphanumeric characters. Use token_wo instead for newer deployments.",
 						Validators: []validator.String{
+							stringvalidator.PreferWriteOnlyAttribute(path.MatchRoot("origin_guard").AtName("token_wo")),
 							stringvalidator.RegexMatches(
 								regexp.MustCompile(`^[a-zA-Z0-9]{8,32}$`),
 								"must be between 8 and 32 alphanumeric characters",
 							),
+						},
+					},
+					"token_wo": schema.StringAttribute{
+						Optional:    true,
+						WriteOnly:   true,
+						Description: "The token used for origin guard. This must be between 8 and 32 alphanumeric characters",
+						Validators: []validator.String{
+							stringvalidator.ConflictsWith(path.MatchRelative().AtParent().AtName("token")),
+							stringvalidator.AlsoRequires(path.MatchRelative().AtParent().AtName("token_wo_version")),
+							stringvalidator.RegexMatches(
+								regexp.MustCompile(`^[a-zA-Z0-9]{8,32}$`),
+								"must be between 8 and 32 alphanumeric characters",
+							),
+						},
+					},
+					"token_wo_version": schema.Int32Attribute{
+						Optional:    true,
+						Description: "The version of the token_wo field. This value must be greater than 0 when set. Increment this when changing token.",
+						Validators: []validator.Int32{
+							int32validator.AtLeast(1),
+							int32validator.AlsoRequires(path.MatchRelative().AtParent().AtName("token_wo")),
 						},
 					},
 				},
@@ -547,8 +570,9 @@ func (r *enhancedLBResource) ModifyPlan(ctx context.Context, req resource.Modify
 }
 
 func (r *enhancedLBResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	var plan enhancedLBResourceModel
+	var plan, config enhancedLBResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -557,7 +581,7 @@ func (r *enhancedLBResource) Create(ctx context.Context, req resource.CreateRequ
 	defer cancel()
 
 	enhancedLBOp := iaas.NewProxyLBOp(r.client)
-	elb, err := enhancedLBOp.Create(ctx, expandEnhancedLBCreateRequest(&plan))
+	elb, err := enhancedLBOp.Create(ctx, expandEnhancedLBCreateRequest(&plan, &config))
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Enhanced LB: %s", err))
 		return
@@ -602,9 +626,10 @@ func (r *enhancedLBResource) Read(ctx context.Context, req resource.ReadRequest,
 }
 
 func (r *enhancedLBResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan, state enhancedLBResourceModel
+	var plan, state, config enhancedLBResourceModel
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	resp.Diagnostics.Append(req.State.Get(ctx, &state)...)
+	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
@@ -623,7 +648,7 @@ func (r *enhancedLBResource) Update(ctx context.Context, req resource.UpdateRequ
 		return
 	}
 
-	elb, err := enhancedLBOp.Update(ctx, common.SakuraCloudID(id), expandEnhancedLBUpdateRequest(&plan, &state))
+	elb, err := enhancedLBOp.Update(ctx, common.SakuraCloudID(id), expandEnhancedLBUpdateRequest(&plan, &state, &config))
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Enhanced LB[%s]: %s", id, err))
 		return

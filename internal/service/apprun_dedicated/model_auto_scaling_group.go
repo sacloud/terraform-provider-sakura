@@ -78,8 +78,8 @@ func (asgModel) AttributeTypes() attrTypes           { return asgAttrs }
 func (a *asgModel) clusterID() (clusterID, error)    { return intoUUID[clusterID](a.ClusterID) }
 
 func (i rangeModel) intoCreate() (ret v1.IpRange) {
-	ret.Start = v1.IPv4(i.Start.ValueString())
-	ret.End = v1.IPv4(i.End.ValueString())
+	ret.Start = v1.Ipv4(i.Start.ValueString())
+	ret.End = v1.Ipv4(i.End.ValueString())
 	return
 }
 
@@ -106,8 +106,8 @@ func (i nodeInterfaceModel) intoCreate() (ret asg.NodeInterface, diag diag.Diagn
 func (a *asgModel) intoCreate() (ret asg.CreateParams, diag diag.Diagnostics) {
 	ret.Name = a.Name.ValueString()
 	ret.Zone = a.Zone.ValueString()
-	ret.NameServers = common.MapTo(common.TlistToStrings(a.NameServers), func(s string) v1.IPv4 {
-		return v1.IPv4(s)
+	ret.NameServers = common.MapTo(common.TlistToStrings(a.NameServers), func(s string) v1.Ipv4 {
+		return v1.Ipv4(s)
 	})
 	ret.WorkerServiceClassPath = a.WorkerServiceClassPath.ValueString()
 	ret.MinNodes = a.MinNodes.ValueInt32()

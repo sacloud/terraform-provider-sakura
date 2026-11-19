@@ -101,7 +101,7 @@ func (r *cloudHSMLicenseResource) Create(ctx context.Context, req resource.Creat
 		return
 	}
 
-	license := getCloudHSMLicense(ctx, client, created.ID, &resp.State, &resp.Diagnostics)
+	license := getCloudHSMLicense(ctx, client, created.ID.Value, &resp.State, &resp.Diagnostics)
 	if license == nil {
 		return
 	}
@@ -142,7 +142,7 @@ func (r *cloudHSMLicenseResource) Update(ctx context.Context, req resource.Updat
 	client := createClient(zone, r.client)
 	updated, err := cloudhsm.NewLicenseOp(client).Update(ctx, plan.ID.ValueString(), cloudhsm.CloudHSMSoftwareLicenseUpdateParams{
 		Name:        plan.Name.ValueString(),
-		Description: plan.Description.ValueString(),
+		Description: plan.Description.ValueStringPointer(),
 		Tags:        common.TsetToStrings(plan.Tags),
 	})
 	if err != nil {

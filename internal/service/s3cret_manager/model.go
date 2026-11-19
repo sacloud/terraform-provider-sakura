@@ -15,7 +15,7 @@ type secretManagerBaseModel struct {
 }
 
 func (model *secretManagerBaseModel) updateState(vault *v1.Vault) {
-	model.UpdateBaseState(vault.ID, vault.Name, vault.Description.Value, vault.Tags)
+	model.UpdateBaseState(vault.ID, vault.Name, vault.Description, vault.Tags)
 	model.KmsKeyID = types.StringValue(vault.KmsKeyID)
 }
 

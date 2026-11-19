@@ -26,7 +26,11 @@ resource "sakura_enhanced_lb" "foobar" {
   }
 
   origin_guard = {
-    token = "exampletoken"
+    token_wo         = "exampletoken"
+    token_wo_version = 1
+
+    # or token. token will be stored in tf state.
+    # token = "exampletoken"
   }
 
   strict_rule = {

@@ -164,7 +164,7 @@ func TestAccImportSakuraLocalRouter_basic(t *testing.T) {
 			"tags.0":                           "tag1",
 			"tags.1":                           "tag2",
 			"switch.category":                  "cloud",
-			"switch.zone":                      os.Getenv("SAKURACLOUD_ZONE"),
+			"switch.zone":                      os.Getenv("SAKURA_ZONE"),
 			"network_interface.vip":            "192.168.11.1",
 			"network_interface.ip_addresses.0": "192.168.11.11",
 			"network_interface.ip_addresses.1": "192.168.11.12",

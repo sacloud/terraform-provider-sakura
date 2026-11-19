@@ -274,7 +274,7 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 			expect: &common.Config{
 				Profile: "test",
 			},
-			errre: regexp.MustCompile(`^failed to load profile\[test\]: API Error - failed to open test.config\.json: openat test.config\.json: .+`),
+			errre: regexp.MustCompile(`^failed to load profile\[test\]: API Error - failed to open test.config\.json: open(at)? test.config\.json: .+`),
 		},
 		{
 			scenario: "Profile name specified with normal profile",
@@ -368,4 +368,25 @@ func TestConfig_NewClient_loadFromProfile(t *testing.T) {
 			}
 		})
 	}
+}
+
+// The service clients must find the profile in SAKURA_PROFILE_DIR as
+// LoadFromProfile does, not fall back to the default directory.
+func TestConfig_NewClient_profileDir(t *testing.T) {
+	t.Setenv("HOME", t.TempDir())
+	t.Setenv("SAKURA_PROFILE_DIR", t.TempDir())
+
+	profileOp, err := saclient.NewProfileOp(os.Environ())
+	require.NoError(t, err)
+	require.NoError(t, profileOp.Create(&saclient.Profile{
+		Name: "test",
+		Attributes: map[string]any{
+			"AccessToken":       "testtoken",
+			"AccessTokenSecret": "testsecret",
+		},
+	}))
+
+	conf := &common.Config{Profile: "test"}
+	_, err = conf.NewClient(&common.Config{})
+	require.NoError(t, err)
 }

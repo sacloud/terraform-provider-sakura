@@ -174,7 +174,7 @@ func (i *lbifModel) intoCreate() (ret lb.LoadBalancerInterface, diag diag.Diagno
 func (m lbModel) intoCreate() (ret lb.CreateParams, diag diag.Diagnostics) {
 	ret.Name = m.Name.ValueString()
 	ret.ServiceClassPath = m.ServiceClassPath.ValueString()
-	ret.NameServers = common.MapTo(common.TlistToStrings(m.NameServers), func(i string) v1.IPv4 { return v1.IPv4(i) })
+	ret.NameServers = common.MapTo(common.TlistToStrings(m.NameServers), func(i string) v1.Ipv4 { return v1.Ipv4(i) })
 	ret.Interfaces = common.MapTo(m.Interfaces, func(i lbifModel) lb.LoadBalancerInterface {
 		j, k := i.intoCreate()
 		diag.Append(k...)

@@ -49,7 +49,9 @@ func TestAccSakuraEnhancedLBACME_basic(t *testing.T) {
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "proxy_protocol", "true"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "backend_http_keep_alive", "aggressive"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "rule.#", "1"),
-					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token", "abcdefgh"),
+					resource.TestCheckNoResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token"),
+					resource.TestCheckNoResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token_wo"),
+					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token_wo_version", "1"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "strict_rule.enabled", "true"),
 
 					resource.TestCheckResourceAttrPair(resourceName, "enhanced_lb_id", "sakura_enhanced_lb.foobar", "id"),
@@ -76,7 +78,9 @@ func TestAccSakuraEnhancedLBACME_basic(t *testing.T) {
 				Config: test.BuildConfigWithArgs(testAccSakuraEnhancedLBACME_update, rand, elbDomain, subDomain, subDomain2),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraEnhancedLBExists("sakura_enhanced_lb.foobar", &elb),
-					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token", "abcdefgh"),
+					resource.TestCheckNoResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token"),
+					resource.TestCheckNoResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token_wo"),
+					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token_wo_version", "1"),
 
 					resource.TestCheckResourceAttrPair(resourceName, "enhanced_lb_id", "sakura_enhanced_lb.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "update_delay_sec", "20"),
@@ -196,7 +200,8 @@ resource "sakura_enhanced_lb" "foobar" {
   }]
 
   origin_guard = {
-    token = "abcdefgh"
+		token_wo         = "abcdefgh"
+		token_wo_version = 1
   }
 
   strict_rule = {

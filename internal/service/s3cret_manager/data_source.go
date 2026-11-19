@@ -76,7 +76,7 @@ func (d *secretManagerDataSource) Read(ctx context.Context, req datasource.ReadR
 	var vault *v1.Vault
 	var err error
 	if !data.Name.IsNull() { //nolint:gocritic
-		vaults, err := vaultOp.List(ctx)
+		vaults, err := vaultOp.List(ctx, nil, nil)
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list SecretManager vaults: %s", err))
 			return

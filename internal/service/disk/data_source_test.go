@@ -4,6 +4,7 @@
 package disk_test
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -12,16 +13,18 @@ import (
 
 func TestAccSakuraDataSourceDisk_basic(t *testing.T) {
 	test.SkipIfFakeModeEnabled(t) // KMSを利用するためacctestでのみ実施したい
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
 
 	resourceName := "data.sakura_disk.foobar"
 	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceDisk_basic, rand),
+				Config: test.BuildConfigWithArgs(testAccSakuraDataSourceDisk_basic, rand, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraDataSourceExists(resourceName),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
@@ -34,10 +37,7 @@ func TestAccSakuraDataSourceDisk_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "tags.1", "tag2"),
 					resource.TestCheckResourceAttr(resourceName, "tags.2", "tag3"),
 					resource.TestCheckResourceAttr(resourceName, "encryption_algorithm", "aes256_xts"),
-					resource.TestCheckResourceAttrPair(
-						resourceName, "kms_key_id",
-						"sakura_kms.foobar", "id",
-					),
+					resource.TestCheckResourceAttr(resourceName, "kms_key_id", kmsKeyID),
 				),
 			},
 		},
@@ -51,13 +51,7 @@ resource "sakura_disk" "foobar"{
   description = "description"
 
   encryption_algorithm = "aes256_xts"
-  kms_key_id           = sakura_kms.foobar.id
-}
-
-resource "sakura_kms" "foobar" {
-  name        = "{{ .arg0 }}"
-  description = "description"
-  tags        = ["tag1", "tag2"]
+  kms_key_id           = "{{ .arg1 }}"
 }
 
 data "sakura_disk" "foobar" {

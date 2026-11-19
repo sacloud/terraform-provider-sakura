@@ -41,7 +41,7 @@ var clusterAttrs = attrTypes{
 	"created_at":             types.Int64Type,
 }
 
-func (p *portModel) updateState(q v1.ReadLoadBalancerPort) {
+func (p *portModel) updateState(q v1.ClusterLoadBalancerPort) {
 	p.Port = types.Int32Value(common.ToInt32(q.GetPort()))
 	p.Protocol = types.StringValue(common.ToString(q.GetProtocol()))
 }
@@ -52,16 +52,16 @@ func (c *clusterModel) updateState(d *cluster.ClusterDetail) {
 	c.ServicePrincipalID = types.StringValue(d.ServicePrincipalID)
 	c.HasLetsEncryptEmail = types.BoolValue(d.HasLetsEncryptEmail)
 	c.CreatedAt = intoRFC2822(d.Created)
-	c.Ports = common.MapTo(d.Ports, stateUpdater[v1.ReadLoadBalancerPort, portModel])
+	c.Ports = common.MapTo(d.Ports, stateUpdater[v1.ClusterLoadBalancerPort, portModel])
 }
 
-func (p *portModel) intoCreate() (ret v1.CreateLoadBalancerPort, diag diag.Diagnostics) {
+func (p *portModel) intoCreate() (ret v1.ClusterLoadBalancerPort, diag diag.Diagnostics) {
 	n, d := intoUInt16(p.Port.ValueInt32Pointer())
 	diag.Append(d...)
 	if n != nil {
 		ret.Port = *n
 	}
-	ret.Protocol = v1.CreateLoadBalancerPortProtocol(p.Protocol.ValueString())
+	ret.Protocol = v1.ClusterLoadBalancerPortProtocol(p.Protocol.ValueString())
 	return
 }
 

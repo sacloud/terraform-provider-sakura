@@ -123,7 +123,7 @@ func (r *dataLakeResource) Create(ctx context.Context, req resource.CreateReques
 	}
 
 	plan.updateState(id, deploymentName, datalake.URL.Value, &v1.DatalakePostRequestBody{
-		Location:    plan.Location.ValueString(),
+		Location:    v1.DatalakePostRequestBodyLocation(plan.Location.ValueString()),
 		Performance: v1.DataLakePerformance(plan.Performance.ValueInt32()),
 		Redundancy:  v1.DataLakeRedundancy(plan.Redundancy.ValueInt32()),
 	})
@@ -201,7 +201,7 @@ func decodeDataLakeResponse(resp *v1.GetResourceResponse) (v1.DatalakePostReques
 
 	// The SKU name is in the format of "{Performance}_{Redundancy}", e.g. "Standard_LRS"
 	parts := strings.SplitN(data["sku"].(map[string]any)["name"].(string), "_", 2)
-	result.Location = data["location"].(string)
+	result.Location = v1.DatalakePostRequestBodyLocation(data["location"].(string))
 	result.Performance = dataLakePerformanceMap[parts[0]]
 	result.Redundancy = dataLakeRedundancyMap[parts[1]]
 	return result, nil

@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -190,6 +191,8 @@ func TestAccSakuraDatabase_withContinuousBackup(t *testing.T) {
 }
 
 func TestAccSakuraDatabase_withDiskEncryption(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_KMS_KEY_ID")
+	kmsKeyID := os.Getenv("SAKURA_KMS_KEY_ID")
 	resourceName := "sakura_database.foobar"
 	rand := test.RandomName()
 	password := test.RandomPassword()
@@ -205,15 +208,12 @@ func TestAccSakuraDatabase_withDiskEncryption(t *testing.T) {
 		),
 		Steps: []resource.TestStep{
 			{
-				Config: test.BuildConfigWithArgs(testAccSakuraDatabase_withDiskEncryption, rand, password),
+				Config: test.BuildConfigWithArgs(testAccSakuraDatabase_withDiskEncryption, rand, password, kmsKeyID),
 				Check: resource.ComposeTestCheckFunc(
 					testCheckSakuraDatabaseExists(resourceName, &database),
 					resource.TestCheckResourceAttr(resourceName, "name", rand),
 					resource.TestCheckResourceAttr(resourceName, "disk.encryption_algorithm", "aes256_xts"),
-					resource.TestCheckResourceAttrPair(
-						resourceName, "disk.kms_key_id",
-						"sakura_kms.foobar", "id",
-					),
+					resource.TestCheckResourceAttr(resourceName, "disk.kms_key_id", kmsKeyID),
 				),
 			},
 		},
@@ -659,9 +659,6 @@ const testAccSakuraDatabase_withDiskEncryption = `
 resource "sakura_vswitch" "foobar" {
   name = "{{ .arg0 }}"
 }
-resource "sakura_kms" "foobar" {
-  name = "{{ .arg0 }}"
-}
 resource "sakura_database" "foobar" {
   database_type    = "mariadb"
   database_version = "10.11"
@@ -677,7 +674,7 @@ resource "sakura_database" "foobar" {
   }
   disk = {
     encryption_algorithm = "aes256_xts"
-    kms_key_id           = sakura_kms.foobar.id
+    kms_key_id           = "{{ .arg2 }}"
   }
 }
 `

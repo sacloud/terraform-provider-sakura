@@ -16,7 +16,7 @@ func TestAccSakuraDataSourceWorkflows_basic(t *testing.T) {
 	resourceName := "data.sakura_workflows.foobar"
 	rand := test.RandomName()
 
-	var workflow v1.GetWorkflowOKWorkflow
+	var workflow v1.ReadWorkflowOKWorkflow
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
 		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,

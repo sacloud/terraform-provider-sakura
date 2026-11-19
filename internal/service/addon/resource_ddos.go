@@ -134,7 +134,7 @@ func (r *ddosResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	plan.updateState(id, deploymentName, ddos.URL.Value, &v1.DdosRequestBody{
-		Location: plan.Location.ValueString(),
+		Location: v1.DdosRequestBodyLocation(plan.Location.ValueString()),
 		Profile: v1.FrontDoorProfile{
 			Level: v1.PricingLevel(plan.PricingLevel.ValueInt32()),
 		},
@@ -167,7 +167,9 @@ func (r *ddosResource) Read(ctx context.Context, req resource.ReadRequest, resp 
 	}
 
 	var body v1.DdosRequestBody
-	err := decodeFrontDoorFamilyResponse(result, &body)
+	err := decodeFrontDoorFamilyResponse(result, &body, func(location string) {
+		body.SetLocation(v1.DdosRequestBodyLocation(location))
+	})
 	if err != nil {
 		resp.Diagnostics.AddError("Read: Decode Error", fmt.Sprintf("failed to decode Addon DDoS[%s] response: %s", state.ID.ValueString(), err))
 		return

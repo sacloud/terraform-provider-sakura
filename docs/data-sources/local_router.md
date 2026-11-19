@@ -57,6 +57,8 @@ Read-Only:
 - `enabled` (Boolean) The flag to enable the LocalRouter
 - `peer_id` (String) The ID of the peer LocalRouter
 - `secret_key` (String, Sensitive) The secret key of the peer LocalRouter
+- `secret_key_wo` (String) Placeholder for resource schema. Always empty in data source.
+- `secret_key_wo_version` (Number) Placeholder for resource schema. Always empty in data source.
 
 
 <a id="nestedatt--static_route"></a>

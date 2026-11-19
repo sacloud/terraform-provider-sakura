@@ -17,7 +17,7 @@ type etlBaseModel struct {
 
 func (model *etlBaseModel) updateState(id, deploymentName, url string, body *v1.EtlPostRequestBody) {
 	model.ID = types.StringValue(id)
-	model.Location = types.StringValue(body.Location)
+	model.Location = types.StringValue(string(body.Location))
 	model.DeploymentName = deploymentNameValue(deploymentName)
 	model.URL = types.StringValue(url)
 }

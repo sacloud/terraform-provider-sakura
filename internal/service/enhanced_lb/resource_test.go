@@ -100,7 +100,9 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 						"sakura_icon.foobar", "id",
 					),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
-					resource.TestCheckResourceAttr(resourceName, "origin_guard.token", "abcdefgh"),
+					resource.TestCheckNoResourceAttr(resourceName, "origin_guard.token"),
+					resource.TestCheckNoResourceAttr(resourceName, "origin_guard.token_wo"),
+					resource.TestCheckResourceAttr(resourceName, "origin_guard.token_wo_version", "1"),
 					resource.TestCheckResourceAttr(resourceName, "strict_rule.enabled", "true"),
 				),
 			},
@@ -154,7 +156,9 @@ func TestAccSakuraEnhancedLB_basic(t *testing.T) {
 						"sakura_server.foobar", "ip_address",
 					),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "false"),
-					resource.TestCheckResourceAttr(resourceName, "origin_guard.token", "ijklmnop"),
+					resource.TestCheckNoResourceAttr(resourceName, "origin_guard.token"),
+					resource.TestCheckNoResourceAttr(resourceName, "origin_guard.token_wo"),
+					resource.TestCheckResourceAttr(resourceName, "origin_guard.token_wo_version", "2"),
 					resource.TestCheckResourceAttr(resourceName, "strict_rule.enabled", "false"),
 				),
 			},
@@ -273,6 +277,10 @@ func TestAccImportSakuraEnhancedLB_basic(t *testing.T) {
 				ImportState:       true,
 				ImportStateCheck:  checkFn,
 				ImportStateVerify: true,
+				ImportStateVerifyIgnore: []string{
+					"origin_guard.token",
+					"origin_guard.token_wo_version",
+				},
 			},
 		},
 	})
@@ -340,7 +348,8 @@ resource "sakura_enhanced_lb" "foobar" {
   }]
 
   origin_guard = {
-    token = "abcdefgh"
+    token_wo         = "abcdefgh"
+    token_wo_version = 1
   }
 
   strict_rule = {
@@ -408,7 +417,8 @@ resource "sakura_enhanced_lb" "foobar" {
   }]
 
   origin_guard = {
-    token = "ijklmnop"
+    token_wo         = "ijklmnop"
+    token_wo_version = 2
   }
 
   strict_rule = {
@@ -465,7 +475,8 @@ resource "sakura_enhanced_lb" "foobar" {
   }]
 
   origin_guard = {
-    token = "abcdefgh"
+    token_wo         = "abcdefgh"
+    token_wo_version = 1
   }
 
   strict_rule = {

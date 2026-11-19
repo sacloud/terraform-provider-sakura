@@ -78,7 +78,7 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	var created *v1.CreatedCluster
+	var created *v1.ClusterIdentifier
 	var err error
 	ctx := context.Background()
 	client, err := apprun_dedicated.NewClient(&globalClient)
@@ -95,7 +95,7 @@ func TestMain(m *testing.M) {
 		created, err = api.Create(ctx, cluster.CreateParams{
 			Name:               globalClusterName,
 			ServicePrincipalID: spid,
-			Ports:              make([]v1.CreateLoadBalancerPort, 0),
+			Ports:              make([]v1.ClusterLoadBalancerPort, 0),
 		})
 
 		if err != nil {

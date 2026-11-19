@@ -37,14 +37,14 @@ func (m cloudHSMLocalRouterModel) AttributeTypes() map[string]attr.Type {
 }
 
 func (model *cloudHSMBaseModel) updateState(cloudhsm *v1.CloudHSM, zone string) {
-	model.UpdateBaseState(cloudhsm.ID, cloudhsm.Name, cloudhsm.Description.Value, cloudhsm.Tags)
+	model.UpdateBaseState(cloudhsm.ID, cloudhsm.Name, cloudhsm.Description, cloudhsm.Tags)
 	model.Zone = types.StringValue(zone)
 	model.CreatedAt = types.StringValue(string(cloudhsm.CreatedAt))
 	model.ModifiedAt = types.StringValue(string(cloudhsm.ModifiedAt))
 	model.Availability = types.StringValue(string(cloudhsm.Availability))
-	model.IPv4NetworkAddress = types.StringValue(cloudhsm.Ipv4NetworkAddress)
-	model.IPv4Netmask = types.Int32Value(int32(cloudhsm.Ipv4PrefixLength))
-	model.IPv4Address = types.StringValue(cloudhsm.Ipv4Address)
+	model.IPv4NetworkAddress = types.StringValue(cloudhsm.IPv4NetworkAddress)
+	model.IPv4Netmask = types.Int32Value(int32(cloudhsm.IPv4PrefixLength))
+	model.IPv4Address = types.StringValue(cloudhsm.IPv4Address)
 
 	if router, ok := cloudhsm.LocalRouter.Get(); ok {
 		m := cloudHSMLocalRouterModel{
@@ -92,9 +92,9 @@ type cloudHSMPeerBaseModel struct {
 func (model *cloudHSMPeerBaseModel) updateState(peer *v1.CloudHSMPeer, zone, cloudhsmId string) {
 	model.ID = types.StringValue(peer.ID)
 	model.Zone = types.StringValue(zone)
-	model.Index = types.Int64Value(int64(peer.Index.Value))
-	model.Status = types.StringValue(string(peer.Status.Value))
-	model.Routes = common.StringsToTlist(peer.Routes)
+	model.Index = types.Int64Null()
+	model.Status = types.StringNull()
+	model.Routes = types.ListNull(types.StringType)
 	model.CloudHSMID = types.StringValue(cloudhsmId)
 }
 

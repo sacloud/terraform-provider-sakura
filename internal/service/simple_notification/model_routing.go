@@ -39,7 +39,7 @@ func (model *routingBaseModel) updateState(data *v1.CommonServiceItem) error {
 		model.IconID = types.StringValue(icon.GetID())
 	}
 
-	routingSettings, _ := data.Settings.GetRoutingSettings()
+	routingSettings, _ := data.Settings.GetCommonServiceItemRoutingSettings()
 	model.MatchLabels = flattenMatchLabels(routingSettings.MatchLabels)
 	model.SourceID = types.StringValue(routingSettings.SourceID)
 	model.TargetGroupID = types.StringValue(routingSettings.TargetGroupID)
@@ -47,7 +47,7 @@ func (model *routingBaseModel) updateState(data *v1.CommonServiceItem) error {
 	return nil
 }
 
-func flattenMatchLabels(matchLabels []v1.RoutingSettingsMatchLabelsItem) []matchLabelModel {
+func flattenMatchLabels(matchLabels []v1.CommonServiceItemRoutingSettingsMatchLabelsItem) []matchLabelModel {
 	result := make([]matchLabelModel, len(matchLabels))
 	for i, ml := range matchLabels {
 		result[i] = matchLabelModel{

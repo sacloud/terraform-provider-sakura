@@ -21,8 +21,8 @@ func TestAccSakuraResourceWorkflowsRevisionAlias_basic(t *testing.T) {
 	resourceName := "sakura_workflows_revision_alias.foobar"
 	rand := test.RandomName()
 
-	var workflow v1.GetWorkflowOKWorkflow
-	var revisionAlias v1.GetWorkflowRevisionsOKRevision
+	var workflow v1.ReadWorkflowOKWorkflow
+	var revisionAlias v1.ReadRevisionOKRevision
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -84,8 +84,8 @@ func TestAccSakuraResourceWorkflowsRevisionAlias_workflowUpdate(t *testing.T) {
 	workflowResourceName := "sakura_workflows.foobar"
 	rand := test.RandomName()
 
-	var workflow v1.GetWorkflowOKWorkflow
-	var revisionAlias v1.GetWorkflowRevisionsOKRevision
+	var workflow v1.ReadWorkflowOKWorkflow
+	var revisionAlias v1.ReadRevisionOKRevision
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -116,7 +116,7 @@ func TestAccSakuraResourceWorkflowsRevisionAlias_workflowUpdate(t *testing.T) {
 	})
 }
 
-func testCheckSakuraWorkflowsRevisionAliasExists(resourceName string, revisionAlias *v1.GetWorkflowRevisionsOKRevision) resource.TestCheckFunc {
+func testCheckSakuraWorkflowsRevisionAliasExists(resourceName string, revisionAlias *v1.ReadRevisionOKRevision) resource.TestCheckFunc {
 	return func(s *terraform.State) error {
 		rs, ok := s.RootModule().Resources[resourceName]
 		if !ok {

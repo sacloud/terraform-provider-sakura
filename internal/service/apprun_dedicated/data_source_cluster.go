@@ -11,6 +11,7 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/cluster"
+	v1 "github.com/sacloud/sacloud-sdk-go/api/apprun-dedicated/apis/v1"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 )
 
@@ -116,7 +117,7 @@ func (state *clusterDataSourceModel) byId(context.Context, *clusterDataSource) (
 }
 
 func (state *clusterDataSourceModel) byName(ctx context.Context, d *clusterDataSource) (ret *clusterID, ds diag.Diagnostics) {
-	list, err := listed(func(c *clusterID) ([]cluster.ClusterDetail, *clusterID, error) { return d.api().List(ctx, 10, c) })
+	list, err := listed(func(c *clusterID) ([]v1.ReadClusterSummary, *clusterID, error) { return d.api().List(ctx, 10, c) })
 
 	if err != nil {
 		ds.AddError("Read: API Error", fmt.Sprintf("failed to read AppRun Dedicated cluster: %s", err))

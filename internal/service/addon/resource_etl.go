@@ -94,7 +94,7 @@ func (r *etlResource) Create(ctx context.Context, req resource.CreateRequest, re
 	}
 
 	plan.updateState(resourceGroupName, deploymentName, etl.URL.Value, &v1.EtlPostRequestBody{
-		Location: plan.Location.ValueString(),
+		Location: v1.EtlPostRequestBodyLocation(plan.Location.ValueString()),
 	})
 
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
@@ -157,6 +157,6 @@ func decodeETLResponse(resp *v1.GetResourceResponse) (v1.EtlPostRequestBody, err
 		return result, err
 	}
 
-	result.Location = data["location"].(string)
+	result.Location = v1.EtlPostRequestBodyLocation(data["location"].(string))
 	return result, nil
 }

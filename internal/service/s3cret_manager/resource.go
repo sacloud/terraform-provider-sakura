@@ -90,13 +90,11 @@ func (r *secretManagerResource) Create(ctx context.Context, req resource.CreateR
 		return
 	}
 
-	plan.updateState(&v1.Vault{
-		ID:          createdVault.ID,
-		Name:        createdVault.Name,
-		Description: v1.NewOptString(createdVault.Description.Value),
-		Tags:        createdVault.Tags,
-		KmsKeyID:    createdVault.KmsKeyID,
-	})
+	vault := getSecretManagerVault(ctx, r.client, createdVault.ID.Value, &resp.State, &resp.Diagnostics)
+	if vault == nil {
+		return
+	}
+	plan.updateState(vault)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
 }
 
@@ -185,19 +183,18 @@ func getSecretManagerVault(ctx context.Context, client *v1.Client, id string, st
 	return vault
 }
 
-func expandSecretManagerCreateVault(model *secretManagerResourceModel) v1.CreateVault {
-	return v1.CreateVault{
+func expandSecretManagerCreateVault(model *secretManagerResourceModel) sm.CreateVaultParams {
+	return sm.CreateVaultParams{
 		Name:        model.Name.ValueString(),
 		KmsKeyID:    model.KmsKeyID.ValueString(),
-		Description: v1.NewOptString(model.Description.ValueString()),
+		Description: model.Description.ValueStringPointer(),
 		Tags:        common.TsetToStrings(model.Tags),
 	}
 }
 
-func expandSecretManagerUpdateVault(model *secretManagerResourceModel, before *v1.Vault) v1.Vault {
-	req := v1.Vault{
-		Name:     model.Name.ValueString(),
-		KmsKeyID: before.KmsKeyID,
+func expandSecretManagerUpdateVault(model *secretManagerResourceModel, before *v1.Vault) sm.UpdateVaultParams {
+	req := sm.UpdateVaultParams{
+		Name: model.Name.ValueString(),
 	}
 
 	if model.Tags.IsNull() {
@@ -206,9 +203,9 @@ func expandSecretManagerUpdateVault(model *secretManagerResourceModel, before *v
 		req.Tags = common.TsetToStrings(model.Tags)
 	}
 	if model.Description.IsNull() {
-		req.Description = before.Description
+		req.Description = &before.Description
 	} else {
-		req.Description = v1.NewOptString(model.Description.ValueString())
+		req.Description = model.Description.ValueStringPointer()
 	}
 
 	return req

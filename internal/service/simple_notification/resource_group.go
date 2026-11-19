@@ -166,11 +166,9 @@ func makegroupCreateRequest(d *groupResourceModel) v1.PostCommonServiceItemReque
 			Icon: v1.NilCommonServiceItemIcon{
 				Null: true,
 			},
-			Settings: v1.CommonServiceItemSettings{
-				GroupSettings: v1.GroupSettings{
-					Destinations: destinations,
-				},
-			},
+			Settings: v1.NewCommonServiceItemGroupSettingsPostCommonServiceItemRequestCommonServiceItemSettings(v1.CommonServiceItemGroupSettings{
+				Destinations: destinations,
+			}),
 			Tags: common.TsetToStrings(d.Tags),
 		},
 	}
@@ -186,13 +184,11 @@ func makegroupUpdateRequest(d *groupResourceModel) v1.PutCommonServiceItemReques
 			Icon: v1.NilCommonServiceItemIcon{
 				Null: true,
 			},
-			Settings: v1.OptCommonServiceItemSettings{
+			Settings: v1.OptPutCommonServiceItemRequestCommonServiceItemSettings{
 				Set: true,
-				Value: v1.CommonServiceItemSettings{
-					GroupSettings: v1.GroupSettings{
-						Destinations: destinations,
-					},
-				},
+				Value: v1.NewCommonServiceItemGroupSettingsPutCommonServiceItemRequestCommonServiceItemSettings(v1.CommonServiceItemGroupSettings{
+					Destinations: destinations,
+				}),
 			},
 			Tags: common.TsetToStrings(d.Tags),
 		},

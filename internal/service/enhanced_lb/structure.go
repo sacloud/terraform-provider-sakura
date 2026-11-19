@@ -13,7 +13,7 @@ import (
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 )
 
-func expandEnhancedLBCreateRequest(model *enhancedLBResourceModel) *iaas.ProxyLBCreateRequest {
+func expandEnhancedLBCreateRequest(model, config *enhancedLBResourceModel) *iaas.ProxyLBCreateRequest {
 	return &iaas.ProxyLBCreateRequest{
 		Plan:                 iaastypes.EProxyLBPlan(model.Plan.ValueInt64()),
 		HealthCheck:          expandEnhancedLBHealthCheck(model),
@@ -34,13 +34,13 @@ func expandEnhancedLBCreateRequest(model *enhancedLBResourceModel) *iaas.ProxyLB
 		Tags:                 common.TsetToStrings(model.Tags),
 		IconID:               common.ExpandSakuraCloudID(model.IconID),
 		MonitoringSuiteLog:   common.ExpandMonitoringSuiteLog(model.MonitoringSuite),
-		OriginGuard:          expandEnhancedLBOriginGuard(model),
+		OriginGuard:          expandEnhancedLBOriginGuard(model, config),
 		StrictRule:           expandEnhancedLBStrictRule(model),
 		// LetsEncryptフィールドはenhanced_lb_acmeで管理するためCreate時には設定しない
 	}
 }
 
-func expandEnhancedLBUpdateRequest(model, state *enhancedLBResourceModel) *iaas.ProxyLBUpdateRequest {
+func expandEnhancedLBUpdateRequest(model, state, config *enhancedLBResourceModel) *iaas.ProxyLBUpdateRequest {
 	return &iaas.ProxyLBUpdateRequest{
 		HealthCheck:          expandEnhancedLBHealthCheck(model),
 		SorryServer:          expandEnhancedLBSorryServer(model),
@@ -59,15 +59,19 @@ func expandEnhancedLBUpdateRequest(model, state *enhancedLBResourceModel) *iaas.
 		Tags:                 common.TsetToStrings(model.Tags),
 		IconID:               common.ExpandSakuraCloudID(model.IconID),
 		MonitoringSuiteLog:   common.ExpandMonitoringSuiteLog(model.MonitoringSuite),
-		OriginGuard:          expandEnhancedLBOriginGuard(model),
+		OriginGuard:          expandEnhancedLBOriginGuard(model, config),
 		StrictRule:           expandEnhancedLBStrictRule(model),
 	}
 }
 
-func expandEnhancedLBOriginGuard(model *enhancedLBResourceModel) *iaas.ProxyLBOriginGuard {
+func expandEnhancedLBOriginGuard(model, config *enhancedLBResourceModel) *iaas.ProxyLBOriginGuard {
 	if model.OriginGuard != nil {
+		token := model.OriginGuard.Token.ValueString()
+		if config.OriginGuard != nil && utils.IsKnown(config.OriginGuard.TokenWO) {
+			token = config.OriginGuard.TokenWO.ValueString()
+		}
 		return &iaas.ProxyLBOriginGuard{
-			Token: model.OriginGuard.Token.ValueString(),
+			Token: token,
 		}
 	}
 	return nil

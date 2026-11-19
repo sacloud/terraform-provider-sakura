@@ -113,7 +113,7 @@ func (d *alertLogMeasureRuleDataSource) Read(ctx context.Context, req datasource
 			return
 		}
 	} else {
-		rules, err := op.List(ctx, data.AlertProjectID.ValueString(), nil, nil)
+		rules, err := op.List(ctx, data.AlertProjectID.ValueString(), monitoringsuite.LogMeasureRulesListParams{})
 		if err != nil {
 			resp.Diagnostics.AddError("Read: API Error", fmt.Sprintf("failed to list Log Measure Rule resources: %s", err))
 			return

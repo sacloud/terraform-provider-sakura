@@ -61,6 +61,7 @@ func TestAccSakuraDataSourceEnhancedLB_basic(t *testing.T) {
 					resource.TestCheckResourceAttr(resourceName, "rule.1.request_header_value_ignore_case", "false"),
 					resource.TestCheckResourceAttr(resourceName, "rule.1.request_header_value_not_match", "false"),
 					resource.TestCheckResourceAttr(resourceName, "monitoring_suite.enabled", "true"),
+					resource.TestCheckResourceAttr(resourceName, "origin_guard.token", "abcdefgh"),
 				),
 			},
 		},
@@ -113,6 +114,10 @@ resource "sakura_enhanced_lb" "foobar" {
 
   monitoring_suite = {
     enabled = true
+  }
+
+  origin_guard = {
+    token = "abcdefgh"
   }
 }
 

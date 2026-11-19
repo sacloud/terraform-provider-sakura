@@ -19,7 +19,7 @@ type dataLakeBaseModel struct {
 
 func (model *dataLakeBaseModel) updateState(id, deploymentName, url string, body *v1.DatalakePostRequestBody) {
 	model.ID = types.StringValue(id)
-	model.Location = types.StringValue(body.Location)
+	model.Location = types.StringValue(string(body.Location))
 	model.Performance = types.Int32Value(int32(body.Performance))
 	model.Redundancy = types.Int32Value(int32(body.Redundancy))
 	model.DeploymentName = deploymentNameValue(deploymentName)

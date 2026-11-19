@@ -59,8 +59,8 @@ func (model *workflowBaseModel) toCreateRequest() v1.CreateWorkflowReq {
 	return workflowReq
 }
 
-func (model *workflowBaseModel) toUpdateRequest(state *workflowBaseModel) (v1.UpdateWorkflowReq, *v1.CreateWorkflowRevisionReq) {
-	req := v1.UpdateWorkflowReq{
+func (model *workflowBaseModel) toUpdateRequest(state *workflowBaseModel) (v1.PatchWorkflowReq, *v1.CreateRevisionReq) {
+	req := v1.PatchWorkflowReq{
 		Name:    v1.NewOptString(model.Name.ValueString()),
 		Publish: v1.NewOptBool(model.Publish.ValueBool()),
 		Logging: v1.NewOptBool(model.Logging.ValueBool()),
@@ -72,12 +72,12 @@ func (model *workflowBaseModel) toUpdateRequest(state *workflowBaseModel) (v1.Up
 	}
 
 	if concurrencyMode := model.ConcurrencyMode.ValueString(); concurrencyMode != "" {
-		req.ConcurrencyMode = v1.NewOptUpdateWorkflowReqConcurrencyMode(v1.UpdateWorkflowReqConcurrencyMode(concurrencyMode))
+		req.ConcurrencyMode = v1.NewOptPatchWorkflowReqConcurrencyMode(v1.PatchWorkflowReqConcurrencyMode(concurrencyMode))
 	}
 
-	var revisionReq *v1.CreateWorkflowRevisionReq
+	var revisionReq *v1.CreateRevisionReq
 	if model.LatestRevision.Runbook.ValueString() != state.LatestRevision.Runbook.ValueString() {
-		revisionReq = &v1.CreateWorkflowRevisionReq{
+		revisionReq = &v1.CreateRevisionReq{
 			Runbook: model.LatestRevision.Runbook.ValueString(),
 			// NOTE: aliasは別resourceで管理するので指定不要
 		}
@@ -108,7 +108,7 @@ func (model *workflowBaseModel) updateStateFromCreated(data *v1.CreateWorkflowCr
 	model.UpdatedAt = types.StringValue(data.UpdatedAt.String())
 }
 
-func (model *workflowBaseModel) updateRevisionsState(data []v1.ListWorkflowRevisionsOKRevisionsItem) {
+func (model *workflowBaseModel) updateRevisionsState(data []v1.ListRevisionsOKRevisionsItem) {
 	// NOTE: 呼び出し側でlen(data) > 0を保証している。
 
 	// NOTE: 作成順でソートしておく。最初の値がlatest
@@ -125,7 +125,7 @@ func (model *workflowBaseModel) updateRevisionsState(data []v1.ListWorkflowRevis
 	}
 }
 
-func (model *workflowBaseModel) updateStateFromUpdated(data *v1.UpdateWorkflowOKWorkflow) {
+func (model *workflowBaseModel) updateStateFromUpdated(data *v1.PatchWorkflowOKWorkflow) {
 	model.UpdateBaseState(data.ID, data.Name, data.Description.Value, extractTagNames(data.Tags))
 	model.Publish = types.BoolValue(data.Publish)
 	model.Logging = types.BoolValue(data.Logging)
@@ -147,7 +147,7 @@ func (model *workflowBaseModel) updateStateFromUpdated(data *v1.UpdateWorkflowOK
 	model.UpdatedAt = types.StringValue(data.UpdatedAt.String())
 }
 
-func (model *workflowBaseModel) updateState(data *v1.GetWorkflowOKWorkflow) {
+func (model *workflowBaseModel) updateState(data *v1.ReadWorkflowOKWorkflow) {
 	model.UpdateBaseState(data.ID, data.Name, data.Description.Value, extractTagNames(data.Tags))
 	model.Publish = types.BoolValue(data.Publish)
 	model.Logging = types.BoolValue(data.Logging)
@@ -180,13 +180,13 @@ func extractTagNames(tags any) []string {
 			result = append(result, tag.Name)
 		}
 		return result
-	case []v1.UpdateWorkflowOKWorkflowTagsItem:
+	case []v1.PatchWorkflowOKWorkflowTagsItem:
 		result := make([]string, 0, len(t))
 		for _, tag := range t {
 			result = append(result, tag.Name)
 		}
 		return result
-	case []v1.GetWorkflowOKWorkflowTagsItem:
+	case []v1.ReadWorkflowOKWorkflowTagsItem:
 		result := make([]string, 0, len(t))
 		for _, tag := range t {
 			result = append(result, tag.Name)
@@ -211,15 +211,15 @@ func workflowCreateTagsFromTf(tags types.Set) []v1.CreateWorkflowReqTagsItem {
 	return result
 }
 
-func workflowUpdateTagsFromTf(tags types.Set) []v1.UpdateWorkflowReqTagsItem {
+func workflowUpdateTagsFromTf(tags types.Set) []v1.PatchWorkflowReqTagsItem {
 	if !utils.IsKnown(tags) {
 		return nil
 	}
 
 	tagsSlice := common.TsetToStrings(tags)
-	result := make([]v1.UpdateWorkflowReqTagsItem, 0, len(tagsSlice))
+	result := make([]v1.PatchWorkflowReqTagsItem, 0, len(tagsSlice))
 	for _, tag := range tagsSlice {
-		result = append(result, v1.UpdateWorkflowReqTagsItem{
+		result = append(result, v1.PatchWorkflowReqTagsItem{
 			Name: tag,
 		})
 	}

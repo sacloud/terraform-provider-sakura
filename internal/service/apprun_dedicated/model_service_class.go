@@ -20,13 +20,13 @@ type workerServiceClassModel struct {
 	Name types.String `tfsdk:"name"`
 }
 
-func (m *lbServiceClassModel) updateState(class v1.ReadLbServiceClass) {
+func (m *lbServiceClassModel) updateState(class v1.LoadBalancerServiceClass) {
 	m.Path = types.StringValue(class.Path)
 	m.Name = types.StringValue(class.Name)
 	m.NodeCount = types.Int32Value(common.ToInt32(class.NodeCount))
 }
 
-func (m *workerServiceClassModel) updateState(class v1.ReadWorkerServiceClass) {
+func (m *workerServiceClassModel) updateState(class v1.WorkerServiceClass) {
 	m.Path = types.StringValue(class.Path)
 	m.Name = types.StringValue(class.Name)
 }

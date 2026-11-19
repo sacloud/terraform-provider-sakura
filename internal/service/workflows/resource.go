@@ -225,7 +225,7 @@ func (r *workflowResource) Update(ctx context.Context, req resource.UpdateReques
 	}
 
 	// create additional revisions if needed
-	var latestRevision *v1.CreateWorkflowRevisionCreatedRevision
+	var latestRevision *v1.CreateRevisionCreatedRevision
 	if createRevisionReq != nil {
 		rev, err := revisionOp.Create(ctx, workflow.ID, *createRevisionReq)
 		if err != nil {
@@ -270,9 +270,9 @@ func (r *workflowResource) Delete(ctx context.Context, req resource.DeleteReques
 	}
 }
 
-func getWorkflowRevisions(ctx context.Context, client *v1.Client, workflowID string) ([]v1.ListWorkflowRevisionsOKRevisionsItem, error) {
+func getWorkflowRevisions(ctx context.Context, client *v1.Client, workflowID string) ([]v1.ListRevisionsOKRevisionsItem, error) {
 	revisionOp := workflows.NewRevisionOp(client)
-	revisions, err := revisionOp.List(ctx, v1.ListWorkflowRevisionsParams{ID: workflowID})
+	revisions, err := revisionOp.List(ctx, v1.ListRevisionsParams{ID: workflowID})
 	if err != nil {
 		return nil, fmt.Errorf("failed to list Workflow[%s] revisions: %w", workflowID, err)
 	}

@@ -519,6 +519,15 @@ func (c *Config) createSaclientEnvConfig() []string {
 	if c.Profile != "" {
 		envs = append(envs, fmt.Sprintf("SAKURA_PROFILE=%s", c.Profile))
 	}
+	// saclient resolves the profile directory from the environment it is given,
+	// so pass the override through like LoadFromProfile sees it. The keys are
+	// in saclient's precedence order, and only the first one set takes effect.
+	for _, k := range []string{"SAKURA_PROFILE_DIR", "SAKURACLOUD_PROFILE_DIR", "USACLOUD_PROFILE_DIR"} {
+		if v, ok := os.LookupEnv(k); ok {
+			envs = append(envs, fmt.Sprintf("%s=%s", k, v))
+			break
+		}
+	}
 	if c.AccessToken != "" {
 		envs = append(envs, fmt.Sprintf("SAKURA_ACCESS_TOKEN=%s", c.AccessToken))
 	}

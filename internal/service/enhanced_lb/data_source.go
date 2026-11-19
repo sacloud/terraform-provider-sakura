@@ -90,7 +90,16 @@ func (d *enhancedLBDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Attributes: map[string]schema.Attribute{
 					"token": schema.StringAttribute{
 						Computed:    true,
+						Sensitive:   true,
 						Description: "The token used for origin guard",
+					},
+					"token_wo": schema.StringAttribute{
+						Computed:    true,
+						Description: "Placeholder for resource schema. Always empty in data source.",
+					},
+					"token_wo_version": schema.Int32Attribute{
+						Computed:    true,
+						Description: "Placeholder for resource schema. Always empty in data source.",
 					},
 				},
 			},
