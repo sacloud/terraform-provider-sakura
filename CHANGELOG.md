@@ -1,5 +1,10 @@
 # Changelog
 
+## [v3.15.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.15.1...v3.15.2) - 2026-11-19
+
+### Other Changes
+- Update sacloud-sdk-go to v0.7.1 to fix simple_notification's tags issue by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/394
+
 ## [v3.15.1](https://github.com/sacloud/terraform-provider-sakura/compare/v3.15.0...v3.15.1) - 2026-11-17
 
 ### Other Changes
