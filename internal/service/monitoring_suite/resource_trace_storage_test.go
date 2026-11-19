@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"testing"
 
 	"github.com/hashicorp/terraform-plugin-testing/helper/resource"
@@ -50,6 +51,40 @@ func TestAccSakuraMonitoringSuiteTraceStorage_basic(t *testing.T) {
 					resource.TestCheckResourceAttrSet(resourceName, "project_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "resource_id"),
 					resource.TestCheckResourceAttrSet(resourceName, "endpoints.ingester.address"),
+				),
+			},
+		},
+	})
+}
+
+func TestAccSakuraMonitoringSuiteTraceStorage_dedicated(t *testing.T) {
+	test.SkipIfEnvIsNotSet(t, "SAKURA_MONITORING_SUITE_ENABLE_DEDICATED_TEST",
+		"SAKURA_MONITORING_SUITE_KMS_KEY_ID", "SAKURA_MONITORING_SUITE_SERVICE_PRINCIPAL_ID")
+
+	resourceName := "sakura_monitoring_suite_trace_storage.foobar"
+	dataSourceName := "data.sakura_monitoring_suite_trace_storage.foobar"
+	rand := test.RandomName()
+	kmsKeyID := os.Getenv("SAKURA_MONITORING_SUITE_KMS_KEY_ID")
+	servicePrincipalID := os.Getenv("SAKURA_MONITORING_SUITE_SERVICE_PRINCIPAL_ID")
+
+	var storage monitoringsuiteapi.TraceStorage
+	resource.Test(t, resource.TestCase{
+		PreCheck:                 func() { test.AccPreCheck(t) },
+		ProtoV6ProviderFactories: test.AccProtoV6ProviderFactories,
+		CheckDestroy:             testCheckSakuraMonitoringSuiteTraceStorageDestroy,
+		Steps: []resource.TestStep{
+			{
+				Config: test.BuildConfigWithArgs(testAccSakuraMonitoringSuiteTraceStorage_dedicated, rand, kmsKeyID, servicePrincipalID),
+				Check: resource.ComposeTestCheckFunc(
+					testCheckSakuraMonitoringSuiteTraceStorageExists(resourceName, &storage),
+					resource.TestCheckResourceAttr(resourceName, "name", rand),
+					resource.TestCheckResourceAttr(resourceName, "classification", "dedicated"),
+					resource.TestCheckResourceAttr(resourceName, "kms_key_id", kmsKeyID),
+					resource.TestCheckResourceAttr(resourceName, "service_principal_id", servicePrincipalID),
+					resource.TestCheckResourceAttrPair(dataSourceName, "id", resourceName, "id"),
+					resource.TestCheckResourceAttr(dataSourceName, "classification", "dedicated"),
+					resource.TestCheckResourceAttr(dataSourceName, "kms_key_id", kmsKeyID),
+					resource.TestCheckResourceAttr(dataSourceName, "service_principal_id", servicePrincipalID),
 				),
 			},
 		},
@@ -163,5 +198,18 @@ resource "sakura_monitoring_suite_trace_storage" "foobar" {
   name = "{{ .arg0 }}"
   description = "description-updated"
   retention_period_days = 55
+}
+`
+
+var testAccSakuraMonitoringSuiteTraceStorage_dedicated = `
+resource "sakura_monitoring_suite_trace_storage" "foobar" {
+	name = "{{ .arg0 }}"
+	classification = "dedicated"
+	kms_key_id = "{{ .arg1 }}"
+	service_principal_id = "{{ .arg2 }}"
+}
+
+data "sakura_monitoring_suite_trace_storage" "foobar" {
+	id = sakura_monitoring_suite_trace_storage.foobar.id
 }
 `

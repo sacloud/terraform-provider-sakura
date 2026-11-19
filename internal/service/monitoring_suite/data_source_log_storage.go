@@ -66,6 +66,14 @@ func (d *logStorageDataSource) Schema(_ context.Context, _ datasource.SchemaRequ
 				Computed:    true,
 				Description: "The bucket classification of the Log Storage.",
 			},
+			"kms_key_id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The KMS key ID for encryption. Only available when classification is dedicated.",
+			},
+			"service_principal_id": schema.StringAttribute{
+				Computed:    true,
+				Description: "The service principal ID used to access the KMS key. Only available when classification is dedicated.",
+			},
 			"retention_period_days": schema.Int32Attribute{
 				Computed:    true,
 				Description: "The retention period days of the Log Storage.",

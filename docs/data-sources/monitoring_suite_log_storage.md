@@ -35,9 +35,11 @@ data "sakura_monitoring_suite_log_storage" "foobar" {
 - `description` (String) The description of the Monitoring Suite Log Storage.
 - `endpoints` (Attributes) The endpoints of the Log Storage. (see [below for nested schema](#nestedatt--endpoints))
 - `is_system` (Boolean) The flag to indicate whether this is a system Log Storage.
+- `kms_key_id` (String) The KMS key ID for encryption. Only available when classification is dedicated.
 - `project_id` (String) The resource ID of the project to which the Log Storage belongs.
 - `resource_id` (String) The resource ID of the Log Storage.
 - `retention_period_days` (Number) The retention period days of the Log Storage.
+- `service_principal_id` (String) The service principal ID used to access the KMS key. Only available when classification is dedicated.
 - `usage` (Attributes) The usage of the Log Storage. (see [below for nested schema](#nestedatt--usage))
 
 <a id="nestedatt--endpoints"></a>
