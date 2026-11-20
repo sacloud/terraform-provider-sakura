@@ -4,11 +4,17 @@ page_title: "sakura_server Resource - sakura"
 subcategory: "Computing"
 description: |-
   Manages a Server.
+  Networking Suite failure recovery
+  If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. The next apply retries the connections. A packet filter setting or boot failure only produces a warning; Manual operation may be required.
 ---
 
 # sakura_server (Resource)
 
 Manages a Server.
+
+### Networking Suite failure recovery
+
+If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. The next apply retries the connections. A packet filter setting or boot failure only produces a warning; Manual operation may be required.
 
 ## Example Usage
 
@@ -26,8 +32,9 @@ resource "sakura_server" "foobar" {
 
   # To connect a server interface to a Networking Suite Subnet, set `upstream` to `networking_suite_subnet` and provide the subnet SRN. The server resource creates the interface connection and boots the server after connecting it.
   # network_interface = [{
-  #   upstream   = "networking_suite_subnet"
-  #   subnet_srn = sakura_networking_suite_subnet.example.srn
+  #   upstream         = "networking_suite_subnet"
+  #   subnet_srn       = sakura_networking_suite_subnet.example.srn
+  #   packet_filter_id = data.sakura_packet_filter.foobar.id # optional
   # }]
 
   disk_edit_parameter = {

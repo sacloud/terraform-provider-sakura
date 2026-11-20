@@ -11,8 +11,9 @@ resource "sakura_server" "foobar" {
 
   # To connect a server interface to a Networking Suite Subnet, set `upstream` to `networking_suite_subnet` and provide the subnet SRN. The server resource creates the interface connection and boots the server after connecting it.
   # network_interface = [{
-  #   upstream   = "networking_suite_subnet"
-  #   subnet_srn = sakura_networking_suite_subnet.example.srn
+  #   upstream         = "networking_suite_subnet"
+  #   subnet_srn       = sakura_networking_suite_subnet.example.srn
+  #   packet_filter_id = data.sakura_packet_filter.foobar.id # optional
   # }]
 
   disk_edit_parameter = {

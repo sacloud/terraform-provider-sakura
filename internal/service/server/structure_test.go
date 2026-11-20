@@ -493,6 +493,7 @@ func TestExpandNetworkingSuiteNICAsDisconnected(t *testing.T) {
 func TestNetworkingSuiteConfigChanged(t *testing.T) {
 	subnetSRN := sctypes.SRNValue("srnv1:sakura-is1a:sakura.networking-suite.subnet:subnet-id")
 	managedNIC := serverNetworkInterfaceModel{
+		SRN:       sctypes.SRNValue("srnv1:sakura-is1a:sakura.networking-suite.interface-connection:connection-id"),
 		Upstream:  types.StringValue(networkingSuiteSubnetUpstream),
 		SubnetSRN: subnetSRN,
 	}

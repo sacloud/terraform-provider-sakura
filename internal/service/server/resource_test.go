@@ -432,7 +432,6 @@ func TestAccSakuraServer_networkingSuiteSubnet(t *testing.T) {
 				Config: test.BuildConfigWithArgs(testAccSakuraServer_networkingSuiteSubnet, rand),
 				Check: resource.ComposeTestCheckFunc(
 					test.CheckSakuraServerExists(resourceName, &server),
-					//test.CheckSakuraServerAttributes(&server),
 					resource.TestCheckResourceAttr(resourceName, "name", "nws-"+rand),
 					resource.TestCheckResourceAttr(resourceName, "zone", "is1c"),
 					resource.TestCheckResourceAttr(resourceName, "network_interface.#", "1"),

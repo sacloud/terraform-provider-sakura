@@ -94,6 +94,8 @@ func flattenServerNICs(server *iaas.Server, zone string) []serverNetworkInterfac
 	for _, nic := range server.Interfaces {
 		var upstream string
 		switch {
+		case !nic.NetworkingSuiteInterfaceConnectionID.IsEmpty():
+			upstream = "networking_suite_subnet"
 		case nic.SwitchID.IsEmpty():
 			upstream = "disconnect"
 		case nic.SwitchScope == iaastypes.Scopes.Shared:
@@ -106,6 +108,9 @@ func flattenServerNICs(server *iaas.Server, zone string) []serverNetworkInterfac
 			Upstream:      types.StringValue(upstream),
 			MACAddress:    types.StringValue(strings.ToLower(nic.MACAddress)),
 			UserIPAddress: types.StringValue(nic.UserIPAddress), // iptypes.NewIPv4AddressValue(nic.UserIPAddress),
+		}
+		if !nic.NetworkingSuiteInterfaceConnectionID.IsEmpty() {
+			r.SRN = sctypes.SRNValue(fmt.Sprintf("srnv1:sakura-%s:sakura.networking-suite.interface-connection:%s", zone, nic.NetworkingSuiteInterfaceConnectionID.String()))
 		}
 		if nic.PacketFilterID.String() != "" {
 			r.PacketFilterID = types.StringValue(nic.PacketFilterID.String())
