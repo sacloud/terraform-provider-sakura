@@ -573,6 +573,7 @@ func TestAccSakuraServer_networkingSuitePacketFilter(t *testing.T) {
 	primary := `{ upstream = "networking_suite_subnet", subnet_srn = sakura_networking_suite_subnet.foobar.srn, packet_filter_id = sakura_packet_filter.first.id }`
 	replaced := `{ upstream = "networking_suite_subnet", subnet_srn = sakura_networking_suite_subnet.foobar.srn, packet_filter_id = sakura_packet_filter.second.id }`
 	withoutFilter := `{ upstream = "networking_suite_subnet", subnet_srn = sakura_networking_suite_subnet.foobar.srn }`
+	missingFilter := `{ upstream = "networking_suite_subnet", subnet_srn = sakura_networking_suite_subnet.foobar.srn, packet_filter_id = "999999999999" }`
 
 	resource.Test(t, resource.TestCase{
 		PreCheck:                 func() { test.AccPreCheck(t) },
@@ -586,6 +587,10 @@ func TestAccSakuraServer_networkingSuitePacketFilter(t *testing.T) {
 					resource.TestCheckResourceAttrPair(resourceName, "network_interface.0.packet_filter_id", "sakura_packet_filter.first", "id"),
 					checkFilter(0, "sakura_packet_filter.first"),
 				),
+			},
+			{
+				Config:      config(missingFilter, "updated"),
+				ExpectError: regexp.MustCompile("Update: Packet Filter Error"),
 			},
 			{
 				Config: config(primary, "updated"),

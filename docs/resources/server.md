@@ -5,7 +5,7 @@ subcategory: "Computing"
 description: |-
   Manages a Server.
   Networking Suite failure recovery
-  If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. The next apply retries the connections. A packet filter setting or boot failure only produces a warning; Manual operation may be required.
+  If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. The next apply retries the connections. A boot failure only produces a warning; boot the server manually.
 ---
 
 # sakura_server (Resource)
@@ -14,7 +14,7 @@ Manages a Server.
 
 ### Networking Suite failure recovery
 
-If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. The next apply retries the connections. A packet filter setting or boot failure only produces a warning; Manual operation may be required.
+If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. The next apply retries the connections. A boot failure only produces a warning; boot the server manually.
 
 ## Example Usage
 

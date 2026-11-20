@@ -431,7 +431,7 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 			"### Networking Suite failure recovery\n\n" +
 			"If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. " +
 			"If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. " +
-			"The next apply retries the connections. A packet filter setting or boot failure only produces a warning; Manual operation may be required. ",
+			"The next apply retries the connections. A boot failure only produces a warning; boot the server manually.",
 	}
 }
 
@@ -514,7 +514,8 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 			return
 		}
 		if err := reconcileNetworkingSuitePacketFilters(ctx, iaas.NewInterfaceOp(r.client), zone, server, plan.NetworkInterface); err != nil {
-			resp.Diagnostics.AddWarning("Create: Packet Filter Error", fmt.Sprintf("failed to configure packet filters for Server[%s]: Configure it manually: %s", server.ID, err))
+			resp.Diagnostics.AddError("Create: Packet Filter Error", fmt.Sprintf("failed to configure packet filters for Server[%s]. Delete its Networking Suite connections and the server manually: %s", server.ID, err))
+			return
 		}
 		if err := bootServer(ctx, r.client, zone, server.ID, plan.UserData.ValueString()); err != nil {
 			resp.Diagnostics.AddWarning("Create: Boot Error", fmt.Sprintf("failed to boot Server[%s] after connecting Networking Suite interfaces. Boot it manually: %s", server.ID, err))
@@ -639,7 +640,9 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 	// ビルダーではNetworking SuiteのNICをdisconnectedで扱いパケットフィルターも削除するので、再設定が必要。
 	if hasNetworkingSuiteNIC(plan.NetworkInterface) {
 		if err := reconcileNetworkingSuitePacketFilters(ctx, iaas.NewInterfaceOp(r.client), zone, server, plan.NetworkInterface); err != nil {
-			resp.Diagnostics.AddWarning("Update: Packet Filter Error", fmt.Sprintf("failed to configure packet filters for server[%s]: Configure it manually: %s", server.ID, err))
+			resp.Diagnostics.AddError("Update: Packet Filter Error", fmt.Sprintf("failed to configure packet filters for Server[%s]: %s", server.ID, err))
+			resp.Diagnostics.Append(saveServerState(ctx, &resp.State, plan, server, zone, plan.NetworkInterface)...)
+			return
 		}
 	}
 	// 接続変更前に起動していた場合だけ再起動し、元から停止していたサーバーは停止状態を保つ。
@@ -711,13 +714,6 @@ func getServer(ctx context.Context, client *common.APIClient, zone string, id ia
 func saveServerState(ctx context.Context, target *tfsdk.State, model serverResourceModel, server *iaas.Server, zone string, actualNICs []serverNetworkInterfaceModel) diag.Diagnostics {
 	model.updateState(server, zone)
 	preserveNetworkingSuiteNICs(model.NetworkInterface, actualNICs)
-	// packet filterの設定に失敗した場合にはwarningでエラーにならない。その場合のincosistent errorを回避するため、planの値を使って保管する(次のapply or 手動で解決)
-	for i := range model.NetworkInterface {
-		if i < len(actualNICs) &&
-			actualNICs[i].Upstream.ValueString() == networkingSuiteSubnetUpstream {
-			model.NetworkInterface[i].PacketFilterID = actualNICs[i].PacketFilterID
-		}
-	}
 	return target.Set(ctx, &model)
 }
 
