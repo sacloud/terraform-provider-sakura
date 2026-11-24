@@ -31,10 +31,15 @@ import (
 	"github.com/sacloud/sacloud-sdk-go/api/iaas"
 	"github.com/sacloud/sacloud-sdk-go/api/iaas/helper/power"
 	iaastypes "github.com/sacloud/sacloud-sdk-go/api/iaas/types"
+	networkingsuite "github.com/sacloud/sacloud-sdk-go/api/networking-suite"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	diskBuilder "github.com/sacloud/sacloud-sdk-go/service/iaas/disk/builder"
 	serverBuilder "github.com/sacloud/sacloud-sdk-go/service/iaas/server/builder"
+	"github.com/sacloud/sacloud-sdk-go/srn"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
+	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
+	sctypes "github.com/sacloud/terraform-provider-sakura/internal/types"
 	sacloudvalidator "github.com/sacloud/terraform-provider-sakura/internal/validator"
 )
 
@@ -182,16 +187,21 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				},
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
+						"srn": schema.StringAttribute{
+							CustomType:  sctypes.SRNType,
+							Computed:    true,
+							Description: "The SRN of the Networking Suite interface connection when upstream is networking_suite_subnet, otherwise the SRN of the IaaS network interface",
+						},
 						"upstream": schema.StringAttribute{
 							Required: true,
 							Description: desc.Sprintf(
 								"The upstream type or upstream switch id. This must be one of [%s]",
-								[]string{"shared", "disconnect", "<switch id>"},
+								[]string{"shared", "disconnect", "networking_suite_subnet", "<switch id>"},
 							),
 							Validators: []validator.String{
 								// validateSakuraCloudServerNIC in v2. ここでしか使われていないのでStringFuncValidatorで実装
 								sacloudvalidator.StringFuncValidator(func(v string) error {
-									if v == "" || v == "shared" || v == "disconnect" {
+									if v == "" || v == "shared" || v == "disconnect" || v == "networking_suite_subnet" {
 										return nil
 									}
 									_, err := strconv.ParseInt(v, 10, 64)
@@ -202,6 +212,11 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 									return nil
 								}),
 							},
+						},
+						"subnet_srn": schema.StringAttribute{
+							CustomType:  sctypes.SRNType,
+							Optional:    true,
+							Description: "The SRN of the Networking Suite Subnet. Required when upstream is networking_suite_subnet.",
 						},
 						"user_ip_address": schema.StringAttribute{
 							//CustomType: iptypes.IPv4AddressType{},
@@ -412,7 +427,11 @@ func (r *serverResource) Schema(ctx context.Context, _ resource.SchemaRequest, r
 				Create: true, Update: true, Delete: true,
 			}),
 		},
-		MarkdownDescription: "Manages a Server.",
+		MarkdownDescription: "Manages a Server.\n\n" +
+			"### Networking Suite failure recovery\n\n" +
+			"If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. " +
+			"If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. " +
+			"The next apply retries the connections. A boot failure only produces a warning; boot the server manually.",
 	}
 }
 
@@ -426,6 +445,12 @@ func (r *serverResource) ModifyPlan(ctx context.Context, req resource.ModifyPlan
 	resp.Diagnostics.Append(req.Plan.Get(ctx, &plan)...)
 	if state == nil || plan == nil {
 		return
+	}
+	for i, nic := range state.NetworkInterface {
+		if nic.Upstream.ValueString() == networkingSuiteSubnetUpstream && nic.SRN.IsNull() && i < len(plan.NetworkInterface) &&
+			plan.NetworkInterface[i].Upstream.ValueString() == networkingSuiteSubnetUpstream {
+			resp.Diagnostics.Append(resp.Plan.SetAttribute(ctx, path.Root("network_interface").AtListIndex(i).AtName("srn"), sctypes.SRNUnknown())...)
+		}
 	}
 
 	// これらの属性が変更された時はリソースIDが変更されるので、PlanのIDをUnknownにしてconsistent errorを防ぐ
@@ -469,14 +494,35 @@ func (r *serverResource) Create(ctx context.Context, req resource.CreateRequest,
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create server: %s", err))
 		return
 	}
-
 	server := getServer(ctx, r.client, zone, result.ServerID, &resp.State, &resp.Diagnostics)
 	if server == nil {
 		return
 	}
 
-	plan.updateState(server, zone)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	// Networking SuiteのNICは未接続・停止状態で作成し、接続が完了してから起動する。
+	if hasNetworkingSuiteNIC(plan.NetworkInterface) {
+		if err := createNetworkingSuiteConnections(ctx, r.client, zone, server, plan.NetworkInterface); err != nil {
+			if de := deleteNetworkingSuiteConnections(ctx, r.client, plan.NetworkInterface); de != nil {
+				resp.Diagnostics.AddError("Create: Cleanup Error after Networking Suite Connection Failure", fmt.Sprintf("failed to remove Networking Suite connections for Server[%s]. Delete the remaining connections and server manually: %s", server.ID, de))
+				return
+			}
+			if de := iaas.NewServerOp(r.client).Delete(ctx, zone, server.ID); de != nil {
+				resp.Diagnostics.AddError("Create: Cleanup Error after Networking Suite Connection Failure", fmt.Sprintf("failed to delete Server[%s]. Delete it manually: %s", server.ID, de))
+				return
+			}
+			resp.Diagnostics.AddError("Create: Networking Suite Connection Failure", fmt.Sprintf("failed to create Networking Suite connections for Server[%s]. %s", server.ID, err))
+			return
+		}
+		if err := reconcileNetworkingSuitePacketFilters(ctx, iaas.NewInterfaceOp(r.client), zone, server, plan.NetworkInterface); err != nil {
+			resp.Diagnostics.AddError("Create: Packet Filter Error", fmt.Sprintf("failed to configure packet filters for Server[%s]. Delete its Networking Suite connections and the server manually: %s", server.ID, err))
+			return
+		}
+		if err := bootServer(ctx, r.client, zone, server.ID, plan.UserData.ValueString()); err != nil {
+			resp.Diagnostics.AddWarning("Create: Boot Error", fmt.Sprintf("failed to boot Server[%s] after connecting Networking Suite interfaces. Boot it manually: %s", server.ID, err))
+		}
+	}
+
+	resp.Diagnostics.Append(saveServerState(ctx, &resp.State, plan, server, zone, plan.NetworkInterface)...)
 }
 
 func (r *serverResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
@@ -496,7 +542,10 @@ func (r *serverResource) Read(ctx context.Context, req resource.ReadRequest, res
 		return
 	}
 
+	// 接続SRNはIaaS APIを優先し、サブネット情報はstateから補完する。
+	preNICs := state.NetworkInterface
 	state.updateState(server, zone)
+	preserveNetworkingSuiteNICsForRead(state.NetworkInterface, preNICs)
 	resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
 }
 
@@ -530,6 +579,35 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 		resp.Diagnostics.AddError("Update: Validate Error", fmt.Sprintf("failed to validate server builder: %s", err))
 		return
 	}
+	// NIC構成の変更に加え、プラン変更でサーバーIDが変わる場合も接続を作り直す。
+	networkingSuiteChanged := networkingSuiteConfigChanged(plan.NetworkInterface, state.NetworkInterface) ||
+		(hasNetworkingSuiteNIC(plan.NetworkInterface) && plan.ID.IsUnknown())
+	wasRunning := false
+	// builderがNICを更新する前に、サーバーを停止して旧NICへの接続を解除する。
+	if networkingSuiteChanged {
+		serverOp := iaas.NewServerOp(r.client)
+		currentServer := getServer(ctx, r.client, zone, common.ExpandSakuraCloudID(state.ID), &resp.State, &resp.Diagnostics)
+		if currentServer == nil {
+			return
+		}
+		wasRunning = currentServer.InstanceStatus.IsUp()
+		if wasRunning {
+			if err := power.ShutdownServer(ctx, serverOp, zone, currentServer.ID, plan.ForceShutdown.ValueBool()); err != nil {
+				resp.Diagnostics.AddError("Update: Shutdown Error", fmt.Sprintf("failed to stop Server[%s] before changing Networking Suite connection: %s", currentServer.ID, err))
+				return
+			}
+		}
+		if err := deleteNetworkingSuiteConnections(ctx, r.client, state.NetworkInterface); err != nil {
+			resp.Diagnostics.AddError("Update: Networking Suite Error before server update", fmt.Sprintf("failed to delete Networking Suite connections: %s", err))
+			return
+		}
+		// 削除時にSRNをnullにするのでそれを保存することで、以降のAPI呼び出してエラーになっても状態を維持して次のapplyで解決できるようになる。
+		resp.Diagnostics.Append(resp.State.Set(ctx, &state)...)
+		if resp.Diagnostics.HasError() {
+			return
+		}
+	}
+
 	// 特定条件下ではIDを変更させるためにModifyPlanでUnknownにしているため、その場合はstateのIDをセットしてUpdateを実行する
 	if plan.ID.IsUnknown() {
 		builder.ServerID = common.ExpandSakuraCloudID(state.ID)
@@ -540,13 +618,41 @@ func (r *serverResource) Update(ctx context.Context, req resource.UpdateRequest,
 		return
 	}
 
-	server := getServer(ctx, r.client, zone, result.ServerID, &resp.State, &resp.Diagnostics)
+	// planの更新でIDが変更される場合があるため、今後の処理で失敗しても問題ないようにIDをstateに反映しておく
+	resp.Diagnostics.Append(resp.State.SetAttribute(ctx, path.Root("id"), types.StringValue(result.ServerID.String()))...)
+	server := getServer(ctx, r.client, zone, result.ServerID, nil, &resp.Diagnostics)
 	if server == nil {
 		return
 	}
 
-	plan.updateState(server, zone)
-	resp.Diagnostics.Append(resp.State.Set(ctx, &plan)...)
+	if !networkingSuiteChanged {
+		preserveNetworkingSuiteNICs(plan.NetworkInterface, state.NetworkInterface)
+	}
+
+	// NICの追加・削除やサーバープラン変更後のIDを使って、設定されたサブネットへ再接続する。
+	if networkingSuiteChanged && hasNetworkingSuiteNIC(plan.NetworkInterface) {
+		if err := createNetworkingSuiteConnections(ctx, r.client, zone, server, plan.NetworkInterface); err != nil {
+			resp.Diagnostics.AddError("Update: Networking Suite Error", fmt.Sprintf("failed to create Networking Suite connections: %s", err))
+			resp.Diagnostics.Append(saveServerState(ctx, &resp.State, plan, server, zone, plan.NetworkInterface)...)
+			return
+		}
+	}
+	// ビルダーではNetworking SuiteのNICをdisconnectedで扱いパケットフィルターも削除するので、再設定が必要。
+	if hasNetworkingSuiteNIC(plan.NetworkInterface) {
+		if err := reconcileNetworkingSuitePacketFilters(ctx, iaas.NewInterfaceOp(r.client), zone, server, plan.NetworkInterface); err != nil {
+			resp.Diagnostics.AddError("Update: Packet Filter Error", fmt.Sprintf("failed to configure packet filters for Server[%s]: %s", server.ID, err))
+			resp.Diagnostics.Append(saveServerState(ctx, &resp.State, plan, server, zone, plan.NetworkInterface)...)
+			return
+		}
+	}
+	// 接続変更前に起動していた場合だけ再起動し、元から停止していたサーバーは停止状態を保つ。
+	if networkingSuiteChanged && wasRunning {
+		if err := bootServer(ctx, r.client, zone, server.ID, expandServerUserData(&plan, &state)); err != nil {
+			resp.Diagnostics.AddWarning("Update: Boot Error", fmt.Sprintf("failed to boot Server[%s] after connecting Networking Suite interfaces. Boot it manually: %s", server.ID, err))
+		}
+	}
+
+	resp.Diagnostics.Append(saveServerState(ctx, &resp.State, plan, server, zone, plan.NetworkInterface)...)
 }
 
 func (r *serverResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
@@ -572,12 +678,16 @@ func (r *serverResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	if server == nil {
 		return
 	}
-
 	if server.InstanceStatus.IsUp() {
 		if err := power.ShutdownServer(ctx, serverOp, zone, server.ID, state.ForceShutdown.ValueBool()); err != nil {
 			resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to stop Server[%s]: %s", server.ID, err))
 			return
 		}
+	}
+	// サーバーの削除前に、stateで管理しているNetworking Suiteの接続を解除する。
+	if err := deleteNetworkingSuiteConnections(ctx, r.client, state.NetworkInterface); err != nil {
+		resp.Diagnostics.AddError("Delete: Networking Suite Error", err.Error())
+		return
 	}
 
 	if err := serverOp.Delete(ctx, zone, server.ID); err != nil {
@@ -590,7 +700,7 @@ func getServer(ctx context.Context, client *common.APIClient, zone string, id ia
 	serverOp := iaas.NewServerOp(client)
 	server, err := serverOp.Read(ctx, zone, id)
 	if err != nil {
-		if iaas.IsNotFoundError(err) {
+		if state != nil && iaas.IsNotFoundError(err) {
 			state.RemoveResource(ctx)
 			return nil
 		}
@@ -601,7 +711,17 @@ func getServer(ctx context.Context, client *common.APIClient, zone string, id ia
 	return server
 }
 
+func saveServerState(ctx context.Context, target *tfsdk.State, model serverResourceModel, server *iaas.Server, zone string, actualNICs []serverNetworkInterfaceModel) diag.Diagnostics {
+	model.updateState(server, zone)
+	preserveNetworkingSuiteNICs(model.NetworkInterface, actualNICs)
+	return target.Set(ctx, &model)
+}
+
 func expandServerBuilder(ctx context.Context, client *common.APIClient, zone string, plan, state, config *serverResourceModel) (*serverBuilder.Builder, error) {
+	if err := validateNetworkingSuiteNICs(plan.NetworkInterface); err != nil {
+		return nil, err
+	}
+
 	diskBuilders, err := expandServerDisks(ctx, client, zone, plan, state, config)
 	if err != nil {
 		return nil, err
@@ -628,7 +748,7 @@ func expandServerBuilder(ctx context.Context, client *common.APIClient, zone str
 		DiskBuilders:    diskBuilders,
 		Client:          serverBuilder.NewBuildersAPIClient(client),
 		ForceShutdown:   plan.ForceShutdown.ValueBool(),
-		BootAfterCreate: true,
+		BootAfterCreate: !hasNetworkingSuiteNIC(plan.NetworkInterface), // Networking Suiteへの接続はbuilderの作成完了後に行うため、自動起動を抑止する。
 		UserData:        expandServerUserData(plan, state),
 	}, nil
 }
@@ -732,7 +852,8 @@ func expandServerNIC(model *serverResourceModel) serverBuilder.NICSettingHolder 
 		return &serverBuilder.SharedNICSetting{
 			PacketFilterID: common.ExpandSakuraCloudID(nic.PacketFilterID),
 		}
-	case "disconnect":
+	case "disconnect", "networking_suite_subnet":
+		// networking_suite_subnetの場合はdisconnect(未接続)でNICを作り、その後にNetworking Suiteへ接続して状態を上書きする
 		return &serverBuilder.DisconnectedNICSetting{}
 	default:
 		return &serverBuilder.ConnectedNICSetting{
@@ -757,7 +878,7 @@ func expandServerAdditionalNICs(model *serverResourceModel) []serverBuilder.Addi
 		}
 		upstream := nic.Upstream.ValueString()
 		switch upstream {
-		case "disconnect":
+		case "disconnect", "networking_suite_subnet": // See expandServerNIC for network_suite_subnet handling
 			results = append(results, &serverBuilder.DisconnectedNICSetting{})
 		default:
 			results = append(results, &serverBuilder.ConnectedNICSetting{
@@ -769,6 +890,198 @@ func expandServerAdditionalNICs(model *serverResourceModel) []serverBuilder.Addi
 	}
 
 	return results
+}
+
+const networkingSuiteSubnetUpstream = "networking_suite_subnet"
+
+func validateNetworkingSuiteNICs(nics []serverNetworkInterfaceModel) error {
+	for i, nic := range nics {
+		if nic.Upstream.ValueString() == networkingSuiteSubnetUpstream {
+			if nic.SubnetSRN.IsNull() { // 他リソースを参照する場合はUnknownになるためNullだけチェック
+				return fmt.Errorf("network_interface[%d].subnet_srn is required when upstream is %q", i, networkingSuiteSubnetUpstream)
+			}
+			continue
+		}
+		if utils.IsKnown(nic.SubnetSRN) {
+			return fmt.Errorf("network_interface[%d].subnet_srn can only be set when upstream is %q", i, networkingSuiteSubnetUpstream)
+		}
+	}
+	return nil
+}
+
+func hasNetworkingSuiteNIC(nics []serverNetworkInterfaceModel) bool {
+	for _, nic := range nics {
+		if nic.Upstream.ValueString() == networkingSuiteSubnetUpstream {
+			return true
+		}
+	}
+	return false
+}
+
+// Networking SuiteにまつわるNICの作り直しが必要な構成かどうかをチェック
+func networkingSuiteConfigChanged(plan, state []serverNetworkInterfaceModel) bool {
+	if !hasNetworkingSuiteNIC(plan) && !hasNetworkingSuiteNIC(state) {
+		return false
+	}
+	if len(plan) != len(state) {
+		return true
+	}
+	// 他のNICの接続先変更もbuilderの更新対象になるため、Networking Suiteの接続を一旦解除する。
+	for i := range plan {
+		planNWS := plan[i].Upstream.ValueString() == networkingSuiteSubnetUpstream
+		stateNWS := state[i].Upstream.ValueString() == networkingSuiteSubnetUpstream
+		if planNWS && stateNWS && state[i].SRN.IsNull() {
+			return true
+		}
+		if plan[i].Upstream.ValueString() != state[i].Upstream.ValueString() {
+			return true
+		}
+		if (planNWS || stateNWS) && !plan[i].SubnetSRN.Equal(state[i].SubnetSRN) {
+			return true
+		}
+	}
+	return false
+}
+
+func networkingSuiteInterfaceSRN(zone string, interfaceID iaastypes.ID) (srn.SRN, error) {
+	return srn.Parse(fmt.Sprintf("srnv1:sakura-%s:sakura.iaas.interface:%s", zone, interfaceID.String()))
+}
+
+func reconcileNetworkingSuitePacketFilters(ctx context.Context, op iaas.InterfaceAPI, zone string, server *iaas.Server, nics []serverNetworkInterfaceModel) error {
+	for i, nic := range nics {
+		if nic.Upstream.ValueString() != networkingSuiteSubnetUpstream {
+			continue
+		}
+		if i >= len(server.Interfaces) || server.Interfaces[i] == nil {
+			return fmt.Errorf("network interface[%d] is missing from Server[%s]", i, server.ID)
+		}
+		iface := server.Interfaces[i]
+		pfID := common.ExpandSakuraCloudID(nic.PacketFilterID)
+		if iface.PacketFilterID == pfID {
+			continue
+		}
+		if !iface.PacketFilterID.IsEmpty() {
+			if err := op.DisconnectFromPacketFilter(ctx, zone, iface.ID); err != nil {
+				return fmt.Errorf("failed to disconnect packet filter from interface[%s]: %w", iface.ID, err)
+			}
+			iface.PacketFilterID = 0
+		}
+		if !pfID.IsEmpty() {
+			if err := op.ConnectToPacketFilter(ctx, zone, iface.ID, pfID); err != nil {
+				return fmt.Errorf("failed to connect packet filter[%s] to interface[%s]: %w", pfID, iface.ID, err)
+			}
+			iface.PacketFilterID = pfID
+		}
+	}
+	return nil
+}
+
+func createNetworkingSuiteConnections(ctx context.Context, client *common.APIClient, zone string, server *iaas.Server, nics []serverNetworkInterfaceModel) error {
+	for i := range nics {
+		if nics[i].Upstream.ValueString() == networkingSuiteSubnetUpstream {
+			nics[i].SRN = sctypes.SRNNull()
+		}
+	}
+	apiClient, err := networkingsuite.NewClient(client.SaClient)
+	if err != nil {
+		return fmt.Errorf("failed to create networking suite API client: %w", err)
+	}
+	return connectNetworkingSuiteNICs(ctx, networkingsuite.NewInterfaceConnectionOp(apiClient), zone, server, nics)
+}
+
+func connectNetworkingSuiteNICs(ctx context.Context, op networkingsuite.InterfaceConnectionAPI, zone string, server *iaas.Server, nics []serverNetworkInterfaceModel) error {
+	for i := range nics {
+		if nics[i].Upstream.ValueString() != networkingSuiteSubnetUpstream {
+			continue
+		}
+		if i >= len(server.Interfaces) || server.Interfaces[i] == nil {
+			return fmt.Errorf("network interface[%d] is missing from Server[%s]", i, server.ID)
+		}
+
+		interfaceSRN, err := networkingSuiteInterfaceSRN(zone, server.Interfaces[i].ID)
+		if err != nil {
+			return fmt.Errorf("failed to build network interface SRN: %w", err)
+		}
+		created, err := op.Create(ctx, networkingsuite.CreateInterfaceConnectionParams{
+			InterfaceSRN: interfaceSRN,
+			SubnetSRN:    nics[i].SubnetSRN.ValueSRN(),
+		})
+		if err != nil {
+			return fmt.Errorf("failed to connect interface[%s] to subnet[%s]: %w", interfaceSRN, nics[i].SubnetSRN.ValueString(), err)
+		}
+		// Networking Suiteの場合はNIC自身ではなくinterface-connectionのSRNを保持。切断で利用する
+		nics[i].SRN = sctypes.SRNValue(created.SRN)
+	}
+	return nil
+}
+
+func deleteNetworkingSuiteConnections(ctx context.Context, client *common.APIClient, nics []serverNetworkInterfaceModel) error {
+	if !hasNetworkingSuiteNIC(nics) {
+		return nil
+	}
+
+	apiClient, err := networkingsuite.NewClient(client.SaClient)
+	if err != nil {
+		return fmt.Errorf("failed to create networking suite API client: %w", err)
+	}
+	op := networkingsuite.NewInterfaceConnectionOp(apiClient)
+	for i := range nics {
+		if err := deleteNetworkingSuiteNIC(ctx, op, &nics[i]); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func deleteNetworkingSuiteNIC(ctx context.Context, op networkingsuite.InterfaceConnectionAPI, nic *serverNetworkInterfaceModel) error {
+	if nic.Upstream.ValueString() != networkingSuiteSubnetUpstream || !utils.IsKnown(nic.SRN) {
+		return nil
+	}
+	if err := op.Delete(ctx, nic.SRN.ValueSRN()); err != nil && !saclient.IsNotFoundError(err) {
+		return fmt.Errorf("failed to disconnect interface connection[%s]: %w", nic.SRN.ValueString(), err)
+	}
+	nic.SRN = sctypes.SRNNull()
+	return nil
+}
+
+// ReadではSRN/packet filterのAPI優先等に違いがあるため実装をわける
+func preserveNetworkingSuiteNICsForRead(target []serverNetworkInterfaceModel, source []serverNetworkInterfaceModel) {
+	for i := range target {
+		if i >= len(source) || source[i].Upstream.ValueString() != networkingSuiteSubnetUpstream {
+			continue
+		}
+		target[i].SubnetSRN = source[i].SubnetSRN
+		if target[i].Upstream.ValueString() != networkingSuiteSubnetUpstream {
+			target[i].Upstream = source[i].Upstream
+			target[i].SRN = sctypes.SRNNull() // 接続がないのでnullにして再設定できるようにしておく
+		}
+	}
+}
+
+// Server NICの取得結果に設定・state側のNetworking Suite接続情報を補う。 networking suite以外のNICのSRNやAPIから取得したMACアドレスなどは上書きしない。
+func preserveNetworkingSuiteNICs(target []serverNetworkInterfaceModel, source []serverNetworkInterfaceModel) {
+	for i := range target {
+		if i >= len(source) || source[i].Upstream.ValueString() != networkingSuiteSubnetUpstream {
+			continue
+		}
+		target[i].Upstream = source[i].Upstream
+		target[i].SubnetSRN = source[i].SubnetSRN
+		target[i].SRN = source[i].SRN
+	}
+}
+
+// 作成・更新後の接続情報を補ったNIC一覧をstate保存用に返す。
+func mergeNetworkingSuiteNICState(target []serverNetworkInterfaceModel, source []serverNetworkInterfaceModel) []serverNetworkInterfaceModel {
+	preserveNetworkingSuiteNICs(target, source)
+	return target
+}
+
+func bootServer(ctx context.Context, client *common.APIClient, zone string, id iaastypes.ID, userData string) error {
+	serverOp := iaas.NewServerOp(client)
+	if userData == "" {
+		return power.BootServer(ctx, serverOp, zone, id)
+	}
+	return power.BootServer(ctx, serverOp, zone, id, userData)
 }
 
 func isDiskEditParameterChanged(plan, state *serverResourceModel) bool {

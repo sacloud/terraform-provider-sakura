@@ -4,11 +4,17 @@ page_title: "sakura_server Resource - sakura"
 subcategory: "Computing"
 description: |-
   Manages a Server.
+  Networking Suite failure recovery
+  If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. The next apply retries the connections. A boot failure only produces a warning; boot the server manually.
 ---
 
 # sakura_server (Resource)
 
 Manages a Server.
+
+### Networking Suite failure recovery
+
+If connecting a newly created server to a Networking Suite subnet fails, the server is deleted and creation fails. If connecting after an update fails, the updated server is saved in state with null SRNs for missing connections. The next apply retries the connections. A boot failure only produces a warning; boot the server manually.
 
 ## Example Usage
 
@@ -23,6 +29,13 @@ resource "sakura_server" "foobar" {
     upstream         = "shared"
     packet_filter_id = data.sakura_packet_filter.foobar.id
   }]
+
+  # To connect a server interface to a Networking Suite Subnet, set `upstream` to `networking_suite_subnet` and provide the subnet SRN. The server resource creates the interface connection and boots the server after connecting it.
+  # network_interface = [{
+  #   upstream         = "networking_suite_subnet"
+  #   subnet_srn       = sakura_networking_suite_subnet.example.srn
+  #   packet_filter_id = data.sakura_packet_filter.foobar.id # optional
+  # }]
 
   disk_edit_parameter = {
     hostname = "hostname"
@@ -154,16 +167,18 @@ Optional:
 
 Required:
 
-- `upstream` (String) The upstream type or upstream switch id. This must be one of [`shared`/`disconnect`/`<switch id>`]
+- `upstream` (String) The upstream type or upstream switch id. This must be one of [`shared`/`disconnect`/`networking_suite_subnet`/`<switch id>`]
 
 Optional:
 
 - `packet_filter_id` (String) The id of the packet filter to attach to the network interface
+- `subnet_srn` (String) The SRN of the Networking Suite Subnet. Required when upstream is networking_suite_subnet.
 - `user_ip_address` (String) The IP address for only display. This value doesn't affect actual NIC settings
 
 Read-Only:
 
 - `mac_address` (String) The MAC address
+- `srn` (String) The SRN of the Networking Suite interface connection when upstream is networking_suite_subnet, otherwise the SRN of the IaaS network interface
 
 
 <a id="nestedatt--timeouts"></a>
