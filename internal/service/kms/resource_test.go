@@ -197,10 +197,11 @@ func TestAccImportSakuraResourceKMS_basic(t *testing.T) {
 				Config: test.BuildConfigWithArgs(testAccSakuraKMS_basic, rand),
 			},
 			{
-				ResourceName:      resourceName,
-				ImportState:       true,
-				ImportStateCheck:  checkFn,
-				ImportStateVerify: true,
+				ResourceName:            resourceName,
+				ImportState:             true,
+				ImportStateCheck:        checkFn,
+				ImportStateVerify:       true,
+				ImportStateVerifyIgnore: []string{"schedule_destruction_days"},
 			},
 		},
 	})

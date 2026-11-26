@@ -53,6 +53,7 @@ func TestAccSakuraEnhancedLBACME_basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token_wo"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token_wo_version", "1"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "strict_rule.enabled", "true"),
+					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "monitoring_suite.enabled", "true"),
 
 					resource.TestCheckResourceAttrPair(resourceName, "enhanced_lb_id", "sakura_enhanced_lb.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "accept_tos", "true"),
@@ -81,6 +82,7 @@ func TestAccSakuraEnhancedLBACME_basic(t *testing.T) {
 					resource.TestCheckNoResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token"),
 					resource.TestCheckNoResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token_wo"),
 					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "origin_guard.token_wo_version", "1"),
+					resource.TestCheckResourceAttr("sakura_enhanced_lb.foobar", "monitoring_suite.enabled", "true"),
 
 					resource.TestCheckResourceAttrPair(resourceName, "enhanced_lb_id", "sakura_enhanced_lb.foobar", "id"),
 					resource.TestCheckResourceAttr(resourceName, "update_delay_sec", "20"),
@@ -198,6 +200,10 @@ resource "sakura_enhanced_lb" "foobar" {
     path  = "/"
     group = "group1"
   }]
+
+  monitoring_suite = {
+    enabled = true
+  }
 
   origin_guard = {
 		token_wo         = "abcdefgh"

@@ -195,23 +195,7 @@ func (r *enhancedLBACMEResource) Create(ctx context.Context, req resource.Create
 		time.Sleep(time.Duration(plan.UpdateDelaySec.ValueInt32()) * time.Second)
 	}
 
-	elb, err := elbOp.UpdateSettings(ctx, elb.ID, &iaas.ProxyLBUpdateSettingsRequest{
-		HealthCheck:          elb.HealthCheck,
-		SorryServer:          elb.SorryServer,
-		BindPorts:            elb.BindPorts,
-		Servers:              elb.Servers,
-		Rules:                elb.Rules,
-		LetsEncrypt:          le,
-		StickySession:        elb.StickySession,
-		Timeout:              elb.Timeout,
-		Gzip:                 elb.Gzip,
-		BackendHttpKeepAlive: elb.BackendHttpKeepAlive,
-		ProxyProtocol:        elb.ProxyProtocol,
-		Syslog:               elb.Syslog,
-		OriginGuard:          elb.OriginGuard,
-		StrictRule:           elb.StrictRule,
-		SettingsHash:         elb.SettingsHash,
-	})
+	elb, err := elbOp.UpdateSettings(ctx, elb.ID, enhancedLBACMEUpdateSettingsRequest(elb, le))
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to update setting Enhanced LB[%s] ACME: %s", elbID, err))
 		return
@@ -295,23 +279,7 @@ func (r *enhancedLBACMEResource) Update(ctx context.Context, req resource.Update
 	}
 
 	elbOp := iaas.NewProxyLBOp(r.client)
-	elb, err := elbOp.UpdateSettings(ctx, elb.ID, &iaas.ProxyLBUpdateSettingsRequest{
-		HealthCheck:          elb.HealthCheck,
-		SorryServer:          elb.SorryServer,
-		BindPorts:            elb.BindPorts,
-		Servers:              elb.Servers,
-		Rules:                elb.Rules,
-		LetsEncrypt:          le,
-		StickySession:        elb.StickySession,
-		Timeout:              elb.Timeout,
-		Gzip:                 elb.Gzip,
-		BackendHttpKeepAlive: elb.BackendHttpKeepAlive,
-		ProxyProtocol:        elb.ProxyProtocol,
-		Syslog:               elb.Syslog,
-		OriginGuard:          elb.OriginGuard,
-		StrictRule:           elb.StrictRule,
-		SettingsHash:         elb.SettingsHash,
-	})
+	elb, err := elbOp.UpdateSettings(ctx, elb.ID, enhancedLBACMEUpdateSettingsRequest(elb, le))
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update setting Enhanced LB[%s] ACME: %s", elbID, err))
 		return
@@ -363,26 +331,31 @@ func (r *enhancedLBACMEResource) Delete(ctx context.Context, req resource.Delete
 		return
 	}
 
-	_, err := elbOp.UpdateSettings(ctx, elb.ID, &iaas.ProxyLBUpdateSettingsRequest{
+	_, err := elbOp.UpdateSettings(ctx, elb.ID, enhancedLBACMEUpdateSettingsRequest(elb, &iaas.ProxyLBACMESetting{Enabled: false}))
+	if err != nil {
+		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to clear ACME Setting of Enhanced LB[%s]: %s", elb.ID, err))
+		return
+	}
+}
+
+func enhancedLBACMEUpdateSettingsRequest(elb *iaas.ProxyLB, letsEncrypt *iaas.ProxyLBACMESetting) *iaas.ProxyLBUpdateSettingsRequest {
+	return &iaas.ProxyLBUpdateSettingsRequest{
 		HealthCheck:          elb.HealthCheck,
 		SorryServer:          elb.SorryServer,
 		BindPorts:            elb.BindPorts,
 		Servers:              elb.Servers,
 		Rules:                elb.Rules,
-		LetsEncrypt:          &iaas.ProxyLBACMESetting{Enabled: false},
+		LetsEncrypt:          letsEncrypt,
 		StickySession:        elb.StickySession,
 		Timeout:              elb.Timeout,
 		Gzip:                 elb.Gzip,
 		BackendHttpKeepAlive: elb.BackendHttpKeepAlive,
+		MonitoringSuiteLog:   elb.MonitoringSuiteLog,
 		ProxyProtocol:        elb.ProxyProtocol,
 		Syslog:               elb.Syslog,
 		OriginGuard:          elb.OriginGuard,
 		StrictRule:           elb.StrictRule,
 		SettingsHash:         elb.SettingsHash,
-	})
-	if err != nil {
-		resp.Diagnostics.AddError("Delete: API Error", fmt.Sprintf("failed to clear ACME Setting of Enhanced LB[%s]: %s", elb.ID, err))
-		return
 	}
 }
 
