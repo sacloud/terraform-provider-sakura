@@ -16,6 +16,9 @@ type traceStorageBaseModel struct {
 	msBaseModel
 	ProjectID           types.String `tfsdk:"project_id"`
 	ResourceID          types.String `tfsdk:"resource_id"`
+	Classification      types.String `tfsdk:"classification"`
+	KMSKeyID            types.String `tfsdk:"kms_key_id"`
+	ServicePrincipalID  types.String `tfsdk:"service_principal_id"`
 	RetentionPeriodDays types.Int32  `tfsdk:"retention_period_days"`
 	CreatedAt           types.String `tfsdk:"created_at"`
 	Endpoints           types.Object `tfsdk:"endpoints"`
@@ -47,6 +50,9 @@ func (model *traceStorageBaseModel) updateState(storage *monitoringsuiteapi.Trac
 	model.updateBaseState(strconv.FormatInt(storage.GetID(), 10), storage.GetName().Value, storage.GetDescription().Value)
 	model.ProjectID = types.StringValue(storage.GetAccountID())
 	model.ResourceID = types.StringValue(strconv.FormatInt(storage.GetResourceID(), 10))
+	model.Classification = types.StringValue(string(storage.GetClassification()))
+	model.KMSKeyID = storageIDToType(storage.GetKmsKeyID())
+	model.ServicePrincipalID = storageIDToType(storage.GetServicePrincipalID())
 	model.RetentionPeriodDays = types.Int32Value(int32(storage.GetRetentionPeriodDays()))
 	model.CreatedAt = types.StringValue(storage.GetCreatedAt().String())
 

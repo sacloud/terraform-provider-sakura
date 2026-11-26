@@ -18,6 +18,8 @@ type logStorageBaseModel struct {
 	ResourceID          types.String `tfsdk:"resource_id"`
 	IsSystem            types.Bool   `tfsdk:"is_system"`
 	Classification      types.String `tfsdk:"classification"`
+	KMSKeyID            types.String `tfsdk:"kms_key_id"`
+	ServicePrincipalID  types.String `tfsdk:"service_principal_id"`
 	RetentionPeriodDays types.Int32  `tfsdk:"retention_period_days"`
 	CreatedAt           types.String `tfsdk:"created_at"`
 	Endpoints           types.Object `tfsdk:"endpoints"`
@@ -66,6 +68,8 @@ func (model *logStorageBaseModel) updateState(storage *monitoringsuiteapi.LogSto
 	model.RetentionPeriodDays = types.Int32Value(int32(storage.GetExpireDay()))
 	model.CreatedAt = types.StringValue(storage.GetCreatedAt().String())
 	model.Classification = types.StringValue(string(storage.GetClassification()))
+	model.KMSKeyID = storageIDToType(storage.GetKmsKeyID())
+	model.ServicePrincipalID = storageIDToType(storage.GetServicePrincipalID())
 
 	endpoints := storage.GetEndpoints()
 	ingester := endpoints.GetIngester()

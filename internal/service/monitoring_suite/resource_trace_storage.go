@@ -9,12 +9,14 @@ import (
 
 	"github.com/hashicorp/terraform-plugin-framework-timeouts/resource/timeouts"
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/objectplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringdefault"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
@@ -30,9 +32,10 @@ type traceStorageResource struct {
 }
 
 var (
-	_ resource.Resource                = &traceStorageResource{}
-	_ resource.ResourceWithConfigure   = &traceStorageResource{}
-	_ resource.ResourceWithImportState = &traceStorageResource{}
+	_ resource.Resource                   = &traceStorageResource{}
+	_ resource.ResourceWithConfigure      = &traceStorageResource{}
+	_ resource.ResourceWithImportState    = &traceStorageResource{}
+	_ resource.ResourceWithValidateConfig = &traceStorageResource{}
 )
 
 func NewTraceStorageResource() resource.Resource {
@@ -76,6 +79,32 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 					stringplanmodifier.UseStateForUnknown(),
 				},
 			},
+			"classification": schema.StringAttribute{
+				Optional:    true,
+				Computed:    true,
+				Default:     stringdefault.StaticString(string(monitoringsuiteapi.TraceStorageCreateRequestClassificationShared)),
+				Description: "The bucket classification of the Trace Storage.",
+				Validators: []validator.String{
+					stringvalidator.OneOf(
+						string(monitoringsuiteapi.TraceStorageCreateRequestClassificationShared),
+						string(monitoringsuiteapi.TraceStorageCreateRequestClassificationDedicated),
+					),
+				},
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
+			"kms_key_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "The KMS key ID for encryption. Only available when classification is dedicated.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.RequiresReplaceIfConfigured(),
+				},
+			},
+			"service_principal_id": schema.StringAttribute{
+				Optional:    true,
+				Description: "The service principal ID used to access the KMS key. Only available when classification is dedicated.",
+			},
 			"retention_period_days": schema.Int32Attribute{
 				Optional:    true,
 				Computed:    true,
@@ -114,6 +143,10 @@ func (r *traceStorageResource) Schema(ctx context.Context, _ resource.SchemaRequ
 	}
 }
 
+func (r *traceStorageResource) ValidateConfig(ctx context.Context, req resource.ValidateConfigRequest, resp *resource.ValidateConfigResponse) {
+	validateStorageConfig(ctx, req, resp)
+}
+
 func (r *traceStorageResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
@@ -129,9 +162,18 @@ func (r *traceStorageResource) Create(ctx context.Context, req resource.CreateRe
 	defer cancel()
 
 	op := monitoringsuite.NewTracesStorageOp(r.client)
+	classification := monitoringsuiteapi.TraceStorageCreateRequestClassification(plan.Classification.ValueString())
+	kmsKeyID := expandStorageID(plan.KMSKeyID, "kms_key_id", &resp.Diagnostics)
+	servicePrincipalID := expandStorageID(plan.ServicePrincipalID, "service_principal_id", &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
 	created, err := op.Create(ctx, monitoringsuite.TracesStorageCreateParams{
-		Name:        plan.Name.ValueString(),
-		Description: expandOptionalString(plan.Description),
+		Name:               plan.Name.ValueString(),
+		Description:        expandOptionalString(plan.Description),
+		Classification:     &classification,
+		KmsKeyID:           kmsKeyID,
+		ServicePrincipalID: servicePrincipalID,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Create: API Error", fmt.Sprintf("failed to create Trace Storage: %s", err))
@@ -182,9 +224,17 @@ func (r *traceStorageResource) Update(ctx context.Context, req resource.UpdateRe
 
 	op := monitoringsuite.NewTracesStorageOp(r.client)
 	name := plan.Name.ValueString()
+	servicePrincipalID := expandStorageID(plan.ServicePrincipalID, "service_principal_id", &resp.Diagnostics)
+	if resp.Diagnostics.HasError() {
+		return
+	}
+	if plan.ServicePrincipalID.IsNull() && !state.ServicePrincipalID.IsNull() {
+		servicePrincipalID.SetToNull()
+	}
 	updated, err := op.Update(ctx, plan.ID.ValueString(), monitoringsuite.TracesStorageUpdateParams{
-		Name:        &name,
-		Description: expandOptionalString(plan.Description),
+		Name:               &name,
+		Description:        expandOptionalString(plan.Description),
+		ServicePrincipalID: servicePrincipalID,
 	})
 	if err != nil {
 		resp.Diagnostics.AddError("Update: API Error", fmt.Sprintf("failed to update Trace Storage[%s]: %s", plan.ID.ValueString(), err))

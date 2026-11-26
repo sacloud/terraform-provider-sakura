@@ -34,7 +34,9 @@ resource "sakura_monitoring_suite_log_storage" "foobar" {
 - `classification` (String) The bucket classification of the Log Storage.
 - `description` (String) The description of the Monitoring Suite Log Storage. The length of this value must be in the range [`1`-`512`]
 - `is_system` (Boolean) The flag to indicate whether this is a system Log Storage.
+- `kms_key_id` (String) The KMS key ID for encryption. Only available when classification is dedicated.
 - `retention_period_days` (Number) The retention period days of the Log Storage.
+- `service_principal_id` (String) The service principal ID used to access the KMS key. Only available when classification is dedicated.
 - `timeouts` (Attributes) (see [below for nested schema](#nestedatt--timeouts))
 
 ### Read-Only
