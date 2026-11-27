@@ -5,17 +5,20 @@ package sakura
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/hashicorp/terraform-plugin-framework-validators/int32validator"
+	"github.com/hashicorp/terraform-plugin-framework/attr"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
 	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"github.com/sacloud/sacloud-sdk-go/common/packages/envvar"
+	"github.com/hashicorp/terraform-plugin-log/tflog"
+	"github.com/sacloud/sacloud-sdk-go/common/saclient"
 	"github.com/sacloud/terraform-provider-sakura/internal/common"
 	"github.com/sacloud/terraform-provider-sakura/internal/common/utils"
 	"github.com/sacloud/terraform-provider-sakura/internal/desc"
@@ -196,75 +199,31 @@ func (p *sakuraProvider) Schema(_ context.Context, _ provider.SchemaRequest, res
 }
 
 func (p *sakuraProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	endpoints := make(map[string]string)
-	for _, e := range os.Environ() {
-		if strings.HasPrefix(e, common.EndpointsEnvVar) {
-			parts := strings.SplitN(e, "=", 2)
-			if len(parts) == 2 {
-				serviceKey := strings.TrimPrefix(parts[0], common.EndpointsEnvVar)
-				endpoints[serviceKey] = parts[1]
-			}
-		}
-	}
-	envConf := &common.Config{
-		Profile:                envvar.StringFromEnvMulti([]string{"SAKURA_PROFILE", "SAKURACLOUD_PROFILE"}, ""),
-		AccessToken:            envvar.StringFromEnvMulti([]string{"SAKURA_ACCESS_TOKEN", "SAKURACLOUD_ACCESS_TOKEN"}, ""),
-		AccessTokenSecret:      envvar.StringFromEnvMulti([]string{"SAKURA_ACCESS_TOKEN_SECRET", "SAKURACLOUD_ACCESS_TOKEN_SECRET"}, ""),
-		ServicePrincipalID:     envvar.StringFromEnv("SAKURA_SERVICE_PRINCIPAL_ID", ""),
-		ServicePrincipalKeyKID: envvar.StringFromEnvMulti([]string{"SAKURA_SERVICE_PRINCIPAL_KEY_KID", "SAKURA_SERVICE_PRINCIPAL_KEY_ID"}, ""),
-		ServicePrivateKey:      envvar.StringFromEnv("SAKURA_PRIVATE_KEY", ""),
-		ServicePrivateKeyPath:  envvar.StringFromEnv("SAKURA_PRIVATE_KEY_PATH", ""),
-		Zone:                   envvar.StringFromEnvMulti([]string{"SAKURA_ZONE", "SAKURACLOUD_ZONE"}, ""),
-		DefaultZone:            envvar.StringFromEnvMulti([]string{"SAKURA_DEFAULT_ZONE", "SAKURACLOUD_DEFAULT_ZONE"}, ""),
-		APIRootURL:             envvar.StringFromEnvMulti([]string{"SAKURA_API_ROOT_URL", "SAKURACLOUD_API_ROOT_URL"}, ""),
-		RetryMax:               envvar.IntFromEnvMulti([]string{"SAKURA_RETRY_MAX", "SAKURACLOUD_RETRY_MAX"}, 0),
-		RetryWaitMax:           envvar.IntFromEnvMulti([]string{"SAKURA_RETRY_WAIT_MAX", "SAKURACLOUD_RETRY_WAIT_MAX"}, 0),
-		RetryWaitMin:           envvar.IntFromEnvMulti([]string{"SAKURA_RETRY_WAIT_MIN", "SAKURACLOUD_RETRY_WAIT_MIN"}, 0),
-		APIRequestTimeout:      envvar.IntFromEnvMulti([]string{"SAKURA_API_REQUEST_TIMEOUT", "SAKURACLOUD_API_REQUEST_TIMEOUT"}, 0),
-		APIRequestRateLimit:    envvar.IntFromEnvMulti([]string{"SAKURA_RATE_LIMIT", "SAKURACLOUD_RATE_LIMIT"}, 0),
-		Zones:                  envvar.StringSliceFromEnvMulti([]string{"SAKURA_ZONES", "SAKURACLOUD_ZONES"}, nil),
-		Endpoints:              endpoints,
-	}
-
+	var theClient saclient.Client
 	var config sakuraProviderModel
 	resp.Diagnostics.Append(req.Config.Get(ctx, &config)...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	var keyKID string
 	if utils.IsKnown(config.ServicePrincipalKeyKID) {
-		keyKID = config.ServicePrincipalKeyKID.ValueString()
 	} else if utils.IsKnown(config.ServicePrincipalKeyID) {
 		resp.Diagnostics.AddWarning("Deprecated Configuration", "The `service_principal_key_id` attribute is deprecated and will be removed in the future. Use `service_principal_key_kid` instead.")
-		keyKID = config.ServicePrincipalKeyID.ValueString()
 	}
 
-	cfg := common.Config{
-		Profile:                config.Profile.ValueString(),
-		AccessToken:            config.AccessToken.ValueString(),
-		AccessTokenSecret:      config.AccessTokenSecret.ValueString(),
-		ServicePrincipalID:     config.ServicePrincipalID.ValueString(),
-		ServicePrincipalKeyKID: keyKID,
-		ServicePrivateKeyPath:  config.ServicePrivateKeyPath.ValueString(),
-		Zone:                   config.Zone.ValueString(),
-		DefaultZone:            config.DefaultZone.ValueString(),
-		APIRootURL:             config.APIRootURL.ValueString(),
-		RetryMax:               int(config.RetryMax.ValueInt32()),
-		RetryWaitMax:           int(config.RetryWaitMax.ValueInt64()),
-		RetryWaitMin:           int(config.RetryWaitMin.ValueInt64()),
-		APIRequestTimeout:      int(config.APIRequestTimeout.ValueInt64()),
-		APIRequestRateLimit:    int(config.APIRequestRateLimit.ValueInt32()),
-		TraceMode:              config.TraceMode.ValueString(),
-		Zones:                  common.TlistToStrings(config.Zones),
-		TerraformVersion:       req.TerraformVersion,
-	}
-	// 他のパラメータとは違いプロファイルをロードするために、SAKURA_PROFILEの値だけは優先する
-	if cfg.Profile == "" {
-		cfg.Profile = envConf.Profile
+	err := theClient.SettingsFromTerraformProvider(&config)
+	if err != nil {
+		resp.Diagnostics.AddError("failed to set settings from Terraform provider", err.Error())
+		return
 	}
 
-	client, err := cfg.NewClient(envConf)
+	err = theClient.SetWith(saclient.WithUserAgent(p.httpUserAgent(ctx, req)))
+	if err != nil {
+		resp.Diagnostics.AddError("failed to set user agent", err.Error())
+		return
+	}
+
+	client, err := common.NewClient(&theClient)
 	if err != nil {
 		resp.Diagnostics.AddError("failed to create Sakura client", err.Error())
 		return
@@ -517,3 +476,115 @@ func (p *sakuraProvider) Resources(_ context.Context) []func() resource.Resource
 		// ...他のリソースも同様に追加...
 	}
 }
+
+const (
+	uaEnvVar   = "SAKURACLOUD_APPEND_USER_AGENT"
+	tfUAEnvVar = "TF_APPEND_USER_AGENT"
+)
+
+func (p *sakuraProvider) httpUserAgent(ctx context.Context, req provider.ConfigureRequest) string {
+	tfver := req.TerraformVersion
+	providerVar := p.version
+	ua := fmt.Sprintf("HashiCorp Terraform/%s (+https://www.terraform.io)", tfver)
+
+	if add := os.Getenv(tfUAEnvVar); add != "" {
+		add = strings.TrimSpace(add)
+		if len(add) > 0 {
+			ua += " " + add
+			tflog.Debug(ctx, "Using modified User-Agent", map[string]interface{}{"user_agent": ua})
+		}
+	}
+
+	providerUserAgent := fmt.Sprintf("%s/v%s", "terraform-provider-sakura", providerVar)
+	if add := os.Getenv(uaEnvVar); add != "" {
+		add = strings.TrimSpace(add)
+		if len(add) > 0 {
+			ua += " " + add
+			tflog.Debug(ctx, "Using modified User-Agent", map[string]interface{}{"user_agent": ua})
+		}
+	}
+
+	return fmt.Sprintf("%s %s", ua, providerUserAgent)
+}
+
+func lookup[T any, V attr.Value](v V, f func(V) T) (ret T, ok bool) {
+	if ok = utils.IsKnown(v); ok {
+		ret = f(v)
+	}
+	return
+}
+
+func (p *sakuraProviderModel) LookupClientConfigProfileName() (string, bool) {
+	return lookup(p.Profile, types.String.ValueString)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigPrivateKeyPath() (string, bool) {
+	return lookup(p.ServicePrivateKeyPath, types.String.ValueString)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigServicePrincipalID() (string, bool) {
+	return lookup(p.ServicePrincipalID, types.String.ValueString)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigServicePrincipalKeyKID() (string, bool) {
+	if kid, ok := lookup(p.ServicePrincipalKeyKID, types.String.ValueString); ok {
+		return kid, ok
+	} else if keyid, ok := lookup(p.ServicePrincipalKeyID, types.String.ValueString); ok {
+		// See above for issuing warnings
+		return keyid, ok
+	} else {
+		return "", false
+	}
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAccessToken() (string, bool) {
+	return lookup(p.AccessToken, types.String.ValueString)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAccessTokenSecret() (string, bool) {
+	return lookup(p.AccessTokenSecret, types.String.ValueString)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigZone() (string, bool) {
+	return lookup(p.Zone, types.String.ValueString)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigDefaultZone() (string, bool) {
+	return lookup(p.DefaultZone, types.String.ValueString)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigZones() ([]string, bool) {
+	return lookup(p.Zones, common.TlistToStrings)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigRetryMax() (int64, bool) {
+	i32, ok := lookup(p.RetryMax, types.Int32.ValueInt32)
+	return int64(i32), ok
+}
+
+func (p *sakuraProviderModel) LookupClientConfigRetryWaitMax() (int64, bool) {
+	return lookup(p.RetryWaitMax, types.Int64.ValueInt64)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigRetryWaitMin() (int64, bool) {
+	return lookup(p.RetryWaitMin, types.Int64.ValueInt64)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAPIRootURL() (string, bool) {
+	return lookup(p.APIRootURL, types.String.ValueString)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAPIRequestTimeout() (int64, bool) {
+	return lookup(p.APIRequestTimeout, types.Int64.ValueInt64)
+}
+
+func (p *sakuraProviderModel) LookupClientConfigAPIRequestRateLimit() (int64, bool) {
+	i32, ok := lookup(p.APIRequestRateLimit, types.Int32.ValueInt32)
+	return int64(i32), ok
+}
+
+func (p *sakuraProviderModel) LookupClientConfigTraceMode() (string, bool) {
+	return lookup(p.TraceMode, types.String.ValueString)
+}
+
+var _ saclient.TerraformProviderInterface = (*sakuraProviderModel)(nil)
