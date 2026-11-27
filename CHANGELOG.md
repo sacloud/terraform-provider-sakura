@@ -1,5 +1,15 @@
 # Changelog
 
+## [v3.16.0](https://github.com/sacloud/terraform-provider-sakura/compare/v3.15.2...v3.16.0) - 2026-11-27
+
+### 🚀 New Features
+- server: Support Networking Suite's Subnet in network_interface by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/375
+### Other Changes
+- monitoring_suite: Support KMS in dedicated mode by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/393
+- enhanced_lb: fix sakura_enhanced_lb_acme to keep monitoring suite setting by @repeatedly in https://github.com/sacloud/terraform-provider-sakura/pull/398
+### 📦 Dependency Updates
+- ci: bump actions/setup-go from 7.0.0 to 7.1.0 by @dependabot[bot] in https://github.com/sacloud/terraform-provider-sakura/pull/397
+
 ## [v3.15.2](https://github.com/sacloud/terraform-provider-sakura/compare/v3.15.1...v3.15.2) - 2026-11-19
 
 ### Other Changes
